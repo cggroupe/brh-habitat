@@ -1,0 +1,72 @@
+{
+  "nav": {
+    "home": "Home",
+    "diagnostic": "Diagnostic",
+    "articles": "Articles",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "myHomes": "My Homes",
+    "myCases": "My Cases",
+    "myAppointments": "My Appointments",
+    "profile": "My Profile",
+    "admin": "Administration",
+    "logout": "Log out"
+  },
+  "hero": {
+    "title": "Diagnose and renovate your home",
+    "subtitle": "BRH Habitat guides you through all your renovation projects. Get a free diagnostic and personalized advice.",
+    "cta": "Start my free diagnostic"
+  },
+  "diagnostic": {
+    "title": "Free Diagnostic",
+    "step1Title": "What issues are you experiencing?",
+    "step2Title": "Your property",
+    "step3Title": "Observed symptoms",
+    "step4Title": "Photos (optional)",
+    "step5Title": "Your contact details",
+    "next": "Next",
+    "prev": "Previous",
+    "submit": "Submit my diagnostic",
+    "types": {
+      "humidite": "Humidity",
+      "isolation": "Insulation",
+      "ventilation": "Ventilation",
+      "menuiseries": "Windows & Doors",
+      "electricite": "Electricity",
+      "toiture": "Roofing",
+      "plomberie": "Plumbing"
+    }
+  },
+  "auth": {
+    "login": "Sign in",
+    "register": "Create account",
+    "email": "Email address",
+    "password": "Password",
+    "fullName": "Full name",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome",
+    "recentDiagnostics": "Recent diagnostics",
+    "myHomes": "My homes",
+    "myCases": "My cases",
+    "upcomingAppointments": "Upcoming appointments"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "back": "Back",
+    "viewAll": "View all",
+    "noResults": "No results"
+  }
+}

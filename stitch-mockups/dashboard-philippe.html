@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BRH Habitat User Dashboard - Philippe G.</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Oswald:wght@400;500;600&amp;family=Raleway:wght@400;500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1c7d7b",
+                        "accent": "#1c7b1d",
+                        "background-light": "#f5f5f5",
+                        "background-dark": "#131f1f",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "oswald": ["Oswald", "sans-serif"],
+                        "raleway": ["Raleway", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .sidebar-active {
+            background-color: rgba(129, 199, 132, 0.1);
+            border-left: 4px solid #1c7b1d;
+        }
+        .card-shadow {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex">
+<!-- Sidebar -->
+<aside class="w-[220px] fixed h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-10">
+<div class="p-6 flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-xl">public</span>
+</div>
+<span class="font-oswald font-bold text-xl tracking-tight text-primary uppercase">BRH Habitat</span>
+</div>
+<nav class="flex-1 mt-4">
+<ul class="flex flex-col font-oswald text-sm uppercase tracking-wide">
+<li class="sidebar-active px-5 py-3 flex items-center gap-3 text-accent cursor-pointer">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Tableau de bord</span>
+</li>
+<li class="px-6 py-3 flex items-center gap-3 text-slate-500 hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined">home</span>
+<span>Logements</span>
+</li>
+<li class="px-6 py-3 flex items-center gap-3 text-slate-500 hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined">stethoscope</span>
+<span>Diagnostics</span>
+</li>
+<li class="px-6 py-3 flex items-center gap-3 text-slate-500 hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined">folder_open</span>
+<span>Dossiers</span>
+</li>
+<li class="px-6 py-3 flex items-center gap-3 text-slate-500 hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined">calendar_today</span>
+<span>Rendez-vous</span>
+</li>
+<li class="px-6 py-3 flex items-center gap-3 text-slate-500 hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined">menu_book</span>
+<span>Guides</span>
+</li>
+</ul>
+</nav>
+<div class="p-6 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-slate-200 bg-center bg-cover" data-alt="Avatar de Philippe G." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB9LY-BUGXYg7KlXPcrbHynUPgz9CoyzKTKOM3Vq2hxNpdH5cFClMK_5a6FypfVA-gAlAcI-xxy14C4nfQ_cWN-PzdB1oHFI_g4cIuKNxVErIFM-QKNNK4V1ciq5TqRWydDP1cavxPWMySpriMIlDie3svzc2NtdYFnpRqDXNWYgv_PxYIcrFGtoyElMSxbkWQnoBBldENx_TaxEp3ntmAQT2-7Nzw5FABNTDCdZRkqVJaY7TKEvXik4KNg31xJUQCWD8nFG1jwCRyG')"></div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-slate-800 dark:text-slate-200">Philippe G.</span>
+<span class="text-xs text-slate-500">Propriétaire</span>
+</div>
+</div>
+<button class="flex items-center gap-2 text-sm text-slate-500 hover:text-red-600 transition-colors">
+<span class="material-symbols-outlined text-lg">logout</span>
+<span>Déconnexion</span>
+</button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="ml-[220px] flex-1 p-8">
+<!-- Header -->
+<header class="flex justify-between items-center mb-10">
+<h1 class="text-4xl font-oswald font-bold text-[#3d3d3d] dark:text-slate-100">Bonjour Philippe</h1>
+<button class="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-800 rounded-lg card-shadow text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</header>
+<!-- Quick Actions Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+<div class="bg-primary text-white p-6 rounded-xl card-shadow flex items-center gap-4 cursor-pointer hover:bg-opacity-90 transition-all">
+<div class="bg-white/20 p-3 rounded-lg">
+<span class="material-symbols-outlined text-2xl">stethoscope</span>
+</div>
+<div>
+<h3 class="font-bold text-lg leading-tight">Nouveau diagnostic</h3>
+<p class="text-white/80 text-xs">Démarrer une expertise</p>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 border-2 border-primary/10 border-dashed p-6 rounded-xl card-shadow flex items-center gap-4 cursor-pointer hover:border-primary transition-all group">
+<div class="bg-primary/10 p-3 rounded-lg group-hover:bg-primary/20">
+<span class="material-symbols-outlined text-primary text-2xl">add_home</span>
+</div>
+<div>
+<h3 class="font-bold text-lg leading-tight text-slate-800 dark:text-slate-200">Ajouter un logement</h3>
+<p class="text-slate-500 text-xs">Enregistrer un bien</p>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 border-2 border-primary/10 border-dashed p-6 rounded-xl card-shadow flex items-center gap-4 cursor-pointer hover:border-primary transition-all group">
+<div class="bg-primary/10 p-3 rounded-lg group-hover:bg-primary/20">
+<span class="material-symbols-outlined text-primary text-2xl">calendar_month</span>
+</div>
+<div>
+<h3 class="font-bold text-lg leading-tight text-slate-800 dark:text-slate-200">Prendre rendez-vous</h3>
+<p class="text-slate-500 text-xs">Planifier avec un expert</p>
+</div>
+</div>
+</div>
+<!-- My Homes Section -->
+<section class="mb-10">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-1 h-8 bg-accent rounded-full"></div>
+<h2 class="text-xl font-oswald font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">Mes logements</h2>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- Property Card -->
+<div class="bg-white dark:bg-slate-800 rounded-xl overflow-hidden card-shadow flex group">
+<div class="w-1/3 bg-cover bg-center" data-alt="Une maison néo-bretonne traditionnelle en pierre et ardoise" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCChqZnP--aABbFFipNQt2p0C7ASVsd_oWE75OF0urA5qzj42eguIQkFRW8Hpr5q7--t5UDsy2I7k10D1yBUddNL56_O3e1fnQZP3RKQxTCp7xint5-mE6ql6qyD9EbPLKM-bVbjI4PIhdfyHlNNpJ9zUPFS0462pRFxWG3DI3uzCGbWBSoDwO92mQQm2IBN81srbqOGfX_pi9zMS7NpIuonal6EZ50y8KV-sEg3GAbxsTg1i5AWWFonqyRH12aJjhZVFCDL4_mwwsl')"></div>
+<div class="p-6 flex-1 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-2">
+<span class="bg-primary/10 text-primary text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Maison néo-bretonne</span>
+<span class="bg-accent/10 text-accent text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">2 diagnostics</span>
+</div>
+<h3 class="font-bold text-xl text-slate-800 dark:text-slate-100">12 rue des Ajoncs</h3>
+<p class="text-slate-500 text-sm">29480 Guipavas, France</p>
+</div>
+<button class="mt-4 text-primary text-sm font-bold flex items-center gap-1 group-hover:underline">
+                            Voir les détails <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Dashed Placeholder Card -->
+<div class="border-2 border-slate-200 dark:border-slate-700 border-dashed rounded-xl flex items-center justify-center p-6 text-slate-400 hover:text-primary hover:border-primary transition-all cursor-pointer group">
+<div class="text-center">
+<span class="material-symbols-outlined text-4xl mb-2">add_circle</span>
+<p class="font-medium">Ajouter une nouvelle propriété</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Grid: Diagnostics & Guides -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+<!-- Recent Diagnostics Table -->
+<div class="xl:col-span-2">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-1 h-8 bg-accent rounded-full"></div>
+<h2 class="text-xl font-oswald font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">Derniers diagnostics</h2>
+</div>
+<div class="bg-white dark:bg-slate-800 rounded-xl card-shadow overflow-hidden">
+<table class="w-full text-left">
+<thead class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-700">
+<tr>
+<th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Type</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Date</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Statut</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+<tr>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">opacity</span>
+</div>
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-200">Diagnostic humidité</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">28 jan 2026</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                        Terminé
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:underline text-sm font-bold">Télécharger</button>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">thermostat</span>
+</div>
+<span class="text-sm font-semibold text-slate-700 dark:text-slate-200">Diagnostic isolation</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">15 fév 2026</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                        En cours
+                                    </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 cursor-not-allowed text-sm font-bold">Suivre</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Guides Section -->
+<div class="xl:col-span-1">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-1 h-8 bg-accent rounded-full"></div>
+<h2 class="text-xl font-oswald font-bold uppercase tracking-wide text-slate-700 dark:text-slate-300">Guides pratiques</h2>
+</div>
+<div class="space-y-4">
+<!-- Guide Card 1 -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl card-shadow border border-slate-50 dark:border-slate-700 hover:scale-[1.02] transition-transform cursor-pointer">
+<span class="inline-block px-2 py-0.5 bg-green-100 text-green-800 text-[10px] font-bold rounded mb-2 uppercase tracking-wide">Énergie</span>
+<h4 class="font-bold text-slate-800 dark:text-slate-100 mb-2 leading-tight">Optimiser votre isolation en Bretagne</h4>
+<p class="font-raleway text-xs text-slate-500 line-clamp-2 leading-relaxed">Découvrez les solutions adaptées au climat humide pour réduire vos factures de chauffage durablement.</p>
+</div>
+<!-- Guide Card 2 -->
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl card-shadow border border-slate-50 dark:border-slate-700 hover:scale-[1.02] transition-transform cursor-pointer">
+<span class="inline-block px-2 py-0.5 bg-blue-100 text-blue-800 text-[10px] font-bold rounded mb-2 uppercase tracking-wide">Conseils</span>
+<h4 class="font-bold text-slate-800 dark:text-slate-100 mb-2 leading-tight">Aides de l'État : MaPrimeRénov 2026</h4>
+<p class="font-raleway text-xs text-slate-500 line-clamp-2 leading-relaxed">Le point complet sur les nouveaux barèmes et les conditions d'éligibilité pour vos travaux.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

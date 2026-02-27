@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BRH Habitat - Tableau de bord</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;family=Oswald:wght@400;500;600;700&amp;family=Raleway:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1c7d1e",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#131f13",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "heading": ["Oswald", "sans-serif"],
+                        "body": ["Raleway", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-body text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="flex min-h-screen">
+<!-- Sidebar -->
+<aside class="w-[240px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col fixed h-full z-50">
+<div class="p-6 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-2xl">home_repair_service</span>
+</div>
+<h1 class="font-heading text-xl font-bold text-primary tracking-tight">BRH Habitat</h1>
+</div>
+<nav class="flex-1 px-4 py-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm">Tableau de bord</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-sm">Logements</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">assignment</span>
+<span class="text-sm">Diagnostics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">folder</span>
+<span class="text-sm">Dossiers</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">event</span>
+<span class="text-sm">RDV</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="text-sm">Guides</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+<img alt="Philippe Profile" data-alt="Portrait of a middle-aged professional man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeOr_nHitL4B7vc6tCXvi7W7RXM3-oc6tQNbUXQgrVMKCQRGKk1UJ2ouoEciRQbcM6oMk-XyIsU9QTS_uV0yb2rrpkvp7FFLbSK5ZgHD13qij_dKl-c02Xai2Eg24DzelUJnA8XPEQbbDpCvSgw_WAPmnPPVjoqGduaiJtxoYIVf9h4lq3lJVkqK_JIEMmpIdlgyQhDP5u-Ks4yfJwmxjELb7bYINzYzA9r8Bn6FwMDhfIj-yqEvMCk3SE5PuxGyHJLkLu2M10-hAj"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-semibold truncate">Philippe R.</p>
+<p class="text-xs text-slate-500 truncate">Mon Profil</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="ml-[240px] flex-1 p-8">
+<!-- Header -->
+<header class="flex justify-between items-center mb-10">
+<h2 class="font-heading text-4xl font-bold text-slate-900 dark:text-white">Bonjour Philippe</h2>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 hover:bg-slate-50">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-bold">
+                        Compte Pro
+                    </div>
+</div>
+</header>
+<!-- Quick Actions -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+<button class="flex items-center justify-center gap-4 bg-primary text-white p-6 rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all group">
+<span class="material-symbols-outlined text-3xl">add_circle</span>
+<span class="font-heading text-xl font-bold uppercase tracking-wide">Nouveau diagnostic</span>
+</button>
+<button class="flex items-center justify-center gap-4 bg-white dark:bg-slate-900 border-2 border-primary text-primary p-6 rounded-xl hover:bg-primary/5 transition-all">
+<span class="material-symbols-outlined text-3xl">add_home</span>
+<span class="font-heading text-xl font-bold uppercase tracking-wide">Ajouter logement</span>
+</button>
+<button class="flex items-center justify-center gap-4 bg-white dark:bg-slate-900 border-2 border-primary text-primary p-6 rounded-xl hover:bg-primary/5 transition-all">
+<span class="material-symbols-outlined text-3xl">calendar_month</span>
+<span class="font-heading text-xl font-bold uppercase tracking-wide">Prendre RDV</span>
+</button>
+</section>
+<!-- Properties Section -->
+<section class="mb-12">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-1.5 h-8 bg-primary rounded-full"></div>
+<h3 class="font-heading text-2xl font-bold uppercase tracking-tight">Mes logements</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Property Card -->
+<div class="bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-800 group cursor-pointer hover:shadow-md transition-shadow">
+<div class="h-48 relative overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Beautiful traditional stone house in Brittany" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhyup91NYm1sN-Uch9UXDjKv2wAuZAwBdli49na2k_-Ch4h-oHifrMhky2q4aGCpzq3B3Y-hqykWc57ttfZmCOTk66jdehIonBJt_XT-OTtHK-RBemUxb5mp98y_hiG83eCRJGR7ItgMZhHxJswzDDLFayk6KlGfReS009LvR3LNnbQamYj-R3jDra-UOk4lglff20eYTgE5UW7vbK324RcmSimP9JpsKw9w2a3AZkjY-vHEy7YyuyTGH_J6weGEc9ZKTngoyYYz4r"/>
+<div class="absolute top-4 left-4">
+<span class="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase">2 diagnostics</span>
+</div>
+</div>
+<div class="p-5">
+<h4 class="font-heading text-lg font-bold mb-1">Maison Bretonne</h4>
+<p class="text-slate-500 text-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">location_on</span>
+                                29000 Quimper, France
+                            </p>
+</div>
+</div>
+<!-- Placeholder Card -->
+<div class="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center gap-4 min-h-[280px] hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer group">
+<div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-3xl">add</span>
+</div>
+<p class="font-medium text-slate-400 group-hover:text-primary transition-colors">Ajouter un nouveau bien</p>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+<!-- Diagnostics Table -->
+<section class="lg:col-span-2">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-heading text-2xl font-bold uppercase tracking-tight">Derniers diagnostics</h3>
+<a class="text-primary font-bold text-sm hover:underline" href="#">Voir tout</a>
+</div>
+<div class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden">
+<table class="w-full text-left">
+<thead class="bg-slate-50 dark:bg-slate-800/50">
+<tr>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Diagnostic</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Logement</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Date</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Statut</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<tr>
+<td class="px-6 py-4 font-bold text-sm">Audit Énergétique</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">Maison Quimper</td>
+<td class="px-6 py-4 text-sm text-slate-500">12 Oct 2023</td>
+<td class="px-6 py-4">
+<span class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-3 py-1 rounded-full text-xs font-bold uppercase">Terminé</span>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 font-bold text-sm">DPE (V2)</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">Appartement Lorient</td>
+<td class="px-6 py-4 text-sm text-slate-500">24 Oct 2023</td>
+<td class="px-6 py-4">
+<span class="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-3 py-1 rounded-full text-xs font-bold uppercase">En cours</span>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4 font-bold text-sm">Amiante &amp; Plomb</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">Gîte rural</td>
+<td class="px-6 py-4 text-sm text-slate-500">05 Nov 2023</td>
+<td class="px-6 py-4">
+<span class="bg-slate-100 dark:bg-slate-800 text-slate-500 px-3 py-1 rounded-full text-xs font-bold uppercase">Planifié</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Education Section -->
+<section>
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-heading text-2xl font-bold uppercase tracking-tight">Guides pratiques</h3>
+</div>
+<div class="space-y-4">
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex gap-4 hover:shadow-md transition-shadow cursor-pointer">
+<div class="w-20 h-20 rounded-lg overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Abstract architecture with light and shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBL9SuMrJXAG0p0I4-ND1e9GPHwYjOHptEtOACK6ih4YLSFLSM72G0VZI1aQGToPBskUHn32j9uEuNgf0S1ss8yeDzJFmttSeD3vrL3rMuBR_IFpctuNgvBBKePNeG0MEXwgrnVIcC9eFtioMD9ALPnpJdgWLIlm_opJU5Zh5YDWe1gHPDJRaVNy_HGg6LfD14et1iIJehXKL8xUAxA897vARqd0F_mT6wNmT8YpmMUoQkDKHTimMGcBoSTd5m4J8Z3d_IC8YCVkzWY"/>
+</div>
+<div>
+<h4 class="font-bold text-sm mb-1 line-clamp-2">Comprendre les nouvelles normes DPE 2024</h4>
+<p class="text-xs text-slate-500">Lecture : 5 min</p>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 flex gap-4 hover:shadow-md transition-shadow cursor-pointer">
+<div class="w-20 h-20 rounded-lg overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="Modern house renovation process" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7X0bFsEpuCY6vaFr54I2CPsxJusUHeNjaXlIJV4oxWu0HaSIdolRo9noi-SnWA3mM953oEnIxLSOyM1691jprmvHxKUoS23RV0SGU9B6hclilyZcuRhuvvEtGOZdK52z6oQGgdHuVMSOcFaH02Bt9zJc0-3pzeoaWoe8sDA7fOwCaS20e4pUbErS0pS8BCLzr5M1L-vS9RO62qJDzdekvUwY8ezEWrS8tdkJ7VJ1YoYUAXOGHNTExhZrxjH8OeW7PZ2I95eYTwRj-"/>
+</div>
+<div>
+<h4 class="font-bold text-sm mb-1 line-clamp-2">MaPrimeRénov' : Quels dossiers déposer ?</h4>
+<p class="text-xs text-slate-500">Lecture : 8 min</p>
+</div>
+</div>
+<button class="w-full py-3 text-slate-500 font-bold text-sm border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            Tous les guides
+                        </button>
+</div>
+</section>
+</div>
+</main>
+</div>
+</body></html>

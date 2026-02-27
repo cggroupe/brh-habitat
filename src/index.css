@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  /* === Couleurs principales === */
+  --color-primary: #1c7d1e;
+  --color-primary-dark: #094114;
+  --color-primary-light: #81c784;
+
+  /* === Couleurs secondaires === */
+  --color-secondary: #39af1b;
+  --color-accent: #9fb98b;
+  --color-deep: #094114;
+
+  /* === Surfaces & backgrounds === */
+  --color-background: #f6f8f6;
+  --color-surface: #ffffff;
+
+  /* === Texte === */
+  --color-text-primary: #1e293b;
+  --color-text-secondary: #475569;
+  --color-text-light: #94a3b8;
+
+  /* === Neutres === */
+  --color-neutral-light: #e8e8e8;
+  --color-neutral-dark: #3d3d3d;
+  --color-gray-light: #e8e8e8;
+  --color-gray-dark: #3d3d3d;
+  --color-neutral-gray: #e8e8e8;
+  --color-footer-dark: #3d3d3d;
+
+  /* === Couleurs semantiques === */
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+  --color-success: #10b981;
+  --color-info: #3b82f6;
+
+  /* === Typographie === */
+  --font-display: "Oswald", sans-serif;
+  --font-sans: "Raleway", sans-serif;
+  --font-accent: "Bebas Neue", sans-serif;
+  --font-heading: "Oswald", sans-serif;
+}
+
+/* Base styles INSIDE @layer base so utilities can override them */
+@layer base {
+  body {
+    font-family: "Raleway", sans-serif;
+    color: var(--color-text-primary);
+    background-color: var(--color-background);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Oswald", sans-serif;
+  }
+}

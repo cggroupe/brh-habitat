@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bretagne Rénovation Habitat - BRH</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Oswald:wght@500;700&amp;family=Raleway:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1c7d1e",
+                        "primary-dark": "#094114",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#131f13",
+                        "neutral-light": "#e8e8e8",
+                        "neutral-dark": "#3d3d3d",
+                    },
+                    fontFamily: {
+                        "sans": ["Raleway", "sans-serif"],
+                        "display": ["Oswald", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-sans antialiased overflow-x-hidden">
+<!-- Sticky Header -->
+<header class="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-slate-200 dark:bg-background-dark/95 dark:border-slate-800">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-20">
+<!-- Logo -->
+<div class="flex items-center gap-3">
+<div class="text-primary">
+<span class="material-symbols-outlined text-4xl">public</span>
+</div>
+<h1 class="font-display font-bold text-xl leading-tight tracking-tight text-slate-900 dark:text-white">
+                        BRETAGNE<br/>RÉNOVATION HABITAT
+                    </h1>
+</div>
+<!-- Navigation (Desktop) -->
+<nav class="hidden md:flex gap-8">
+<a class="text-sm font-semibold text-slate-700 hover:text-primary dark:text-slate-300 dark:hover:text-primary transition-colors" href="#">Accueil</a>
+<a class="text-sm font-semibold text-slate-700 hover:text-primary dark:text-slate-300 dark:hover:text-primary transition-colors" href="#">Nos services</a>
+<a class="text-sm font-semibold text-slate-700 hover:text-primary dark:text-slate-300 dark:hover:text-primary transition-colors" href="#">Diagnostic</a>
+<a class="text-sm font-semibold text-slate-700 hover:text-primary dark:text-slate-300 dark:hover:text-primary transition-colors" href="#">Guides</a>
+<a class="text-sm font-semibold text-slate-700 hover:text-primary dark:text-slate-300 dark:hover:text-primary transition-colors" href="#">Contact</a>
+</nav>
+<!-- CTA -->
+<div class="flex items-center gap-4">
+<button class="hidden md:flex items-center justify-center h-10 px-6 rounded-full bg-primary hover:bg-primary-dark text-white text-sm font-bold transition-colors shadow-lg shadow-primary/20">
+                        Diagnostic gratuit
+                    </button>
+<!-- Mobile Menu Button -->
+<button class="md:hidden p-2 rounded-md text-slate-700 dark:text-slate-200">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<!-- Hero Section -->
+<section class="relative pt-12 pb-20 lg:pt-24 lg:pb-28 overflow-hidden">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="grid lg:grid-cols-2 gap-12 items-center">
+<!-- Left Content -->
+<div class="flex flex-col gap-6 relative z-10">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary w-fit">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-xs font-bold uppercase tracking-wide">Expert en Bretagne</span>
+</div>
+<h1 class="font-display text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight text-slate-900 dark:text-white">
+                        Votre habitat mérite le meilleur <span class="text-primary">artisan breton</span>
+</h1>
+<p class="text-lg text-slate-600 dark:text-slate-400 font-medium max-w-lg">
+                        Rénovez votre maison avec des experts certifiés RGE. Obtenez un diagnostic énergétique complet et gratuit pour valoriser votre patrimoine.
+                    </p>
+<div class="flex flex-wrap gap-4 mt-4">
+<button class="flex items-center justify-center h-12 px-8 rounded-lg bg-primary hover:bg-primary-dark text-white text-base font-bold transition-all shadow-xl shadow-primary/30 hover:scale-105">
+                            Diagnostic gratuit
+                        </button>
+<button class="flex items-center justify-center h-12 px-8 rounded-lg border-2 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white hover:border-primary hover:text-primary text-base font-bold transition-colors bg-white dark:bg-slate-800">
+                            En savoir plus
+                        </button>
+</div>
+<div class="flex items-center gap-4 mt-6 text-sm text-slate-500 dark:text-slate-400">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-white dark:border-background-dark bg-slate-200 bg-cover bg-center" data-alt="Portrait of a smiling male customer" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAjhSnkxan77uZAObFjZb6a_GMtuXhmJoSYVz4ULpXwY9fWHH0wGde02zIhfoNDiOI_tC5d7mXsf9OSAGTCxrXiBkoJbVr_0AB3U5Zj5C9vsoWEpz9U-XlybulUMg_4tuWDd7LXIQUvhzqWl2fMSd4FE7SCK8E-XfuBVtuesLtmrFVxF6hea0J5RlLXb3dzsDWfXKG5kzwr5S7CFbjlkAQwWt3YGN31QERi_EEQ8WEk0tMQObPk3SNb3Keb7vAeCPIWffMTUyplEO5l');"></div>
+<div class="w-8 h-8 rounded-full border-2 border-white dark:border-background-dark bg-slate-200 bg-cover bg-center" data-alt="Portrait of a smiling female customer" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBazgbLp5hXd8Gm2ivh1m1Vrd1_-FoeeZGOMcyEdFW2faSsgVzrKOYywbcxa2lXAxAWuV7LELbVSLjzUJTd6I3c2FpVggN9An7TvkKj8HdLZuMo4muZNjx7gdWna4zBMShHOBcn3g5Na2T8Xgpow-gxzj2T09itfLipB7fHH2i6yjeSynscYEW_q09_QSFqCRzSuEDzO3yz6tJDEa-x4KVNn7dAxCh6SyEO1dDxzZxedI2Mvsbb7Q7WIhmgH4pI6aAYwrQcY_reijs-');"></div>
+<div class="w-8 h-8 rounded-full border-2 border-white dark:border-background-dark bg-slate-200 bg-cover bg-center" data-alt="Portrait of a happy customer" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBIABk-jIz-HliGYn_czRW8v5LPjZVR7Qo8CisUffmrCUYkk6OlcD6Cr77mOE1szRFqMJHXCS0EnnSUi-oE54ZinZHr3dXV86Ew3N7NtLNKwdmX285EaGtm0Zwf8nddAJzjXiy6s9BGhcFrXisqSWqNy7daB8ga6WX7VMg2NwR5P-qYpg_ALz4HfMwZlOklrR8PKcgKGC0n5Tjos11Wlleabc8lwLFRmPVSB31c4Z4UwRG3la_9qy91tYjaWpbH5QTnY_mwadLlAd12');"></div>
+</div>
+<p>Déjà <span class="font-bold text-slate-900 dark:text-white">2,500+</span> foyers accompagnés</p>
+</div>
+</div>
+<!-- Right Image -->
+<div class="relative lg:h-[600px] w-full rounded-2xl overflow-hidden shadow-2xl group">
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10"></div>
+<div class="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Modern renovated stone house exterior in Brittany with large windows and garden" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBnOHGix5wfyxqhsY199o_cjcl75ml9ACfpzcdKRWxwZta26n9D1UpbOxWcSui7lNyoSb51baF2Uwc8rRkmg2bOhtv0e0u0CtyjK7RB0LFRg1PsaRJXBbNHRn6OB5s9N9hpbMoonMCZViQEEpCCa1bJ-a7gJAJA8PXpaZgcNL3NIPn0JSTT-PJTxCHGxHFaERvIfsX2lXfjmhSDfToyDhjGQk6Tct6ZN2OwsqfaDnHBuO_nfj3Xke_Z6gcysO9pFcbYeoDSOiKmAxQK');">
+</div>
+<!-- Floating Badge -->
+<div class="absolute bottom-6 left-6 z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-4 py-3 rounded-xl shadow-lg border border-white/20">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-3xl">verified_user</span>
+<div>
+<p class="text-xs text-slate-500 uppercase font-bold">Garantie</p>
+<p class="text-sm font-bold text-slate-900 dark:text-white">Travaux assurés 10 ans</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Trust Bar -->
+<section class="bg-neutral-light dark:bg-slate-800 py-12">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+<!-- Stat 1 -->
+<div class="flex flex-col items-center text-center gap-2 group">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-2xl">calendar_month</span>
+</div>
+<h3 class="font-display text-3xl font-bold text-slate-900 dark:text-white">20+ ans</h3>
+<p class="text-sm font-medium text-slate-600 dark:text-slate-400">d'expérience terrain</p>
+</div>
+<!-- Stat 2 -->
+<div class="flex flex-col items-center text-center gap-2 group">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-2xl">badge</span>
+</div>
+<h3 class="font-display text-3xl font-bold text-slate-900 dark:text-white">Certifiés</h3>
+<p class="text-sm font-medium text-slate-600 dark:text-slate-400">Label RGE Qualibat</p>
+</div>
+<!-- Stat 3 -->
+<div class="flex flex-col items-center text-center gap-2 group">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-2xl">timer</span>
+</div>
+<h3 class="font-display text-3xl font-bold text-slate-900 dark:text-white">48h</h3>
+<p class="text-sm font-medium text-slate-600 dark:text-slate-400">Devis gratuit rapide</p>
+</div>
+<!-- Stat 4 -->
+<div class="flex flex-col items-center text-center gap-2 group">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-2xl">star</span>
+</div>
+<h3 class="font-display text-3xl font-bold text-slate-900 dark:text-white">4.8/5</h3>
+<p class="text-sm font-medium text-slate-600 dark:text-slate-400">Satisfaction client</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Services Section -->
+<section class="py-20 lg:py-28 bg-white dark:bg-background-dark">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+<div class="border-l-4 border-primary pl-6">
+<h2 class="font-display text-4xl font-bold text-slate-900 dark:text-white mb-2">NOS SERVICES</h2>
+<p class="text-lg text-slate-600 dark:text-slate-400 max-w-xl">
+                        Une expertise complète pour tous vos projets de rénovation énergétique et d'amélioration de l'habitat.
+                    </p>
+</div>
+<a class="hidden md:flex items-center gap-2 text-primary font-bold hover:gap-4 transition-all" href="#">
+                    Voir tous les services <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Card 1: Toiture -->
+<div class="group bg-background-light dark:bg-slate-800 rounded-xl p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 dark:border-slate-700">
+<div class="w-14 h-14 rounded-lg bg-white dark:bg-slate-700 flex items-center justify-center text-primary mb-6 shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-3xl">roofing</span>
+</div>
+<h3 class="font-display text-2xl font-bold text-slate-900 dark:text-white mb-3">Toiture</h3>
+<p class="text-slate-600 dark:text-slate-400 mb-6">Entretien, rénovation et démoussage de toitures pour protéger votre maison durablement.</p>
+<a class="inline-flex items-center text-sm font-bold text-primary group-hover:underline" href="#">En savoir plus</a>
+</div>
+<!-- Card 2: Isolation -->
+<div class="group bg-background-light dark:bg-slate-800 rounded-xl p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 dark:border-slate-700">
+<div class="w-14 h-14 rounded-lg bg-white dark:bg-slate-700 flex items-center justify-center text-primary mb-6 shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-3xl">thermostat</span>
+</div>
+<h3 class="font-display text-2xl font-bold text-slate-900 dark:text-white mb-3">Isolation</h3>
+<p class="text-slate-600 dark:text-slate-400 mb-6">Isolation des combles, murs et sols. Réduisez votre facture énergétique jusqu'à 30%.</p>
+<a class="inline-flex items-center text-sm font-bold text-primary group-hover:underline" href="#">En savoir plus</a>
+</div>
+<!-- Card 3: Électricité -->
+<div class="group bg-background-light dark:bg-slate-800 rounded-xl p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 dark:border-slate-700">
+<div class="w-14 h-14 rounded-lg bg-white dark:bg-slate-700 flex items-center justify-center text-primary mb-6 shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-3xl">bolt</span>
+</div>
+<h3 class="font-display text-2xl font-bold text-slate-900 dark:text-white mb-3">Électricité</h3>
+<p class="text-slate-600 dark:text-slate-400 mb-6">Mise aux normes, installation de tableaux électriques et domotique connectée.</p>
+<a class="inline-flex items-center text-sm font-bold text-primary group-hover:underline" href="#">En savoir plus</a>
+</div>
+<!-- Card 4: Menuiseries -->
+<div class="group bg-background-light dark:bg-slate-800 rounded-xl p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 dark:border-slate-700">
+<div class="w-14 h-14 rounded-lg bg-white dark:bg-slate-700 flex items-center justify-center text-primary mb-6 shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-3xl">window</span>
+</div>
+<h3 class="font-display text-2xl font-bold text-slate-900 dark:text-white mb-3">Menuiseries</h3>
+<p class="text-slate-600 dark:text-slate-400 mb-6">Installation de fenêtres double vitrage, portes d'entrée et volets roulants sur mesure.</p>
+<a class="inline-flex items-center text-sm font-bold text-primary group-hover:underline" href="#">En savoir plus</a>
+</div>
+<!-- Card 5: Ventilation -->
+<div class="group bg-background-light dark:bg-slate-800 rounded-xl p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 dark:border-slate-700">
+<div class="w-14 h-14 rounded-lg bg-white dark:bg-slate-700 flex items-center justify-center text-primary mb-6 shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-3xl">air</span>
+</div>
+<h3 class="font-display text-2xl font-bold text-slate-900 dark:text-white mb-3">Ventilation</h3>
+<p class="text-slate-600 dark:text-slate-400 mb-6">Installation de VMC simple et double flux pour un air sain dans toute la maison.</p>
+<a class="inline-flex items-center text-sm font-bold text-primary group-hover:underline" href="#">En savoir plus</a>
+</div>
+<!-- Card 6: Traitement de l'eau -->
+<div class="group bg-background-light dark:bg-slate-800 rounded-xl p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 dark:border-slate-700">
+<div class="w-14 h-14 rounded-lg bg-white dark:bg-slate-700 flex items-center justify-center text-primary mb-6 shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined text-3xl">water_drop</span>
+</div>
+<h3 class="font-display text-2xl font-bold text-slate-900 dark:text-white mb-3">Traitement de l'eau</h3>
+<p class="text-slate-600 dark:text-slate-400 mb-6">Adoucisseurs et purificateurs d'eau pour protéger vos canalisations du calcaire.</p>
+<a class="inline-flex items-center text-sm font-bold text-primary group-hover:underline" href="#">En savoir plus</a>
+</div>
+</div>
+<div class="mt-8 text-center md:hidden">
+<a class="inline-flex items-center gap-2 text-primary font-bold hover:gap-4 transition-all" href="#">
+                    Voir tous les services <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+</div>
+</div>
+</section>
+<!-- Diagnostic CTA Section -->
+<section class="bg-primary-dark py-16 lg:py-24 relative overflow-hidden">
+<!-- Abstract Background Pattern -->
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 40px 40px;"></div>
+<div class="absolute right-0 top-0 w-1/3 h-full bg-gradient-to-l from-white/5 to-transparent pointer-events-none"></div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+<div class="flex flex-col lg:flex-row items-center justify-between gap-12">
+<div class="flex-1 text-center lg:text-left">
+<div class="inline-block px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-white text-xs font-bold uppercase tracking-wider mb-6">
+                        Analyse intelligente
+                    </div>
+<h2 class="font-display text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+                        Identifiez les problèmes de votre logement en 5 minutes
+                    </h2>
+<p class="text-lg text-slate-300 mb-8 max-w-2xl mx-auto lg:mx-0">
+                        Notre outil de diagnostic guidé par IA analyse les spécificités de votre maison bretonne pour vous proposer les solutions de rénovation les plus rentables.
+                    </p>
+<ul class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start text-white/80 text-sm font-medium mb-8">
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-xl bg-white rounded-full p-0.5">check</span> Sans engagement</li>
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-xl bg-white rounded-full p-0.5">check</span> Résultat immédiat</li>
+<li class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-xl bg-white rounded-full p-0.5">check</span> 100% Gratuit</li>
+</ul>
+</div>
+<div class="flex-shrink-0">
+<button class="group relative inline-flex items-center justify-center px-8 py-5 text-lg font-bold text-primary-dark transition-all duration-200 bg-white font-pj rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white hover:bg-neutral-light hover:scale-105">
+<span class="mr-3">Démarrer mon diagnostic</span>
+<span class="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
+<div class="absolute -inset-3 rounded-2xl bg-white/20 blur-lg -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-neutral-dark text-white pt-16 pb-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+<!-- Brand Info -->
+<div class="flex flex-col gap-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-4xl">public</span>
+<h2 class="font-display font-bold text-lg leading-tight">BRETAGNE<br/>RÉNOVATION HABITAT</h2>
+</div>
+<p class="text-gray-400 text-sm leading-relaxed">
+                        Spécialiste de la rénovation énergétique en Bretagne. Nous accompagnons les particuliers dans l'amélioration de leur habitat pour plus de confort et d'économies.
+                    </p>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-primary transition-colors text-white" href="#">
+<span class="material-symbols-outlined text-xl">thumb_up</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-primary transition-colors text-white" href="#">
+<span class="material-symbols-outlined text-xl">photo_camera</span>
+</a>
+</div>
+</div>
+<!-- Contact Info -->
+<div class="flex flex-col gap-4">
+<h3 class="font-display font-bold text-xl mb-2">Nous contacter</h3>
+<div class="flex items-start gap-3 text-gray-400 text-sm">
+<span class="material-symbols-outlined text-primary mt-0.5">location_on</span>
+<p>12 Rue de la Rénovation,<br/>35000 Rennes, France</p>
+</div>
+<div class="flex items-center gap-3 text-gray-400 text-sm">
+<span class="material-symbols-outlined text-primary">call</span>
+<p>02 99 00 00 00</p>
+</div>
+<div class="flex items-center gap-3 text-gray-400 text-sm">
+<span class="material-symbols-outlined text-primary">mail</span>
+<p>contact@brh-renovation.fr</p>
+</div>
+</div>
+<!-- Quick Links -->
+<div class="flex flex-col gap-4">
+<h3 class="font-display font-bold text-xl mb-2">Navigation</h3>
+<ul class="flex flex-col gap-3 text-sm text-gray-400">
+<li><a class="hover:text-primary transition-colors" href="#">Accueil</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Nos services</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Réalisations</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Diagnostic gratuit</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Blog &amp; Conseils</a></li>
+</ul>
+</div>
+<!-- Legal -->
+<div class="flex flex-col gap-4">
+<h3 class="font-display font-bold text-xl mb-2">Informations</h3>
+<ul class="flex flex-col gap-3 text-sm text-gray-400">
+<li><a class="hover:text-primary transition-colors" href="#">Mentions légales</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Politique de confidentialité</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">CGV</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Recrutement</a></li>
+</ul>
+</div>
+</div>
+<div class="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
+<p>© 2023 Bretagne Rénovation Habitat. Tous droits réservés.</p>
+<div class="flex items-center gap-2">
+<span>Fait avec</span>
+<span class="material-symbols-outlined text-red-500 text-sm">favorite</span>
+<span>en Bretagne</span>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

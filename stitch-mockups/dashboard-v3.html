@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BRH Habitat - Tableau de bord</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Oswald:wght@400;500;600;700&amp;family=Raleway:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1c7d1e",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#131f13",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "oswald": ["Oswald", "sans-serif"],
+                        "raleway": ["Raleway", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-oswald { font-family: 'Oswald', sans-serif; }
+        .font-raleway { font-family: 'Raleway', sans-serif; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="flex h-screen overflow-hidden">
+<!-- Fixed Sidebar -->
+<aside class="w-[240px] bg-white dark:bg-slate-900 border-r border-primary/10 flex flex-col h-full shrink-0">
+<div class="p-6">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-2xl">public</span>
+</div>
+<div>
+<h1 class="font-oswald text-xl font-bold tracking-tight text-primary uppercase">BRH Habitat</h1>
+<p class="text-[10px] uppercase tracking-widest text-primary/60 font-bold -mt-1">Bretagne Rénovation</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-3 mt-4 space-y-1">
+<a class="group relative flex items-center gap-3 px-3 py-2.5 bg-primary/15 text-primary rounded-lg font-oswald text-sm uppercase tracking-wide transition-colors" href="#">
+<div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full"></div>
+<span class="material-symbols-outlined text-xl">dashboard</span>
+                    Tableau de bord
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-oswald text-sm uppercase tracking-wide transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">home</span>
+                    Mes logements
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-oswald text-sm uppercase tracking-wide transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">stethoscope</span>
+                    Mes diagnostics
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-oswald text-sm uppercase tracking-wide transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">folder_open</span>
+                    Mes dossiers
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-oswald text-sm uppercase tracking-wide transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">calendar_month</span>
+                    Rendez-vous
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-oswald text-sm uppercase tracking-wide transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">menu_book</span>
+                    Guides pratiques
+                </a>
+</nav>
+<div class="p-4 border-t border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3 p-2">
+<img alt="Profile" class="w-10 h-10 rounded-full border border-primary/20 bg-slate-100" data-alt="Avatar photo of Philippe G." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgoqSAB4QW4_t3g3zNGta9inB0BRoRio-ahHqhdMIJ34JzHZUGlTYlP44ZqF-Wz3khb3o0agtF6bcf_4Y5KZxWPTk1cBYT0-0A8ZwpWGDe6oLuGFvERWIoKluwAqmm3i9-83W1n7GpX6Ss2siu5pyx4gY4_huvDJhHU2WZvZdKAH1lkUEhr7L5_d4O4iVPltBuIZp1kGgN5nH-s76c-ewFqY4F8IQZCwCZBOMkkGav07UUeE6svosaV0uQdwVf00OE0ISJ0BeS8V-G"/>
+<div class="overflow-hidden">
+<p class="font-medium text-sm truncate">Philippe G.</p>
+<a class="text-xs text-slate-400 hover:text-primary transition-colors flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-sm">logout</span> Déconnexion
+                        </a>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col overflow-y-auto">
+<!-- Header -->
+<header class="h-16 shrink-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-10 border-b border-slate-100 dark:border-slate-800">
+<h2 class="font-oswald text-2xl font-bold text-[#3d3d3d] dark:text-slate-100">Bonjour Philippe</h2>
+<div class="flex items-center gap-4">
+<button class="relative w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-white dark:border-slate-900"></span>
+</button>
+<div class="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 mx-2"></div>
+<div class="text-right hidden sm:block">
+<p class="text-xs text-slate-400 font-medium">Bretagne, FR</p>
+<p class="text-xs font-bold text-primary">Utilisateur Pro</p>
+</div>
+</div>
+</header>
+<div class="p-8 space-y-8">
+<!-- Quick Actions -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-primary p-6 rounded-xl shadow-[0_4px_12px_rgba(28,125,30,0.15)] text-white flex flex-col justify-between group cursor-pointer">
+<span class="material-symbols-outlined text-4xl opacity-80 mb-4">stethoscope</span>
+<h3 class="font-oswald text-lg uppercase font-bold">Nouveau diagnostic</h3>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col justify-between group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+<span class="material-symbols-outlined text-4xl text-primary mb-4">add_home</span>
+<h3 class="font-oswald text-lg uppercase font-bold text-primary">Ajouter un logement</h3>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-primary shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col justify-between group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+<span class="material-symbols-outlined text-4xl text-primary mb-4">event_available</span>
+<h3 class="font-oswald text-lg uppercase font-bold text-primary">Prendre rendez-vous</h3>
+</div>
+</section>
+<!-- My Homes Section -->
+<section>
+<div class="flex items-center gap-3 mb-6">
+<div class="w-1.5 h-8 bg-primary rounded-full"></div>
+<h2 class="font-oswald text-xl uppercase font-bold tracking-tight text-slate-800 dark:text-slate-100">Mes logements</h2>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- House Card -->
+<div class="bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col sm:flex-row h-full border border-slate-100 dark:border-slate-800">
+<div class="w-full sm:w-48 h-48 sm:h-auto bg-slate-200 relative overflow-hidden">
+<img alt="Maison" class="w-full h-full object-cover" data-alt="Traditional neo-breton house with white walls" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEuJK9bZsLIekqNo84-e0qdzRM613dkqstzenHXKMxE-V_u9Cr7e0HNSSQUgfyVU_5HMaamFKrLk22EYf2t_JFeJE6JpzKlXnohhGQoWSNwKM0O_ULKmmIqH9LOsrgQXoZ-_40q5Jg0yBzvM560nywSgt9kAHi-p8t8MyKQDEqHsY5rK-6NizXaKA-3U3qjb9PjmCpo2m7N76LI5ymOPGaF63MXhmhbxyDCLl3dPRZipsu0B0Vq8OELUWWqdC5M5m-vUGxuitJAVhT"/>
+<div class="absolute top-3 left-3 px-3 py-1 bg-white/90 backdrop-blur rounded-full text-[10px] font-bold uppercase tracking-wider text-primary shadow-sm">
+                                    En cours
+                                </div>
+</div>
+<div class="p-6 flex-1 flex flex-col justify-between">
+<div>
+<h4 class="font-oswald text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight">12 rue des Ajoncs, Guipavas</h4>
+<p class="text-sm text-slate-500 font-raleway mt-1">Maison néo-bretonne</p>
+<div class="mt-4 flex items-center gap-2">
+<span class="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase">2 diagnostics</span>
+<span class="text-[10px] font-medium text-slate-400">75% complété</span>
+</div>
+<div class="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary h-full w-3/4"></div>
+</div>
+</div>
+<button class="mt-4 text-primary font-bold text-xs uppercase flex items-center gap-2 hover:gap-3 transition-all">
+                                    Voir le détail <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Empty State House Card -->
+<div class="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl flex flex-col items-center justify-center p-8 bg-slate-50/50 dark:bg-slate-900/30 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer min-h-[160px]">
+<div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 mb-3">
+<span class="material-symbols-outlined text-2xl">add</span>
+</div>
+<p class="font-oswald text-slate-400 uppercase text-sm font-bold">Ajouter une nouvelle propriété</p>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+<!-- Recent Diagnostics -->
+<section class="xl:col-span-2">
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-oswald text-xl uppercase font-bold tracking-tight text-slate-800 dark:text-slate-100">Derniers diagnostics</h2>
+<button class="text-xs font-bold text-slate-400 uppercase hover:text-primary transition-colors">Tout voir</button>
+</div>
+<div class="bg-white dark:bg-slate-900 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden border border-slate-100 dark:border-slate-800">
+<table class="w-full text-left">
+<thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+<tr>
+<th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Type de diagnostic</th>
+<th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Date</th>
+<th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider">Statut</th>
+<th class="px-6 py-4 text-[10px] uppercase font-bold text-slate-400 tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-lg">humidity_low</span>
+</div>
+<span class="font-medium text-sm">Diagnostic humidité</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">28 jan 2026</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700 uppercase">Terminé</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined">visibility</span></button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-lg">thermostat</span>
+</div>
+<span class="font-medium text-sm">Diagnostic isolation</span>
+</div>
+</td>
+<td class="px-6 py-4 text-sm text-slate-500">15 fév 2026</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 uppercase">En cours</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined">edit</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Practical Guides -->
+<section>
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-oswald text-xl uppercase font-bold tracking-tight text-slate-800 dark:text-slate-100">Guides pratiques</h2>
+</div>
+<div class="space-y-4">
+<!-- Guide Card 1 -->
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-100 dark:border-slate-800 shadow-[0_4px_12px_rgba(0,0,0,0.05)] group cursor-pointer hover:border-primary/30 transition-all">
+<span class="inline-block px-2 py-0.5 bg-primary text-white text-[10px] font-bold uppercase rounded-md mb-3">Énergie</span>
+<h4 class="font-oswald text-base font-bold text-slate-800 dark:text-slate-100 leading-tight group-hover:text-primary transition-colors">Optimiser son DPE en 5 étapes</h4>
+<p class="text-xs text-slate-500 font-raleway mt-2 line-clamp-2">Découvrez comment améliorer l'efficacité énergétique de votre maison bretonne avec des gestes simples et des travaux ciblés.</p>
+</div>
+<!-- Guide Card 2 -->
+<div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-100 dark:border-slate-800 shadow-[0_4px_12px_rgba(0,0,0,0.05)] group cursor-pointer hover:border-primary/30 transition-all">
+<span class="inline-block px-2 py-0.5 bg-primary/20 text-primary text-[10px] font-bold uppercase rounded-md mb-3">Conseils</span>
+<h4 class="font-oswald text-base font-bold text-slate-800 dark:text-slate-100 leading-tight group-hover:text-primary transition-colors">Aides MaPrimeRénov' 2026</h4>
+<p class="text-xs text-slate-500 font-raleway mt-2 line-clamp-2">Le guide complet pour comprendre les nouveaux barèmes et les conditions d'éligibilité pour vos projets de rénovation.</p>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Footer Spacer -->
+<footer class="mt-auto p-8 text-center">
+<p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">© 2026 BRH Habitat - Plateforme de gestion de rénovation</p>
+</footer>
+</main>
+</div>
+</body></html>

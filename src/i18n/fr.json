@@ -1,0 +1,72 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "diagnostic": "Diagnostic",
+    "articles": "Articles",
+    "contact": "Contact",
+    "login": "Connexion",
+    "register": "Inscription",
+    "dashboard": "Tableau de bord",
+    "myHomes": "Mes logements",
+    "myCases": "Mes dossiers",
+    "myAppointments": "Mes rendez-vous",
+    "profile": "Mon profil",
+    "admin": "Administration",
+    "logout": "Se déconnecter"
+  },
+  "hero": {
+    "title": "Diagnostiquez et rénovez votre logement",
+    "subtitle": "BRH Habitat vous accompagne dans tous vos projets de rénovation. Obtenez un diagnostic gratuit et des conseils personnalisés.",
+    "cta": "Lancer mon diagnostic gratuit"
+  },
+  "diagnostic": {
+    "title": "Diagnostic gratuit",
+    "step1Title": "Quels problèmes rencontrez-vous ?",
+    "step2Title": "Votre logement",
+    "step3Title": "Les symptômes observés",
+    "step4Title": "Photos (optionnel)",
+    "step5Title": "Vos coordonnées",
+    "next": "Suivant",
+    "prev": "Précédent",
+    "submit": "Envoyer mon diagnostic",
+    "types": {
+      "humidite": "Humidité",
+      "isolation": "Isolation",
+      "ventilation": "Ventilation",
+      "menuiseries": "Menuiseries",
+      "electricite": "Électricité",
+      "toiture": "Toiture",
+      "plomberie": "Plomberie"
+    }
+  },
+  "auth": {
+    "login": "Se connecter",
+    "register": "Créer un compte",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "fullName": "Nom complet",
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Pas encore de compte ?",
+    "hasAccount": "Déjà un compte ?"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome": "Bienvenue",
+    "recentDiagnostics": "Diagnostics récents",
+    "myHomes": "Mes logements",
+    "myCases": "Mes dossiers",
+    "upcomingAppointments": "Prochains rendez-vous"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "back": "Retour",
+    "viewAll": "Voir tout",
+    "noResults": "Aucun résultat"
+  }
+}

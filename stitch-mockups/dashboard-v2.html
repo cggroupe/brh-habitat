@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BRH Habitat - Tableau de bord</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&amp;family=Raleway:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1c7d1e",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#131f13",
+                    },
+                    fontFamily: {
+                        "display": ["Oswald", "sans-serif"],
+                        "body": ["Raleway", "sans-serif"],
+                        "sans": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        "subtle": "0 2px 8px rgba(0,0,0,0.06)",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Raleway', sans-serif; }
+        h1, h2, h3, h4 { font-family: 'Oswald', sans-serif; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex">
+<!-- LEFT SIDEBAR -->
+<aside class="w-[240px] fixed inset-y-0 left-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-50">
+<div class="p-6 flex items-center gap-3">
+<div class="bg-primary rounded-lg p-1.5">
+<span class="material-symbols-outlined text-white text-2xl">home_work</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-primary uppercase">BRH Habitat</h1>
+</div>
+<nav class="flex-1 px-4 space-y-1 mt-4">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-semibold transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm">Tableau de bord</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-sm font-medium">Mes logements</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">stethoscope</span>
+<span class="text-sm font-medium">Mes diagnostics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="text-sm font-medium">Mes dossiers</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="text-sm font-medium">Rendez-vous</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="text-sm font-medium">Guides pratiques</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-100 dark:border-slate-800 space-y-1">
+<div class="flex items-center gap-3 px-3 py-2">
+<div class="size-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold overflow-hidden">
+<img alt="Philippe G." class="w-full h-full object-cover" data-alt="Avatar icon for Philippe G." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJc1IdLGhUeUzInOCq1UHIHDGaVzdsGJ9EMlRrgy7bsCTV23rws_b8VuuxpBbTHypoA6vNHSnPJq55_eGjinzyNr_wiKxgRwnPS-vOBKNaEMqR69S9BOr4qDA8NmuAaMUIQImlxfdAEDL6tZqF8cJyC4uXyiOz1jaG_0XRjuSmOp8A-8lub0DM8Pp7XF0qSzquIeY-4GnB4FE6w4w7LqNNj_D_Umnz5VDWOieHHEr5QK4y1jlDR-2_-9TNIpjgmWkRUl5McehQ_GKB"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-semibold truncate">Philippe G.</p>
+<p class="text-xs text-slate-500 truncate">Propriétaire</p>
+</div>
+</div>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span class="text-sm font-medium">Déconnexion</span>
+</a>
+</div>
+</aside>
+<!-- MAIN CONTENT -->
+<main class="flex-1 ml-[240px]">
+<!-- TOP BAR -->
+<header class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 flex items-center justify-between sticky top-0 z-40">
+<h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Bonjour Philippe</h2>
+<div class="flex items-center gap-4">
+<button class="relative p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2.5 size-2 bg-primary rounded-full ring-2 ring-white dark:ring-slate-900"></span>
+</button>
+<div class="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
+<button class="material-symbols-outlined p-2 text-slate-600 dark:text-slate-300">settings</button>
+</div>
+</header>
+<div class="p-8 max-w-6xl mx-auto space-y-10">
+<!-- QUICK ACTIONS -->
+<section>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<button class="flex flex-col items-center justify-center gap-3 p-8 bg-primary rounded-xl shadow-subtle hover:scale-[1.02] transition-transform text-white group">
+<span class="material-symbols-outlined text-4xl">stethoscope</span>
+<span class="font-display font-bold text-lg uppercase tracking-wider">Nouveau diagnostic</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-3 p-8 bg-white dark:bg-slate-900 border-2 border-dashed border-primary/30 rounded-xl shadow-subtle hover:border-primary transition-all group">
+<span class="material-symbols-outlined text-4xl text-primary">add_home</span>
+<span class="font-display font-bold text-lg uppercase tracking-wider text-primary">Ajouter un logement</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-3 p-8 bg-white dark:bg-slate-900 border-2 border-dashed border-primary/30 rounded-xl shadow-subtle hover:border-primary transition-all group">
+<span class="material-symbols-outlined text-4xl text-primary">calendar_add_on</span>
+<span class="font-display font-bold text-lg uppercase tracking-wider text-primary">Prendre rendez-vous</span>
+</button>
+</div>
+</section>
+<!-- MY HOMES -->
+<section>
+<div class="flex items-center gap-3 mb-6">
+<div class="w-1.5 h-8 bg-primary rounded-full"></div>
+<h3 class="text-2xl font-bold uppercase tracking-tight">Mes logements</h3>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<!-- Property Card -->
+<div class="bg-white dark:bg-slate-900 rounded-xl shadow-subtle overflow-hidden flex border border-slate-100 dark:border-slate-800">
+<div class="w-1/3 relative h-full min-h-[180px]">
+<img class="w-full h-full object-cover" data-alt="Traditional neo-Breton house facade" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAa8xK0qI0xfih_8n5PL07UfHuxOiI9nOb57r-cgs1sFDaabEyD8vZ3RwXSkUGqrqDteE35MQwrxjJrut8QlDMMpp4dWv8-PUKjN8v2bQ6cy59GsqyvP2efAl_EFQURB6MgXOsqyWyIQFyJMa4e9mu2AsKJDkdQDidu2C_7_tkNrqyuXROD406Pv-3BTEgXNVmnw2m0_MUf_tng2t4pCJdHY13upz2te4Uwp0GQ37dWBK-TiioipTtrS8HJGhTAevIGBdPfIrLERtr"/>
+</div>
+<div class="flex-1 p-5 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-start mb-1">
+<h4 class="text-xl font-bold text-slate-900 dark:text-white">12 rue des Ajoncs</h4>
+<span class="bg-primary/10 text-primary text-[11px] font-bold px-2 py-1 rounded uppercase">2 diagnostics</span>
+</div>
+<p class="text-slate-500 text-sm mb-4">Maison néo-bretonne • 120m²</p>
+</div>
+<div>
+<div class="flex justify-between text-xs font-bold mb-1.5 uppercase text-slate-400">
+<span>État de rénovation</span>
+<span>65%</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[65%]" style="width: 65%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty Placeholder -->
+<div class="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl flex flex-col items-center justify-center p-6 text-slate-400 group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-4xl mb-2 group-hover:text-primary">add_circle</span>
+<span class="font-medium">Ajouter un autre bien</span>
+</div>
+</div>
+</section>
+<!-- RECENT DIAGNOSTICS & EDUCATION -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- DIAGNOSTICS TABLE -->
+<div class="lg:col-span-2 space-y-4">
+<h3 class="text-xl font-bold uppercase tracking-tight">Derniers diagnostics</h3>
+<div class="bg-white dark:bg-slate-900 rounded-xl shadow-subtle border border-slate-100 dark:border-slate-800 overflow-hidden">
+<table class="w-full text-left">
+<thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+<tr>
+<th class="px-6 py-4 text-xs font-bold uppercase text-slate-500 tracking-wider">Diagnostic</th>
+<th class="px-6 py-4 text-xs font-bold uppercase text-slate-500 tracking-wider">Date</th>
+<th class="px-6 py-4 text-xs font-bold uppercase text-slate-500 tracking-wider">Statut</th>
+<th class="px-6 py-4"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<p class="font-semibold text-slate-900 dark:text-white">Diagnostic humidité</p>
+<p class="text-xs text-slate-500">12 rue des Ajoncs</p>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">12 Oct 2023</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 uppercase">
+                                            Terminé
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-slate-400 hover:text-primary">download</button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<p class="font-semibold text-slate-900 dark:text-white">Diagnostic isolation</p>
+<p class="text-xs text-slate-500">12 rue des Ajoncs</p>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">24 Oct 2023</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 uppercase">
+                                            En cours
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-slate-400 hover:text-primary">visibility</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- PRACTICAL GUIDES -->
+<div class="space-y-4">
+<h3 class="text-xl font-bold uppercase tracking-tight">Guides pratiques</h3>
+<div class="space-y-4">
+<div class="group cursor-pointer bg-white dark:bg-slate-900 rounded-xl shadow-subtle border border-slate-100 dark:border-slate-800 overflow-hidden hover:border-primary transition-all">
+<div class="h-32 bg-slate-200 relative overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Insulation materials texture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-zs5-IsTUOPtvTpvfxXQcYIAYVR8-lyI8P5ej_Upf0ArCxSIVPf406rTCUPjSVMIJ6qqRi6gV4DPS2ymdayML9kTQevqco35FLFQqg8TnFrVTlhyz6BLba2GUBuzG6vi5kc3Wlp_3e_bcCSDgq5PFPvIqr3F3kzjEXty3qZIEiuSsIf_4_JsNXaGw8TYGRZ1X5H4EzwgRUxCbidcLgnkrdZEctdTUPF8iD9XRfxgYtfUh1_1FAsEDmxB09gttNw8QSGgCvmL0aU_k"/>
+<span class="absolute top-2 left-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded uppercase">Isolation</span>
+</div>
+<div class="p-4">
+<h4 class="font-bold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors">Isoler ses combles en Bretagne</h4>
+<p class="text-sm text-slate-500 line-clamp-2">Découvrez les meilleures techniques pour protéger votre maison de l'humidité bretonne...</p>
+</div>
+</div>
+<div class="group cursor-pointer bg-white dark:bg-slate-900 rounded-xl shadow-subtle border border-slate-100 dark:border-slate-800 overflow-hidden hover:border-primary transition-all">
+<div class="h-32 bg-slate-200 relative overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Legal documents and keys" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAe3dBSSTXQ0pquUdfuGE9lGE8zPDx5EbyJo4LuPhX93nExvStqcRKGhAlnVxLbMN9Div1iHS6eEgejNPPFif_odIkanXy6PJ2WT4dBmbYLPpHmZAlBuoLO3OYnuDXO14QzY3lCq0IhQg0IDeI21hgn6ng9m3jiktQ4P1-rctkw6Ba8UA3ViAkR3ZCmdqh2ob1gA4dXgAPByRmw6NMZM0eJet_3oitYgluKzkBLQLIC-KrYFj1s05FacrnOOMYFZmIJGPx0IPZWFayA"/>
+<span class="absolute top-2 left-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded uppercase">Aides</span>
+</div>
+<div class="p-4">
+<h4 class="font-bold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors">MaPrimeRénov' 2024</h4>
+<p class="text-sm text-slate-500 line-clamp-2">Tout ce qu'il faut savoir sur les nouvelles subventions de l'État pour vos travaux...</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

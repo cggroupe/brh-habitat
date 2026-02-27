@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BRH Diagnostic Wizard - Étape 2</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Oswald:wght@700&amp;family=Raleway:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1c7d1e",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#131f13",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "oswald": ["Oswald", "sans-serif"],
+                        "raleway": ["Raleway", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased">
+<div class="flex h-screen overflow-hidden">
+<!-- Side Navigation -->
+<aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark flex flex-col shrink-0">
+<div class="p-6 flex flex-col gap-1">
+<h1 class="text-primary text-xl font-black font-oswald tracking-tight">BRH HABITAT</h1>
+<p class="text-primary/70 text-xs font-bold uppercase tracking-widest">Expert Rénovation</p>
+</div>
+<nav class="flex-1 px-4 space-y-2 mt-4">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-primary/10 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">dashboard</span>
+<span class="text-sm font-medium">Tableau de bord</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-primary/10 text-primary rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px] fill-1">stethoscope</span>
+<span class="text-sm font-bold">Mes diagnostics</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-primary/10 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">home_work</span>
+<span class="text-sm font-medium">Projets</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-primary/10 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">settings</span>
+<span class="text-sm font-medium">Paramètres</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 p-2 bg-slate-50 dark:bg-slate-900/50 rounded-xl">
+<div class="size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">JD</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold">Jean Dupont</span>
+<span class="text-[10px] text-slate-500">Compte Pro</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col overflow-hidden">
+<!-- Header / Breadcrumbs -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark flex items-center justify-between px-8 shrink-0">
+<nav class="flex items-center gap-2 text-sm">
+<a class="text-primary hover:underline font-medium" href="#">Diagnostics</a>
+<span class="material-symbols-outlined text-sm text-slate-400">chevron_right</span>
+<a class="text-primary hover:underline font-medium" href="#">Nouveau diagnostic</a>
+<span class="material-symbols-outlined text-sm text-slate-400">chevron_right</span>
+<span class="text-slate-500 dark:text-slate-400">Humidité</span>
+</nav>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content Wrapper -->
+<div class="flex-1 overflow-y-auto bg-slate-50/50 dark:bg-background-dark/50">
+<div class="max-w-[1200px] mx-auto p-8 flex gap-8">
+<!-- Left Section: Wizard -->
+<div class="flex-1 flex flex-col gap-8">
+<!-- Horizontal Stepper -->
+<div class="flex items-center justify-between w-full max-w-2xl mx-auto mb-4">
+<div class="flex flex-col items-center gap-2 flex-1 relative">
+<div class="size-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-bold z-10">
+<span class="material-symbols-outlined text-lg">check</span>
+</div>
+<span class="text-xs font-bold text-primary">Type</span>
+<div class="absolute top-4 left-1/2 w-full h-[2px] bg-primary"></div>
+</div>
+<div class="flex flex-col items-center gap-2 flex-1 relative">
+<div class="size-10 rounded-full border-4 border-primary/20 bg-primary text-white flex items-center justify-center text-sm font-bold z-10 shadow-lg shadow-primary/20">2</div>
+<span class="text-xs font-black text-primary uppercase">Localisation</span>
+<div class="absolute top-4 left-1/2 w-full h-[2px] bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<div class="flex flex-col items-center gap-2 flex-1 relative">
+<div class="size-8 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 flex items-center justify-center text-sm font-bold z-10">3</div>
+<span class="text-xs font-medium text-slate-400">Symptômes</span>
+<div class="absolute top-4 left-1/2 w-full h-[2px] bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<div class="flex flex-col items-center gap-2 flex-1 relative">
+<div class="size-8 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 flex items-center justify-center text-sm font-bold z-10">4</div>
+<span class="text-xs font-medium text-slate-400">Analyse</span>
+<div class="absolute top-4 left-1/2 w-full h-[2px] bg-slate-200 dark:bg-slate-800"></div>
+</div>
+<div class="flex flex-col items-center gap-2 flex-1">
+<div class="size-8 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 flex items-center justify-center text-sm font-bold z-10">5</div>
+<span class="text-xs font-medium text-slate-400">Rapport</span>
+</div>
+</div>
+<!-- Central Question Card -->
+<div class="max-w-[700px] w-full mx-auto bg-white dark:bg-slate-900 rounded-xl p-10 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800">
+<div class="mb-10 text-center">
+<h2 class="text-3xl font-oswald text-slate-900 dark:text-white mb-3">Où se situe le problème d'humidité ?</h2>
+<p class="text-lg font-raleway text-slate-500 dark:text-slate-400">Sélectionnez les zones concernées dans votre logement</p>
+</div>
+<!-- Option Grid -->
+<div class="grid grid-cols-3 gap-4">
+<!-- Selected Card -->
+<button class="flex flex-col items-center gap-4 p-6 rounded-xl border-2 border-primary bg-primary/[0.05] group transition-all">
+<div class="size-14 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">door_front</span>
+</div>
+<span class="text-sm font-bold text-slate-900 dark:text-white">Murs intérieurs</span>
+</button>
+<button class="flex flex-col items-center gap-4 p-6 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/50 hover:border-primary/50 transition-all group">
+<div class="size-14 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-3xl">view_agenda</span>
+</div>
+<span class="text-sm font-semibold text-slate-600 dark:text-slate-400">Plafond</span>
+</button>
+<button class="flex flex-col items-center gap-4 p-6 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/50 hover:border-primary/50 transition-all group">
+<div class="size-14 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-3xl">layers</span>
+</div>
+<span class="text-sm font-semibold text-slate-600 dark:text-slate-400">Sols</span>
+</button>
+<!-- Selected Card -->
+<button class="flex flex-col items-center gap-4 p-6 rounded-xl border-2 border-primary bg-primary/[0.05] group transition-all">
+<div class="size-14 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">window</span>
+</div>
+<span class="text-sm font-bold text-slate-900 dark:text-white">Fenêtres</span>
+</button>
+<button class="flex flex-col items-center gap-4 p-6 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/50 hover:border-primary/50 transition-all group">
+<div class="size-14 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-3xl">home</span>
+</div>
+<span class="text-sm font-semibold text-slate-600 dark:text-slate-400">Sous-sol / Cave</span>
+</button>
+<button class="flex flex-col items-center gap-4 p-6 rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800/50 hover:border-primary/50 transition-all group">
+<div class="size-14 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-3xl">bathtub</span>
+</div>
+<span class="text-sm font-semibold text-slate-600 dark:text-slate-400">Salle de bain</span>
+</button>
+</div>
+<!-- Form Navigation Footer -->
+<div class="mt-12 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-8">
+<button class="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-lg">arrow_back</span>
+                                    Retour
+                                </button>
+<span class="text-sm font-bold text-slate-400">Étape 2 sur 5</span>
+<button class="flex items-center gap-2 px-8 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-primary/20">
+                                    Continuer
+                                    <span class="material-symbols-outlined text-lg">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Side Panel -->
+<aside class="w-[280px] shrink-0 space-y-6">
+<div class="bg-primary/5 border border-primary/10 rounded-xl p-6">
+<div class="flex items-center gap-2 text-primary mb-4">
+<span class="material-symbols-outlined fill-1">lightbulb</span>
+<span class="text-sm font-black uppercase tracking-wider">Conseil Expert</span>
+</div>
+<p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
+                                L'humidité sur les murs peut indiquer des remontées capillaires ou un défaut d'isolation. Observez si des taches apparaissent plutôt en bas du mur ou près des fenêtres.
+                            </p>
+</div>
+<div class="p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
+<h4 class="text-sm font-bold text-slate-900 dark:text-white mb-4">Besoin d'aide ?</h4>
+<a class="flex items-center gap-3 text-primary hover:underline transition-all" href="tel:+33123456789">
+<div class="size-8 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">call</span>
+</div>
+<span class="text-sm font-bold">01 23 45 67 89</span>
+</a>
+<p class="text-[11px] text-slate-400 mt-4 leading-snug">Nos experts sont disponibles du lundi au vendredi, de 9h à 18h.</p>
+</div>
+<div class="rounded-xl overflow-hidden relative group">
+<img alt="Habitat sain" class="w-full h-40 object-cover" data-alt="Intérieur moderne et sain après rénovation" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkC1QIGM3CjLbCaNKjZ0gFt9qWG1vxJFvQKflqVt2HRNdWtlFXpiolI5Uu7VuQ6qq08chOmDRKqmzeRKfykAFwa7upqJFkxYy3HAl27Y8c4NVCZ82o7y0gMez0QmqWrtbOCps8Ir5M6HQUI8dM3qFI1mrV6NajfMEYm1GZuApKQ-3GJDtTAcG0IlI1ScJ4tl_kGNZL_J1srLWfZASUk2kKcQQYbvnY1gvljwnLJJfFc9GawFlTWLFYwACiA4KmqTLcBcHY90TT1V4l"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-4">
+<p class="text-white text-xs font-bold italic">"Un habitat sain commence par un bon diagnostic."</p>
+</div>
+</div>
+</aside>
+</div>
+</div>
+</main>
+</div>
+</body></html>
