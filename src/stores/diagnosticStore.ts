@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { RevenueProfile } from '@/data/aides-renov'
 
 export type DiagnosticType =
   | 'humidite'
@@ -15,6 +16,18 @@ interface DiagnosticProperty {
   surface?: number
   year?: number
   floors?: number
+}
+
+// ---------------------------------------------------------------------------
+// Nouvelle section Situation (step 3 — entre Propriete et Equipements)
+// ---------------------------------------------------------------------------
+// Steps : 1-Types | 2-Propriete | 3-Situation | 4-Equipements | 5-Symptomes | 6-Contact
+
+export interface DiagnosticSituation {
+  ownerType?: 'occupant' | 'bailleur'
+  householdSize?: number        // 1 a 5+
+  revenueProfile?: RevenueProfile | null
+  knowsRevenue?: boolean        // sait-il son revenu fiscal ?
 }
 
 export interface DiagnosticEquipment {
@@ -36,9 +49,9 @@ interface DiagnosticState {
   step: number
   selectedTypes: DiagnosticType[]
   property: DiagnosticProperty
+  situation: DiagnosticSituation
   equipment: DiagnosticEquipment
   symptoms: Record<DiagnosticType, string[]>
-  photos: File[]
   contact: DiagnosticContact
 
   setStep: (step: number) => void
@@ -46,10 +59,10 @@ interface DiagnosticState {
   prevStep: () => void
   toggleType: (type: DiagnosticType) => void
   setProperty: (data: Partial<DiagnosticProperty>) => void
+  setSituation: (situation: DiagnosticSituation) => void
+  updateSituation: (partial: Partial<DiagnosticSituation>) => void
   setEquipment: (data: Partial<DiagnosticEquipment>) => void
   toggleSymptom: (type: DiagnosticType, symptom: string) => void
-  addPhoto: (file: File) => void
-  removePhoto: (index: number) => void
   setContact: (data: Partial<DiagnosticContact>) => void
   reset: () => void
 }
@@ -68,9 +81,9 @@ const initialState = {
   step: 1,
   selectedTypes: [] as DiagnosticType[],
   property: {} as DiagnosticProperty,
+  situation: {} as DiagnosticSituation,
   equipment: {} as DiagnosticEquipment,
   symptoms: { ...initialSymptoms },
-  photos: [] as File[],
   contact: {} as DiagnosticContact,
 }
 
@@ -100,6 +113,13 @@ export const useDiagnosticStore = create<DiagnosticState>((set) => ({
       property: { ...state.property, ...data },
     })),
 
+  setSituation: (situation) => set({ situation }),
+
+  updateSituation: (partial) =>
+    set((state) => ({
+      situation: { ...state.situation, ...partial },
+    })),
+
   setEquipment: (data) =>
     set((state) => ({
       equipment: { ...state.equipment, ...data },
@@ -118,16 +138,6 @@ export const useDiagnosticStore = create<DiagnosticState>((set) => ({
         },
       }
     }),
-
-  addPhoto: (file) =>
-    set((state) => ({
-      photos: [...state.photos, file],
-    })),
-
-  removePhoto: (index) =>
-    set((state) => ({
-      photos: state.photos.filter((_, i) => i !== index),
-    })),
 
   setContact: (data) =>
     set((state) => ({

@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   FolderOpen,
@@ -9,32 +8,17 @@ import {
   CalendarDays,
   Wrench,
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/appStore'
+import { useUserCases } from '@/hooks/queries'
+import { CASE_STATUS_LABELS, CASE_STATUS_COLORS, CASE_STATUSES } from '@/data/constants'
 import type { BrhCaseRow, CaseStatus } from '@/types/database'
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
-const STATUS_LABELS: Record<CaseStatus, string> = {
-  nouveau: 'Nouveau',
-  en_cours: 'En cours',
-  devis: 'Devis',
-  travaux: 'Travaux',
-  termine: 'Terminé',
-}
-
-const STATUS_COLORS: Record<CaseStatus, string> = {
-  nouveau: 'bg-blue-100 text-blue-800',
-  en_cours: 'bg-orange-100 text-orange-800',
-  devis: 'bg-purple-100 text-purple-800',
-  travaux: 'bg-yellow-100 text-yellow-800',
-  termine: 'bg-green-100 text-green-800',
-}
-
 function StatusBadge({ status }: { status: CaseStatus }) {
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-display ${STATUS_COLORS[status]}`}>
-      {STATUS_LABELS[status]}
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-display ${CASE_STATUS_COLORS[status]}`}>
+      {CASE_STATUS_LABELS[status]}
     </span>
   )
 }
@@ -107,32 +91,7 @@ export default function MesDossiers() {
   const { user } = useAppStore()
   const navigate = useNavigate()
 
-  const [cases, setCases] = useState<BrhCaseRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!user) return
-
-    async function fetchCases() {
-      setLoading(true)
-      setError(null)
-      const { data, error: supaErr } = await supabase
-        .from('brh_cases')
-        .select('*')
-        .eq('user_id', user!.id)
-        .order('created_at', { ascending: false })
-
-      if (supaErr) {
-        setError('Impossible de charger vos dossiers. Veuillez réessayer.')
-      } else {
-        setCases(data ?? [])
-      }
-      setLoading(false)
-    }
-
-    void fetchCases()
-  }, [user])
+  const { data: cases = [], isLoading, error } = useUserCases(user?.id)
 
   return (
     <div className="p-6 lg:p-8">
@@ -145,22 +104,22 @@ export default function MesDossiers() {
       </div>
 
       {/* Loading */}
-      {loading && (
+      {isLoading && (
         <div className="flex items-center justify-center py-24">
           <Loader2 size={28} className="animate-spin text-primary" />
         </div>
       )}
 
       {/* Error */}
-      {!loading && error && (
+      {!isLoading && error && (
         <div className="flex items-center gap-3 p-4 bg-red-50 rounded-2xl text-danger font-body text-sm">
           <AlertCircle size={18} className="shrink-0" />
-          {error}
+          Impossible de charger vos dossiers. Veuillez réessayer.
         </div>
       )}
 
       {/* Empty state */}
-      {!loading && !error && cases.length === 0 && (
+      {!isLoading && !error && cases.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-400 mb-4">
             <FolderOpen size={28} />
@@ -179,15 +138,15 @@ export default function MesDossiers() {
       )}
 
       {/* Status summary strip */}
-      {!loading && !error && cases.length > 0 && (
+      {!isLoading && !error && cases.length > 0 && (
         <>
           <div className="flex flex-wrap gap-2 mb-6">
-            {(Object.keys(STATUS_LABELS) as CaseStatus[]).map(status => {
+            {CASE_STATUSES.map(status => {
               const count = cases.filter(c => c.status === status).length
               if (count === 0) return null
               return (
-                <span key={status} className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-display ${STATUS_COLORS[status]}`}>
-                  {STATUS_LABELS[status]}
+                <span key={status} className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-display ${CASE_STATUS_COLORS[status]}`}>
+                  {CASE_STATUS_LABELS[status]}
                   <span className="font-body">{count}</span>
                 </span>
               )

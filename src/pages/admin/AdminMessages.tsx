@@ -1,98 +1,43 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useState } from 'react'
 import { MessageSquare, AlertCircle, ChevronDown, ChevronUp, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
-import type { BrhDiagnosticRow, DiagnosticStatus } from '@/types/database'
-
-const PAGE_SIZE = 20
-
-const diagnosticStatusLabels: Record<DiagnosticStatus, string> = {
-  pending: 'En attente',
-  analyzed: 'Analysé',
-  contacted: 'Contacté',
-  closed: 'Clôturé',
-}
-
-const diagnosticStatusColors: Record<DiagnosticStatus, string> = {
-  pending: 'bg-amber-100 text-amber-700',
-  analyzed: 'bg-blue-100 text-blue-700',
-  contacted: 'bg-purple-100 text-purple-700',
-  closed: 'bg-gray-100 text-gray-600',
-}
-
-const ALL_STATUSES: DiagnosticStatus[] = ['pending', 'analyzed', 'contacted', 'closed']
+import {
+  useAdminDiagnostics,
+  useUpdateDiagnosticStatus,
+} from '@/hooks/queries'
+import {
+  DIAGNOSTIC_STATUSES,
+  DIAGNOSTIC_STATUS_LABELS,
+  DIAGNOSTIC_STATUS_COLORS,
+  PAGE_SIZE,
+} from '@/data/constants'
+import type { DiagnosticStatus } from '@/types/database'
 
 export default function AdminMessages() {
-  const [diagnostics, setDiagnostics] = useState<BrhDiagnosticRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [total, setTotal] = useState(0)
   const [page, setPage] = useState(0)
-  const [filterStatus, setFilterStatus] = useState<DiagnosticStatus | ''>('pending')
+  const [filterStatus, setFilterStatus] = useState<DiagnosticStatus | undefined>(undefined)
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [savingId, setSavingId] = useState<string | null>(null)
   const [savedId, setSavedId] = useState<string | null>(null)
   const [localStatuses, setLocalStatuses] = useState<Record<string, DiagnosticStatus>>({})
 
-  const fetchDiagnostics = useCallback(async () => {
-    setLoading(true)
-    setError(null)
+  const { data, isLoading, isError } = useAdminDiagnostics(page, filterStatus)
+  const updateStatus = useUpdateDiagnosticStatus()
 
-    let query = supabase
-      .from('brh_diagnostics')
-      .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1)
-
-    if (filterStatus) {
-      query = query.eq('status', filterStatus)
-    }
-
-    const { data, count, error: fetchError } = await query
-
-    if (fetchError) {
-      setError('Erreur lors du chargement.')
-      setLoading(false)
-      return
-    }
-
-    const rows = data ?? []
-    setDiagnostics(rows)
-    setTotal(count ?? 0)
-
-    // Initialize local statuses
-    setLocalStatuses((prev) => {
-      const next = { ...prev }
-      rows.forEach((r) => {
-        if (!(r.id in next)) next[r.id] = r.status
-      })
-      return next
-    })
-
-    setLoading(false)
-  }, [page, filterStatus])
-
-  useEffect(() => {
-    void fetchDiagnostics()
-  }, [fetchDiagnostics])
-
-  async function updateStatus(id: string, newStatus: DiagnosticStatus) {
-    setSavingId(id)
-
-    const { error: updateError } = await supabase
-      .from('brh_diagnostics')
-      .update({ status: newStatus, updated_at: new Date().toISOString() })
-      .eq('id', id)
-
-    if (!updateError) {
-      setDiagnostics((prev) => prev.map((d) => d.id === id ? { ...d, status: newStatus } : d))
-      setSavedId(id)
-      setTimeout(() => setSavedId(null), 2500)
-    }
-
-    setSavingId(null)
-  }
-
+  const diagnostics = data?.data ?? []
+  const total = data?.count ?? 0
   const totalPages = Math.ceil(total / PAGE_SIZE)
+
+  function handleStatusChange(id: string, newStatus: DiagnosticStatus) {
+    setLocalStatuses((prev) => ({ ...prev, [id]: newStatus }))
+    updateStatus.mutate(
+      { id, status: newStatus },
+      {
+        onSuccess: () => {
+          setSavedId(id)
+          setTimeout(() => setSavedId(null), 2500)
+        },
+      },
+    )
+  }
 
   return (
     <div className="p-6 lg:p-8">
@@ -107,14 +52,14 @@ export default function AdminMessages() {
       {/* Stat chips */}
       <div className="flex flex-wrap gap-2 mb-4">
         <button
-          onClick={() => { setFilterStatus(''); setPage(0) }}
+          onClick={() => { setFilterStatus(undefined); setPage(0) }}
           className={`px-3 py-1.5 rounded-lg text-xs font-display transition-colors ${
-            filterStatus === '' ? 'bg-primary text-white' : 'bg-surface border border-gray-light text-text-secondary hover:bg-background'
+            filterStatus === undefined ? 'bg-primary text-white' : 'bg-surface border border-gray-light text-text-secondary hover:bg-background'
           }`}
         >
           Tous ({total})
         </button>
-        {ALL_STATUSES.map((s) => (
+        {DIAGNOSTIC_STATUSES.map((s) => (
           <button
             key={s}
             onClick={() => { setFilterStatus(s); setPage(0) }}
@@ -122,20 +67,20 @@ export default function AdminMessages() {
               filterStatus === s ? 'bg-primary text-white' : 'bg-surface border border-gray-light text-text-secondary hover:bg-background'
             }`}
           >
-            {diagnosticStatusLabels[s]}
+            {DIAGNOSTIC_STATUS_LABELS[s]}
           </button>
         ))}
       </div>
 
       {/* List */}
       <div className="space-y-3">
-        {error && (
+        {isError && (
           <div className="flex items-center gap-2 p-4 bg-red-50 rounded-xl text-danger font-body text-sm">
-            <AlertCircle size={16} /> {error}
+            <AlertCircle size={16} /> Erreur lors du chargement.
           </div>
         )}
 
-        {loading ? (
+        {isLoading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="h-20 bg-gray-100 rounded-2xl animate-pulse" />
@@ -151,6 +96,7 @@ export default function AdminMessages() {
           diagnostics.map((d) => {
             const isExpanded = expandedId === d.id
             const currentStatus = localStatuses[d.id] ?? d.status
+            const isSaving = updateStatus.isPending && updateStatus.variables?.id === d.id
 
             return (
               <div key={d.id} className="bg-surface rounded-2xl border border-gray-light overflow-hidden">
@@ -188,22 +134,19 @@ export default function AdminMessages() {
 
                   {/* Status selector */}
                   <div className="shrink-0 flex items-center gap-2">
-                    {savingId === d.id ? (
+                    {isSaving ? (
                       <span className="text-xs font-body text-text-light">Sauvegarde...</span>
                     ) : savedId === d.id ? (
                       <CheckCircle2 size={16} className="text-success" />
                     ) : null}
                     <select
                       value={currentStatus}
-                      onChange={(e) => {
-                        const s = e.target.value as DiagnosticStatus
-                        setLocalStatuses((prev) => ({ ...prev, [d.id]: s }))
-                        void updateStatus(d.id, s)
-                      }}
-                      className={`px-2.5 py-1.5 rounded-lg text-xs font-display border outline-none cursor-pointer ${diagnosticStatusColors[currentStatus]} border-transparent`}
+                      onChange={(e) => handleStatusChange(d.id, e.target.value as DiagnosticStatus)}
+                      disabled={isSaving}
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-display border outline-none cursor-pointer disabled:opacity-60 ${DIAGNOSTIC_STATUS_COLORS[currentStatus]} border-transparent`}
                     >
-                      {ALL_STATUSES.map((s) => (
-                        <option key={s} value={s}>{diagnosticStatusLabels[s]}</option>
+                      {DIAGNOSTIC_STATUSES.map((s) => (
+                        <option key={s} value={s}>{DIAGNOSTIC_STATUS_LABELS[s]}</option>
                       ))}
                     </select>
                   </div>
@@ -281,7 +224,7 @@ export default function AdminMessages() {
       </div>
 
       {/* Pagination */}
-      {!loading && totalPages > 1 && (
+      {!isLoading && totalPages > 1 && (
         <div className="flex items-center justify-between mt-4 bg-surface rounded-2xl border border-gray-light px-6 py-4">
           <p className="font-body text-sm text-text-light">
             Page {page + 1} sur {totalPages} — {total} résultats

@@ -22,6 +22,7 @@ import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/appStore'
 import { useAuth } from '@/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
+import { useUserHomes, useUserCases, useUserDiagnostics, useProfileDetail, useUpdateProfile, useDeleteProfile } from '@/hooks/queries'
 
 // ─── Stat card ────────────────────────────────────────────────────────────────
 
@@ -108,12 +109,6 @@ function DeleteAccountModal({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-interface Stats {
-  homes: number
-  cases: number
-  diagnostics: number
-}
-
 export default function ProfilPage() {
   const { user, setUser } = useAppStore()
   const { signOut } = useAuth()
@@ -122,7 +117,6 @@ export default function ProfilPage() {
   // Profile edit
   const [editingName, setEditingName] = useState(false)
   const [newName, setNewName] = useState(user?.full_name ?? '')
-  const [savingName, setSavingName] = useState(false)
   const [nameError, setNameError] = useState<string | null>(null)
   const [nameSuccess, setNameSuccess] = useState(false)
 
@@ -137,42 +131,27 @@ export default function ProfilPage() {
 
   // Delete
   const [showDelete, setShowDelete] = useState(false)
-  const [deleting, setDeleting] = useState(false)
 
-  // Stats
-  const [stats, setStats] = useState<Stats>({ homes: 0, cases: 0, diagnostics: 0 })
-  const [loadingStats, setLoadingStats] = useState(true)
-
-  // Member since
-  const [memberSince, setMemberSince] = useState<string | null>(null)
-
+  // Sync newName when user changes
   useEffect(() => {
-    if (!user) return
-    setNewName(user.full_name)
-
-    async function fetchStats() {
-      setLoadingStats(true)
-      const [homesRes, casesRes, diagRes, profileRes] = await Promise.all([
-        supabase.from('brh_homes').select('id', { count: 'exact', head: true }).eq('user_id', user!.id),
-        supabase.from('brh_cases').select('id', { count: 'exact', head: true }).eq('user_id', user!.id),
-        supabase.from('brh_diagnostics').select('id', { count: 'exact', head: true }).eq('user_id', user!.id),
-        supabase.from('profiles').select('created_at').eq('id', user!.id).single(),
-      ])
-      setStats({
-        homes: homesRes.count ?? 0,
-        cases: casesRes.count ?? 0,
-        diagnostics: diagRes.count ?? 0,
-      })
-      if (profileRes.data) {
-        setMemberSince(profileRes.data.created_at)
-      }
-      setLoadingStats(false)
-    }
-
-    void fetchStats()
+    if (user) setNewName(user.full_name)
   }, [user])
 
-  async function handleSaveName() {
+  // Stats via React Query
+  const { data: homes = [] } = useUserHomes(user?.id)
+  const { data: cases = [] } = useUserCases(user?.id)
+  const { data: diagnostics = [] } = useUserDiagnostics(user?.id)
+
+  // Profile for memberSince
+  const { data: profile } = useProfileDetail(user?.id)
+
+  // Mutations
+  const updateMutation = useUpdateProfile()
+  const deleteMutation = useDeleteProfile()
+
+  const memberSince = profile?.created_at ?? null
+
+  function handleSaveName() {
     if (!user) return
     setNameError(null)
     setNameSuccess(false)
@@ -187,23 +166,20 @@ export default function ProfilPage() {
       return
     }
 
-    setSavingName(true)
-    const { error } = await supabase
-      .from('profiles')
-      .update({ full_name: trimmed })
-      .eq('id', user.id)
-
-    setSavingName(false)
-
-    if (error) {
-      setNameError('Impossible de mettre à jour votre nom. Veuillez réessayer.')
-      return
-    }
-
-    setUser({ ...user, full_name: trimmed })
-    setEditingName(false)
-    setNameSuccess(true)
-    setTimeout(() => setNameSuccess(false), 3000)
+    updateMutation.mutate(
+      { id: user.id, payload: { full_name: trimmed } },
+      {
+        onSuccess: (data) => {
+          setUser({ ...user, full_name: data.full_name })
+          setEditingName(false)
+          setNameSuccess(true)
+          setTimeout(() => setNameSuccess(false), 3000)
+        },
+        onError: () => {
+          setNameError('Impossible de mettre à jour votre nom. Veuillez réessayer.')
+        },
+      }
+    )
   }
 
   async function handleChangePassword(e: React.FormEvent) {
@@ -234,30 +210,25 @@ export default function ProfilPage() {
     }
 
     setPasswordSuccess(true)
-
     setNewPassword('')
     setConfirmPassword('')
     setChangingPassword(false)
     setTimeout(() => setPasswordSuccess(false), 4000)
   }
 
-  async function handleDeleteAccount() {
+  function handleDeleteAccount() {
     if (!user) return
-    setDeleting(true)
 
-    // Sign out — actual account deletion requires a server-side function
-    // For now we sign out and navigate; the admin would handle the deletion.
-    // In production, call a Supabase Edge Function to delete the user.
-    const { error } = await supabase.auth.signOut()
-
-    if (error) {
-      setDeleting(false)
-      setShowDelete(false)
-      return
-    }
-
-    setUser(null)
-    navigate('/')
+    deleteMutation.mutate(user.id, {
+      onSuccess: async () => {
+        await supabase.auth.signOut()
+        setUser(null)
+        navigate('/')
+      },
+      onError: () => {
+        setShowDelete(false)
+      },
+    })
   }
 
   const roleLabel = user?.role === 'admin' ? 'Administrateur' : 'Utilisateur'
@@ -309,19 +280,19 @@ export default function ProfilPage() {
         <StatCard
           icon={Home}
           label="Logements"
-          value={loadingStats ? '…' : stats.homes}
+          value={homes.length}
           color="bg-blue-50 text-blue-600"
         />
         <StatCard
           icon={FolderOpen}
           label="Dossiers"
-          value={loadingStats ? '…' : stats.cases}
+          value={cases.length}
           color="bg-orange-50 text-orange-600"
         />
         <StatCard
           icon={ClipboardList}
           label="Diagnostics"
-          value={loadingStats ? '…' : stats.diagnostics}
+          value={diagnostics.length}
           color="bg-purple-50 text-purple-600"
         />
       </div>
@@ -376,12 +347,12 @@ export default function ProfilPage() {
                     <X size={12} /> Annuler
                   </button>
                   <button
-                    onClick={() => void handleSaveName()}
-                    disabled={savingName}
+                    onClick={handleSaveName}
+                    disabled={updateMutation.isPending}
                     className="flex items-center gap-1 px-3 py-1.5 bg-primary text-white font-display text-xs rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-60"
                   >
-                    {savingName ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
-                    {savingName ? 'Sauvegarde...' : 'Sauvegarder'}
+                    {updateMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                    {updateMutation.isPending ? 'Sauvegarde...' : 'Sauvegarder'}
                   </button>
                 </div>
               </div>
@@ -498,7 +469,6 @@ export default function ProfilPage() {
                       setChangingPassword(false)
                       setNewPassword('')
                       setConfirmPassword('')
-                  
                       setPasswordError(null)
                     }}
                     className="flex-1 flex items-center justify-center gap-1 px-4 py-2.5 border border-gray-light text-text-secondary font-display text-sm rounded-xl hover:bg-background transition-colors"
@@ -561,9 +531,9 @@ export default function ProfilPage() {
       {/* Delete modal */}
       {showDelete && (
         <DeleteAccountModal
-          onConfirm={() => void handleDeleteAccount()}
+          onConfirm={handleDeleteAccount}
           onCancel={() => setShowDelete(false)}
-          deleting={deleting}
+          deleting={deleteMutation.isPending}
         />
       )}
     </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
   BarChart3,
@@ -12,7 +12,11 @@ import {
   Clock,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import type { BrhDiagnosticRow, DiagnosticStatus } from '@/types/database'
+import {
+  DIAGNOSTIC_STATUS_LABELS,
+  DIAGNOSTIC_STATUS_COLORS,
+} from '@/data/constants'
+import type { BrhDiagnosticRow } from '@/types/database'
 
 interface StatCard {
   label: string
@@ -23,79 +27,58 @@ interface StatCard {
   to: string
 }
 
-const diagnosticStatusLabels: Record<DiagnosticStatus, string> = {
-  pending: 'En attente',
-  analyzed: 'Analysé',
-  contacted: 'Contacté',
-  closed: 'Clôturé',
+async function fetchDashboardStats() {
+  const [
+    { count: diagnosticsCount },
+    { count: usersCount },
+    { count: casesCount },
+    { count: rdvCount },
+  ] = await Promise.all([
+    supabase.from('brh_diagnostics').select('*', { count: 'exact', head: true }),
+    supabase.from('profiles').select('*', { count: 'exact', head: true }),
+    supabase
+      .from('brh_cases')
+      .select('*', { count: 'exact', head: true })
+      .in('status', ['nouveau', 'en_cours', 'devis', 'travaux']),
+    supabase
+      .from('brh_appointments')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'demande'),
+  ])
+
+  return {
+    diagnostics: diagnosticsCount ?? 0,
+    users: usersCount ?? 0,
+    activeCases: casesCount ?? 0,
+    pendingRdv: rdvCount ?? 0,
+  }
 }
 
-const diagnosticStatusColors: Record<DiagnosticStatus, string> = {
-  pending: 'bg-amber-100 text-amber-700',
-  analyzed: 'bg-blue-100 text-blue-700',
-  contacted: 'bg-purple-100 text-purple-700',
-  closed: 'bg-gray-100 text-gray-600',
+async function fetchRecentDiagnostics(): Promise<BrhDiagnosticRow[]> {
+  const { data } = await supabase
+    .from('brh_diagnostics')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(5)
+
+  return data ?? []
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<{
-    diagnostics: number | null
-    users: number | null
-    activeCases: number | null
-    pendingRdv: number | null
-  }>({ diagnostics: null, users: null, activeCases: null, pendingRdv: null })
-  const [recentDiagnostics, setRecentDiagnostics] = useState<BrhDiagnosticRow[]>([])
-  const [loadingStats, setLoadingStats] = useState(true)
-  const [loadingRecent, setLoadingRecent] = useState(true)
+  const { data: stats, isLoading: loadingStats } = useQuery({
+    queryKey: ['dashboard', 'stats'],
+    queryFn: fetchDashboardStats,
+  })
 
-  useEffect(() => {
-    async function fetchStats() {
-      const [
-        { count: diagnosticsCount },
-        { count: usersCount },
-        { count: casesCount },
-        { count: rdvCount },
-      ] = await Promise.all([
-        supabase.from('brh_diagnostics').select('*', { count: 'exact', head: true }),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase
-          .from('brh_cases')
-          .select('*', { count: 'exact', head: true })
-          .in('status', ['nouveau', 'en_cours', 'devis', 'travaux']),
-        supabase
-          .from('brh_appointments')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'demande'),
-      ])
-
-      setStats({
-        diagnostics: diagnosticsCount ?? 0,
-        users: usersCount ?? 0,
-        activeCases: casesCount ?? 0,
-        pendingRdv: rdvCount ?? 0,
-      })
-      setLoadingStats(false)
-    }
-
-    async function fetchRecentDiagnostics() {
-      const { data } = await supabase
-        .from('brh_diagnostics')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5)
-
-      setRecentDiagnostics(data ?? [])
-      setLoadingRecent(false)
-    }
-
-    void fetchStats()
-    void fetchRecentDiagnostics()
-  }, [])
+  const { data: recentDiagnostics = [], isLoading: loadingRecent } = useQuery({
+    queryKey: ['dashboard', 'recent-diagnostics'],
+    queryFn: fetchRecentDiagnostics,
+  })
 
   const statCards: StatCard[] = [
     {
       label: 'Total diagnostics',
-      value: stats.diagnostics,
+      value: stats?.diagnostics ?? null,
       icon: BarChart3,
       iconBg: 'bg-green-50',
       iconColor: 'text-primary',
@@ -103,7 +86,7 @@ export default function AdminDashboard() {
     },
     {
       label: 'Utilisateurs',
-      value: stats.users,
+      value: stats?.users ?? null,
       icon: Users,
       iconBg: 'bg-blue-50',
       iconColor: 'text-blue-600',
@@ -111,7 +94,7 @@ export default function AdminDashboard() {
     },
     {
       label: 'Dossiers actifs',
-      value: stats.activeCases,
+      value: stats?.activeCases ?? null,
       icon: FolderOpen,
       iconBg: 'bg-orange-50',
       iconColor: 'text-orange-600',
@@ -119,7 +102,7 @@ export default function AdminDashboard() {
     },
     {
       label: 'RDV en attente',
-      value: stats.pendingRdv,
+      value: stats?.pendingRdv ?? null,
       icon: Calendar,
       iconBg: 'bg-purple-50',
       iconColor: 'text-purple-600',
@@ -226,8 +209,8 @@ export default function AdminDashboard() {
                         {new Date(d.created_at).toLocaleDateString('fr-FR')}
                       </td>
                       <td className="px-6 py-3">
-                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-display ${diagnosticStatusColors[d.status]}`}>
-                          {diagnosticStatusLabels[d.status]}
+                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-display ${DIAGNOSTIC_STATUS_COLORS[d.status]}`}>
+                          {DIAGNOSTIC_STATUS_LABELS[d.status]}
                         </span>
                       </td>
                     </tr>

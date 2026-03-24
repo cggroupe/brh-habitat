@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -14,39 +14,29 @@ import {
   FileText,
   Clock,
 } from 'lucide-react'
+import { useCaseDetail, useUpdateCase } from '@/hooks/queries'
 import { supabase } from '@/lib/supabase'
-import type { BrhCaseRow, BrhHomeRow, BrhDiagnosticRow, CaseStatus } from '@/types/database'
-
-const caseStatusLabels: Record<CaseStatus, string> = {
-  nouveau: 'Nouveau',
-  en_cours: 'En cours',
-  devis: 'Devis',
-  travaux: 'Travaux',
-  termine: 'Terminé',
-}
-
-const caseStatusColors: Record<CaseStatus, string> = {
-  nouveau: 'bg-blue-100 text-blue-700 border-blue-200',
-  en_cours: 'bg-amber-100 text-amber-700 border-amber-200',
-  devis: 'bg-purple-100 text-purple-700 border-purple-200',
-  travaux: 'bg-orange-100 text-orange-700 border-orange-200',
-  termine: 'bg-green-100 text-green-700 border-green-200',
-}
+import {
+  CASE_STATUSES,
+  CASE_STATUS_LABELS,
+  CASE_STATUS_COLORS,
+} from '@/data/constants'
+import type { BrhHomeRow, BrhDiagnosticRow, CaseStatus } from '@/types/database'
 
 const STATUS_STEPS: CaseStatus[] = ['nouveau', 'en_cours', 'devis', 'travaux', 'termine']
 
 export default function AdminDossierDetail() {
   const { id } = useParams<{ id: string }>()
 
-  const [caseData, setCaseData] = useState<BrhCaseRow | null>(null)
+  const { data: caseData, isLoading, isError } = useCaseDetail(id)
+  const updateCase = useUpdateCase()
+
   const [homeData, setHomeData] = useState<BrhHomeRow | null>(null)
   const [diagnosticData, setDiagnosticData] = useState<BrhDiagnosticRow | null>(null)
   const [userFullName, setUserFullName] = useState<string | null>(null)
 
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   // Editable fields
   const [status, setStatus] = useState<CaseStatus>('nouveau')
@@ -56,99 +46,89 @@ export default function AdminDossierDetail() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
 
+  // Populate form when case data loads
   useEffect(() => {
-    if (!id) return
+    if (!caseData) return
+    setStatus(caseData.status)
+    setAssignedTo(caseData.assigned_to ?? '')
+    setAdminNotes(caseData.admin_notes ?? '')
+    setEstimatedBudget(caseData.estimated_budget != null ? String(caseData.estimated_budget) : '')
+    setStartDate(caseData.start_date ? caseData.start_date.slice(0, 10) : '')
+    setEndDate(caseData.end_date ? caseData.end_date.slice(0, 10) : '')
+  }, [caseData])
 
-    async function fetchAll() {
-      setLoading(true)
-      setError(null)
+  // Fetch linked records when case data is available
+  useEffect(() => {
+    if (!caseData) return
 
-      const { data: caseRow, error: caseError } = await supabase
-        .from('brh_cases')
-        .select('*')
-        .eq('id', id!)
-        .single()
+    async function fetchLinked() {
+      if (!caseData) return
 
-      if (caseError || !caseRow) {
-        setError('Dossier introuvable.')
-        setLoading(false)
-        return
-      }
-
-      setCaseData(caseRow)
-      setStatus(caseRow.status)
-      setAssignedTo(caseRow.assigned_to ?? '')
-      setAdminNotes(caseRow.admin_notes ?? '')
-      setEstimatedBudget(caseRow.estimated_budget != null ? String(caseRow.estimated_budget) : '')
-      setStartDate(caseRow.start_date ? caseRow.start_date.slice(0, 10) : '')
-      setEndDate(caseRow.end_date ? caseRow.end_date.slice(0, 10) : '')
-
-      // Fetch user profile
+      // User profile
       const { data: profile } = await supabase
         .from('profiles')
         .select('full_name')
-        .eq('id', caseRow.user_id)
+        .eq('id', caseData.user_id)
         .single()
       setUserFullName(profile?.full_name ?? null)
 
-      // Fetch linked home
-      if (caseRow.home_id) {
+      // Linked home
+      if (caseData.home_id) {
         const { data: home } = await supabase
           .from('brh_homes')
           .select('*')
-          .eq('id', caseRow.home_id)
+          .eq('id', caseData.home_id)
           .single()
         setHomeData(home ?? null)
       }
 
-      // Fetch linked diagnostic
-      if (caseRow.diagnostic_id) {
+      // Linked diagnostic
+      if (caseData.diagnostic_id) {
         const { data: diag } = await supabase
           .from('brh_diagnostics')
           .select('*')
-          .eq('id', caseRow.diagnostic_id)
+          .eq('id', caseData.diagnostic_id)
           .single()
         setDiagnosticData(diag ?? null)
       }
-
-      setLoading(false)
     }
 
-    void fetchAll()
-  }, [id])
+    void fetchLinked()
+  }, [caseData])
 
-  async function handleSave() {
+  function handleSave() {
     if (!id) return
-    setSaving(true)
-    setError(null)
+    setSaveError(null)
     setSaveSuccess(false)
 
-    const { error: updateError } = await supabase
-      .from('brh_cases')
-      .update({
-        status,
-        assigned_to: assignedTo.trim() || null,
-        admin_notes: adminNotes.trim() || null,
-        estimated_budget: estimatedBudget ? parseFloat(estimatedBudget) : null,
-        start_date: startDate || null,
-        end_date: endDate || null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', id)
-
-    if (updateError) {
-      setError('Erreur lors de la sauvegarde.')
-    } else {
-      setSaveSuccess(true)
-      setTimeout(() => setSaveSuccess(false), 3000)
-    }
-
-    setSaving(false)
+    updateCase.mutate(
+      {
+        id,
+        payload: {
+          status,
+          assigned_to: assignedTo.trim() || null,
+          admin_notes: adminNotes.trim() || null,
+          estimated_budget: estimatedBudget ? parseFloat(estimatedBudget) : null,
+          start_date: startDate || null,
+          end_date: endDate || null,
+          updated_at: new Date().toISOString(),
+        },
+      },
+      {
+        onSuccess: () => {
+          setSaveSuccess(true)
+          setTimeout(() => setSaveSuccess(false), 3000)
+        },
+        onError: () => {
+          setSaveError('Erreur lors de la sauvegarde.')
+        },
+      },
+    )
   }
 
   const currentStepIndex = STATUS_STEPS.indexOf(status)
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-6 lg:p-8">
         <div className="space-y-4">
@@ -160,11 +140,11 @@ export default function AdminDossierDetail() {
     )
   }
 
-  if (!caseData) {
+  if (isError || !caseData) {
     return (
       <div className="p-6 lg:p-8">
         <div className="flex items-center gap-2 text-danger font-body text-sm mb-4">
-          <AlertCircle size={16} /> {error ?? 'Dossier introuvable.'}
+          <AlertCircle size={16} /> Dossier introuvable.
         </div>
         <Link to="/admin/dossiers" className="text-primary font-body text-sm hover:underline flex items-center gap-1">
           <ArrowLeft size={14} /> Retour aux dossiers
@@ -191,8 +171,8 @@ export default function AdminDossierDetail() {
               <span className="text-primary font-medium">{userFullName ?? 'Utilisateur inconnu'}</span>
             </p>
           </div>
-          <span className={`shrink-0 inline-block px-3 py-1.5 rounded-full text-sm font-display border ${caseStatusColors[caseData.status]}`}>
-            {caseStatusLabels[caseData.status]}
+          <span className={`shrink-0 inline-block px-3 py-1.5 rounded-full text-sm font-display border ${CASE_STATUS_COLORS[caseData.status]}`}>
+            {CASE_STATUS_LABELS[caseData.status]}
           </span>
         </div>
       </div>
@@ -218,7 +198,7 @@ export default function AdminDossierDetail() {
                     {isDone ? <CheckCircle2 size={14} /> : i + 1}
                   </div>
                   <span className={`text-xs font-body mt-1.5 whitespace-nowrap ${isCurrent ? 'text-primary font-semibold' : 'text-text-light'}`}>
-                    {caseStatusLabels[step]}
+                    {CASE_STATUS_LABELS[step]}
                   </span>
                 </div>
                 {!isLast && (
@@ -250,8 +230,8 @@ export default function AdminDossierDetail() {
                   onChange={(e) => setStatus(e.target.value as CaseStatus)}
                   className="w-full px-3 py-2.5 bg-background border border-gray-light rounded-xl font-body text-sm text-text-primary outline-none focus:border-primary transition-colors"
                 >
-                  {STATUS_STEPS.map((s) => (
-                    <option key={s} value={s}>{caseStatusLabels[s]}</option>
+                  {CASE_STATUSES.map((s) => (
+                    <option key={s} value={s}>{CASE_STATUS_LABELS[s]}</option>
                   ))}
                 </select>
               </div>
@@ -328,21 +308,21 @@ export default function AdminDossierDetail() {
             {/* Save */}
             <div className="flex items-center gap-3 mt-5">
               <button
-                onClick={() => void handleSave()}
-                disabled={saving}
+                onClick={handleSave}
+                disabled={updateCase.isPending}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-display text-sm rounded-xl hover:bg-primary-dark disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
               >
                 <Save size={15} />
-                {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+                {updateCase.isPending ? 'Sauvegarde...' : 'Sauvegarder'}
               </button>
               {saveSuccess && (
                 <span className="flex items-center gap-1.5 text-success font-body text-sm">
                   <CheckCircle2 size={15} /> Modifications enregistrées
                 </span>
               )}
-              {error && (
+              {saveError && (
                 <span className="flex items-center gap-1.5 text-danger font-body text-sm">
-                  <AlertCircle size={15} /> {error}
+                  <AlertCircle size={15} /> {saveError}
                 </span>
               )}
             </div>

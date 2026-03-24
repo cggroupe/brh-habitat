@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -14,15 +14,15 @@ import {
   CalendarDays,
   Ruler,
   MapPin,
-  ClipboardList,
   FileText,
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
-import type { BrhHomeRow, BrhDiagnosticRow, DpeRating } from '@/types/database'
+import { useHomeDetail, useUpdateHome, useDeleteHome } from '@/hooks/queries'
+import { DPE_RATINGS } from '@/data/constants'
+import type { BrhHomeRow, DpeRating } from '@/types/database'
 
 // ─── DPE helpers ──────────────────────────────────────────────────────────────
 
-const DPE_COLORS: Record<DpeRating, string> = {
+const DPE_BADGE_COLORS: Record<DpeRating, string> = {
   A: 'bg-emerald-100 text-emerald-800',
   B: 'bg-green-100 text-green-800',
   C: 'bg-lime-100 text-lime-800',
@@ -35,7 +35,7 @@ const DPE_COLORS: Record<DpeRating, string> = {
 function DpeBadge({ rating }: { rating: DpeRating | null }) {
   if (!rating) return <span className="font-body text-text-light text-sm">Non renseigné</span>
   return (
-    <span className={`inline-flex items-center justify-center w-9 h-9 rounded-full text-sm font-display font-bold ${DPE_COLORS[rating]}`}>
+    <span className={`inline-flex items-center justify-center w-9 h-9 rounded-full text-sm font-display font-bold ${DPE_BADGE_COLORS[rating]}`}>
       {rating}
     </span>
   )
@@ -133,60 +133,25 @@ export default function LogementDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const [home, setHome] = useState<BrhHomeRow | null>(null)
-  const [diagnostics, setDiagnostics] = useState<BrhDiagnosticRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data: home, isLoading, error } = useHomeDetail(id)
+  const updateMutation = useUpdateHome()
+  const deleteMutation = useDeleteHome()
 
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<EditFormValues | null>(null)
-  const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
-
   const [showDelete, setShowDelete] = useState(false)
-  const [deleting, setDeleting] = useState(false)
 
-  // Fetch home + related diagnostics
-  useEffect(() => {
-    if (!id) return
+  const typeLabel: Record<string, string> = {
+    maison: 'Maison',
+    appartement: 'Appartement',
+    immeuble: 'Immeuble',
+    commerce: 'Commerce',
+    autre: 'Autre',
+  }
 
-    async function fetchData() {
-      setLoading(true)
-      setError(null)
-
-      const homeRes = await supabase
-        .from('brh_homes')
-        .select('*')
-        .eq('id', id!)
-        .single()
-
-      if (homeRes.error || !homeRes.data) {
-        setError('Logement introuvable.')
-        setLoading(false)
-        return
-      }
-
-      setHome(homeRes.data)
-
-      // Fetch diagnostics and filter by matching address (loose match)
-      const diagRes = await supabase
-        .from('brh_diagnostics')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (diagRes.data) {
-        const addr = homeRes.data.address.toLowerCase()
-        const matched = diagRes.data.filter(d =>
-          d.property_address.toLowerCase().includes(addr.split(' ').slice(1).join(' ').substring(0, 10))
-        )
-        setDiagnostics(matched)
-      }
-
-      setLoading(false)
-    }
-
-    void fetchData()
-  }, [id])
+  const inputCls =
+    'w-full px-3.5 py-2.5 border border-gray-light rounded-xl text-sm font-body text-text-primary bg-background focus:outline-none focus:border-primary transition-colors'
 
   function startEditing() {
     if (!home) return
@@ -207,7 +172,7 @@ export default function LogementDetail() {
     setForm(prev => prev ? { ...prev, [e.target.name]: e.target.value } : prev)
   }
 
-  async function handleSave() {
+  function handleSave() {
     if (!form || !home) return
     setSaveError(null)
 
@@ -220,67 +185,48 @@ export default function LogementDetail() {
       return
     }
 
-    setSaving(true)
-    const updatePayload = {
-      address: form.address.trim(),
-      city: form.city.trim(),
-      postal_code: form.postal_code.trim(),
-      property_type: form.property_type,
-      surface: Number(form.surface),
-      year_built: Number(form.year_built),
-      floors: Number(form.floors),
-      heating_type: form.heating_type.trim() || null,
-      insulation_type: form.insulation_type.trim() || null,
-      dpe_rating: (form.dpe_rating as DpeRating) || null,
-      notes: form.notes.trim() || null,
-    }
-    const { data, error: supaErr } = await supabase
-      .from('brh_homes')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .update(updatePayload as any)
-      .eq('id', home.id)
-      .select()
-      .single()
-
-    setSaving(false)
-
-    if (supaErr || !data) {
-      setSaveError("Impossible de sauvegarder les modifications.")
-      return
-    }
-
-    setHome(data)
-    setEditing(false)
-    setForm(null)
+    updateMutation.mutate(
+      {
+        id: home.id,
+        payload: {
+          address: form.address.trim(),
+          city: form.city.trim(),
+          postal_code: form.postal_code.trim(),
+          property_type: form.property_type,
+          surface: Number(form.surface),
+          year_built: Number(form.year_built),
+          floors: Number(form.floors),
+          heating_type: form.heating_type.trim() || null,
+          insulation_type: form.insulation_type.trim() || null,
+          dpe_rating: (form.dpe_rating as DpeRating) || null,
+          notes: form.notes.trim() || null,
+        },
+      },
+      {
+        onSuccess: () => {
+          setEditing(false)
+          setForm(null)
+        },
+        onError: () => {
+          setSaveError("Impossible de sauvegarder les modifications.")
+        },
+      }
+    )
   }
 
-  async function handleDelete() {
+  function handleDelete() {
     if (!home) return
-    setDeleting(true)
-    const { error: supaErr } = await supabase.from('brh_homes').delete().eq('id', home.id)
-    setDeleting(false)
-
-    if (supaErr) {
-      setShowDelete(false)
-      setError('Impossible de supprimer ce logement.')
-      return
-    }
-
-    navigate('/mes-logements')
+    deleteMutation.mutate(home.id, {
+      onSuccess: () => {
+        navigate('/mes-logements')
+      },
+      onError: () => {
+        setShowDelete(false)
+      },
+    })
   }
 
-  const typeLabel: Record<string, string> = {
-    maison: 'Maison',
-    appartement: 'Appartement',
-    immeuble: 'Immeuble',
-    commerce: 'Commerce',
-    autre: 'Autre',
-  }
-
-  const inputCls =
-    'w-full px-3.5 py-2.5 border border-gray-light rounded-xl text-sm font-body text-text-primary bg-background focus:outline-none focus:border-primary transition-colors'
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-6 lg:p-8 flex items-center justify-center min-h-64">
         <Loader2 size={28} className="animate-spin text-primary" />
@@ -296,7 +242,7 @@ export default function LogementDetail() {
         </Link>
         <div className="flex items-center gap-3 p-4 bg-red-50 rounded-2xl text-danger font-body text-sm">
           <AlertCircle size={18} className="shrink-0" />
-          {error ?? 'Logement introuvable.'}
+          Logement introuvable.
         </div>
       </div>
     )
@@ -357,12 +303,12 @@ export default function LogementDetail() {
                 Annuler
               </button>
               <button
-                onClick={() => void handleSave()}
-                disabled={saving}
+                onClick={handleSave}
+                disabled={updateMutation.isPending}
                 className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white font-display text-sm rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-60"
               >
-                {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-                {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+                {updateMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                {updateMutation.isPending ? 'Sauvegarde...' : 'Sauvegarder'}
               </button>
             </>
           )}
@@ -472,7 +418,7 @@ export default function LogementDetail() {
                       <label className="block text-xs font-display text-text-secondary mb-1.5">Note DPE</label>
                       <select name="dpe_rating" value={form.dpe_rating} onChange={handleFormChange} className={inputCls}>
                         <option value="">— Non renseigné —</option>
-                        {(['A', 'B', 'C', 'D', 'E', 'F', 'G'] as DpeRating[]).map(r => (
+                        {DPE_RATINGS.map(r => (
                           <option key={r} value={r}>{r}</option>
                         ))}
                       </select>
@@ -567,40 +513,6 @@ export default function LogementDetail() {
             </div>
           </div>
 
-          {/* Diagnostics liés */}
-          <div className="bg-surface rounded-2xl border border-gray-light p-6">
-            <h2 className="font-display text-base text-text-primary mb-4 flex items-center gap-2">
-              <ClipboardList size={15} className="text-primary" />
-              Diagnostics associés
-            </h2>
-            {diagnostics.length === 0 ? (
-              <p className="font-body text-sm text-text-light">Aucun diagnostic trouvé pour ce logement.</p>
-            ) : (
-              <div className="space-y-2">
-                {diagnostics.slice(0, 5).map(diag => (
-                  <div key={diag.id} className="p-3 bg-background rounded-xl">
-                    <p className="font-body text-xs text-text-secondary">
-                      {new Date(diag.created_at).toLocaleDateString('fr-FR')}
-                    </p>
-                    <p className="font-display text-sm text-text-primary mt-0.5">
-                      {diag.types.join(', ')}
-                    </p>
-                    <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[11px] font-body ${
-                      diag.status === 'analyzed' ? 'bg-green-100 text-green-800' :
-                      diag.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      diag.status === 'contacted' ? 'bg-blue-100 text-blue-800' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
-                      {diag.status === 'pending' ? 'En attente' :
-                       diag.status === 'analyzed' ? 'Analysé' :
-                       diag.status === 'contacted' ? 'Contacté' : 'Clôturé'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* Date info */}
           <div className="bg-surface rounded-2xl border border-gray-light p-6">
             <h2 className="font-display text-base text-text-primary mb-3">Historique</h2>
@@ -629,9 +541,9 @@ export default function LogementDetail() {
       {/* Delete modal */}
       {showDelete && (
         <DeleteModal
-          onConfirm={() => void handleDelete()}
+          onConfirm={handleDelete}
           onCancel={() => setShowDelete(false)}
-          deleting={deleting}
+          deleting={deleteMutation.isPending}
         />
       )}
     </div>

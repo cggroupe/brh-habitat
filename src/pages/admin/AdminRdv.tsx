@@ -1,29 +1,15 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useState } from 'react'
 import { Calendar, AlertCircle, CheckCircle2, Save, ChevronLeft, ChevronRight } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
-import type { BrhAppointmentRow, AppointmentType, AppointmentStatus } from '@/types/database'
-
-interface RdvWithUser extends BrhAppointmentRow {
-  user_full_name: string | null
-}
-
-interface EditState {
-  status: AppointmentStatus
-  confirmedDate: string
-  dirty: boolean
-  saving: boolean
-  saved: boolean
-  error: string | null
-}
-
-const PAGE_SIZE = 20
-
-const appointmentTypeLabels: Record<AppointmentType, string> = {
-  diagnostic: 'Diagnostic',
-  devis: 'Devis',
-  visite: 'Visite',
-  suivi: 'Suivi',
-}
+import { useAdminAppointments, useUpdateAppointment } from '@/hooks/queries'
+import {
+  APPOINTMENT_TYPES,
+  APPOINTMENT_TYPE_LABELS,
+  APPOINTMENT_STATUSES,
+  APPOINTMENT_STATUS_LABELS,
+  APPOINTMENT_STATUS_COLORS,
+  PAGE_SIZE,
+} from '@/data/constants'
+import type { AppointmentType, AppointmentStatus } from '@/types/database'
 
 const appointmentTypeColors: Record<AppointmentType, string> = {
   diagnostic: 'bg-green-100 text-green-700',
@@ -32,102 +18,48 @@ const appointmentTypeColors: Record<AppointmentType, string> = {
   suivi: 'bg-gray-100 text-gray-600',
 }
 
-const appointmentStatusLabels: Record<AppointmentStatus, string> = {
-  demande: 'Demandé',
-  confirme: 'Confirmé',
-  annule: 'Annulé',
-  termine: 'Terminé',
+interface EditState {
+  status: AppointmentStatus
+  confirmedDate: string
+  dirty: boolean
+  saved: boolean
+  error: string | null
 }
-
-const appointmentStatusColors: Record<AppointmentStatus, string> = {
-  demande: 'bg-amber-100 text-amber-700',
-  confirme: 'bg-green-100 text-green-700',
-  annule: 'bg-red-100 text-red-700',
-  termine: 'bg-gray-100 text-gray-600',
-}
-
-const ALL_STATUSES: AppointmentStatus[] = ['demande', 'confirme', 'annule', 'termine']
-const ALL_TYPES: AppointmentType[] = ['diagnostic', 'devis', 'visite', 'suivi']
 
 export default function AdminRdv() {
-  const [rdvList, setRdvList] = useState<RdvWithUser[]>([])
-  const [editStates, setEditStates] = useState<Record<string, EditState>>({})
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [total, setTotal] = useState(0)
   const [page, setPage] = useState(0)
-  const [filterStatus, setFilterStatus] = useState<AppointmentStatus | ''>('')
-  const [filterType, setFilterType] = useState<AppointmentType | ''>('')
+  const [filterStatus, setFilterStatus] = useState<AppointmentStatus | undefined>(undefined)
+  const [filterType, setFilterType] = useState<AppointmentType | undefined>(undefined)
+  const [editStates, setEditStates] = useState<Record<string, EditState>>({})
+  const [savingId, setSavingId] = useState<string | null>(null)
 
-  const fetchRdv = useCallback(async () => {
-    setLoading(true)
-    setError(null)
+  const filters = {
+    status: filterStatus,
+    type: filterType,
+  }
 
-    let query = supabase
-      .from('brh_appointments')
-      .select('*', { count: 'exact' })
-      .order('requested_date', { ascending: false })
-      .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1)
+  const { data, isLoading, isError } = useAdminAppointments(page, filters)
+  const updateAppointment = useUpdateAppointment()
 
-    if (filterStatus) query = query.eq('status', filterStatus)
-    if (filterType) query = query.eq('type', filterType)
+  const rdvList = data?.data ?? []
+  const total = data?.count ?? 0
+  const totalPages = Math.ceil(total / PAGE_SIZE)
 
-    const { data, count, error: fetchError } = await query
-
-    if (fetchError) {
-      setError('Erreur lors du chargement des rendez-vous.')
-      setLoading(false)
-      return
+  // Initialize edit states for rows not yet tracked
+  rdvList.forEach((r) => {
+    if (!(r.id in editStates)) {
+      setEditStates((prev) => ({
+        ...prev,
+        [r.id]: {
+          status: r.status,
+          confirmedDate: r.confirmed_date ? r.confirmed_date.slice(0, 10) : '',
+          dirty: false,
+          saved: false,
+          error: null,
+        },
+      }))
     }
-
-    const rows = data ?? []
-    const userIds = [...new Set(rows.filter((r) => r.user_id).map((r) => r.user_id as string))]
-    let profileMap: Record<string, string> = {}
-
-    if (userIds.length > 0) {
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .in('id', userIds)
-      if (profiles) {
-        profileMap = Object.fromEntries(profiles.map((p) => [p.id, p.full_name]))
-      }
-    }
-
-    const enriched: RdvWithUser[] = rows.map((r) => ({
-      ...r,
-      user_full_name: r.user_id ? (profileMap[r.user_id] ?? null) : null,
-    }))
-
-    setRdvList(enriched)
-    setTotal(count ?? 0)
-
-    // Initialize edit states (preserve existing dirty states)
-    setEditStates((prev) => {
-      const next: Record<string, EditState> = {}
-      enriched.forEach((r) => {
-        if (prev[r.id]?.dirty) {
-          next[r.id] = prev[r.id]
-        } else {
-          next[r.id] = {
-            status: r.status,
-            confirmedDate: r.confirmed_date ? r.confirmed_date.slice(0, 10) : '',
-            dirty: false,
-            saving: false,
-            saved: false,
-            error: null,
-          }
-        }
-      })
-      return next
-    })
-
-    setLoading(false)
-  }, [page, filterStatus, filterType])
-
-  useEffect(() => {
-    void fetchRdv()
-  }, [fetchRdv])
+  })
 
   function updateEdit(id: string, patch: Partial<EditState>) {
     setEditStates((prev) => ({
@@ -136,38 +68,43 @@ export default function AdminRdv() {
     }))
   }
 
-  async function saveRdv(id: string) {
+  function saveRdv(id: string) {
     const edit = editStates[id]
     if (!edit) return
 
-    setEditStates((prev) => ({ ...prev, [id]: { ...prev[id], saving: true, error: null } }))
+    setSavingId(id)
+    setEditStates((prev) => ({ ...prev, [id]: { ...prev[id], error: null } }))
 
-    const { error: updateError } = await supabase
-      .from('brh_appointments')
-      .update({
-        status: edit.status,
-        confirmed_date: edit.confirmedDate || null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', id)
-
-    if (updateError) {
-      setEditStates((prev) => ({
-        ...prev,
-        [id]: { ...prev[id], saving: false, error: 'Erreur de sauvegarde.' },
-      }))
-    } else {
-      setEditStates((prev) => ({
-        ...prev,
-        [id]: { ...prev[id], saving: false, saved: true, dirty: false },
-      }))
-      setTimeout(() => {
-        setEditStates((prev) => ({ ...prev, [id]: { ...prev[id], saved: false } }))
-      }, 3000)
-    }
+    updateAppointment.mutate(
+      {
+        id,
+        payload: {
+          status: edit.status,
+          confirmed_date: edit.confirmedDate || null,
+          updated_at: new Date().toISOString(),
+        },
+      },
+      {
+        onSuccess: () => {
+          setEditStates((prev) => ({
+            ...prev,
+            [id]: { ...prev[id], saved: true, dirty: false },
+          }))
+          setTimeout(() => {
+            setEditStates((prev) => ({ ...prev, [id]: { ...prev[id], saved: false } }))
+          }, 3000)
+          setSavingId(null)
+        },
+        onError: () => {
+          setEditStates((prev) => ({
+            ...prev,
+            [id]: { ...prev[id], error: 'Erreur de sauvegarde.' },
+          }))
+          setSavingId(null)
+        },
+      },
+    )
   }
-
-  const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
     <div className="p-6 lg:p-8">
@@ -184,32 +121,38 @@ export default function AdminRdv() {
         <div className="flex items-center gap-2">
           <span className="font-body text-sm text-text-secondary">Statut :</span>
           <select
-            value={filterStatus}
-            onChange={(e) => { setFilterStatus(e.target.value as AppointmentStatus | ''); setPage(0) }}
+            value={filterStatus ?? ''}
+            onChange={(e) => {
+              setFilterStatus(e.target.value ? e.target.value as AppointmentStatus : undefined)
+              setPage(0)
+            }}
             className="font-body text-sm text-text-primary bg-background border border-gray-light rounded-lg px-2.5 py-1.5 outline-none focus:border-primary"
           >
             <option value="">Tous</option>
-            {ALL_STATUSES.map((s) => (
-              <option key={s} value={s}>{appointmentStatusLabels[s]}</option>
+            {APPOINTMENT_STATUSES.map((s) => (
+              <option key={s} value={s}>{APPOINTMENT_STATUS_LABELS[s]}</option>
             ))}
           </select>
         </div>
         <div className="flex items-center gap-2">
           <span className="font-body text-sm text-text-secondary">Type :</span>
           <select
-            value={filterType}
-            onChange={(e) => { setFilterType(e.target.value as AppointmentType | ''); setPage(0) }}
+            value={filterType ?? ''}
+            onChange={(e) => {
+              setFilterType(e.target.value ? e.target.value as AppointmentType : undefined)
+              setPage(0)
+            }}
             className="font-body text-sm text-text-primary bg-background border border-gray-light rounded-lg px-2.5 py-1.5 outline-none focus:border-primary"
           >
             <option value="">Tous</option>
-            {ALL_TYPES.map((t) => (
-              <option key={t} value={t}>{appointmentTypeLabels[t]}</option>
+            {APPOINTMENT_TYPES.map((t) => (
+              <option key={t} value={t}>{APPOINTMENT_TYPE_LABELS[t]}</option>
             ))}
           </select>
         </div>
         {(filterStatus || filterType) && (
           <button
-            onClick={() => { setFilterStatus(''); setFilterType(''); setPage(0) }}
+            onClick={() => { setFilterStatus(undefined); setFilterType(undefined); setPage(0) }}
             className="text-xs font-body text-danger hover:underline"
           >
             Réinitialiser
@@ -219,13 +162,13 @@ export default function AdminRdv() {
 
       {/* Table */}
       <div className="bg-surface rounded-2xl border border-gray-light overflow-hidden">
-        {error && (
+        {isError && (
           <div className="flex items-center gap-2 p-4 text-danger font-body text-sm">
-            <AlertCircle size={16} /> {error}
+            <AlertCircle size={16} /> Erreur lors du chargement des rendez-vous.
           </div>
         )}
 
-        {loading ? (
+        {isLoading ? (
           <div className="p-6 space-y-3">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />
@@ -256,15 +199,16 @@ export default function AdminRdv() {
                   {rdvList.map((rdv) => {
                     const edit = editStates[rdv.id]
                     if (!edit) return null
+                    const isSaving = savingId === rdv.id
                     return (
                       <tr key={rdv.id} className={`border-b border-gray-light last:border-0 transition-colors ${edit.dirty ? 'bg-amber-50' : 'hover:bg-background'}`}>
                         <td className="px-4 py-3">
                           <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-display ${appointmentTypeColors[rdv.type]}`}>
-                            {appointmentTypeLabels[rdv.type]}
+                            {APPOINTMENT_TYPE_LABELS[rdv.type]}
                           </span>
                         </td>
                         <td className="px-4 py-3 font-body text-sm text-text-primary">
-                          {rdv.user_full_name ?? <span className="italic text-text-light">Anonyme</span>}
+                          <span className="italic text-text-light">—</span>
                         </td>
                         <td className="px-4 py-3 font-body text-sm text-text-secondary whitespace-nowrap">
                           {new Date(rdv.requested_date).toLocaleDateString('fr-FR')}
@@ -281,10 +225,10 @@ export default function AdminRdv() {
                           <select
                             value={edit.status}
                             onChange={(e) => updateEdit(rdv.id, { status: e.target.value as AppointmentStatus })}
-                            className={`px-2.5 py-1.5 rounded-lg text-xs font-display border outline-none cursor-pointer ${appointmentStatusColors[edit.status]} border-transparent`}
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-display border outline-none cursor-pointer ${APPOINTMENT_STATUS_COLORS[edit.status]} border-transparent`}
                           >
-                            {ALL_STATUSES.map((s) => (
-                              <option key={s} value={s}>{appointmentStatusLabels[s]}</option>
+                            {APPOINTMENT_STATUSES.map((s) => (
+                              <option key={s} value={s}>{APPOINTMENT_STATUS_LABELS[s]}</option>
                             ))}
                           </select>
                         </td>
@@ -298,12 +242,12 @@ export default function AdminRdv() {
                             <span className="text-danger text-xs font-body">{edit.error}</span>
                           ) : (
                             <button
-                              onClick={() => void saveRdv(rdv.id)}
-                              disabled={!edit.dirty || edit.saving}
+                              onClick={() => saveRdv(rdv.id)}
+                              disabled={!edit.dirty || isSaving}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white font-display text-xs rounded-lg hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                             >
                               <Save size={12} />
-                              {edit.saving ? '...' : 'Sauver'}
+                              {isSaving ? '...' : 'Sauver'}
                             </button>
                           )}
                         </td>

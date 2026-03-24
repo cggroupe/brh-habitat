@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import PublicShell from '@/components/layout/PublicShell'
@@ -22,6 +22,7 @@ const RegisterPage = lazy(() => import('@/pages/public/RegisterPage'))
 const ServicesPage = lazy(() => import('@/pages/public/ServicesPage'))
 const MentionsLegalesPage = lazy(() => import('@/pages/public/MentionsLegalesPage'))
 const PolitiqueConfidentialitePage = lazy(() => import('@/pages/public/PolitiqueConfidentialitePage'))
+const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'))
 
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'))
 const MesLogements = lazy(() => import('@/pages/dashboard/MesLogements'))
@@ -43,8 +44,9 @@ const AdminUtilisateurs = lazy(() => import('@/pages/admin/AdminUtilisateurs'))
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,
+      staleTime: 5 * 60 * 1000, // 5 min
       retry: 1,
+      refetchOnWindowFocus: false,
     },
   },
 })
@@ -105,8 +107,8 @@ export default function App() {
               </Route>
             </Route>
 
-            {/* Catch-all redirect */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            {/* Catch-all 404 */}
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

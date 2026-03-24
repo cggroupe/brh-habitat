@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -15,32 +14,15 @@ import {
   CheckCircle2,
   Circle,
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
-import type { BrhCaseRow, BrhHomeRow, CaseStatus } from '@/types/database'
+import { useCaseDetail, useHomeDetail } from '@/hooks/queries'
+import { CASE_STATUS_LABELS, CASE_STATUS_COLORS, CASE_STATUSES } from '@/data/constants'
+import type { CaseStatus } from '@/types/database'
 
 // ─── Status config ────────────────────────────────────────────────────────────
 
-const STATUS_STEPS: CaseStatus[] = ['nouveau', 'en_cours', 'devis', 'travaux', 'termine']
-
-const STATUS_LABELS: Record<CaseStatus, string> = {
-  nouveau: 'Nouveau',
-  en_cours: 'En cours',
-  devis: 'Devis',
-  travaux: 'Travaux',
-  termine: 'Terminé',
-}
-
-const STATUS_COLORS: Record<CaseStatus, string> = {
-  nouveau: 'bg-blue-100 text-blue-800',
-  en_cours: 'bg-orange-100 text-orange-800',
-  devis: 'bg-purple-100 text-purple-800',
-  travaux: 'bg-yellow-100 text-yellow-800',
-  termine: 'bg-green-100 text-green-800',
-}
-
 const STATUS_DESCRIPTIONS: Record<CaseStatus, string> = {
   nouveau: 'Votre dossier a été créé et est en attente de traitement.',
-  en_cours: 'Votre dossier est en cours d\'analyse par notre équipe.',
+  en_cours: "Votre dossier est en cours d'analyse par notre équipe.",
   devis: 'Un devis est en cours de préparation pour vos travaux.',
   travaux: 'Les travaux sont en cours de réalisation.',
   termine: 'Vos travaux sont terminés. Dossier clôturé.',
@@ -48,8 +30,8 @@ const STATUS_DESCRIPTIONS: Record<CaseStatus, string> = {
 
 function StatusBadge({ status }: { status: CaseStatus }) {
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-display ${STATUS_COLORS[status]}`}>
-      {STATUS_LABELS[status]}
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-display ${CASE_STATUS_COLORS[status]}`}>
+      {CASE_STATUS_LABELS[status]}
     </span>
   )
 }
@@ -57,7 +39,7 @@ function StatusBadge({ status }: { status: CaseStatus }) {
 // ─── Timeline ─────────────────────────────────────────────────────────────────
 
 function StatusTimeline({ currentStatus }: { currentStatus: CaseStatus }) {
-  const currentIndex = STATUS_STEPS.indexOf(currentStatus)
+  const currentIndex = CASE_STATUSES.indexOf(currentStatus)
 
   return (
     <div className="relative">
@@ -65,11 +47,11 @@ function StatusTimeline({ currentStatus }: { currentStatus: CaseStatus }) {
       <div className="absolute top-4 left-4 right-4 h-0.5 bg-gray-light" />
       <div
         className="absolute top-4 left-4 h-0.5 bg-primary transition-all duration-500"
-        style={{ width: `${(currentIndex / (STATUS_STEPS.length - 1)) * (100 - 8)}%` }}
+        style={{ width: `${(currentIndex / (CASE_STATUSES.length - 1)) * (100 - 8)}%` }}
       />
 
       <div className="relative flex items-start justify-between">
-        {STATUS_STEPS.map((step, index) => {
+        {CASE_STATUSES.map((step, index) => {
           const isCompleted = index < currentIndex
           const isCurrent = index === currentIndex
           const isPending = index > currentIndex
@@ -95,7 +77,7 @@ function StatusTimeline({ currentStatus }: { currentStatus: CaseStatus }) {
                 <p className={`text-[11px] font-display leading-tight ${
                   isPending ? 'text-text-light' : 'text-text-primary'
                 }`}>
-                  {STATUS_LABELS[step]}
+                  {CASE_STATUS_LABELS[step]}
                 </p>
               </div>
             </div>
@@ -117,52 +99,39 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   )
 }
 
+// ─── Linked home sub-component ────────────────────────────────────────────────
+
+function LinkedHomeCard({ homeId }: { homeId: string }) {
+  const { data: linkedHome } = useHomeDetail(homeId)
+
+  if (!linkedHome) return null
+
+  return (
+    <Link
+      to={`/mes-logements/${linkedHome.id}`}
+      className="block bg-surface rounded-2xl border border-gray-light p-6 hover:border-primary hover:shadow-sm transition-all"
+    >
+      <h2 className="font-display text-base text-text-primary mb-3 flex items-center gap-2">
+        <Home size={15} className="text-primary" />
+        Logement associé
+      </h2>
+      <p className="font-body text-sm text-text-primary">{linkedHome.address}</p>
+      <p className="font-body text-xs text-text-light mt-0.5">
+        {linkedHome.postal_code} {linkedHome.city}
+      </p>
+      <p className="font-body text-xs text-primary mt-2 flex items-center gap-1">
+        Voir le logement <ArrowLeft size={11} className="rotate-180" />
+      </p>
+    </Link>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DossierDetail() {
   const { id } = useParams<{ id: string }>()
 
-  const [caseRow, setCaseRow] = useState<BrhCaseRow | null>(null)
-  const [linkedHome, setLinkedHome] = useState<BrhHomeRow | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!id) return
-
-    async function fetchData() {
-      setLoading(true)
-      setError(null)
-
-      const { data: caseData, error: caseErr } = await supabase
-        .from('brh_cases')
-        .select('*')
-        .eq('id', id!)
-        .single()
-
-      if (caseErr || !caseData) {
-        setError('Dossier introuvable.')
-        setLoading(false)
-        return
-      }
-
-      setCaseRow(caseData)
-
-      // Fetch linked home if any
-      if (caseData.home_id) {
-        const { data: homeData } = await supabase
-          .from('brh_homes')
-          .select('*')
-          .eq('id', caseData.home_id)
-          .single()
-        setLinkedHome(homeData ?? null)
-      }
-
-      setLoading(false)
-    }
-
-    void fetchData()
-  }, [id])
+  const { data: caseRow, isLoading, error } = useCaseDetail(id)
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '—'
@@ -173,7 +142,7 @@ export default function DossierDetail() {
     })
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-6 lg:p-8 flex items-center justify-center min-h-64">
         <Loader2 size={28} className="animate-spin text-primary" />
@@ -192,7 +161,7 @@ export default function DossierDetail() {
         </Link>
         <div className="flex items-center gap-3 p-4 bg-red-50 rounded-2xl text-danger font-body text-sm">
           <AlertCircle size={18} className="shrink-0" />
-          {error ?? 'Dossier introuvable.'}
+          Dossier introuvable.
         </div>
       </div>
     )
@@ -398,23 +367,8 @@ export default function DossierDetail() {
           </div>
 
           {/* Linked home */}
-          {linkedHome && (
-            <Link
-              to={`/mes-logements/${linkedHome.id}`}
-              className="block bg-surface rounded-2xl border border-gray-light p-6 hover:border-primary hover:shadow-sm transition-all"
-            >
-              <h2 className="font-display text-base text-text-primary mb-3 flex items-center gap-2">
-                <Home size={15} className="text-primary" />
-                Logement associé
-              </h2>
-              <p className="font-body text-sm text-text-primary">{linkedHome.address}</p>
-              <p className="font-body text-xs text-text-light mt-0.5">
-                {linkedHome.postal_code} {linkedHome.city}
-              </p>
-              <p className="font-body text-xs text-primary mt-2 flex items-center gap-1">
-                Voir le logement <ArrowLeft size={11} className="rotate-180" />
-              </p>
-            </Link>
+          {caseRow.home_id && (
+            <LinkedHomeCard homeId={caseRow.home_id} />
           )}
         </div>
       </div>

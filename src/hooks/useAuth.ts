@@ -14,21 +14,34 @@ interface ProfileData {
 export function useAuth() {
   const { user, setUser } = useAppStore()
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
+    const abortController = new AbortController()
 
     async function fetchProfile(userId: string): Promise<ProfileData | null> {
       try {
-        const { data, error } = await supabase
+        const { data, error: fetchError } = await supabase
           .from('profiles')
           .select('id, email, full_name, role, avatar_url')
           .eq('id', userId)
           .single()
 
-        if (error || !data) return null
+        if (fetchError || !data) {
+          if (import.meta.env.DEV) {
+            console.error('[useAuth] fetchProfile error:', fetchError)
+          }
+          return null
+        }
         return data as ProfileData
-      } catch {
+      } catch (err) {
+        // Ne pas logger les AbortError (cleanup normal)
+        if (err instanceof Error && err.name !== 'AbortError') {
+          if (import.meta.env.DEV) {
+            console.error('[useAuth] fetchProfile unexpected error:', err)
+          }
+        }
         return null
       }
     }
@@ -44,16 +57,28 @@ export function useAuth() {
     }
 
     async function initAuth() {
-      const { data: { session } } = await supabase.auth.getSession()
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
-      if (session?.user && mounted) {
-        const profile = await fetchProfile(session.user.id)
-        if (mounted) {
-          setUser(profile ? profileToUser(profile) : null)
+        if (sessionError) {
+          if (import.meta.env.DEV) {
+            console.error('[useAuth] getSession error:', sessionError)
+          }
+          if (mounted) setError(sessionError.message)
+        } else if (session?.user && mounted) {
+          const profile = await fetchProfile(session.user.id)
+          if (mounted) {
+            setUser(profile ? profileToUser(profile) : null)
+          }
         }
+      } catch (err) {
+        if (import.meta.env.DEV) {
+          console.error('[useAuth] initAuth unexpected error:', err)
+        }
+        if (mounted) setError('Erreur lors de l\'initialisation de la session')
+      } finally {
+        if (mounted) setLoading(false)
       }
-
-      if (mounted) setLoading(false)
     }
 
     void initAuth()
@@ -62,25 +87,36 @@ export function useAuth() {
       async (event, session) => {
         if (!mounted) return
 
-        if (event === 'SIGNED_OUT' || !session) {
-          setUser(null)
-          setLoading(false)
-          return
-        }
-
-        if (session.user) {
-          setLoading(true)
-          const profile = await fetchProfile(session.user.id)
-          if (mounted) {
-            setUser(profile ? profileToUser(profile) : null)
-            setLoading(false)
+        try {
+          if (event === 'SIGNED_OUT' || !session) {
+            setUser(null)
+            setError(null)
+            return
           }
+
+          if (session.user) {
+            setLoading(true)
+            const profile = await fetchProfile(session.user.id)
+            if (mounted) {
+              setUser(profile ? profileToUser(profile) : null)
+            }
+          }
+        } catch (err) {
+          if (import.meta.env.DEV) {
+            console.error('[useAuth] onAuthStateChange error:', err)
+          }
+          if (mounted) {
+            setError('Erreur lors de la mise a jour de la session')
+          }
+        } finally {
+          if (mounted) setLoading(false)
         }
       }
     )
 
     return () => {
       mounted = false
+      abortController.abort()
       subscription.unsubscribe()
     }
   }, [setUser])
@@ -93,6 +129,7 @@ export function useAuth() {
   return {
     user,
     loading,
+    error,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
     signOut,

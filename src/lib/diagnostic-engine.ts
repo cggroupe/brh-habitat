@@ -1,5 +1,6 @@
 import type { DiagnosticType, DiagnosticEquipment } from '@/stores/diagnosticStore'
 import { symptomsByType } from '@/data/symptoms'
+import { DPE_GAIN_ESTIMATES, DPE_CLASSES, type DpeClass } from '@/data/aides-renov'
 
 export interface DiagnosticResult {
   overallScore: number
@@ -631,5 +632,84 @@ export function analyzeDiagnostic(
       const order = { haute: 0, moyenne: 1, basse: 2 }
       return order[a.priority] - order[b.priority]
     }),
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Estimation du gain DPE apres travaux
+// ---------------------------------------------------------------------------
+
+export interface DpeEstimate {
+  currentClass: DpeClass | null
+  estimatedClassAfter: DpeClass | null
+  gainClasses: number
+  savingsPerYear: number
+}
+
+// Mapping des libelles DPE du wizard vers DpeClass
+const DPE_LABEL_MAP: Record<string, DpeClass> = {
+  'A (excellent)': 'A',
+  'B (tres bon)': 'B',
+  'C (bon)': 'C',
+  'D (moyen)': 'D',
+  'E (passoire)': 'E',
+  'F ou G (tres mauvais)': 'G',
+}
+
+export function estimateDpeGain(
+  selectedTypes: DiagnosticType[],
+  currentDpe: string | undefined,
+  result: DiagnosticResult,
+): DpeEstimate {
+  // Mapper le label DPE vers une DpeClass
+  const currentClass: DpeClass | null = currentDpe
+    ? (DPE_LABEL_MAP[currentDpe] ?? null)
+    : null
+
+  // Trouver la meilleure combinaison dans DPE_GAIN_ESTIMATES
+  // "Meilleure" = combinaison dont les types sont tous dans selectedTypes ET la plus large en taille
+  let bestMatch = DPE_GAIN_ESTIMATES.find((e) => e.workCombination.length === 0) ?? null
+  let bestMatchSize = 0
+
+  for (const estimate of DPE_GAIN_ESTIMATES) {
+    const allIncluded = estimate.workCombination.every((t) =>
+      selectedTypes.includes(t as DiagnosticType),
+    )
+    if (allIncluded && estimate.workCombination.length > bestMatchSize) {
+      bestMatch = estimate
+      bestMatchSize = estimate.workCombination.length
+    }
+  }
+
+  if (!bestMatch) {
+    return {
+      currentClass,
+      estimatedClassAfter: null,
+      gainClasses: 0,
+      savingsPerYear: 0,
+    }
+  }
+
+  // Score moyen >= 50 → gainMax, sinon gainMin
+  const averageScore = result.overallScore
+  const gainRaw = averageScore >= 50 ? bestMatch.gainMax : bestMatch.gainMin
+  const gainClasses = Math.round(gainRaw)
+
+  // Calculer la classe apres travaux
+  let estimatedClassAfter: DpeClass | null = null
+  if (currentClass !== null) {
+    const currentIndex = DPE_CLASSES.indexOf(currentClass)
+    const targetIndex = Math.max(0, currentIndex - gainClasses)
+    estimatedClassAfter = DPE_CLASSES[targetIndex]
+  }
+
+  // Economies annuelles : gain_classes * 300 EUR/an
+  const savingsPerYear = gainClasses * 300
+
+  return {
+    currentClass,
+    estimatedClassAfter,
+    gainClasses,
+    savingsPerYear,
   }
 }

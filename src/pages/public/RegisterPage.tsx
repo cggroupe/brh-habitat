@@ -3,6 +3,46 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { ArrowRight, UserPlus, CheckCircle } from 'lucide-react'
 
+// Map des messages Supabase bruts vers des messages user-friendly
+const AUTH_ERROR_MAP: Record<string, string> = {
+  'User already registered': 'Un compte existe deja avec cette adresse e-mail.',
+  'Invalid email': 'L\'adresse e-mail saisie n\'est pas valide.',
+  'Password should be at least 6 characters': 'Le mot de passe doit contenir au moins 8 caracteres.',
+  'Email rate limit exceeded': 'Trop de tentatives. Veuillez patienter quelques minutes.',
+  'Signup is disabled': 'Les inscriptions sont temporairement desactivees.',
+}
+
+function getFriendlyError(message: string): string {
+  return AUTH_ERROR_MAP[message] ?? 'Une erreur est survenue lors de la creation du compte. Veuillez reessayer.'
+}
+
+interface PasswordCriteria {
+  minLength: boolean
+  hasUppercase: boolean
+  hasNumber: boolean
+}
+
+function getPasswordCriteria(password: string): PasswordCriteria {
+  return {
+    minLength: password.length >= 8,
+    hasUppercase: /[A-Z]/.test(password),
+    hasNumber: /[0-9]/.test(password),
+  }
+}
+
+function isPasswordValid(criteria: PasswordCriteria): boolean {
+  return criteria.minLength && criteria.hasUppercase && criteria.hasNumber
+}
+
+function CriteriaItem({ met, label }: { met: boolean; label: string }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${met ? 'bg-primary' : 'bg-slate-300'}`} />
+      <span className={`font-body text-xs ${met ? 'text-primary' : 'text-slate-400'}`}>{label}</span>
+    </div>
+  )
+}
+
 export default function RegisterPage() {
   const navigate = useNavigate()
   const [fullName, setFullName] = useState('')
@@ -10,11 +50,22 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [passwordTouched, setPasswordTouched] = useState(false)
+
+  const criteria = getPasswordCriteria(password)
+  const passwordValid = isPasswordValid(criteria)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true)
     setError(null)
+
+    if (!passwordValid) {
+      setPasswordTouched(true)
+      setError('Le mot de passe ne respecte pas les criteres de securite.')
+      return
+    }
+
+    setLoading(true)
 
     const { error: authError } = await supabase.auth.signUp({
       email,
@@ -25,7 +76,7 @@ export default function RegisterPage() {
     })
 
     if (authError) {
-      setError(authError.message)
+      setError(getFriendlyError(authError.message))
       setLoading(false)
     } else {
       navigate('/tableau-de-bord')
@@ -127,16 +178,24 @@ export default function RegisterPage() {
                 id="register-password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  if (!passwordTouched) setPasswordTouched(true)
+                }}
                 required
-                minLength={8}
                 autoComplete="new-password"
                 className="w-full px-4 py-3.5 border border-slate-200 rounded-xl font-body text-sm text-slate-900 bg-white focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors placeholder:text-slate-400"
                 placeholder="••••••••"
               />
-              <p className="font-body text-xs text-slate-400 mt-2">
-                8 caracteres minimum
-              </p>
+
+              {/* Criteres mot de passe — visibles dès que l'utilisateur commence a saisir */}
+              {passwordTouched && (
+                <div className="mt-3 space-y-1.5">
+                  <CriteriaItem met={criteria.minLength} label="8 caracteres minimum" />
+                  <CriteriaItem met={criteria.hasUppercase} label="Au moins 1 lettre majuscule" />
+                  <CriteriaItem met={criteria.hasNumber} label="Au moins 1 chiffre" />
+                </div>
+              )}
             </div>
 
             <button

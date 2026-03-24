@@ -1,7 +1,9 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Users, AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { useAdminProfiles, useUpdateProfileRole } from '@/hooks/queries'
 import { useAppStore } from '@/stores/appStore'
+import { supabase } from '@/lib/supabase'
+import { PAGE_SIZE } from '@/data/constants'
 import type { ProfileRow, UserRole } from '@/types/database'
 
 interface ProfileWithCounts extends ProfileRow {
@@ -10,97 +12,85 @@ interface ProfileWithCounts extends ProfileRow {
   diagnostics_count: number
 }
 
-const PAGE_SIZE = 20
-
 export default function AdminUtilisateurs() {
   const { user: currentUser } = useAppStore()
-  const [profiles, setProfiles] = useState<ProfileWithCounts[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [total, setTotal] = useState(0)
   const [page, setPage] = useState(0)
+
+  const { data, isLoading, isError } = useAdminProfiles(page)
+  const updateProfileRole = useUpdateProfileRole()
+
+  const profiles = data?.data ?? []
+  const total = data?.count ?? 0
+  const totalPages = Math.ceil(total / PAGE_SIZE)
+
+  const [profilesWithCounts, setProfilesWithCounts] = useState<ProfileWithCounts[]>([])
+  const [loadingCounts, setLoadingCounts] = useState(false)
 
   const [savingRoleId, setSavingRoleId] = useState<string | null>(null)
   const [savedRoleId, setSavedRoleId] = useState<string | null>(null)
   const [localRoles, setLocalRoles] = useState<Record<string, UserRole>>({})
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
-  const fetchProfiles = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-
-    const { data, count, error: fetchError } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1)
-
-    if (fetchError) {
-      setError('Erreur lors du chargement des utilisateurs.')
-      setLoading(false)
+  // Fetch counts whenever profiles change
+  useEffect(() => {
+    if (profiles.length === 0) {
+      setProfilesWithCounts([])
       return
     }
 
-    const rows = data ?? []
+    async function fetchCounts() {
+      setLoadingCounts(true)
 
-    // Fetch counts for each user in parallel
-    const userIds = rows.map((p) => p.id)
+      const userIds = profiles.map((p) => p.id)
 
-    const [homesResult, casesResult, diagnosticsResult] = await Promise.all([
-      userIds.length > 0
-        ? supabase.from('brh_homes').select('user_id').in('user_id', userIds)
-        : Promise.resolve({ data: [] }),
-      userIds.length > 0
-        ? supabase.from('brh_cases').select('user_id').in('user_id', userIds)
-        : Promise.resolve({ data: [] }),
-      userIds.length > 0
-        ? supabase.from('brh_diagnostics').select('user_id').in('user_id', userIds)
-        : Promise.resolve({ data: [] }),
-    ])
+      const [homesResult, casesResult, diagnosticsResult] = await Promise.all([
+        supabase.from('brh_homes').select('user_id').in('user_id', userIds),
+        supabase.from('brh_cases').select('user_id').in('user_id', userIds),
+        supabase.from('brh_diagnostics').select('user_id').in('user_id', userIds),
+      ])
 
-    const homesCountMap: Record<string, number> = {}
-    const casesCountMap: Record<string, number> = {}
-    const diagnosticsCountMap: Record<string, number> = {}
+      const homesCountMap: Record<string, number> = {}
+      const casesCountMap: Record<string, number> = {}
+      const diagnosticsCountMap: Record<string, number> = {}
 
-    ;(homesResult.data ?? []).forEach((h) => {
-      homesCountMap[h.user_id] = (homesCountMap[h.user_id] ?? 0) + 1
-    })
-    ;(casesResult.data ?? []).forEach((c) => {
-      casesCountMap[c.user_id] = (casesCountMap[c.user_id] ?? 0) + 1
-    })
-    ;(diagnosticsResult.data ?? []).forEach((d) => {
-      if (d.user_id) {
-        diagnosticsCountMap[d.user_id] = (diagnosticsCountMap[d.user_id] ?? 0) + 1
-      }
-    })
-
-    const enriched: ProfileWithCounts[] = rows.map((p) => ({
-      ...p,
-      homes_count: homesCountMap[p.id] ?? 0,
-      cases_count: casesCountMap[p.id] ?? 0,
-      diagnostics_count: diagnosticsCountMap[p.id] ?? 0,
-    }))
-
-    setProfiles(enriched)
-    setTotal(count ?? 0)
-
-    // Initialize local roles (preserve dirty states)
-    setLocalRoles((prev) => {
-      const next = { ...prev }
-      enriched.forEach((p) => {
-        if (!(p.id in next)) next[p.id] = p.role
+      ;(homesResult.data ?? []).forEach((h) => {
+        homesCountMap[h.user_id] = (homesCountMap[h.user_id] ?? 0) + 1
       })
-      return next
-    })
+      ;(casesResult.data ?? []).forEach((c) => {
+        casesCountMap[c.user_id] = (casesCountMap[c.user_id] ?? 0) + 1
+      })
+      ;(diagnosticsResult.data ?? []).forEach((d) => {
+        if (d.user_id) {
+          diagnosticsCountMap[d.user_id] = (diagnosticsCountMap[d.user_id] ?? 0) + 1
+        }
+      })
 
-    setLoading(false)
-  }, [page])
+      const enriched: ProfileWithCounts[] = profiles.map((p) => ({
+        ...p,
+        homes_count: homesCountMap[p.id] ?? 0,
+        cases_count: casesCountMap[p.id] ?? 0,
+        diagnostics_count: diagnosticsCountMap[p.id] ?? 0,
+      }))
 
-  useEffect(() => {
-    void fetchProfiles()
-  }, [fetchProfiles])
+      setProfilesWithCounts(enriched)
 
-  async function saveRole(profile: ProfileWithCounts) {
+      // Initialize local roles (preserve dirty states)
+      setLocalRoles((prev) => {
+        const next = { ...prev }
+        enriched.forEach((p) => {
+          if (!(p.id in next)) next[p.id] = p.role
+        })
+        return next
+      })
+
+      setLoadingCounts(false)
+    }
+
+    void fetchCounts()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data])
+
+  function saveRole(profile: ProfileWithCounts) {
     const newRole = localRoles[profile.id]
     if (!newRole || newRole === profile.role) return
 
@@ -112,23 +102,27 @@ export default function AdminUtilisateurs() {
 
     setSavingRoleId(profile.id)
 
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ role: newRole, updated_at: new Date().toISOString() })
-      .eq('id', profile.id)
-
-    if (!updateError) {
-      setProfiles((prev) =>
-        prev.map((p) => p.id === profile.id ? { ...p, role: newRole } : p)
-      )
-      setSavedRoleId(profile.id)
-      setTimeout(() => setSavedRoleId(null), 2500)
-    }
-
-    setSavingRoleId(null)
+    updateProfileRole.mutate(
+      { id: profile.id, role: newRole },
+      {
+        onSuccess: () => {
+          setSavedRoleId(profile.id)
+          setTimeout(() => setSavedRoleId(null), 2500)
+          setSavingRoleId(null)
+        },
+        onError: () => {
+          setSavingRoleId(null)
+        },
+      },
+    )
   }
 
-  const totalPages = Math.ceil(total / PAGE_SIZE)
+  const displayedProfiles = profilesWithCounts.length > 0 ? profilesWithCounts : profiles.map((p) => ({
+    ...p,
+    homes_count: 0,
+    cases_count: 0,
+    diagnostics_count: 0,
+  }))
 
   return (
     <div className="p-6 lg:p-8">
@@ -142,19 +136,19 @@ export default function AdminUtilisateurs() {
 
       {/* Table */}
       <div className="bg-surface rounded-2xl border border-gray-light overflow-hidden">
-        {error && (
+        {isError && (
           <div className="flex items-center gap-2 p-4 text-danger font-body text-sm">
-            <AlertCircle size={16} /> {error}
+            <AlertCircle size={16} /> Erreur lors du chargement des utilisateurs.
           </div>
         )}
 
-        {loading ? (
+        {isLoading ? (
           <div className="p-6 space-y-3">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="h-14 bg-gray-100 rounded-lg animate-pulse" />
             ))}
           </div>
-        ) : profiles.length === 0 ? (
+        ) : displayedProfiles.length === 0 ? (
           <div className="p-12 text-center">
             <Users size={40} className="text-gray-300 mx-auto mb-3" />
             <p className="font-display text-base text-text-primary">Aucun utilisateur trouvé</p>
@@ -175,7 +169,7 @@ export default function AdminUtilisateurs() {
                   </tr>
                 </thead>
                 <tbody>
-                  {profiles.map((profile) => {
+                  {displayedProfiles.map((profile) => {
                     const isCurrentUser = currentUser?.id === profile.id
                     const currentRole = localRoles[profile.id] ?? profile.role
                     const isDirty = currentRole !== profile.role
@@ -237,17 +231,17 @@ export default function AdminUtilisateurs() {
 
                           {/* Counts */}
                           <td className="px-6 py-3">
-                            <span className={`inline-flex items-center gap-1 font-body text-sm ${profile.homes_count > 0 ? 'text-text-primary' : 'text-text-light'}`}>
+                            <span className={`inline-flex items-center gap-1 font-body text-sm ${loadingCounts ? 'opacity-40' : ''} ${profile.homes_count > 0 ? 'text-text-primary' : 'text-text-light'}`}>
                               {profile.homes_count}
                             </span>
                           </td>
                           <td className="px-6 py-3">
-                            <span className={`inline-flex items-center gap-1 font-body text-sm ${profile.cases_count > 0 ? 'text-text-primary' : 'text-text-light'}`}>
+                            <span className={`inline-flex items-center gap-1 font-body text-sm ${loadingCounts ? 'opacity-40' : ''} ${profile.cases_count > 0 ? 'text-text-primary' : 'text-text-light'}`}>
                               {profile.cases_count}
                             </span>
                           </td>
                           <td className="px-6 py-3">
-                            <span className={`inline-flex items-center gap-1 font-body text-sm ${profile.diagnostics_count > 0 ? 'text-text-primary' : 'text-text-light'}`}>
+                            <span className={`inline-flex items-center gap-1 font-body text-sm ${loadingCounts ? 'opacity-40' : ''} ${profile.diagnostics_count > 0 ? 'text-text-primary' : 'text-text-light'}`}>
                               {profile.diagnostics_count}
                             </span>
                           </td>
@@ -267,7 +261,7 @@ export default function AdminUtilisateurs() {
                               <CheckCircle2 size={16} className="text-success" />
                             ) : (
                               <button
-                                onClick={() => void saveRole(profile)}
+                                onClick={() => saveRole(profile)}
                                 disabled={!isDirty || savingRoleId === profile.id}
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white font-display text-xs rounded-lg hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
                               >

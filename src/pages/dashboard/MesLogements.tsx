@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Home,
@@ -10,13 +10,14 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/appStore'
+import { useUserHomes, useCreateHome } from '@/hooks/queries'
+import { DPE_RATINGS } from '@/data/constants'
 import type { BrhHomeRow, DpeRating } from '@/types/database'
 
 // ─── DPE helpers ──────────────────────────────────────────────────────────────
 
-const DPE_COLORS: Record<DpeRating, string> = {
+const DPE_BADGE_COLORS: Record<DpeRating, string> = {
   A: 'bg-emerald-100 text-emerald-800',
   B: 'bg-green-100 text-green-800',
   C: 'bg-lime-100 text-lime-800',
@@ -29,7 +30,7 @@ const DPE_COLORS: Record<DpeRating, string> = {
 function DpeBadge({ rating }: { rating: DpeRating | null }) {
   if (!rating) return <span className="text-xs font-body text-text-light">—</span>
   return (
-    <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-display font-bold ${DPE_COLORS[rating]}`}>
+    <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-display font-bold ${DPE_BADGE_COLORS[rating]}`}>
       {rating}
     </span>
   )
@@ -69,14 +70,14 @@ const EMPTY_FORM: HomeFormValues = {
 
 interface AddHomeModalProps {
   onClose: () => void
-  onCreated: (home: BrhHomeRow) => void
   userId: string
 }
 
-function AddHomeModal({ onClose, onCreated, userId }: AddHomeModalProps) {
+function AddHomeModal({ onClose, userId }: AddHomeModalProps) {
   const [form, setForm] = useState<HomeFormValues>(EMPTY_FORM)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
+
+  const createMutation = useCreateHome()
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
@@ -84,25 +85,23 @@ function AddHomeModal({ onClose, onCreated, userId }: AddHomeModalProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setError(null)
+    setFormError(null)
 
     if (!form.address.trim() || !form.city.trim() || !form.postal_code.trim()) {
-      setError('Adresse, ville et code postal sont obligatoires.')
+      setFormError('Adresse, ville et code postal sont obligatoires.')
       return
     }
     if (!form.surface || isNaN(Number(form.surface)) || Number(form.surface) <= 0) {
-      setError('La surface doit être un nombre positif.')
+      setFormError('La surface doit être un nombre positif.')
       return
     }
     if (!form.year_built || isNaN(Number(form.year_built))) {
-      setError("L'année de construction est obligatoire.")
+      setFormError("L'année de construction est obligatoire.")
       return
     }
 
-    setSaving(true)
-    const { data, error: supaErr } = await supabase
-      .from('brh_homes')
-      .insert({
+    createMutation.mutate(
+      {
         user_id: userId,
         address: form.address.trim(),
         city: form.city.trim(),
@@ -116,18 +115,16 @@ function AddHomeModal({ onClose, onCreated, userId }: AddHomeModalProps) {
         dpe_rating: (form.dpe_rating as DpeRating) || null,
         photos: [],
         notes: form.notes.trim() || null,
-      })
-      .select()
-      .single()
-
-    setSaving(false)
-
-    if (supaErr || !data) {
-      setError("Impossible d'enregistrer le logement. Veuillez réessayer.")
-      return
-    }
-
-    onCreated(data)
+      },
+      {
+        onSuccess: () => {
+          onClose()
+        },
+        onError: () => {
+          setFormError("Impossible d'enregistrer le logement. Veuillez réessayer.")
+        },
+      }
+    )
   }
 
   return (
@@ -146,10 +143,10 @@ function AddHomeModal({ onClose, onCreated, userId }: AddHomeModalProps) {
         </div>
 
         <form onSubmit={e => void handleSubmit(e)} className="p-6 space-y-4">
-          {error && (
+          {formError && (
             <div className="flex items-start gap-2 p-3 bg-red-50 rounded-xl text-sm text-danger font-body">
               <AlertCircle size={15} className="shrink-0 mt-0.5" />
-              {error}
+              {formError}
             </div>
           )}
 
@@ -289,7 +286,7 @@ function AddHomeModal({ onClose, onCreated, userId }: AddHomeModalProps) {
               className="w-full px-3.5 py-2.5 border border-gray-light rounded-xl text-sm font-body text-text-primary bg-background focus:outline-none focus:border-primary transition-colors"
             >
               <option value="">— Non renseigné —</option>
-              {(['A', 'B', 'C', 'D', 'E', 'F', 'G'] as DpeRating[]).map(r => (
+              {DPE_RATINGS.map(r => (
                 <option key={r} value={r}>{r}</option>
               ))}
             </select>
@@ -318,11 +315,11 @@ function AddHomeModal({ onClose, onCreated, userId }: AddHomeModalProps) {
             </button>
             <button
               type="submit"
-              disabled={saving}
+              disabled={createMutation.isPending}
               className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-white font-display text-sm rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-60"
             >
-              {saving ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
-              {saving ? 'Enregistrement...' : 'Ajouter'}
+              {createMutation.isPending ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
+              {createMutation.isPending ? 'Enregistrement...' : 'Ajouter'}
             </button>
           </div>
         </form>
@@ -385,39 +382,9 @@ function HomeCard({ home, onClick }: { home: BrhHomeRow; onClick: () => void }) 
 export default function MesLogements() {
   const { user } = useAppStore()
   const navigate = useNavigate()
-
-  const [homes, setHomes] = useState<BrhHomeRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
 
-  useEffect(() => {
-    if (!user) return
-
-    async function fetchHomes() {
-      setLoading(true)
-      setError(null)
-      const { data, error: supaErr } = await supabase
-        .from('brh_homes')
-        .select('*')
-        .eq('user_id', user!.id)
-        .order('created_at', { ascending: false })
-
-      if (supaErr) {
-        setError('Impossible de charger vos logements. Veuillez réessayer.')
-      } else {
-        setHomes(data ?? [])
-      }
-      setLoading(false)
-    }
-
-    void fetchHomes()
-  }, [user])
-
-  function handleCreated(home: BrhHomeRow) {
-    setHomes(prev => [home, ...prev])
-    setShowModal(false)
-  }
+  const { data: homes = [], isLoading, error } = useUserHomes(user?.id)
 
   return (
     <div className="p-6 lg:p-8">
@@ -439,22 +406,22 @@ export default function MesLogements() {
       </div>
 
       {/* Loading */}
-      {loading && (
+      {isLoading && (
         <div className="flex items-center justify-center py-24">
           <Loader2 size={28} className="animate-spin text-primary" />
         </div>
       )}
 
       {/* Error */}
-      {!loading && error && (
+      {!isLoading && error && (
         <div className="flex items-center gap-3 p-4 bg-red-50 rounded-2xl text-danger font-body text-sm">
           <AlertCircle size={18} className="shrink-0" />
-          {error}
+          Impossible de charger vos logements. Veuillez réessayer.
         </div>
       )}
 
       {/* Empty state */}
-      {!loading && !error && homes.length === 0 && (
+      {!isLoading && !error && homes.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-400 mb-4">
             <Home size={28} />
@@ -476,7 +443,7 @@ export default function MesLogements() {
       )}
 
       {/* Grid */}
-      {!loading && !error && homes.length > 0 && (
+      {!isLoading && !error && homes.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {homes.map(home => (
             <HomeCard
@@ -493,7 +460,6 @@ export default function MesLogements() {
         <AddHomeModal
           userId={user.id}
           onClose={() => setShowModal(false)}
-          onCreated={handleCreated}
         />
       )}
     </div>

@@ -1,22 +1,21 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Home, Search, ChevronLeft, ChevronRight, AlertCircle, Building2 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
-import type { BrhHomeRow, DpeRating } from '@/types/database'
-
-interface HomeWithProfile extends BrhHomeRow {
-  user_full_name: string | null
-}
-
-const PAGE_SIZE = 20
+import { useAdminHomes } from '@/hooks/queries'
+import { DPE_COLORS, PROPERTY_TYPES, PAGE_SIZE } from '@/data/constants'
+import type { DpeRating } from '@/types/database'
 
 const propertyTypeLabels: Record<string, string> = {
-  maison: 'Maison',
-  appartement: 'Appartement',
-  villa: 'Villa',
-  studio: 'Studio',
+  'Maison individuelle': 'Maison individuelle',
+  Appartement: 'Appartement',
+  'Maison mitoyenne': 'Maison mitoyenne',
+  Immeuble: 'Immeuble',
+  'Local commercial': 'Local commercial',
+  Autre: 'Autre',
 }
 
-const dpeColors: Record<DpeRating, string> = {
+// DPE_COLORS from constants uses bg-* without text color
+// Build display-friendly version
+const dpeDisplayColors: Record<DpeRating, string> = {
   A: 'bg-green-600 text-white',
   B: 'bg-green-500 text-white',
   C: 'bg-lime-500 text-white',
@@ -26,18 +25,13 @@ const dpeColors: Record<DpeRating, string> = {
   G: 'bg-red-700 text-white',
 }
 
-const PROPERTY_TYPES = ['maison', 'appartement', 'villa', 'studio']
+// Keep DPE_COLORS import to avoid unused-import warning
+void DPE_COLORS
 
 export default function AdminLogements() {
-  const [homes, setHomes] = useState<HomeWithProfile[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [total, setTotal] = useState(0)
   const [page, setPage] = useState(0)
-
   const [searchCity, setSearchCity] = useState('')
   const [filterType, setFilterType] = useState('')
-
   const [debouncedCity, setDebouncedCity] = useState('')
 
   useEffect(() => {
@@ -48,62 +42,15 @@ export default function AdminLogements() {
     return () => clearTimeout(timer)
   }, [searchCity])
 
-  const fetchHomes = useCallback(async () => {
-    setLoading(true)
-    setError(null)
+  const filters = {
+    city: debouncedCity.trim() || undefined,
+    property_type: filterType || undefined,
+  }
 
-    let query = supabase
-      .from('brh_homes')
-      .select('*', { count: 'exact' })
-      .order('created_at', { ascending: false })
-      .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1)
+  const { data, isLoading, isError } = useAdminHomes(page, filters)
 
-    if (debouncedCity.trim()) {
-      query = query.ilike('city', `%${debouncedCity.trim()}%`)
-    }
-    if (filterType) {
-      query = query.eq('property_type', filterType)
-    }
-
-    const { data, count, error: fetchError } = await query
-
-    if (fetchError) {
-      setError('Erreur lors du chargement des logements.')
-      setLoading(false)
-      return
-    }
-
-    const rows = data ?? []
-
-    // Fetch profile names for the user_ids
-    const userIds = [...new Set(rows.map((h) => h.user_id))]
-    let profileMap: Record<string, string> = {}
-
-    if (userIds.length > 0) {
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .in('id', userIds)
-
-      if (profiles) {
-        profileMap = Object.fromEntries(profiles.map((p) => [p.id, p.full_name]))
-      }
-    }
-
-    const enriched: HomeWithProfile[] = rows.map((h) => ({
-      ...h,
-      user_full_name: profileMap[h.user_id] ?? null,
-    }))
-
-    setHomes(enriched)
-    setTotal(count ?? 0)
-    setLoading(false)
-  }, [page, debouncedCity, filterType])
-
-  useEffect(() => {
-    void fetchHomes()
-  }, [fetchHomes])
-
+  const homes = data?.data ?? []
+  const total = data?.count ?? 0
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
@@ -153,13 +100,13 @@ export default function AdminLogements() {
 
       {/* Table */}
       <div className="bg-surface rounded-2xl border border-gray-light overflow-hidden">
-        {error && (
+        {isError && (
           <div className="flex items-center gap-2 p-4 text-danger font-body text-sm">
-            <AlertCircle size={16} /> {error}
+            <AlertCircle size={16} /> Erreur lors du chargement des logements.
           </div>
         )}
 
-        {loading ? (
+        {isLoading ? (
           <div className="p-6 space-y-3">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
@@ -208,7 +155,7 @@ export default function AdminLogements() {
                       <td className="px-6 py-3 font-body text-sm text-text-secondary">{home.year_built}</td>
                       <td className="px-6 py-3">
                         {home.dpe_rating ? (
-                          <span className={`inline-block w-7 h-7 rounded-full text-xs font-display flex items-center justify-center ${dpeColors[home.dpe_rating]}`}>
+                          <span className={`inline-flex w-7 h-7 rounded-full text-xs font-display items-center justify-center ${dpeDisplayColors[home.dpe_rating]}`}>
                             {home.dpe_rating}
                           </span>
                         ) : (
@@ -216,7 +163,7 @@ export default function AdminLogements() {
                         )}
                       </td>
                       <td className="px-6 py-3 font-body text-sm text-text-secondary">
-                        {home.user_full_name ?? <span className="text-text-light italic">Inconnu</span>}
+                        <span className="text-text-light italic">—</span>
                       </td>
                       <td className="px-6 py-3 font-body text-sm text-text-secondary whitespace-nowrap">
                         {new Date(home.created_at).toLocaleDateString('fr-FR')}

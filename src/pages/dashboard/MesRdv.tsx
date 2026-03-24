@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
   Calendar,
   Plus,
@@ -9,18 +9,19 @@ import {
   ClipboardList,
   MessageSquare,
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/appStore'
-import type { BrhAppointmentRow, AppointmentType, AppointmentStatus } from '@/types/database'
+import { useUserAppointments, useCreateAppointment } from '@/hooks/queries'
+import {
+  APPOINTMENT_TYPE_LABELS,
+  APPOINTMENT_STATUS_LABELS,
+  APPOINTMENT_STATUS_COLORS,
+} from '@/data/constants'
+import type { BrhAppointmentRow, AppointmentType } from '@/types/database'
+import type { Database } from '@/types/database'
+
+type AppointmentInsert = Database['public']['Tables']['brh_appointments']['Insert']
 
 // ─── Type config ──────────────────────────────────────────────────────────────
-
-const TYPE_LABELS: Record<AppointmentType, string> = {
-  diagnostic: 'Diagnostic',
-  devis: 'Devis',
-  visite: 'Visite',
-  suivi: 'Suivi',
-}
 
 const TYPE_COLORS: Record<AppointmentType, string> = {
   diagnostic: 'bg-green-100 text-green-800',
@@ -34,20 +35,6 @@ const TYPE_BG: Record<AppointmentType, string> = {
   devis: 'bg-blue-50 text-blue-600',
   visite: 'bg-orange-50 text-orange-600',
   suivi: 'bg-purple-50 text-purple-600',
-}
-
-const STATUS_LABELS: Record<AppointmentStatus, string> = {
-  demande: 'Demandé',
-  confirme: 'Confirmé',
-  annule: 'Annulé',
-  termine: 'Terminé',
-}
-
-const STATUS_COLORS: Record<AppointmentStatus, string> = {
-  demande: 'bg-yellow-100 text-yellow-800',
-  confirme: 'bg-green-100 text-green-800',
-  annule: 'bg-red-100 text-red-700',
-  termine: 'bg-gray-100 text-gray-600',
 }
 
 // ─── Appointment card ─────────────────────────────────────────────────────────
@@ -71,10 +58,10 @@ function AppointmentCard({ appt }: { appt: BrhAppointmentRow }) {
           <div className="flex items-start justify-between gap-3 flex-wrap mb-2">
             <div className="flex items-center gap-2 flex-wrap">
               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-display ${TYPE_COLORS[appt.type]}`}>
-                {TYPE_LABELS[appt.type]}
+                {APPOINTMENT_TYPE_LABELS[appt.type]}
               </span>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-display ${STATUS_COLORS[appt.status]}`}>
-                {STATUS_LABELS[appt.status]}
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-display ${APPOINTMENT_STATUS_COLORS[appt.status]}`}>
+                {APPOINTMENT_STATUS_LABELS[appt.status]}
               </span>
             </div>
           </div>
@@ -145,55 +132,50 @@ function AppointmentCard({ appt }: { appt: BrhAppointmentRow }) {
 interface RequestModalProps {
   userId: string
   onClose: () => void
-  onCreated: (appt: BrhAppointmentRow) => void
 }
 
-function RequestModal({ userId, onClose, onCreated }: RequestModalProps) {
+function RequestModal({ userId, onClose }: RequestModalProps) {
   const [type, setType] = useState<AppointmentType>('diagnostic')
   const [requestedDate, setRequestedDate] = useState('')
   const [notes, setNotes] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
+
+  const createMutation = useCreateAppointment()
 
   // Min date: tomorrow
   const minDate = new Date()
   minDate.setDate(minDate.getDate() + 1)
   const minDateStr = minDate.toISOString().split('T')[0]
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setError(null)
+    setFormError(null)
 
     if (!requestedDate) {
-      setError('Veuillez choisir une date souhaitée.')
+      setFormError('Veuillez choisir une date souhaitée.')
       return
     }
 
-    setSaving(true)
-    const { data, error: supaErr } = await supabase
-      .from('brh_appointments')
-      .insert({
-        user_id: userId,
-        type,
-        requested_date: new Date(requestedDate).toISOString(),
-        status: 'demande',
-        notes: notes.trim() || null,
-        confirmed_date: null,
-        case_id: null,
-        home_id: null,
-        admin_notes: null,
-      })
-      .select()
-      .single()
-
-    setSaving(false)
-
-    if (supaErr || !data) {
-      setError('Impossible de soumettre votre demande. Veuillez réessayer.')
-      return
+    const payload: AppointmentInsert = {
+      user_id: userId,
+      type,
+      requested_date: new Date(requestedDate).toISOString(),
+      status: 'demande',
+      notes: notes.trim() || null,
+      confirmed_date: null,
+      case_id: null,
+      home_id: null,
+      admin_notes: null,
     }
 
-    onCreated(data)
+    createMutation.mutate(payload, {
+      onSuccess: () => {
+        onClose()
+      },
+      onError: () => {
+        setFormError('Impossible de soumettre votre demande. Veuillez réessayer.')
+      },
+    })
   }
 
   return (
@@ -209,11 +191,11 @@ function RequestModal({ userId, onClose, onCreated }: RequestModalProps) {
           </button>
         </div>
 
-        <form onSubmit={e => void handleSubmit(e)} className="p-6 space-y-4">
-          {error && (
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {formError && (
             <div className="flex items-start gap-2 p-3 bg-red-50 rounded-xl text-sm text-danger font-body">
               <AlertCircle size={15} className="shrink-0 mt-0.5" />
-              {error}
+              {formError}
             </div>
           )}
 
@@ -272,11 +254,11 @@ function RequestModal({ userId, onClose, onCreated }: RequestModalProps) {
             </button>
             <button
               type="submit"
-              disabled={saving}
+              disabled={createMutation.isPending}
               className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-white font-display text-sm rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-60"
             >
-              {saving ? <Loader2 size={15} className="animate-spin" /> : <Calendar size={15} />}
-              {saving ? 'Envoi...' : 'Demander'}
+              {createMutation.isPending ? <Loader2 size={15} className="animate-spin" /> : <Calendar size={15} />}
+              {createMutation.isPending ? 'Envoi...' : 'Demander'}
             </button>
           </div>
         </form>
@@ -289,39 +271,9 @@ function RequestModal({ userId, onClose, onCreated }: RequestModalProps) {
 
 export default function MesRdv() {
   const { user } = useAppStore()
-
-  const [appointments, setAppointments] = useState<BrhAppointmentRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [showModal, setShowModal] = useState(false)
 
-  useEffect(() => {
-    if (!user) return
-
-    async function fetchAppointments() {
-      setLoading(true)
-      setError(null)
-      const { data, error: supaErr } = await supabase
-        .from('brh_appointments')
-        .select('*')
-        .eq('user_id', user!.id)
-        .order('requested_date', { ascending: false })
-
-      if (supaErr) {
-        setError('Impossible de charger vos rendez-vous. Veuillez réessayer.')
-      } else {
-        setAppointments(data ?? [])
-      }
-      setLoading(false)
-    }
-
-    void fetchAppointments()
-  }, [user])
-
-  function handleCreated(appt: BrhAppointmentRow) {
-    setAppointments(prev => [appt, ...prev])
-    setShowModal(false)
-  }
+  const { data: appointments = [], isLoading, error } = useUserAppointments(user?.id)
 
   // Separate upcoming vs past
   const now = new Date()
@@ -354,22 +306,22 @@ export default function MesRdv() {
       </div>
 
       {/* Loading */}
-      {loading && (
+      {isLoading && (
         <div className="flex items-center justify-center py-24">
           <Loader2 size={28} className="animate-spin text-primary" />
         </div>
       )}
 
       {/* Error */}
-      {!loading && error && (
+      {!isLoading && error && (
         <div className="flex items-center gap-3 p-4 bg-red-50 rounded-2xl text-danger font-body text-sm">
           <AlertCircle size={18} className="shrink-0" />
-          {error}
+          Impossible de charger vos rendez-vous. Veuillez réessayer.
         </div>
       )}
 
       {/* Empty state */}
-      {!loading && !error && appointments.length === 0 && (
+      {!isLoading && !error && appointments.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="w-16 h-16 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-400 mb-4">
             <Calendar size={28} />
@@ -389,7 +341,7 @@ export default function MesRdv() {
       )}
 
       {/* Upcoming appointments */}
-      {!loading && !error && upcoming.length > 0 && (
+      {!isLoading && !error && upcoming.length > 0 && (
         <div className="mb-8">
           <h2 className="font-display text-lg text-text-primary mb-4 flex items-center gap-2">
             <ClipboardList size={16} className="text-primary" />
@@ -404,7 +356,7 @@ export default function MesRdv() {
       )}
 
       {/* Past appointments */}
-      {!loading && !error && past.length > 0 && (
+      {!isLoading && !error && past.length > 0 && (
         <div>
           <h2 className="font-display text-base text-text-secondary mb-4 flex items-center gap-2">
             <Clock size={15} />
@@ -425,7 +377,6 @@ export default function MesRdv() {
         <RequestModal
           userId={user.id}
           onClose={() => setShowModal(false)}
-          onCreated={handleCreated}
         />
       )}
     </div>
