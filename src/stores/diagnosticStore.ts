@@ -21,7 +21,8 @@ interface DiagnosticProperty {
 // ---------------------------------------------------------------------------
 // Nouvelle section Situation (step 3 — entre Propriete et Equipements)
 // ---------------------------------------------------------------------------
-// Steps : 1-Types | 2-Propriete | 3-Situation | 4-Equipements | 5-Symptomes | 6-Contact
+// Steps : 1-Types | 2-Propriete | 3-Situation | 4-Equipements | 5-Symptomes
+// Le contact est collecte via modal sur la page de resultats (ContactRdvModal)
 
 export interface DiagnosticSituation {
   ownerType?: 'occupant' | 'bailleur'
@@ -93,7 +94,7 @@ export const useDiagnosticStore = create<DiagnosticState>((set) => ({
   setStep: (step) => set({ step }),
 
   nextStep: () =>
-    set((state) => ({ step: Math.min(state.step + 1, 6) })),
+    set((state) => ({ step: Math.min(state.step + 1, 5) })),
 
   prevStep: () =>
     set((state) => ({ step: Math.max(state.step - 1, 1) })),

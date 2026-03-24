@@ -14,10 +14,10 @@ import { StepProperty } from './diagnostic/StepProperty'
 import { StepSituation } from './diagnostic/StepSituation'
 import { StepEquipment } from './diagnostic/StepEquipment'
 import { StepSymptoms } from './diagnostic/StepSymptoms'
-import { StepContact } from './diagnostic/StepContact'
 
-// Steps : 1-Types | 2-Logement | 3-Situation | 4-Equipements | 5-Symptomes | 6-Contact
-const STEP_LABELS = ['Domaines', 'Logement', 'Situation', 'Equipements', 'Symptomes', 'Contact']
+// Steps : 1-Types | 2-Logement | 3-Situation | 4-Equipements | 5-Symptomes
+const STEP_LABELS = ['Domaines', 'Logement', 'Situation', 'Equipements', 'Symptomes']
+const TOTAL_STEPS = 5
 
 export default function DiagnosticPage() {
   const navigate = useNavigate()
@@ -36,7 +36,6 @@ export default function DiagnosticPage() {
     situation,
     equipment,
     symptoms,
-    contact,
     reset,
   } = useDiagnosticStore()
 
@@ -47,13 +46,6 @@ export default function DiagnosticPage() {
     if (step === 3) return true
     if (step === 4) return true
     if (step === 5) return true
-    if (step === 6) {
-      return (
-        (contact.name?.trim().length ?? 0) > 0 &&
-        (contact.phone?.trim().length ?? 0) > 0 &&
-        (contact.email?.trim().length ?? 0) > 0
-      )
-    }
     return false
   })()
 
@@ -63,6 +55,10 @@ export default function DiagnosticPage() {
       return
     }
     setShowYearError(false)
+    if (step === TOTAL_STEPS) {
+      handleSubmit()
+      return
+    }
     nextStep()
   }
 
@@ -91,9 +87,9 @@ export default function DiagnosticPage() {
         household_size: situation.householdSize ?? null,
         revenue_profile: situation.revenueProfile ?? null,
         symptoms: symptoms as Record<string, string[]>,
-        contact_name: contact.name ?? '',
-        contact_phone: contact.phone ?? '',
-        contact_email: contact.email ?? '',
+        contact_name: '',
+        contact_phone: '',
+        contact_email: '',
         results: results as unknown as Record<string, unknown>,
         status: 'pending' as const,
         admin_notes: null,
@@ -140,7 +136,6 @@ export default function DiagnosticPage() {
             {step === 3 && <StepSituation />}
             {step === 4 && <StepEquipment />}
             {step === 5 && <StepSymptoms />}
-            {step === 6 && <StepContact onSubmit={handleSubmit} isSubmitting={isSubmitting} />}
 
             {submitError && (
               <p className="mt-4 text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 border border-red-100">
@@ -153,6 +148,8 @@ export default function DiagnosticPage() {
               canProceed={canProceed}
               onPrev={handlePrev}
               onNext={handleNext}
+              totalSteps={TOTAL_STEPS}
+              isSubmitting={isSubmitting}
             />
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import {
   AlertTriangle,
@@ -34,6 +34,7 @@ import { generateRenovationPlan } from '@/lib/renovation-plan-engine'
 import { DpeScale } from '@/components/DpeScale'
 import { AidesCard } from '@/components/AidesCard'
 import { RenovationTimeline } from '@/components/RenovationTimeline'
+import { ContactRdvModal } from '@/components/ContactRdvModal'
 import { articles } from '@/data/articles'
 import type { ArticleData } from '@/data/articles'
 import type { DiagnosticType } from '@/stores/diagnosticStore'
@@ -338,6 +339,7 @@ export default function DiagnosticResultsPage() {
   const { id } = useParams<{ id: string }>()
   const location = useLocation()
   const store = useDiagnosticStore()
+  const [showContactModal, setShowContactModal] = useState(false)
 
   // Resultats : depuis la navigation ou recomputes
   const results: DiagnosticResult | null = useMemo(() => {
@@ -399,6 +401,24 @@ export default function DiagnosticResultsPage() {
     }
     return map as Record<DiagnosticType, number>
   }, [aides, store.selectedTypes])
+
+  // Summary auto pour la modal
+  const diagnosticSummary = useMemo(() => {
+    if (!results) return ''
+    return results.typeResults
+      .map((tr) => {
+        const typeConfig = diagnosticTypes.find((t) => t.id === tr.type)
+        const label = typeConfig?.label ?? tr.type
+        return `${label} ${tr.score}/100`
+      })
+      .join(', ')
+  }, [results])
+
+  const resteAChargeStr = useMemo(() => {
+    if (!aides) return undefined
+    const fmt = (n: number) => (n >= 1000 ? `${Math.round(n / 1000)}k` : `${n}`)
+    return `${fmt(aides.resteAChargeMin)} — ${fmt(aides.resteAChargeMax)} EUR`
+  }, [aides])
 
   // Etat vide
   if (!results) {
@@ -698,13 +718,14 @@ export default function DiagnosticResultsPage() {
 
           {/* Boutons */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
-            <Link
-              to="/contact"
+            <button
+              type="button"
+              onClick={() => setShowContactModal(true)}
               className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white text-[#1c7b1d] font-display text-sm rounded-xl hover:bg-green-50 transition-colors shadow-sm"
             >
               <Calendar size={16} />
               Prendre rendez-vous
-            </Link>
+            </button>
             <button
               type="button"
               onClick={() => window.print()}
@@ -713,13 +734,14 @@ export default function DiagnosticResultsPage() {
               <Printer size={16} />
               Telecharger en PDF
             </button>
-            <a
-              href={`mailto:contact@brh-habitat.fr?subject=Diagnostic%20BRH%20%23${id ?? 'resultat'}&body=Bonjour%2C%20je%20souhaite%20discuter%20de%20mon%20diagnostic%20BRH%20Habitat.`}
+            <button
+              type="button"
+              onClick={() => setShowContactModal(true)}
               className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border-2 border-white/60 text-white/90 font-display text-sm rounded-xl hover:bg-white/10 transition-colors"
             >
               <Mail size={16} />
-              Envoyer par email
-            </a>
+              Etre recontacte par email
+            </button>
             <Link
               to="/diagnostic"
               className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border-2 border-white/40 text-white/70 font-display text-sm rounded-xl hover:bg-white/10 transition-colors"
@@ -735,6 +757,17 @@ export default function DiagnosticResultsPage() {
         </div>
 
       </div>
+
+      {/* Modal contact / RDV */}
+      {showContactModal && (
+        <ContactRdvModal
+          onClose={() => setShowContactModal(false)}
+          diagnosticId={id}
+          diagnosticSummary={diagnosticSummary}
+          propertyAddress={store.property.address}
+          resteACharge={resteAChargeStr}
+        />
+      )}
     </div>
   )
 }
