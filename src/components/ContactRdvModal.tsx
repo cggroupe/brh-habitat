@@ -1,6 +1,13 @@
 import { useState } from 'react'
-import { CheckCircle2, Lock, Phone, X } from 'lucide-react'
+import { CalendarDays, CheckCircle2, Lock, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { CalendarPicker, type TimeSlot } from './CalendarPicker'
+
+// ---------------------------------------------------------------------------
+// Config API CRM
+// ---------------------------------------------------------------------------
+
+const BOOKING_API_URL = 'https://woicuzcxfdknxqdjuamj.supabase.co/functions/v1/public-booking'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -14,13 +21,10 @@ interface ContactRdvModalProps {
   resteACharge?: string
 }
 
-type CreneauType = 'asap' | 'matin' | 'aprem'
-
 interface FormState {
   nom: string
   telephone: string
   email: string
-  creneau: CreneauType
   message: string
 }
 
@@ -61,14 +65,26 @@ function validate(form: FormState): FormErrors {
 }
 
 // ---------------------------------------------------------------------------
-// Creneau buttons
+// Helpers
 // ---------------------------------------------------------------------------
 
-const CRENEAUX: { value: CreneauType; label: string }[] = [
-  { value: 'asap', label: 'Des que possible' },
-  { value: 'matin', label: 'En matinee (9h-12h)' },
-  { value: 'aprem', label: 'En apres-midi (14h-18h)' },
-]
+function extractDepartement(address?: string): string | undefined {
+  if (!address) return undefined
+  const match = address.match(/\b(\d{5})\b/)
+  return match ? match[1].slice(0, 2) : undefined
+}
+
+function formatSlotLabel(slot: TimeSlot): string {
+  const [y, m, d] = slot.date.split('-').map(Number)
+  const date = new Date(y, m - 1, d)
+  const dateStr = date.toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+  return `${dateStr} de ${slot.heure_debut} a ${slot.heure_fin}`
+}
 
 // ---------------------------------------------------------------------------
 // Composant principal
@@ -85,15 +101,17 @@ export function ContactRdvModal({
     nom: '',
     telephone: '',
     email: '',
-    creneau: 'asap',
     message: propertyAddress ? `Adresse du bien : ${propertyAddress}` : '',
   })
   const [errors, setErrors] = useState<FormErrors>({})
+  const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isConfirmed, setIsConfirmed] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [confirmedSlotLabel, setConfirmedSlotLabel] = useState<string>('')
 
   const prenom = form.nom.trim().split(' ')[0] ?? form.nom.trim()
+  const departement = extractDepartement(propertyAddress)
 
   const handleChange = (field: keyof FormState, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -109,12 +127,16 @@ export function ContactRdvModal({
       return
     }
 
+    if (!selectedSlot) {
+      setSubmitError('Veuillez selectionner un creneau dans le calendrier.')
+      return
+    }
+
     setIsLoading(true)
     setSubmitError(null)
 
     try {
       const phoneClean = normalizePhone(form.telephone)
-      const creneauLabel = CRENEAUX.find((c) => c.value === form.creneau)?.label ?? form.creneau
 
       // 1. Mettre a jour le diagnostic avec les coordonnees de contact
       if (diagnosticId && diagnosticId !== 'local') {
@@ -129,20 +151,46 @@ export function ContactRdvModal({
 
         if (diagError) {
           console.error('Erreur mise a jour diagnostic:', diagError)
-          // Non bloquant : on continue quand meme pour creer le RDV
+          // Non bloquant : on continue
         }
       }
 
-      // 2. Creer un RDV dans brh_appointments
-      const appointmentNotes = [
-        `Creneau souhaite : ${creneauLabel}`,
-        form.message.trim() ? `Message : ${form.message.trim()}` : null,
-        diagnosticSummary ? `Diagnostic : ${diagnosticSummary}` : null,
-        resteACharge ? `Reste a charge estime : ${resteACharge}` : null,
-      ]
-        .filter(Boolean)
-        .join('\n')
+      // 2. Appeler l'API de reservation du CRM
+      const crmResponse = await fetch(BOOKING_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: import.meta.env.VITE_BRHCRM_ANON_KEY ?? '',
+          Authorization: `Bearer ${import.meta.env.VITE_BRHCRM_ANON_KEY ?? ''}`,
+        },
+        body: JSON.stringify({
+          date: selectedSlot.date,
+          heure_debut: selectedSlot.heure_debut,
+          heure_fin: selectedSlot.heure_fin,
+          contact_name: form.nom.trim(),
+          contact_phone: phoneClean,
+          contact_email: form.email.trim().toLowerCase(),
+          lieu: propertyAddress,
+          notes: form.message.trim() || undefined,
+          diagnostic_id: diagnosticId && diagnosticId !== 'local' ? diagnosticId : undefined,
+          diagnostic_summary: diagnosticSummary || undefined,
+          departement,
+        }),
+      })
 
+      // Creneau deja pris
+      if (crmResponse.status === 409) {
+        setSubmitError('Ce creneau vient d\'etre pris. Veuillez en choisir un autre.')
+        setSelectedSlot(null)
+        setIsLoading(false)
+        return
+      }
+
+      if (!crmResponse.ok) {
+        throw new Error(`CRM API error ${crmResponse.status}`)
+      }
+
+      // 3. Conserver une trace locale dans brh_appointments (non bloquant)
       const { error: apptError } = await supabase
         .from('brh_appointments')
         .insert({
@@ -151,17 +199,24 @@ export function ContactRdvModal({
           contact_name: form.nom.trim(),
           contact_phone: phoneClean,
           contact_email: form.email.trim().toLowerCase(),
-          preferred_slot: form.creneau,
-          notes: appointmentNotes,
-          status: 'pending',
+          preferred_slot: `${selectedSlot.date} ${selectedSlot.heure_debut}`,
+          notes: [
+            `Creneau confirme : ${formatSlotLabel(selectedSlot)}`,
+            form.message.trim() ? `Message : ${form.message.trim()}` : null,
+            diagnosticSummary ? `Diagnostic : ${diagnosticSummary}` : null,
+            resteACharge ? `Reste a charge estime : ${resteACharge}` : null,
+          ]
+            .filter(Boolean)
+            .join('\n'),
+          status: 'confirmed',
         })
 
       if (apptError) {
-        console.error('Erreur creation RDV:', apptError)
-        setSubmitError('Une erreur est survenue lors de la prise de contact. Veuillez reessayer ou nous appeler directement au 07 84 86 39 51.')
-        return
+        console.error('Erreur trace locale RDV:', apptError)
+        // Non bloquant — le vrai RDV est dans le CRM
       }
 
+      setConfirmedSlotLabel(formatSlotLabel(selectedSlot))
       setIsConfirmed(true)
     } catch (err) {
       console.error('ContactRdvModal submit error:', err)
@@ -180,7 +235,7 @@ export function ContactRdvModal({
       }}
     >
       {/* Modal */}
-      <div className="relative w-full max-w-[480px] bg-white rounded-2xl shadow-2xl shadow-slate-900/20 overflow-hidden">
+      <div className="relative w-full max-w-[520px] max-h-[92vh] bg-white rounded-2xl shadow-2xl shadow-slate-900/20 overflow-y-auto">
 
         {/* Bouton fermer */}
         <button
@@ -202,15 +257,20 @@ export function ContactRdvModal({
               Merci {prenom} !
             </h2>
             <p className="font-body text-slate-500 mb-6 leading-relaxed">
-              Un conseiller BRH Habitat vous contactera sous 24h pour donner suite a votre demande.
+              Votre rendez-vous est confirme.
             </p>
             <div className="bg-slate-50 rounded-xl p-4 mb-6 text-left">
               <p className="font-body text-xs text-slate-400 mb-1">Recapitulatif</p>
               <p className="font-display text-sm text-slate-700">{form.nom.trim()}</p>
               <p className="font-body text-xs text-slate-500">{form.telephone} — {form.email}</p>
-              <p className="font-body text-xs text-slate-500 mt-1">
-                Creneau : {CRENEAUX.find((c) => c.value === form.creneau)?.label}
-              </p>
+              {confirmedSlotLabel && (
+                <div className="mt-2 flex items-start gap-2">
+                  <CalendarDays size={14} className="text-[#1c7b1d] shrink-0 mt-0.5" />
+                  <p className="font-body text-xs text-slate-700 capitalize">
+                    Rendez-vous le {confirmedSlotLabel}
+                  </p>
+                </div>
+              )}
             </div>
             <button
               type="button"
@@ -226,11 +286,11 @@ export function ContactRdvModal({
             <div className="bg-gradient-to-br from-[#1c7b1d] to-[#359932] px-7 pt-7 pb-6 text-white">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
-                  <Phone size={20} />
+                  <CalendarDays size={20} />
                 </div>
                 <div>
                   <h2 className="font-display text-xl leading-tight">
-                    Un expert vous rappelle sous 24h
+                    Choisissez votre creneau
                   </h2>
                   <p className="font-body text-green-200 text-xs mt-0.5">
                     Gratuit et sans engagement
@@ -315,27 +375,28 @@ export function ContactRdvModal({
                 )}
               </div>
 
-              {/* Creneau */}
+              {/* Calendrier */}
               <div>
                 <label className="block font-display text-sm text-slate-800 mb-2">
-                  Quand pouvons-nous vous rappeler ?
+                  Choisissez un creneau <span className="text-red-500">*</span>
                 </label>
-                <div className="flex flex-wrap gap-2">
-                  {CRENEAUX.map((c) => (
-                    <button
-                      key={c.value}
-                      type="button"
-                      onClick={() => handleChange('creneau', c.value)}
-                      className={`flex-1 min-w-[130px] px-3 py-2.5 rounded-xl border font-body text-xs text-center transition-all ${
-                        form.creneau === c.value
-                          ? 'bg-[#1c7b1d] border-[#1c7b1d] text-white shadow-sm shadow-[#1c7b1d]/20'
-                          : 'bg-white border-slate-200 text-slate-600 hover:border-[#1c7b1d]/40 hover:bg-[#1c7b1d]/5'
-                      }`}
-                    >
-                      {c.label}
-                    </button>
-                  ))}
-                </div>
+                <CalendarPicker
+                  departement={departement}
+                  onSlotSelected={(slot) => {
+                    setSelectedSlot(slot)
+                    setSubmitError(null)
+                  }}
+                  selectedSlot={selectedSlot}
+                />
+                {/* Creneau selectionne */}
+                {selectedSlot && (
+                  <div className="mt-2 flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
+                    <CalendarDays size={14} className="text-[#1c7b1d] shrink-0" />
+                    <p className="font-body text-xs text-[#1c7b1d] font-medium capitalize">
+                      Rendez-vous le {formatSlotLabel(selectedSlot)}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Message */}
@@ -363,8 +424,8 @@ export function ContactRdvModal({
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={isLoading}
-                className="w-full py-3.5 rounded-xl bg-[#1c7b1d] text-white font-display text-base flex items-center justify-center gap-2 hover:bg-[#1c7b1d]/90 transition-colors shadow-lg shadow-[#1c7b1d]/25 disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={isLoading || !selectedSlot}
+                className="w-full py-3.5 rounded-xl bg-[#1c7b1d] text-white font-display text-base flex items-center justify-center gap-2 hover:bg-[#1c7b1d]/90 transition-colors shadow-lg shadow-[#1c7b1d]/25 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <>
@@ -372,12 +433,12 @@ export function ContactRdvModal({
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                     </svg>
-                    Envoi en cours...
+                    Confirmation en cours...
                   </>
                 ) : (
                   <>
-                    <Phone size={16} />
-                    Etre recontacte
+                    <CalendarDays size={16} />
+                    {selectedSlot ? 'Confirmer le rendez-vous' : 'Choisissez un creneau'}
                   </>
                 )}
               </button>
