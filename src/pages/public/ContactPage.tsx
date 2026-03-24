@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MapPin, Phone, Mail, Clock, ArrowRight, CheckCircle, Send, Shield, Star } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -70,6 +71,7 @@ export default function ContactPage() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -78,15 +80,31 @@ export default function ContactPage() {
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
-    // Simulate async send
-    setTimeout(() => {
-      setSubmitting(false)
-      setSubmitted(true)
-      setForm(INITIAL_FORM)
-    }, 1200)
+    setSubmitError(null)
+
+    const { error } = await supabase.from('brh_contacts').insert({
+      nom: form.nom.trim(),
+      email: form.email.trim().toLowerCase(),
+      telephone: form.telephone.trim() || null,
+      sujet: form.sujet || null,
+      message: form.message.trim(),
+    })
+
+    setSubmitting(false)
+
+    if (error) {
+      console.error('Erreur envoi contact:', error)
+      setSubmitError(
+        'Une erreur est survenue lors de l\'envoi. Veuillez reessayer ou nous appeler directement au 07 84 86 39 51.'
+      )
+      return
+    }
+
+    setSubmitted(true)
+    setForm(INITIAL_FORM)
   }
 
   return (
@@ -285,6 +303,13 @@ export default function ContactPage() {
                         className={[inputBase, 'resize-none'].join(' ')}
                       />
                     </div>
+
+                    {/* Erreur globale */}
+                    {submitError && (
+                      <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 border border-red-100 font-body">
+                        {submitError}
+                      </p>
+                    )}
 
                     {/* Submit */}
                     <button

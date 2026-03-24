@@ -166,6 +166,11 @@ function RequestModal({ userId, onClose }: RequestModalProps) {
       case_id: null,
       home_id: null,
       admin_notes: null,
+      contact_name: null,
+      contact_phone: null,
+      contact_email: null,
+      diagnostic_id: null,
+      preferred_slot: null,
     }
 
     createMutation.mutate(payload, {

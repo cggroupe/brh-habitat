@@ -63,10 +63,11 @@ export const APPOINTMENT_TYPE_LABELS: Record<AppointmentType, string> = {
   suivi: 'Suivi',
 }
 
-export const APPOINTMENT_STATUSES: AppointmentStatus[] = ['demande', 'confirme', 'annule', 'termine']
+export const APPOINTMENT_STATUSES: AppointmentStatus[] = ['demande', 'pending', 'confirme', 'annule', 'termine']
 
 export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
   demande: 'Demande',
+  pending: 'En attente',
   confirme: 'Confirme',
   annule: 'Annule',
   termine: 'Termine',
@@ -74,6 +75,7 @@ export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
 
 export const APPOINTMENT_STATUS_COLORS: Record<AppointmentStatus, string> = {
   demande: 'bg-amber-100 text-amber-700',
+  pending: 'bg-orange-100 text-orange-700',
   confirme: 'bg-green-100 text-green-700',
   annule: 'bg-red-100 text-red-500',
   termine: 'bg-slate-100 text-slate-500',

@@ -33,7 +33,6 @@ export default function DiagnosticPage() {
     prevStep,
     selectedTypes,
     property,
-    situation,
     equipment,
     symptoms,
     reset,
@@ -75,6 +74,8 @@ export default function DiagnosticPage() {
     try {
       const results = analyzeDiagnostic(selectedTypes, symptoms, property.year, equipment)
 
+      // owner_type, household_size, revenue_profile ne sont pas en DB :
+      // ils restent dans le store Zustand pour le calcul des aides cote client.
       const payload = {
         user_id: user?.id ?? null,
         types: selectedTypes as string[],
@@ -83,9 +84,6 @@ export default function DiagnosticPage() {
         property_surface: property.surface ?? 0,
         property_year: property.year ?? 0,
         property_floors: property.floors ?? 0,
-        owner_type: situation.ownerType ?? null,
-        household_size: situation.householdSize ?? null,
-        revenue_profile: situation.revenueProfile ?? null,
         symptoms: symptoms as Record<string, string[]>,
         contact_name: '',
         contact_phone: '',
@@ -95,8 +93,7 @@ export default function DiagnosticPage() {
         admin_notes: null,
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('brh_diagnostics')
         .insert(payload)
         .select('id')
@@ -109,7 +106,7 @@ export default function DiagnosticPage() {
         return
       }
 
-      navigate(`/diagnostic/resultats/${(data as { id: string }).id}`, { state: { results } })
+      navigate(`/diagnostic/resultats/${data.id}`, { state: { results } })
       reset()
     } catch (err) {
       console.error('Submit error:', err)

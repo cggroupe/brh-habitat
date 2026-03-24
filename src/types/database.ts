@@ -1,7 +1,8 @@
 export type DiagnosticStatus = 'pending' | 'analyzed' | 'contacted' | 'closed'
 export type CaseStatus = 'nouveau' | 'en_cours' | 'devis' | 'travaux' | 'termine'
 export type AppointmentType = 'diagnostic' | 'devis' | 'visite' | 'suivi'
-export type AppointmentStatus = 'demande' | 'confirme' | 'annule' | 'termine'
+export type AppointmentStatus = 'pending' | 'demande' | 'confirme' | 'annule' | 'termine'
+export type ContactStatus = 'nouveau' | 'lu' | 'traite'
 export type DpeRating = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G'
 export type UserRole = 'user' | 'admin'
 export type Locale = 'fr' | 'en'
@@ -70,11 +71,29 @@ export interface BrhAppointmentRow {
   user_id: string | null
   case_id: string | null
   home_id: string | null
+  diagnostic_id: string | null
   type: AppointmentType
   requested_date: string
   confirmed_date: string | null
   status: AppointmentStatus
+  contact_name: string | null
+  contact_phone: string | null
+  contact_email: string | null
+  preferred_slot: string | null
   notes: string | null
+  admin_notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface BrhContactRow {
+  id: string
+  nom: string
+  email: string
+  telephone: string | null
+  sujet: string | null
+  message: string
+  status: ContactStatus
   admin_notes: string | null
   created_at: string
   updated_at: string
@@ -117,6 +136,7 @@ export interface Database {
       brh_cases: { Row: BrhCaseRow; Insert: Omit<BrhCaseRow, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Omit<BrhCaseRow, 'id'>> }
       brh_appointments: { Row: BrhAppointmentRow; Insert: Omit<BrhAppointmentRow, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Omit<BrhAppointmentRow, 'id'>> }
       brh_articles: { Row: BrhArticleRow; Insert: Omit<BrhArticleRow, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Omit<BrhArticleRow, 'id'>> }
+      brh_contacts: { Row: BrhContactRow; Insert: Omit<BrhContactRow, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Omit<BrhContactRow, 'id'>> }
       profiles: { Row: ProfileRow; Insert: Omit<ProfileRow, 'created_at' | 'updated_at'>; Update: Partial<Omit<ProfileRow, 'id'>> }
     }
   }

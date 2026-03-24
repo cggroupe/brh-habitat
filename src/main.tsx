@@ -1,41 +1,52 @@
-import { StrictMode, Component, type ReactNode } from 'react'
+import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import * as Sentry from '@sentry/react'
 import './index.css'
 import '@/i18n'
 import App from './App'
 
-class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
-  state = { error: null as Error | null }
+// ---------------------------------------------------------------------------
+// Sentry — Monitoring & Error Tracking
+// ---------------------------------------------------------------------------
+if (import.meta.env.VITE_SENTRY_DSN) {
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    environment: import.meta.env.MODE,
+    integrations: [
+      Sentry.browserTracingIntegration(),
+    ],
+    tracesSampleRate: 0.2,
+    replaysOnErrorSampleRate: 1.0,
+    enabled: import.meta.env.PROD,
+  })
+}
 
-  static getDerivedStateFromError(error: Error) {
-    return { error }
-  }
+// ---------------------------------------------------------------------------
+// Error Boundary (Sentry-powered)
+// ---------------------------------------------------------------------------
+const SentryErrorBoundary = Sentry.ErrorBoundary
 
-  render() {
-    if (this.state.error) {
-      return (
-        <div style={{ padding: 40, fontFamily: 'sans-serif' }}>
-          <h1 style={{ color: '#ef4444' }}>Erreur de chargement</h1>
-          <pre style={{ background: '#f1f5f9', padding: 16, borderRadius: 8, overflow: 'auto' }}>
-            {this.state.error.message}
-          </pre>
-          <button
-            onClick={() => window.location.reload()}
-            style={{ marginTop: 16, padding: '8px 16px', background: '#1c7d1e', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}
-          >
-            Recharger la page
-          </button>
-        </div>
-      )
-    }
-    return this.props.children
-  }
+function FallbackUI({ error }: { error: Error }) {
+  return (
+    <div style={{ padding: 40, fontFamily: 'sans-serif' }}>
+      <h1 style={{ color: '#ef4444' }}>Erreur de chargement</h1>
+      <pre style={{ background: '#f1f5f9', padding: 16, borderRadius: 8, overflow: 'auto' }}>
+        {error.message}
+      </pre>
+      <button
+        onClick={() => window.location.reload()}
+        style={{ marginTop: 16, padding: '8px 16px', background: '#1c7d1e', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer' }}
+      >
+        Recharger la page
+      </button>
+    </div>
+  )
 }
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ErrorBoundary>
+    <SentryErrorBoundary fallback={({ error }) => <FallbackUI error={error as Error} />}>
       <App />
-    </ErrorBoundary>
+    </SentryErrorBoundary>
   </StrictMode>,
 )

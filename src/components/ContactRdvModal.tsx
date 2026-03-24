@@ -116,10 +116,9 @@ export function ContactRdvModal({
       const phoneClean = normalizePhone(form.telephone)
       const creneauLabel = CRENEAUX.find((c) => c.value === form.creneau)?.label ?? form.creneau
 
-      // 1. Mettre a jour ou inserer dans brh_diagnostics
+      // 1. Mettre a jour le diagnostic avec les coordonnees de contact
       if (diagnosticId && diagnosticId !== 'local') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any)
+        const { error: diagError } = await supabase
           .from('brh_diagnostics')
           .update({
             contact_name: form.nom.trim(),
@@ -127,6 +126,11 @@ export function ContactRdvModal({
             contact_email: form.email.trim().toLowerCase(),
           })
           .eq('id', diagnosticId)
+
+        if (diagError) {
+          console.error('Erreur mise a jour diagnostic:', diagError)
+          // Non bloquant : on continue quand meme pour creer le RDV
+        }
       }
 
       // 2. Creer un RDV dans brh_appointments
@@ -139,8 +143,7 @@ export function ContactRdvModal({
         .filter(Boolean)
         .join('\n')
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any)
+      const { error: apptError } = await supabase
         .from('brh_appointments')
         .insert({
           type: 'diagnostic',
@@ -153,10 +156,16 @@ export function ContactRdvModal({
           status: 'pending',
         })
 
+      if (apptError) {
+        console.error('Erreur creation RDV:', apptError)
+        setSubmitError('Une erreur est survenue lors de la prise de contact. Veuillez reessayer ou nous appeler directement au 07 84 86 39 51.')
+        return
+      }
+
       setIsConfirmed(true)
     } catch (err) {
       console.error('ContactRdvModal submit error:', err)
-      setSubmitError('Une erreur est survenue. Veuillez reessayer ou nous appeler au 07 84 86 39 51.')
+      setSubmitError('Une erreur inattendue est survenue. Veuillez reessayer ou nous appeler au 07 84 86 39 51.')
     } finally {
       setIsLoading(false)
     }
