@@ -15,10 +15,14 @@ export const symptomsByType: Record<DiagnosticType, Symptom[]> = {
     { id: 'humidite_taches', label: 'Taches d\'humidité sur les murs', weight: 2, urgency: 'medium' },
     { id: 'humidite_condensation', label: 'Condensation sur les vitres', weight: 1, urgency: 'low' },
     { id: 'humidite_infiltrations', label: 'Infiltrations d\'eau visible', weight: 3, urgency: 'high' },
-    { id: 'humidite_remontees', label: 'Remontées capillaires (murs du bas)', weight: 3, urgency: 'high' },
+    { id: 'humidite_remontees', label: 'Remontées capillaires (murs du bas humides)', weight: 3, urgency: 'high' },
     { id: 'humidite_odeur', label: 'Odeur de moisi persistante', weight: 2, urgency: 'medium' },
     { id: 'humidite_peinture', label: 'Peinture qui cloque ou se décolle', weight: 2, urgency: 'medium' },
     { id: 'humidite_parquet', label: 'Parquet qui gondole ou gonfle', weight: 2, urgency: 'medium' },
+    // --- Spécificités Bretagne ---
+    { id: 'humidite_granit', label: 'Murs en granit ou pierre humides en permanence', weight: 3, urgency: 'high' },
+    { id: 'humidite_salpetre', label: 'Salpêtre (dépôts blancs) sur les murs en pierre', weight: 2, urgency: 'medium' },
+    { id: 'humidite_cave_voutee', label: 'Cave ou sous-sol très humide / inondé', weight: 2, urgency: 'medium' },
   ],
 
   isolation: [
@@ -28,8 +32,11 @@ export const symptomsByType: Record<DiagnosticType, Symptom[]> = {
     { id: 'isolation_murs_froids', label: 'Murs froids au toucher en hiver', weight: 2, urgency: 'medium' },
     { id: 'isolation_plancher', label: 'Plancher froid (vide sanitaire)', weight: 2, urgency: 'medium' },
     { id: 'isolation_combles', label: 'Combles non isolés ou mal isolés', weight: 3, urgency: 'high' },
-    { id: 'isolation_chaleur', label: 'Trop chaud en été malgré la climatisation', weight: 1, urgency: 'low' },
+    { id: 'isolation_chaleur', label: 'Trop chaud en été sous les combles', weight: 1, urgency: 'low' },
     { id: 'isolation_dpe', label: 'DPE classé F ou G', weight: 3, urgency: 'high' },
+    // --- Spécificités Bretagne ---
+    { id: 'isolation_murs_granit', label: 'Murs en granit / pierre non isolés (froid et humide)', weight: 3, urgency: 'high' },
+    { id: 'isolation_laine_tassee', label: 'Ancienne isolation tassée ou mouillée dans les combles', weight: 2, urgency: 'medium' },
   ],
 
   ventilation: [
@@ -40,6 +47,9 @@ export const symptomsByType: Record<DiagnosticType, Symptom[]> = {
     { id: 'ventilation_condensation_sdb', label: 'Condensation excessive en salle de bain', weight: 1, urgency: 'low' },
     { id: 'ventilation_moisissures_sdb', label: 'Moisissures dans les pièces humides', weight: 3, urgency: 'high' },
     { id: 'ventilation_absence', label: 'Absence totale de système de ventilation', weight: 3, urgency: 'high' },
+    // --- Spécificités Bretagne (climat océanique humide) ---
+    { id: 'ventilation_buee_permanente', label: 'Buée permanente sur les fenêtres même en journée', weight: 2, urgency: 'medium' },
+    { id: 'ventilation_maison_ancienne', label: 'Maison ancienne sans aération (murs épais, peu d\'ouvertures)', weight: 2, urgency: 'medium' },
   ],
 
   menuiseries: [
@@ -65,14 +75,20 @@ export const symptomsByType: Record<DiagnosticType, Symptom[]> = {
   ],
 
   toiture: [
-    { id: 'toiture_tuiles', label: 'Tuiles cassées ou manquantes', weight: 3, urgency: 'high' },
+    { id: 'toiture_tuiles', label: 'Tuiles ou ardoises cassées / manquantes', weight: 3, urgency: 'high' },
     { id: 'toiture_infiltration', label: 'Infiltrations d\'eau dans les combles', weight: 3, urgency: 'high' },
-    { id: 'toiture_mousse', label: 'Mousses ou végétation sur la toiture', weight: 2, urgency: 'medium' },
+    { id: 'toiture_mousse', label: 'Mousses, lichens ou végétation sur la toiture', weight: 2, urgency: 'medium' },
     { id: 'toiture_gouttières', label: 'Gouttières bouchées ou abîmées', weight: 2, urgency: 'medium' },
     { id: 'toiture_charpente', label: 'Charpente visible endommagée', weight: 3, urgency: 'high' },
     { id: 'toiture_solin', label: 'Solins ou arêtes défaillants', weight: 2, urgency: 'medium' },
     { id: 'toiture_age', label: 'Toiture de plus de 25 ans', weight: 2, urgency: 'medium' },
     { id: 'toiture_velux', label: 'Velux ou fenêtres de toit qui fuient', weight: 2, urgency: 'medium' },
+    // --- Spécificités ardoise Bretagne ---
+    { id: 'toiture_ardoise_blanchie', label: 'Ardoises blanchies, grisées ou décolorées', weight: 3, urgency: 'high' },
+    { id: 'toiture_ardoise_delitage', label: 'Ardoises qui s\'effritent ou se délitent (feuilletage)', weight: 3, urgency: 'high' },
+    { id: 'toiture_ardoise_traitement', label: 'Traitement ou peinture appliqué sur les ardoises (hydrofuge, résine…)', weight: 3, urgency: 'high' },
+    { id: 'toiture_ardoise_glissee', label: 'Ardoises qui glissent ou se décalent', weight: 2, urgency: 'medium' },
+    { id: 'toiture_faitage_fissure', label: 'Faîtage en mortier fissuré ou descellé', weight: 2, urgency: 'medium' },
   ],
 
   plomberie: [

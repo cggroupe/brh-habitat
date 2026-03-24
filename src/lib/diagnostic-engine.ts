@@ -96,6 +96,28 @@ const RECOMMENDATION_MAP: Record<string, Recommendation> = {
     estimatedBudget: '1 500 - 5 000 EUR',
     relatedType: 'humidite',
   },
+  // --- Humidite Bretagne ---
+  humidite_granit: {
+    title: 'Traitement des murs en granit humides',
+    description: 'Les maisons bretonnes en granit sont naturellement sensibles a l\'humidite : la pierre est poreuse et les murs epais retiennent l\'eau. Un drainage peripherique et un enduit perspirant (a la chaux, jamais au ciment) sont les solutions adaptees. Surtout, ne jamais appliquer un enduit etanche qui emprisonne l\'humidite.',
+    priority: 'haute',
+    estimatedBudget: '3 000 - 12 000 EUR',
+    relatedType: 'humidite',
+  },
+  humidite_salpetre: {
+    title: 'Traitement du salpetre et des remontees capillaires',
+    description: 'Le salpetre (depots blancs cristallins) sur les murs en pierre indique des remontees capillaires : l\'eau du sol remonte dans les murs par capillarite et depose les sels mineraux en surface. En Bretagne, avec les nappes phreatiques hautes, c\'est tres courant. Solutions : drainage, injection de resine hydrophobe, ou cuvelage en cas extreme.',
+    priority: 'moyenne',
+    estimatedBudget: '2 000 - 8 000 EUR',
+    relatedType: 'humidite',
+  },
+  humidite_cave_voutee: {
+    title: 'Assainissement de la cave ou du sous-sol',
+    description: 'Un sous-sol tres humide degrade les fondations et remonte dans les murs. En Bretagne, les caves en pierre sur terrain granitique sont souvent confrontees a des infiltrations d\'eau souterraine. Solutions : drainage, pompe de relevage, ventilation forcee, et cuvelage des murs enterres si necessaire.',
+    priority: 'moyenne',
+    estimatedBudget: '2 000 - 10 000 EUR',
+    relatedType: 'humidite',
+  },
   isolation_froid: {
     title: 'Isolation des murs et combles',
     description: 'La sensation de froid indique des deperditions thermiques importantes.',
@@ -152,6 +174,21 @@ const RECOMMENDATION_MAP: Record<string, Recommendation> = {
     estimatedBudget: '15 000 - 40 000 EUR',
     relatedType: 'isolation',
   },
+  // --- Isolation Bretagne ---
+  isolation_murs_granit: {
+    title: 'Isolation des murs en granit ou pierre',
+    description: 'Les murs en granit bretons (50 a 80 cm d\'epaisseur) ont une tres faible resistance thermique. L\'isolation par l\'interieur (ITI) avec un materiau perspirant (fibre de bois, laine de chanvre) est recommandee pour preserver la respiration du mur. Attention : ne JAMAIS utiliser de polystyrene sur un mur en pierre, cela piege l\'humidite.',
+    priority: 'haute',
+    estimatedBudget: '6 000 - 20 000 EUR',
+    relatedType: 'isolation',
+  },
+  isolation_laine_tassee: {
+    title: 'Remplacement de l\'isolation des combles',
+    description: 'Une ancienne laine de verre tassee ou mouillee perd jusqu\'a 80% de son pouvoir isolant. En climat breton humide, c\'est un probleme frequent. Le remplacement par de la ouate de cellulose soufflee ou de la laine de bois redonne une isolation performante et durable.',
+    priority: 'moyenne',
+    estimatedBudget: '2 000 - 6 000 EUR',
+    relatedType: 'isolation',
+  },
   ventilation_odeurs: {
     title: 'Verification et nettoyage du systeme',
     description: 'Des odeurs persistantes peuvent indiquer une VMC encrassee ou un defaut d\'extraction.',
@@ -199,6 +236,21 @@ const RECOMMENDATION_MAP: Record<string, Recommendation> = {
     description: 'L\'absence de ventilation est un risque sanitaire. L\'installation d\'une VMC est prioritaire.',
     priority: 'haute',
     estimatedBudget: '3 000 - 7 000 EUR',
+    relatedType: 'ventilation',
+  },
+  // --- Ventilation Bretagne ---
+  ventilation_buee_permanente: {
+    title: 'Amelioration de la ventilation — climat humide',
+    description: 'En Bretagne, l\'humidite exterieure elevee (souvent >80%) rend la ventilation naturelle insuffisante. La buee permanente, meme fenetre ouverte, indique qu\'une VMC hygroreglable est necessaire pour adapter le debit a l\'humidite interieure.',
+    priority: 'moyenne',
+    estimatedBudget: '2 000 - 5 000 EUR',
+    relatedType: 'ventilation',
+  },
+  ventilation_maison_ancienne: {
+    title: 'Ventilation d\'une maison ancienne bretonne',
+    description: 'Les maisons anciennes en pierre avec murs epais et peu d\'ouvertures ont ete concues pour respirer a travers les murs. Si vous les avez isolees ou si les fenetres ont ete changees, l\'equilibre naturel est rompu et une VMC devient indispensable. Une VMC simple flux hygroreglable B est le meilleur compromis cout/efficacite.',
+    priority: 'moyenne',
+    estimatedBudget: '2 500 - 5 000 EUR',
     relatedType: 'ventilation',
   },
   menuiseries_courants: {
@@ -367,6 +419,42 @@ const RECOMMENDATION_MAP: Record<string, Recommendation> = {
     description: 'Des velux qui fuient doivent etre remplaces pour eviter les degats d\'eau.',
     priority: 'haute',
     estimatedBudget: '1 000 - 4 000 EUR',
+    relatedType: 'toiture',
+  },
+  // --- Ardoise Bretagne ---
+  toiture_ardoise_blanchie: {
+    title: 'Diagnostic et remplacement des ardoises blanchies',
+    description: 'L\'ardoise blanchie est un signe de delitage : l\'eau s\'infiltre dans les couches de la pierre, gele en hiver et fait eclater l\'ardoise de l\'interieur. Cela arrive souvent quand un produit inadapte (peinture, resine, hydrofuge silicone) a ete applique, empechant l\'ardoise de respirer. Les ardoises blanchies ne protegent plus votre toiture et doivent etre remplacees.',
+    priority: 'haute',
+    estimatedBudget: '5 000 - 15 000 EUR',
+    relatedType: 'toiture',
+  },
+  toiture_ardoise_delitage: {
+    title: 'Remplacement urgent des ardoises delitees',
+    description: 'Quand l\'ardoise s\'effrite et se detache en feuillets, elle est en fin de vie. C\'est irreversible. Le gel, l\'humidite bretonne et parfois l\'utilisation de mauvais produits d\'entretien accelerent ce processus. Les ardoises delitees laissent passer l\'eau et mettent votre charpente en danger.',
+    priority: 'haute',
+    estimatedBudget: '8 000 - 25 000 EUR',
+    relatedType: 'toiture',
+  },
+  toiture_ardoise_traitement: {
+    title: 'Evaluation des degats apres traitement inadapte',
+    description: 'L\'application de peinture, resine ou hydrofuge non adapte a l\'ardoise est une erreur courante. Ces produits bouchent les pores de la pierre, empechent l\'evacuation naturelle de l\'humidite, et provoquent un vieillissement accelere (blanchiment, delitage, gel). Un diagnostic est necessaire pour evaluer les ardoises a remplacer.',
+    priority: 'haute',
+    estimatedBudget: '3 000 - 20 000 EUR',
+    relatedType: 'toiture',
+  },
+  toiture_ardoise_glissee: {
+    title: 'Refixation ou remplacement des ardoises glissees',
+    description: 'Des ardoises qui glissent sont souvent causees par des crochets en acier oxydes ou un lattage fatigue. En Bretagne, le vent et l\'humidite accelerent la corrosion des fixations. Intervention rapide necessaire avant que l\'eau ne s\'infiltre.',
+    priority: 'moyenne',
+    estimatedBudget: '500 - 3 000 EUR',
+    relatedType: 'toiture',
+  },
+  toiture_faitage_fissure: {
+    title: 'Refection du faitage',
+    description: 'Un faitage en mortier fissure ou descelle laisse entrer l\'eau au sommet de votre toit, la ou elle fait le plus de degats. En climat breton, les variations de temperature et le vent mettent le mortier a rude epreuve. Un faitage a sec (clips mecaniques) est plus durable.',
+    priority: 'moyenne',
+    estimatedBudget: '1 500 - 5 000 EUR',
     relatedType: 'toiture',
   },
   plomberie_fuite: {
