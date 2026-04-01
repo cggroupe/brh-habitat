@@ -200,4 +200,4 @@ Chez BRH — Bretagne Renovation Habitat, nous réalisons des bilans thermiques 
 
 ---
 
-*BRH - Bretagne Renovation Habitat | 35 rue de Kervao, 29490 Guipavas | 07 84 86 39 51*
+*BRH - Bretagne Renovation Habitat | 35 rue de Kervao, 29490 Guipavas | 02 19 00 53 05*

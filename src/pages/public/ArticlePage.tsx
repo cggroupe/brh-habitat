@@ -732,7 +732,7 @@ export default function ArticlePage() {
 
                 {/* Phone — prominent */}
                 <a
-                  href="tel:0784863951"
+                  href="tel:0219005305"
                   className="flex items-center gap-3.5 mb-5 group"
                 >
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
@@ -740,7 +740,7 @@ export default function ArticlePage() {
                   </div>
                   <div>
                     <span className="font-display text-lg font-bold text-slate-800 tracking-wide group-hover:text-primary transition-colors">
-                      07 84 86 39 51
+                      02 19 00 53 05
                     </span>
                     <p className="font-body text-xs text-slate-400 mt-0.5">
                       Lun – Ven, 8h – 18h
@@ -852,11 +852,11 @@ export default function ArticlePage() {
                   <ArrowRight size={18} />
                 </Link>
                 <a
-                  href="tel:0784863951"
+                  href="tel:0219005305"
                   className="inline-flex items-center gap-2 px-8 py-4 border-2 border-slate-300 text-slate-700 font-display font-bold rounded-xl hover:border-primary hover:text-primary transition-colors uppercase tracking-wide"
                 >
                   <Phone size={16} />
-                  07 84 86 39 51
+                  02 19 00 53 05
                 </a>
               </div>
             </div>

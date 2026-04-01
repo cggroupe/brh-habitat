@@ -208,7 +208,7 @@ export function ContactRdvModal({
           ]
             .filter(Boolean)
             .join('\n'),
-          status: 'confirmed',
+          status: 'confirme',
         })
 
       if (apptError) {
@@ -220,7 +220,7 @@ export function ContactRdvModal({
       setIsConfirmed(true)
     } catch (err) {
       console.error('ContactRdvModal submit error:', err)
-      setSubmitError('Une erreur inattendue est survenue. Veuillez reessayer ou nous appeler au 07 84 86 39 51.')
+      setSubmitError('Une erreur inattendue est survenue. Veuillez reessayer ou nous appeler au 02 19 00 53 05.')
     } finally {
       setIsLoading(false)
     }

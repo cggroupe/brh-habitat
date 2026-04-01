@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Users, AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-react'
-import { useAdminProfiles, useUpdateProfileRole } from '@/hooks/queries'
+import { useAdminProfiles, useUpdateProfileRole, useUserCounts } from '@/hooks/queries'
 import { useAppStore } from '@/stores/appStore'
-import { supabase } from '@/lib/supabase'
 import { PAGE_SIZE } from '@/data/constants'
 import type { ProfileRow, UserRole } from '@/types/database'
 
@@ -23,72 +22,34 @@ export default function AdminUtilisateurs() {
   const total = data?.count ?? 0
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
-  const [profilesWithCounts, setProfilesWithCounts] = useState<ProfileWithCounts[]>([])
-  const [loadingCounts, setLoadingCounts] = useState(false)
+  const userIds = useMemo(() => profiles.map((p) => p.id), [profiles])
+  const { data: counts, isLoading: loadingCounts } = useUserCounts(userIds)
+
+  const profilesWithCounts: ProfileWithCounts[] = useMemo(() => {
+    return profiles.map((p) => ({
+      ...p,
+      homes_count: counts?.homes[p.id] ?? 0,
+      cases_count: counts?.cases[p.id] ?? 0,
+      diagnostics_count: counts?.diagnostics[p.id] ?? 0,
+    }))
+  }, [profiles, counts])
 
   const [savingRoleId, setSavingRoleId] = useState<string | null>(null)
   const [savedRoleId, setSavedRoleId] = useState<string | null>(null)
   const [localRoles, setLocalRoles] = useState<Record<string, UserRole>>({})
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
-  // Fetch counts whenever profiles change
+  // Initialize local roles when profiles load
   useEffect(() => {
-    if (profiles.length === 0) {
-      setProfilesWithCounts([])
-      return
-    }
-
-    async function fetchCounts() {
-      setLoadingCounts(true)
-
-      const userIds = profiles.map((p) => p.id)
-
-      const [homesResult, casesResult, diagnosticsResult] = await Promise.all([
-        supabase.from('brh_homes').select('user_id').in('user_id', userIds),
-        supabase.from('brh_cases').select('user_id').in('user_id', userIds),
-        supabase.from('brh_diagnostics').select('user_id').in('user_id', userIds),
-      ])
-
-      const homesCountMap: Record<string, number> = {}
-      const casesCountMap: Record<string, number> = {}
-      const diagnosticsCountMap: Record<string, number> = {}
-
-      ;(homesResult.data ?? []).forEach((h) => {
-        homesCountMap[h.user_id] = (homesCountMap[h.user_id] ?? 0) + 1
+    if (profiles.length === 0) return
+    setLocalRoles((prev) => {
+      const next = { ...prev }
+      profiles.forEach((p) => {
+        if (!(p.id in next)) next[p.id] = p.role
       })
-      ;(casesResult.data ?? []).forEach((c) => {
-        casesCountMap[c.user_id] = (casesCountMap[c.user_id] ?? 0) + 1
-      })
-      ;(diagnosticsResult.data ?? []).forEach((d) => {
-        if (d.user_id) {
-          diagnosticsCountMap[d.user_id] = (diagnosticsCountMap[d.user_id] ?? 0) + 1
-        }
-      })
-
-      const enriched: ProfileWithCounts[] = profiles.map((p) => ({
-        ...p,
-        homes_count: homesCountMap[p.id] ?? 0,
-        cases_count: casesCountMap[p.id] ?? 0,
-        diagnostics_count: diagnosticsCountMap[p.id] ?? 0,
-      }))
-
-      setProfilesWithCounts(enriched)
-
-      // Initialize local roles (preserve dirty states)
-      setLocalRoles((prev) => {
-        const next = { ...prev }
-        enriched.forEach((p) => {
-          if (!(p.id in next)) next[p.id] = p.role
-        })
-        return next
-      })
-
-      setLoadingCounts(false)
-    }
-
-    void fetchCounts()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data])
+      return next
+    })
+  }, [profiles])
 
   function saveRole(profile: ProfileWithCounts) {
     const newRole = localRoles[profile.id]
@@ -117,12 +78,7 @@ export default function AdminUtilisateurs() {
     )
   }
 
-  const displayedProfiles = profilesWithCounts.length > 0 ? profilesWithCounts : profiles.map((p) => ({
-    ...p,
-    homes_count: 0,
-    cases_count: 0,
-    diagnostics_count: 0,
-  }))
+  const displayedProfiles = profilesWithCounts
 
   return (
     <div className="p-6 lg:p-8">

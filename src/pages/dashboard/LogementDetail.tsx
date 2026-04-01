@@ -16,9 +16,21 @@ import {
   MapPin,
   FileText,
 } from 'lucide-react'
-import { useHomeDetail, useUpdateHome, useDeleteHome } from '@/hooks/queries'
+import {
+  useHomeDetail, useUpdateHome, useDeleteHome,
+  useHomeHealthRecords, useUpsertHealthRecord,
+  useHomeWorkHistory, useCreateWorkEntry, useUpdateWorkEntry, useDeleteWorkEntry,
+  useHomeDocuments, useCreateDocument, useUpdateDocument, useDeleteDocument,
+} from '@/hooks/queries'
+import { useAppStore } from '@/stores/appStore'
 import { DPE_RATINGS } from '@/data/constants'
-import type { BrhHomeRow, DpeRating } from '@/types/database'
+import type { BrhHomeRow, DpeRating, HealthDomain } from '@/types/database'
+import { HealthTabNavigation, type CarnetTab } from '@/components/carnet/HealthTabNavigation'
+import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
+import { HealthOverview } from '@/components/carnet/HealthOverview'
+import { WorkHistoryList } from '@/components/carnet/WorkHistoryList'
+import { DocumentsList } from '@/components/carnet/DocumentsList'
+import { HealthScoreGauge, getUrgencyFromScore } from '@/components/carnet/HealthScoreGauge'
 
 // ─── DPE helpers ──────────────────────────────────────────────────────────────
 
@@ -132,11 +144,25 @@ function DeleteModal({
 export default function LogementDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const user = useAppStore((s) => s.user)
 
   const { data: home, isLoading, error } = useHomeDetail(id)
   const updateMutation = useUpdateHome()
   const deleteMutation = useDeleteHome()
 
+  // Carnet de sante hooks
+  const { data: healthRecords = [] } = useHomeHealthRecords(id)
+  const upsertHealth = useUpsertHealthRecord()
+  const { data: workHistory = [] } = useHomeWorkHistory(id)
+  const createWork = useCreateWorkEntry()
+  const updateWork = useUpdateWorkEntry()
+  const deleteWork = useDeleteWorkEntry()
+  const { data: documents = [] } = useHomeDocuments(id)
+  const createDoc = useCreateDocument()
+  const updateDoc = useUpdateDocument()
+  const deleteDoc = useDeleteDocument()
+
+  const [activeTab, setActiveTab] = useState<CarnetTab>('infos')
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<EditFormValues | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -323,153 +349,209 @@ export default function LogementDetail() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: main info */}
+        {/* Left: tabs + content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Informations générales */}
-          <div className="bg-surface rounded-2xl border border-gray-light p-6">
-            <h2 className="font-display text-lg text-text-primary mb-4 flex items-center gap-2">
-              <MapPin size={16} className="text-primary" />
-              Informations générales
-            </h2>
+          {/* Onglets */}
+          <HealthTabNavigation activeTab={activeTab} onChange={setActiveTab} />
 
-            {!editing ? (
-              <>
-                <InfoRow label="Adresse" value={home.address} />
-                <InfoRow label="Ville" value={home.city} />
-                <InfoRow label="Code postal" value={home.postal_code} />
-                <InfoRow label="Type de bien" value={typeLabel[home.property_type] ?? home.property_type} />
-              </>
-            ) : (
-              form && (
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-display text-text-secondary mb-1.5">Adresse</label>
-                    <input name="address" value={form.address} onChange={handleFormChange} className={inputCls} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-display text-text-secondary mb-1.5">Ville</label>
-                      <input name="city" value={form.city} onChange={handleFormChange} className={inputCls} />
+          {/* === ONGLET INFOS === */}
+          {activeTab === 'infos' && (
+            <>
+              {/* Informations générales */}
+              <div className="bg-surface rounded-2xl border border-gray-light p-6">
+                <h2 className="font-display text-lg text-text-primary mb-4 flex items-center gap-2">
+                  <MapPin size={16} className="text-primary" />
+                  Informations générales
+                </h2>
+                {!editing ? (
+                  <>
+                    <InfoRow label="Adresse" value={home.address} />
+                    <InfoRow label="Ville" value={home.city} />
+                    <InfoRow label="Code postal" value={home.postal_code} />
+                    <InfoRow label="Type de bien" value={typeLabel[home.property_type] ?? home.property_type} />
+                  </>
+                ) : (
+                  form && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-display text-text-secondary mb-1.5">Adresse</label>
+                        <AddressAutocomplete
+                          value={form.address}
+                          onChange={(val) => setForm((prev) => prev ? { ...prev, address: val } : prev)}
+                          onSelect={(s) => setForm((prev) => prev ? { ...prev, address: s.address, city: s.city, postal_code: s.postalCode } : prev)}
+                          placeholder="Commencez a taper votre adresse..."
+                          className={`${inputCls} pr-10`}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-display text-text-secondary mb-1.5">Ville</label>
+                          <input name="city" value={form.city} onChange={handleFormChange} className={inputCls} />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-display text-text-secondary mb-1.5">Code postal</label>
+                          <input name="postal_code" value={form.postal_code} onChange={handleFormChange} className={inputCls} />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-display text-text-secondary mb-1.5">Type de bien</label>
+                        <select name="property_type" value={form.property_type} onChange={handleFormChange} className={inputCls}>
+                          <option value="maison">Maison</option>
+                          <option value="appartement">Appartement</option>
+                          <option value="immeuble">Immeuble</option>
+                          <option value="commerce">Commerce</option>
+                          <option value="autre">Autre</option>
+                        </select>
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-xs font-display text-text-secondary mb-1.5">Code postal</label>
-                      <input name="postal_code" value={form.postal_code} onChange={handleFormChange} className={inputCls} />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-display text-text-secondary mb-1.5">Type de bien</label>
-                    <select name="property_type" value={form.property_type} onChange={handleFormChange} className={inputCls}>
-                      <option value="maison">Maison</option>
-                      <option value="appartement">Appartement</option>
-                      <option value="immeuble">Immeuble</option>
-                      <option value="commerce">Commerce</option>
-                      <option value="autre">Autre</option>
-                    </select>
-                  </div>
-                </div>
-              )
-            )}
-          </div>
+                  )
+                )}
+              </div>
 
-          {/* Caractéristiques */}
-          <div className="bg-surface rounded-2xl border border-gray-light p-6">
-            <h2 className="font-display text-lg text-text-primary mb-4 flex items-center gap-2">
-              <Ruler size={16} className="text-primary" />
-              Caractéristiques
-            </h2>
+              {/* Caractéristiques */}
+              <div className="bg-surface rounded-2xl border border-gray-light p-6">
+                <h2 className="font-display text-lg text-text-primary mb-4 flex items-center gap-2">
+                  <Ruler size={16} className="text-primary" />
+                  Caractéristiques
+                </h2>
+                {!editing ? (
+                  <>
+                    <InfoRow label="Surface" value={`${home.surface} m²`} />
+                    <InfoRow label="Année de construction" value={home.year_built} />
+                    <InfoRow label="Nombre d'étages" value={home.floors} />
+                    <InfoRow label="Type de chauffage" value={home.heating_type ?? <span className="text-text-light">Non renseigné</span>} />
+                    <InfoRow label="Type d'isolation" value={home.insulation_type ?? <span className="text-text-light">Non renseigné</span>} />
+                    <div className="flex items-start justify-between py-3">
+                      <span className="font-body text-sm text-text-light shrink-0 w-40">Note DPE</span>
+                      <DpeBadge rating={home.dpe_rating} />
+                    </div>
+                  </>
+                ) : (
+                  form && (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-display text-text-secondary mb-1.5">Surface (m²)</label>
+                          <input name="surface" type="number" value={form.surface} onChange={handleFormChange} className={inputCls} />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-display text-text-secondary mb-1.5">Année de construction</label>
+                          <input name="year_built" type="number" value={form.year_built} onChange={handleFormChange} className={inputCls} />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-display text-text-secondary mb-1.5">Nombre d'étages</label>
+                          <input name="floors" type="number" value={form.floors} onChange={handleFormChange} className={inputCls} />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-display text-text-secondary mb-1.5">Note DPE</label>
+                          <select name="dpe_rating" value={form.dpe_rating} onChange={handleFormChange} className={inputCls}>
+                            <option value="">— Non renseigné —</option>
+                            {DPE_RATINGS.map(r => <option key={r} value={r}>{r}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-display text-text-secondary mb-1.5 flex items-center gap-1.5">
+                          <Thermometer size={12} /> Type de chauffage
+                        </label>
+                        <input name="heating_type" value={form.heating_type} onChange={handleFormChange} placeholder="Gaz, électrique..." className={inputCls} />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-display text-text-secondary mb-1.5 flex items-center gap-1.5">
+                          <Layers size={12} /> Type d'isolation
+                        </label>
+                        <input name="insulation_type" value={form.insulation_type} onChange={handleFormChange} placeholder="Laine de verre..." className={inputCls} />
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
 
-            {!editing ? (
-              <>
-                <InfoRow label="Surface" value={`${home.surface} m²`} />
-                <InfoRow label="Année de construction" value={home.year_built} />
-                <InfoRow label="Nombre d'étages" value={home.floors} />
-                <InfoRow
-                  label="Type de chauffage"
-                  value={home.heating_type ?? <span className="text-text-light">Non renseigné</span>}
-                />
-                <InfoRow
-                  label="Type d'isolation"
-                  value={home.insulation_type ?? <span className="text-text-light">Non renseigné</span>}
-                />
-                <div className="flex items-start justify-between py-3">
-                  <span className="font-body text-sm text-text-light shrink-0 w-40">Note DPE</span>
-                  <DpeBadge rating={home.dpe_rating} />
-                </div>
-              </>
-            ) : (
-              form && (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-display text-text-secondary mb-1.5">Surface (m²)</label>
-                      <input name="surface" type="number" value={form.surface} onChange={handleFormChange} className={inputCls} />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-display text-text-secondary mb-1.5">Année de construction</label>
-                      <input name="year_built" type="number" value={form.year_built} onChange={handleFormChange} className={inputCls} />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-display text-text-secondary mb-1.5">Nombre d'étages</label>
-                      <input name="floors" type="number" value={form.floors} onChange={handleFormChange} className={inputCls} />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-display text-text-secondary mb-1.5">Note DPE</label>
-                      <select name="dpe_rating" value={form.dpe_rating} onChange={handleFormChange} className={inputCls}>
-                        <option value="">— Non renseigné —</option>
-                        {DPE_RATINGS.map(r => (
-                          <option key={r} value={r}>{r}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-display text-text-secondary mb-1.5 flex items-center gap-1.5">
-                      <Thermometer size={12} /> Type de chauffage
-                    </label>
-                    <input name="heating_type" value={form.heating_type} onChange={handleFormChange} placeholder="Gaz, électrique..." className={inputCls} />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-display text-text-secondary mb-1.5 flex items-center gap-1.5">
-                      <Layers size={12} /> Type d'isolation
-                    </label>
-                    <input name="insulation_type" value={form.insulation_type} onChange={handleFormChange} placeholder="Laine de verre..." className={inputCls} />
-                  </div>
-                </div>
-              )
-            )}
-          </div>
+              {/* Notes */}
+              <div className="bg-surface rounded-2xl border border-gray-light p-6">
+                <h2 className="font-display text-lg text-text-primary mb-4 flex items-center gap-2">
+                  <FileText size={16} className="text-primary" />
+                  Notes
+                </h2>
+                {!editing ? (
+                  home.notes ? (
+                    <p className="font-body text-sm text-text-primary leading-relaxed">{home.notes}</p>
+                  ) : (
+                    <p className="font-body text-sm text-text-light italic">Aucune note.</p>
+                  )
+                ) : (
+                  form && (
+                    <textarea name="notes" value={form.notes} onChange={handleFormChange} rows={4} placeholder="Informations complémentaires..." className={`${inputCls} resize-none`} />
+                  )
+                )}
+              </div>
+            </>
+          )}
 
-          {/* Notes */}
-          <div className="bg-surface rounded-2xl border border-gray-light p-6">
-            <h2 className="font-display text-lg text-text-primary mb-4 flex items-center gap-2">
-              <FileText size={16} className="text-primary" />
-              Notes
-            </h2>
-            {!editing ? (
-              home.notes ? (
-                <p className="font-body text-sm text-text-primary leading-relaxed">{home.notes}</p>
-              ) : (
-                <p className="font-body text-sm text-text-light italic">Aucune note.</p>
-              )
-            ) : (
-              form && (
-                <textarea
-                  name="notes"
-                  value={form.notes}
-                  onChange={handleFormChange}
-                  rows={4}
-                  placeholder="Informations complémentaires..."
-                  className={`${inputCls} resize-none`}
-                />
-              )
-            )}
-          </div>
+          {/* === ONGLET SANTE === */}
+          {activeTab === 'sante' && (
+            <HealthOverview
+              home={home}
+              records={healthRecords}
+              onSaveDomain={(domain: HealthDomain, score: number, symptoms: string[], notes: string) => {
+                if (!user) return
+                upsertHealth.mutate({
+                  home_id: home.id,
+                  user_id: user.id,
+                  domain,
+                  score,
+                  urgency: getUrgencyFromScore(score),
+                  symptoms,
+                  notes: notes || null,
+                  assessed_at: new Date().toISOString().slice(0, 10),
+                })
+              }}
+            />
+          )}
+
+          {/* === ONGLET TRAVAUX === */}
+          {activeTab === 'travaux' && user && (
+            <WorkHistoryList
+              works={workHistory}
+              homeId={home.id}
+              userId={user.id}
+              onCreate={(w) => createWork.mutate({ ...w, documents: [] })}
+              onUpdate={(wid, payload) => updateWork.mutate({ id: wid, payload })}
+              onDelete={(wid) => deleteWork.mutate(wid)}
+            />
+          )}
+
+          {/* === ONGLET DOCUMENTS === */}
+          {activeTab === 'documents' && user && (
+            <DocumentsList
+              documents={documents}
+              homeId={home.id}
+              userId={user.id}
+              onCreate={(d) => createDoc.mutate(d)}
+              onUpdate={(did, payload) => updateDoc.mutate({ id: did, payload })}
+              onDelete={(did) => deleteDoc.mutate(did)}
+            />
+          )}
         </div>
 
         {/* Right: sidebar */}
         <div className="space-y-6">
+          {/* Score sante mini */}
+          {healthRecords.length > 0 && (() => {
+            const evaluated = healthRecords.filter((r) => r.score != null)
+            if (evaluated.length === 0) return null
+            const avg = Math.round(evaluated.reduce((s, r) => s + (r.score ?? 0), 0) / evaluated.length)
+            return (
+              <div className="bg-surface rounded-2xl border border-gray-light p-6 flex flex-col items-center">
+                <p className="font-display text-xs text-text-light uppercase tracking-wider mb-3">Score sante</p>
+                <HealthScoreGauge score={avg} size="sm" />
+                <p className="font-body text-xs text-text-light mt-2">{evaluated.length} domaine{evaluated.length > 1 ? 's' : ''}</p>
+              </div>
+            )
+          })()}
+
           {/* Quick info card */}
           <div className="bg-surface rounded-2xl border border-gray-light p-6">
             <h2 className="font-display text-base text-text-primary mb-4">Résumé</h2>

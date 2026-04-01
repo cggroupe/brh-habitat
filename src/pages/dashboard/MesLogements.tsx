@@ -14,6 +14,7 @@ import { useAppStore } from '@/stores/appStore'
 import { useUserHomes, useCreateHome } from '@/hooks/queries'
 import { DPE_RATINGS } from '@/data/constants'
 import type { BrhHomeRow, DpeRating } from '@/types/database'
+import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
 
 // ─── DPE helpers ──────────────────────────────────────────────────────────────
 
@@ -115,6 +116,7 @@ function AddHomeModal({ onClose, userId }: AddHomeModalProps) {
         dpe_rating: (form.dpe_rating as DpeRating) || null,
         photos: [],
         notes: form.notes.trim() || null,
+        health_score: null,
       },
       {
         onSuccess: () => {
@@ -150,17 +152,17 @@ function AddHomeModal({ onClose, userId }: AddHomeModalProps) {
             </div>
           )}
 
-          {/* Adresse */}
+          {/* Adresse (autocomplete) */}
           <div>
             <label className="block text-xs font-display text-text-secondary mb-1.5">
               Adresse <span className="text-danger">*</span>
             </label>
-            <input
-              name="address"
+            <AddressAutocomplete
               value={form.address}
-              onChange={handleChange}
-              placeholder="15 rue des Lilas"
-              className="w-full px-3.5 py-2.5 border border-gray-light rounded-xl text-sm font-body text-text-primary bg-background focus:outline-none focus:border-primary transition-colors"
+              onChange={(val) => setForm((prev) => ({ ...prev, address: val }))}
+              onSelect={(s) => setForm((prev) => ({ ...prev, address: s.address, city: s.city, postal_code: s.postalCode }))}
+              placeholder="Commencez a taper votre adresse..."
+              className="w-full px-3.5 py-2.5 pr-10 border border-gray-light rounded-xl text-sm font-body text-text-primary bg-background focus:outline-none focus:border-primary transition-colors"
             />
           </div>
 

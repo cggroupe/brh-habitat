@@ -30,7 +30,8 @@ export async function fetchHomes(
     .range(from, to)
 
   if (filters?.city) {
-    query = query.ilike('city', `%${filters.city}%`)
+    const escapedCity = filters.city.replace(/%/g, '\\%').replace(/_/g, '\\_')
+    query = query.ilike('city', `%${escapedCity}%`)
   }
 
   if (filters?.property_type) {

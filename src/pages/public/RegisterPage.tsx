@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { ArrowRight, UserPlus, CheckCircle } from 'lucide-react'
+import { useAppStore } from '@/stores/appStore'
+import { ArrowRight, UserPlus, CheckCircle, Mail } from 'lucide-react'
 
 // Map des messages Supabase bruts vers des messages user-friendly
 const AUTH_ERROR_MAP: Record<string, string> = {
@@ -45,12 +46,14 @@ function CriteriaItem({ met, label }: { met: boolean; label: string }) {
 
 export default function RegisterPage() {
   const navigate = useNavigate()
+  const setUser = useAppStore((s) => s.setUser)
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [passwordTouched, setPasswordTouched] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
 
   const criteria = getPasswordCriteria(password)
   const passwordValid = isPasswordValid(criteria)
@@ -58,6 +61,11 @@ export default function RegisterPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+
+    if (!fullName.trim()) {
+      setError('Le nom complet est obligatoire.')
+      return
+    }
 
     if (!passwordValid) {
       setPasswordTouched(true)
@@ -67,20 +75,55 @@ export default function RegisterPage() {
 
     setLoading(true)
 
-    const { error: authError } = await supabase.auth.signUp({
+    const { data, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: fullName },
+        emailRedirectTo: `${window.location.origin}/connexion`,
       },
     })
 
     if (authError) {
       setError(getFriendlyError(authError.message))
       setLoading(false)
-    } else {
-      navigate('/tableau-de-bord')
+      return
     }
+
+    if (!data.user) {
+      setError('Une erreur est survenue lors de la creation du compte.')
+      setLoading(false)
+      return
+    }
+
+    // Si l'email n'est pas confirme (identities vide), afficher le message
+    if (data.user.identities?.length === 0 || !data.session) {
+      setEmailSent(true)
+      setLoading(false)
+      return
+    }
+
+    // Si auto-confirme (dev ou config Supabase), rediriger directement
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id, email, full_name, role, avatar_url')
+      .eq('id', data.user.id)
+      .single()
+
+    if (profile) {
+      setUser({
+        id: profile.id,
+        email: profile.email,
+        full_name: profile.full_name ?? fullName,
+        role: profile.role as 'user' | 'admin',
+        avatar_url: profile.avatar_url ?? undefined,
+      })
+    }
+
+    setLoading(false)
+    navigate('/tableau-de-bord')
   }
 
   return (
@@ -105,6 +148,36 @@ export default function RegisterPage() {
               Rejoignez BRH Habitat et gerez vos projets
             </p>
           </div>
+
+          {/* Ecran confirmation email */}
+          {emailSent ? (
+            <div className="flex flex-col items-center text-center py-8 gap-5">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <Mail size={28} className="text-primary" />
+              </div>
+              <div>
+                <h2 className="font-display text-2xl text-slate-900 mb-2">
+                  Verifiez votre boite mail
+                </h2>
+                <p className="font-body text-sm text-slate-500 max-w-sm leading-relaxed">
+                  Un email de confirmation a ete envoye a <strong className="text-slate-700">{email}</strong>.
+                  Cliquez sur le lien dans l'email pour activer votre compte.
+                </p>
+              </div>
+              <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-left max-w-sm">
+                <p className="font-body text-xs text-amber-700 leading-relaxed">
+                  Vous ne trouvez pas l'email ? Verifiez votre dossier spam/courrier indesirable. L'email peut prendre quelques minutes.
+                </p>
+              </div>
+              <Link
+                to="/connexion"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-display text-sm rounded-xl hover:bg-primary-dark transition-colors mt-2"
+              >
+                Aller a la connexion <ArrowRight size={14} />
+              </Link>
+            </div>
+          ) : (
+          <>
 
           {/* Avantages compte */}
           <div className="bg-primary/5 rounded-xl p-5 mb-8 space-y-2">
@@ -227,6 +300,8 @@ export default function RegisterPage() {
               Se connecter
             </Link>
           </p>
+          </>
+          )}
         </div>
 
         {/* Back to site */}

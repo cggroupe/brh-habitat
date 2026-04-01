@@ -18,12 +18,40 @@ interface AppState {
   closeDrawer: () => void
 }
 
+// Persistence localStorage pour eviter le re-fetch au refresh
+const STORAGE_KEY = 'brh-user'
+
+function loadUser(): User | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    return JSON.parse(raw) as User
+  } catch {
+    return null
+  }
+}
+
+function saveUser(user: User | null) {
+  try {
+    if (user) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
+    } else {
+      localStorage.removeItem(STORAGE_KEY)
+    }
+  } catch {
+    // localStorage plein ou indisponible
+  }
+}
+
 export const useAppStore = create<AppState>((set) => ({
-  user: null,
+  user: loadUser(),
   locale: 'fr',
   drawerOpen: false,
 
-  setUser: (user) => set({ user }),
+  setUser: (user) => {
+    saveUser(user)
+    set({ user })
+  },
 
   setLocale: (locale) => set({ locale }),
 

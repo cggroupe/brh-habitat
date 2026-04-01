@@ -4,6 +4,10 @@ import type {
   AppointmentType,
   AppointmentStatus,
   DpeRating,
+  HealthDomain,
+  HealthUrgency,
+  WorkStatus,
+  DocumentType,
 } from '@/types/database'
 
 // ---------------------------------------------------------------------------
@@ -14,9 +18,10 @@ export const PAGE_SIZE = 20
 // ---------------------------------------------------------------------------
 // Diagnostic statuses
 // ---------------------------------------------------------------------------
-export const DIAGNOSTIC_STATUSES: DiagnosticStatus[] = ['pending', 'analyzed', 'contacted', 'closed']
+export const DIAGNOSTIC_STATUSES: DiagnosticStatus[] = ['draft', 'pending', 'analyzed', 'contacted', 'closed']
 
 export const DIAGNOSTIC_STATUS_LABELS: Record<DiagnosticStatus, string> = {
+  draft: 'Brouillon',
   pending: 'En attente',
   analyzed: 'Analyse',
   contacted: 'Contacte',
@@ -24,6 +29,7 @@ export const DIAGNOSTIC_STATUS_LABELS: Record<DiagnosticStatus, string> = {
 }
 
 export const DIAGNOSTIC_STATUS_COLORS: Record<DiagnosticStatus, string> = {
+  draft: 'bg-slate-100 text-slate-400',
   pending: 'bg-amber-100 text-amber-700',
   analyzed: 'bg-blue-100 text-blue-700',
   contacted: 'bg-purple-100 text-purple-700',
@@ -126,3 +132,99 @@ export const PROPERTY_TYPES = [
   'Local commercial',
   'Autre',
 ] as const
+
+// ---------------------------------------------------------------------------
+// Health domains (Carnet de sante)
+// ---------------------------------------------------------------------------
+export const HEALTH_DOMAINS: HealthDomain[] = ['humidite', 'isolation', 'ventilation', 'menuiseries', 'electricite', 'toiture', 'plomberie']
+
+export const HEALTH_DOMAIN_LABELS: Record<HealthDomain, string> = {
+  humidite: 'Humidite',
+  isolation: 'Isolation',
+  ventilation: 'Ventilation',
+  menuiseries: 'Menuiseries',
+  electricite: 'Electricite',
+  toiture: 'Toiture',
+  plomberie: 'Plomberie',
+}
+
+export const HEALTH_DOMAIN_COLORS: Record<HealthDomain, { text: string; bg: string }> = {
+  humidite: { text: 'text-blue-600', bg: 'bg-blue-50' },
+  isolation: { text: 'text-orange-600', bg: 'bg-orange-50' },
+  ventilation: { text: 'text-cyan-600', bg: 'bg-cyan-50' },
+  menuiseries: { text: 'text-amber-700', bg: 'bg-amber-50' },
+  electricite: { text: 'text-yellow-600', bg: 'bg-yellow-50' },
+  toiture: { text: 'text-red-600', bg: 'bg-red-50' },
+  plomberie: { text: 'text-primary', bg: 'bg-green-50' },
+}
+
+export const HEALTH_DOMAIN_ICONS: Record<HealthDomain, string> = {
+  humidite: 'Droplets',
+  isolation: 'Thermometer',
+  ventilation: 'Wind',
+  menuiseries: 'Square',
+  electricite: 'Zap',
+  toiture: 'Home',
+  plomberie: 'Wrench',
+}
+
+export const URGENCY_LABELS: Record<HealthUrgency, string> = {
+  faible: 'Etat satisfaisant',
+  modere: 'Attention recommandee',
+  eleve: 'Intervention conseillee',
+  critique: 'Intervention urgente',
+}
+
+export const URGENCY_COLORS: Record<HealthUrgency, { text: string; bg: string; border: string; bar: string }> = {
+  faible: { text: 'text-green-700', bg: 'bg-green-50', border: 'border-green-200', bar: 'bg-green-500' },
+  modere: { text: 'text-yellow-700', bg: 'bg-yellow-50', border: 'border-yellow-200', bar: 'bg-yellow-500' },
+  eleve: { text: 'text-orange-700', bg: 'bg-orange-50', border: 'border-orange-200', bar: 'bg-orange-500' },
+  critique: { text: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200', bar: 'bg-red-500' },
+}
+
+// ---------------------------------------------------------------------------
+// Work statuses (Historique travaux)
+// ---------------------------------------------------------------------------
+export const WORK_STATUSES: WorkStatus[] = ['planifie', 'en_cours', 'termine']
+
+export const WORK_STATUS_LABELS: Record<WorkStatus, string> = {
+  planifie: 'Planifie',
+  en_cours: 'En cours',
+  termine: 'Termine',
+}
+
+export const WORK_STATUS_COLORS: Record<WorkStatus, string> = {
+  planifie: 'bg-blue-100 text-blue-700',
+  en_cours: 'bg-amber-100 text-amber-700',
+  termine: 'bg-green-100 text-green-700',
+}
+
+// ---------------------------------------------------------------------------
+// Document types (Diagnostics obligatoires)
+// ---------------------------------------------------------------------------
+export const DOCUMENT_TYPES: DocumentType[] = ['dpe', 'amiante', 'plomb', 'electricite', 'gaz', 'erp', 'termites', 'assainissement', 'autre']
+
+export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
+  dpe: 'DPE',
+  amiante: 'Amiante',
+  plomb: 'Plomb',
+  electricite: 'Electricite',
+  gaz: 'Gaz',
+  erp: 'Etat des risques',
+  termites: 'Termites',
+  assainissement: 'Assainissement',
+  autre: 'Autre',
+}
+
+// Validite en annees (null = pas d'expiration)
+export const DOCUMENT_VALIDITY_YEARS: Record<DocumentType, number | null> = {
+  dpe: 10,
+  amiante: null,
+  plomb: null,
+  electricite: 3,
+  gaz: 3,
+  erp: 0.5,
+  termites: 0.5,
+  assainissement: 3,
+  autre: null,
+}

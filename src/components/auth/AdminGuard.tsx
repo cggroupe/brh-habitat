@@ -4,6 +4,11 @@ import { useAuth } from '@/hooks/useAuth'
 export default function AdminGuard() {
   const { isAuthenticated, isAdmin, loading } = useAuth()
 
+  // Si admin deja dans le store, pas besoin d'attendre le loading
+  if (isAuthenticated && isAdmin) {
+    return <Outlet />
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">

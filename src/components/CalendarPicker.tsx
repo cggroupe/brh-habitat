@@ -125,7 +125,7 @@ export function CalendarPicker({ departement, onSlotSelected, selectedSlot }: Ca
         <Phone size={18} className="text-amber-600 shrink-0 mt-0.5" />
         <p className="font-body text-sm text-amber-800">
           Calendrier indisponible — appelez-nous au{' '}
-          <a href="tel:0784863951" className="font-semibold underline">07 84 86 39 51</a>
+          <a href="tel:0219005305" className="font-semibold underline">02 19 00 53 05</a>
           {' '}pour prendre rendez-vous.
         </p>
       </div>
@@ -191,7 +191,7 @@ export function CalendarPicker({ departement, onSlotSelected, selectedSlot }: Ca
       .catch((err) => {
         if (cancelled) return
         console.error('CalendarPicker fetch error:', err)
-        setFetchError('Impossible de charger les creneaux. Appelez-nous au 07 84 86 39 51.')
+        setFetchError('Impossible de charger les creneaux. Appelez-nous au 02 19 00 53 05.')
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false)

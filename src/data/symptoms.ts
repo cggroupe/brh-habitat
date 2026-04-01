@@ -72,6 +72,7 @@ export const symptomsByType: Record<DiagnosticType, Symptom[]> = {
     { id: 'electricite_rallonges', label: 'Utilisation excessive de rallonges', weight: 2, urgency: 'medium' },
     { id: 'electricite_odeur_brule', label: 'Odeur de brûlé autour des prises', weight: 3, urgency: 'high' },
     { id: 'electricite_non_conforme', label: 'Installation non conforme aux normes', weight: 3, urgency: 'high' },
+    { id: 'electricite_tableau_vieux', label: 'Tableau électrique de plus de 10 ans', weight: 3, urgency: 'high' },
   ],
 
   toiture: [
@@ -86,7 +87,8 @@ export const symptomsByType: Record<DiagnosticType, Symptom[]> = {
     // --- Spécificités ardoise Bretagne ---
     { id: 'toiture_ardoise_blanchie', label: 'Ardoises blanchies, grisées ou décolorées', weight: 3, urgency: 'high' },
     { id: 'toiture_ardoise_delitage', label: 'Ardoises qui s\'effritent ou se délitent (feuilletage)', weight: 3, urgency: 'high' },
-    { id: 'toiture_ardoise_traitement', label: 'Traitement ou peinture appliqué sur les ardoises (hydrofuge, résine…)', weight: 3, urgency: 'high' },
+    { id: 'toiture_ardoise_traitement', label: 'Mauvais traitement ou peinture appliqué sur les ardoises (produit inadapté)', weight: 2, urgency: 'medium' },
+    { id: 'toiture_mauvais_produit', label: 'Mauvais produit appliqué sur la toiture (nettoyeur haute pression, javel...)', weight: 3, urgency: 'high' },
     { id: 'toiture_ardoise_glissee', label: 'Ardoises qui glissent ou se décalent', weight: 2, urgency: 'medium' },
     { id: 'toiture_faitage_fissure', label: 'Faîtage en mortier fissuré ou descellé', weight: 2, urgency: 'medium' },
   ],

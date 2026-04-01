@@ -14,14 +14,13 @@ import {
   FileText,
   Clock,
 } from 'lucide-react'
-import { useCaseDetail, useUpdateCase } from '@/hooks/queries'
-import { supabase } from '@/lib/supabase'
+import { useCaseDetail, useUpdateCase, useProfileDetail, useHomeDetail, useDiagnosticDetail } from '@/hooks/queries'
 import {
   CASE_STATUSES,
   CASE_STATUS_LABELS,
   CASE_STATUS_COLORS,
 } from '@/data/constants'
-import type { BrhHomeRow, BrhDiagnosticRow, CaseStatus } from '@/types/database'
+import type { CaseStatus } from '@/types/database'
 
 const STATUS_STEPS: CaseStatus[] = ['nouveau', 'en_cours', 'devis', 'travaux', 'termine']
 
@@ -31,9 +30,12 @@ export default function AdminDossierDetail() {
   const { data: caseData, isLoading, isError } = useCaseDetail(id)
   const updateCase = useUpdateCase()
 
-  const [homeData, setHomeData] = useState<BrhHomeRow | null>(null)
-  const [diagnosticData, setDiagnosticData] = useState<BrhDiagnosticRow | null>(null)
-  const [userFullName, setUserFullName] = useState<string | null>(null)
+  // Fetch linked records via hooks
+  const { data: profileData } = useProfileDetail(caseData?.user_id)
+  const { data: homeData } = useHomeDetail(caseData?.home_id ?? undefined)
+  const { data: diagnosticData } = useDiagnosticDetail(caseData?.diagnostic_id ?? undefined)
+
+  const userFullName = profileData?.full_name ?? null
 
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -55,45 +57,6 @@ export default function AdminDossierDetail() {
     setEstimatedBudget(caseData.estimated_budget != null ? String(caseData.estimated_budget) : '')
     setStartDate(caseData.start_date ? caseData.start_date.slice(0, 10) : '')
     setEndDate(caseData.end_date ? caseData.end_date.slice(0, 10) : '')
-  }, [caseData])
-
-  // Fetch linked records when case data is available
-  useEffect(() => {
-    if (!caseData) return
-
-    async function fetchLinked() {
-      if (!caseData) return
-
-      // User profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name')
-        .eq('id', caseData.user_id)
-        .single()
-      setUserFullName(profile?.full_name ?? null)
-
-      // Linked home
-      if (caseData.home_id) {
-        const { data: home } = await supabase
-          .from('brh_homes')
-          .select('*')
-          .eq('id', caseData.home_id)
-          .single()
-        setHomeData(home ?? null)
-      }
-
-      // Linked diagnostic
-      if (caseData.diagnostic_id) {
-        const { data: diag } = await supabase
-          .from('brh_diagnostics')
-          .select('*')
-          .eq('id', caseData.diagnostic_id)
-          .single()
-        setDiagnosticData(diag ?? null)
-      }
-    }
-
-    void fetchLinked()
   }, [caseData])
 
   function handleSave() {

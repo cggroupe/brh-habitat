@@ -236,4 +236,4 @@ Le réseau breton de la rénovation, c'est l'assurance d'une approche globale, c
 
 ---
 
-*BRH - Bretagne Renovation Habitat | 35 rue de Kervao, 29490 Guipavas | 07 84 86 39 51*
+*BRH - Bretagne Renovation Habitat | 35 rue de Kervao, 29490 Guipavas | 02 19 00 53 05*

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import type { RevenueProfile } from '@/data/aides-renov'
 
 export type DiagnosticType =
@@ -18,17 +19,11 @@ interface DiagnosticProperty {
   floors?: number
 }
 
-// ---------------------------------------------------------------------------
-// Nouvelle section Situation (step 3 — entre Propriete et Equipements)
-// ---------------------------------------------------------------------------
-// Steps : 1-Types | 2-Propriete | 3-Situation | 4-Equipements | 5-Symptomes
-// Le contact est collecte via modal sur la page de resultats (ContactRdvModal)
-
 export interface DiagnosticSituation {
   ownerType?: 'occupant' | 'bailleur'
-  householdSize?: number        // 1 a 5+
+  householdSize?: number
   revenueProfile?: RevenueProfile | null
-  knowsRevenue?: boolean        // sait-il son revenu fiscal ?
+  knowsRevenue?: boolean
 }
 
 export interface DiagnosticEquipment {
@@ -47,6 +42,8 @@ interface DiagnosticContact {
 }
 
 interface DiagnosticState {
+  // ID du diagnostic en base (null si pas encore sauvé)
+  draftId: string | null
   step: number
   selectedTypes: DiagnosticType[]
   property: DiagnosticProperty
@@ -55,6 +52,7 @@ interface DiagnosticState {
   symptoms: Record<DiagnosticType, string[]>
   contact: DiagnosticContact
 
+  setDraftId: (id: string | null) => void
   setStep: (step: number) => void
   nextStep: () => void
   prevStep: () => void
@@ -65,6 +63,15 @@ interface DiagnosticState {
   setEquipment: (data: Partial<DiagnosticEquipment>) => void
   toggleSymptom: (type: DiagnosticType, symptom: string) => void
   setContact: (data: Partial<DiagnosticContact>) => void
+  /** Restaurer un brouillon depuis la DB */
+  restoreDraft: (draft: {
+    id: string
+    step: number
+    selectedTypes: DiagnosticType[]
+    property: DiagnosticProperty
+    equipment: DiagnosticEquipment
+    symptoms: Record<DiagnosticType, string[]>
+  }) => void
   reset: () => void
 }
 
@@ -79,6 +86,7 @@ const initialSymptoms: Record<DiagnosticType, string[]> = {
 }
 
 const initialState = {
+  draftId: null as string | null,
   step: 1,
   selectedTypes: [] as DiagnosticType[],
   property: {} as DiagnosticProperty,
@@ -88,62 +96,92 @@ const initialState = {
   contact: {} as DiagnosticContact,
 }
 
-export const useDiagnosticStore = create<DiagnosticState>((set) => ({
-  ...initialState,
+export const useDiagnosticStore = create<DiagnosticState>()(
+  persist(
+    (set) => ({
+      ...initialState,
 
-  setStep: (step) => set({ step }),
+      setDraftId: (id) => set({ draftId: id }),
 
-  nextStep: () =>
-    set((state) => ({ step: Math.min(state.step + 1, 5) })),
+      setStep: (step) => set({ step }),
 
-  prevStep: () =>
-    set((state) => ({ step: Math.max(state.step - 1, 1) })),
+      nextStep: () =>
+        set((state) => ({ step: Math.min(state.step + 1, 5) })),
 
-  toggleType: (type) =>
-    set((state) => {
-      const exists = state.selectedTypes.includes(type)
-      return {
-        selectedTypes: exists
-          ? state.selectedTypes.filter((t) => t !== type)
-          : [...state.selectedTypes, type],
-      }
+      prevStep: () =>
+        set((state) => ({ step: Math.max(state.step - 1, 1) })),
+
+      toggleType: (type) =>
+        set((state) => {
+          const exists = state.selectedTypes.includes(type)
+          return {
+            selectedTypes: exists
+              ? state.selectedTypes.filter((t) => t !== type)
+              : [...state.selectedTypes, type],
+          }
+        }),
+
+      setProperty: (data) =>
+        set((state) => ({
+          property: { ...state.property, ...data },
+        })),
+
+      setSituation: (situation) => set({ situation }),
+
+      updateSituation: (partial) =>
+        set((state) => ({
+          situation: { ...state.situation, ...partial },
+        })),
+
+      setEquipment: (data) =>
+        set((state) => ({
+          equipment: { ...state.equipment, ...data },
+        })),
+
+      toggleSymptom: (type, symptom) =>
+        set((state) => {
+          const current = state.symptoms[type] ?? []
+          const exists = current.includes(symptom)
+          return {
+            symptoms: {
+              ...state.symptoms,
+              [type]: exists
+                ? current.filter((s) => s !== symptom)
+                : [...current, symptom],
+            },
+          }
+        }),
+
+      setContact: (data) =>
+        set((state) => ({
+          contact: { ...state.contact, ...data },
+        })),
+
+      restoreDraft: (draft) =>
+        set({
+          draftId: draft.id,
+          step: draft.step,
+          selectedTypes: draft.selectedTypes,
+          property: draft.property,
+          equipment: draft.equipment,
+          symptoms: { ...initialSymptoms, ...draft.symptoms },
+        }),
+
+      reset: () => set({ ...initialState, symptoms: { ...initialSymptoms } }),
     }),
-
-  setProperty: (data) =>
-    set((state) => ({
-      property: { ...state.property, ...data },
-    })),
-
-  setSituation: (situation) => set({ situation }),
-
-  updateSituation: (partial) =>
-    set((state) => ({
-      situation: { ...state.situation, ...partial },
-    })),
-
-  setEquipment: (data) =>
-    set((state) => ({
-      equipment: { ...state.equipment, ...data },
-    })),
-
-  toggleSymptom: (type, symptom) =>
-    set((state) => {
-      const current = state.symptoms[type] ?? []
-      const exists = current.includes(symptom)
-      return {
-        symptoms: {
-          ...state.symptoms,
-          [type]: exists
-            ? current.filter((s) => s !== symptom)
-            : [...current, symptom],
-        },
-      }
-    }),
-
-  setContact: (data) =>
-    set((state) => ({
-      contact: { ...state.contact, ...data },
-    })),
-
-  reset: () => set({ ...initialState, symptoms: { ...initialSymptoms } }),
-}))
+    {
+      name: 'brh-diagnostic-draft',
+      // Ne persister que les données du diagnostic, pas les fonctions
+      partialize: (state) => ({
+        draftId: state.draftId,
+        step: state.step,
+        selectedTypes: state.selectedTypes,
+        property: state.property,
+        situation: state.situation,
+        equipment: state.equipment,
+        symptoms: state.symptoms,
+        contact: state.contact,
+      }),
+    },
+  ),
+)

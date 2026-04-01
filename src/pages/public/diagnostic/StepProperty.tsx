@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { useDiagnosticStore } from '@/stores/diagnosticStore'
+import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
 
 interface StepPropertyProps {
   showYearError?: boolean
@@ -53,12 +54,11 @@ export function StepProperty({ showYearError = false }: StepPropertyProps) {
           <label className="block text-base font-bold text-slate-700 mb-3">
             Adresse du bien
           </label>
-          <input
-            type="text"
-            placeholder="12 rue de la Paix, 29000 Quimper"
+          <AddressAutocomplete
             value={property.address ?? ''}
-            onChange={(e) => setProperty({ address: e.target.value })}
-            className="w-full px-5 py-4 rounded-xl border border-slate-200 bg-white text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+            onChange={(val) => setProperty({ address: val })}
+            onSelect={(s) => setProperty({ address: `${s.address}, ${s.postalCode} ${s.city}` })}
+            className="w-full px-5 py-4 pr-10 rounded-xl border border-slate-200 bg-white text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
           />
         </div>
 

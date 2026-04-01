@@ -35,10 +35,10 @@
   --color-info: #3b82f6;
 
   /* === Typographie === */
-  --font-display: "Oswald", sans-serif;
-  --font-sans: "Raleway", sans-serif;
+  --font-display: "DM Sans", sans-serif;
+  --font-sans: "Inter", sans-serif;
   --font-accent: "Bebas Neue", sans-serif;
-  --font-heading: "Oswald", sans-serif;
+  --font-heading: "DM Sans", sans-serif;
 }
 
 /* Keyframes custom */
@@ -56,7 +56,7 @@
 /* Base styles INSIDE @layer base so utilities can override them */
 @layer base {
   body {
-    font-family: "Raleway", sans-serif;
+    font-family: "Inter", sans-serif;
     color: var(--color-text-primary);
     background-color: var(--color-background);
     -webkit-font-smoothing: antialiased;
@@ -64,6 +64,6 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: "Oswald", sans-serif;
+    font-family: "DM Sans", sans-serif;
   }
 }

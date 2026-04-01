@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/appStore'
 import type { UserRole } from '@/types/database'
@@ -11,125 +11,109 @@ interface ProfileData {
   avatar_url: string | null
 }
 
+function profileToUser(profile: ProfileData) {
+  return {
+    id: profile.id,
+    email: profile.email,
+    full_name: profile.full_name,
+    role: profile.role,
+    avatar_url: profile.avatar_url ?? undefined,
+  }
+}
+
+async function fetchProfile(userId: string): Promise<ProfileData | null> {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, email, full_name, role, avatar_url')
+      .eq('id', userId)
+      .single()
+
+    if (error || !data) return null
+    return data as ProfileData
+  } catch {
+    return null
+  }
+}
+
 export function useAuth() {
   const { user, setUser } = useAppStore()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const initRef = useRef(false)
 
   useEffect(() => {
     let mounted = true
-    const abortController = new AbortController()
 
-    async function fetchProfile(userId: string): Promise<ProfileData | null> {
+    // Validation en arriere-plan : verifier que la session est toujours valide
+    // Sans bloquer l'affichage (le user du localStorage est deja la)
+    async function validateSession() {
+      if (initRef.current) return
+      initRef.current = true
+
       try {
-        const { data, error: fetchError } = await supabase
-          .from('profiles')
-          .select('id, email, full_name, role, avatar_url')
-          .eq('id', userId)
-          .single()
+        const { data: { session } } = await supabase.auth.getSession()
 
-        if (fetchError || !data) {
-          if (import.meta.env.DEV) {
-            console.error('[useAuth] fetchProfile error:', fetchError)
+        if (!session) {
+          // Session expiree : nettoyer
+          if (mounted && useAppStore.getState().user) {
+            setUser(null)
           }
-          return null
+          return
         }
-        return data as ProfileData
-      } catch (err) {
-        // Ne pas logger les AbortError (cleanup normal)
-        if (err instanceof Error && err.name !== 'AbortError') {
-          if (import.meta.env.DEV) {
-            console.error('[useAuth] fetchProfile unexpected error:', err)
-          }
+
+        // Rafraichir le profil silencieusement si le user est connecte
+        const profile = await fetchProfile(session.user.id)
+        if (mounted && profile) {
+          setUser(profileToUser(profile))
+        } else if (mounted && !profile) {
+          setUser(null)
         }
-        return null
+      } catch {
+        // Erreur reseau : garder le user du cache, ne pas bloquer
       }
     }
 
-    function profileToUser(profile: ProfileData) {
-      return {
-        id: profile.id,
-        email: profile.email,
-        full_name: profile.full_name,
-        role: profile.role,
-        avatar_url: profile.avatar_url ?? undefined,
-      }
-    }
-
-    async function initAuth() {
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-
-        if (sessionError) {
-          if (import.meta.env.DEV) {
-            console.error('[useAuth] getSession error:', sessionError)
-          }
-          if (mounted) setError(sessionError.message)
-        } else if (session?.user && mounted) {
-          const profile = await fetchProfile(session.user.id)
-          if (mounted) {
-            setUser(profile ? profileToUser(profile) : null)
-          }
-        }
-      } catch (err) {
-        if (import.meta.env.DEV) {
-          console.error('[useAuth] initAuth unexpected error:', err)
-        }
-        if (mounted) setError('Erreur lors de l\'initialisation de la session')
-      } finally {
-        if (mounted) setLoading(false)
-      }
-    }
-
-    void initAuth()
+    void validateSession()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!mounted) return
 
-        try {
-          if (event === 'SIGNED_OUT' || !session) {
-            setUser(null)
-            setError(null)
-            return
-          }
+        if (event === 'SIGNED_OUT' || !session) {
+          setUser(null)
+          initRef.current = false
+          return
+        }
 
-          if (session.user) {
-            setLoading(true)
+        if (session.user) {
+          const current = useAppStore.getState().user
+          if (!current || current.id !== session.user.id) {
             const profile = await fetchProfile(session.user.id)
-            if (mounted) {
-              setUser(profile ? profileToUser(profile) : null)
+            if (mounted && profile) {
+              setUser(profileToUser(profile))
             }
           }
-        } catch (err) {
-          if (import.meta.env.DEV) {
-            console.error('[useAuth] onAuthStateChange error:', err)
-          }
-          if (mounted) {
-            setError('Erreur lors de la mise a jour de la session')
-          }
-        } finally {
-          if (mounted) setLoading(false)
         }
       }
     )
 
     return () => {
       mounted = false
-      abortController.abort()
       subscription.unsubscribe()
     }
   }, [setUser])
 
   async function signOut() {
+    initRef.current = false
     await supabase.auth.signOut()
     setUser(null)
   }
 
   return {
     user,
-    loading,
-    error,
+    // Le loading est false si on a un user cache (localStorage)
+    // True seulement au tout premier chargement sans cache
+    loading: false,
+    error: null,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
     signOut,

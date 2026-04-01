@@ -12,21 +12,8 @@ import {
   Star,
   ArrowRight,
   Check,
-  ShieldCheck,
   FileText,
 } from 'lucide-react'
-
-// ─── Hero avatar URLs (social proof) ──────────────────────────────────────────
-const AVATAR_1 =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuAjhSnkxan77uZAObFjZb6a_GMtuXhmJoSYVz4ULpXwY9fWHH0wGde02zIhfoNDiOI_tC5d7mXsf9OSAGTCxrXiBkoJbVr_0AB3U5Zj5C9vsoWEpz9U-XlybulUMg_4tuWDd7LXIQUvhzqWl2fMSd4FE7SCK8E-XfuBVtuesLtmrFVxF6hea0J5RlLXb3dzsDWfXKG5kzwr5S7CFbjlkAQwWt3YGN31QERi_EEQ8WEk0tMQObPk3SNb3Keb7vAeCPIWffMTUyplEO5l'
-const AVATAR_2 =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuBazgbLp5hXd8Gm2ivh1m1Vrd1_-FoeeZGOMcyEdFW2faSsgVzrKOYywbcxa2lXAxAWuV7LELbVSLjzUJTd6I3c2FpVggN9An7TvkKj8HdLZuMo4muZNjx7gdWna4zBMShHOBcn3g5Na2T8Xgpow-gxzj2T09itfLipB7fHH2i6yjeSynscYEW_q09_QSFqCRzSuEDzO3yz6tJDEa-x4KVNn7dAxCh6SyEO1dDxzZxedI2Mvsbb7Q7WIhmgH4pI6aAYwrQcY_reijs-'
-const AVATAR_3 =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuBIABk-jIz-HliGYn_czRW8v5LPjZVR7Qo8CisUffmrCUYkk6OlcD6Cr77mOE1szRFqMJHXCS0EnnSUi-oE54ZinZHr3dXV86Ew3N7NtLNKwdmX285EaGtm0Zwf8nddAJzjXiy6s9BGhcFrXisqSWqNy7daB8ga6WX7VMg2NwR5P-qYpg_ALz4HfMwZlOklrR8PKcgKGC0n5Tjos11Wlleabc8lwLFRmPVSB31c4Z4UwRG3la_9qy91tYjaWpbH5QTnY_mwadLlAd12'
-
-// ─── Hero background image ─────────────────────────────────────────────────────
-const HERO_IMG =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuBnOHGix5wfyxqhsY199o_cjcl75ml9ACfpzcdKRWxwZta26n9D1UpbOxWcSui7lNyoSb51baF2Uwc8rRkmg2bOhtv0e0u0CtyjK7RB0LFRg1PsaRJXBbNHRn6OB5s9N9hpbMoonMCZViQEEpCCa1bJ-a7gJAJA8PXpaZgcNL3NIPn0JSTT-PJTxCHGxHFaERvIfsX2lXfjmhSDfToyDhjGQk6Tct6ZN2OwsqfaDnHBuO_nfj3Xke_Z6gcysO9pFcbYeoDSOiKmAxQK'
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
 
@@ -137,92 +124,48 @@ export default function HomePage() {
       {/* ── 1. HERO ──────────────────────────────────────────────────────────── */}
       <section className="relative pt-12 pb-20 lg:pt-24 lg:pb-28 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="max-w-3xl mx-auto text-center flex flex-col items-center gap-6">
 
-            {/* Left Content */}
-            <div className="flex flex-col gap-6 relative z-10">
-              {/* Badge pill */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary w-fit">
-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-xs font-bold uppercase tracking-wide">Expert en Bretagne</span>
-              </div>
-
-              {/* Headline */}
-              <h1 className="font-display text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight text-slate-900">
-                Votre habitat mérite le meilleur{' '}
-                <span className="text-primary">artisan breton</span>
-              </h1>
-
-              {/* Subtext */}
-              <p className="text-lg text-slate-600 font-medium max-w-lg">
-                Rénovez votre maison avec des experts certifiés RGE. Obtenez un diagnostic
-                énergétique complet et gratuit pour valoriser votre patrimoine.
-              </p>
-
-              {/* CTA buttons */}
-              <div className="flex flex-wrap gap-4 mt-4">
-                <Link
-                  to="/diagnostic"
-                  className="flex items-center justify-center h-12 px-8 rounded-lg bg-primary hover:bg-primary-dark text-white text-base font-bold transition-all shadow-xl shadow-primary/30 hover:scale-105"
-                >
-                  Diagnostic gratuit
-                </Link>
-                <Link
-                  to="/services"
-                  className="flex items-center justify-center h-12 px-8 rounded-lg border-2 border-slate-200 text-slate-900 hover:border-primary hover:text-primary text-base font-bold transition-colors bg-white"
-                >
-                  En savoir plus
-                </Link>
-              </div>
-
-              {/* Social proof */}
-              <div className="flex items-center gap-4 mt-6 text-sm text-slate-500">
-                <div className="flex -space-x-2">
-                  <div
-                    className="w-8 h-8 rounded-full border-2 border-white bg-slate-200 bg-cover bg-center"
-                    style={{ backgroundImage: `url('${AVATAR_1}')` }}
-                    aria-hidden="true"
-                  />
-                  <div
-                    className="w-8 h-8 rounded-full border-2 border-white bg-slate-200 bg-cover bg-center"
-                    style={{ backgroundImage: `url('${AVATAR_2}')` }}
-                    aria-hidden="true"
-                  />
-                  <div
-                    className="w-8 h-8 rounded-full border-2 border-white bg-slate-200 bg-cover bg-center"
-                    style={{ backgroundImage: `url('${AVATAR_3}')` }}
-                    aria-hidden="true"
-                  />
-                </div>
-                <p>
-                  Déjà <span className="font-bold text-slate-900">2 500+</span> foyers
-                  accompagnés
-                </p>
-              </div>
+            {/* Badge pill */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <span className="text-xs font-bold uppercase tracking-wide">Expert en Bretagne</span>
             </div>
 
-            {/* Right Image */}
-            <div className="relative lg:h-[600px] w-full rounded-2xl overflow-hidden shadow-2xl group">
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent z-10" />
-              {/* Image */}
-              <div
-                className="w-full h-full bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                style={{ backgroundImage: `url('${HERO_IMG}')` }}
-                role="img"
-                aria-label="Maison bretonne en pierre rénovée avec grandes fenêtres et jardin"
-              />
-              {/* Floating badge */}
-              <div className="absolute bottom-6 left-6 z-20 bg-white/90 backdrop-blur px-4 py-3 rounded-xl shadow-lg border border-white/20">
-                <div className="flex items-center gap-3">
-                  <ShieldCheck className="text-primary" size={28} />
-                  <div>
-                    <p className="text-xs text-slate-500 uppercase font-bold">Garantie</p>
-                    <p className="text-sm font-bold text-slate-900">Travaux assurés 10 ans</p>
-                  </div>
-                </div>
-              </div>
+            {/* Headline */}
+            <h1 className="font-display text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight text-slate-900">
+              Votre habitat mérite le meilleur.
+            </h1>
+            <p className="font-display text-2xl lg:text-3xl font-bold text-primary leading-tight -mt-2">
+              Bretagne Rénovation Habitat, Les Artisans Bretons.
+            </p>
+
+            {/* Subtext */}
+            <p className="text-lg text-slate-600 font-medium max-w-lg">
+              Rénovez votre maison avec des experts certifiés RGE. Obtenez un diagnostic
+              énergétique complet et gratuit pour valoriser votre patrimoine.
+            </p>
+
+            {/* CTA buttons */}
+            <div className="flex flex-wrap gap-4 mt-4 justify-center">
+              <Link
+                to="/diagnostic"
+                className="flex items-center justify-center h-12 px-8 rounded-lg bg-primary hover:bg-primary-dark text-white text-base font-bold transition-all shadow-xl shadow-primary/30 hover:scale-105"
+              >
+                Diagnostic gratuit
+              </Link>
+              <Link
+                to="/services"
+                className="flex items-center justify-center h-12 px-8 rounded-lg border-2 border-slate-200 text-slate-900 hover:border-primary hover:text-primary text-base font-bold transition-colors bg-white"
+              >
+                En savoir plus
+              </Link>
             </div>
+
+            {/* Social proof */}
+            <p className="mt-6 text-sm text-slate-500">
+              Déjà <span className="font-bold text-slate-900">900+</span> foyers accompagnés
+            </p>
 
           </div>
         </div>

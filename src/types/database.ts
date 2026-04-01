@@ -1,4 +1,4 @@
-export type DiagnosticStatus = 'pending' | 'analyzed' | 'contacted' | 'closed'
+export type DiagnosticStatus = 'draft' | 'pending' | 'analyzed' | 'contacted' | 'closed'
 export type CaseStatus = 'nouveau' | 'en_cours' | 'devis' | 'travaux' | 'termine'
 export type AppointmentType = 'diagnostic' | 'devis' | 'visite' | 'suivi'
 export type AppointmentStatus = 'pending' | 'demande' | 'confirme' | 'annule' | 'termine'
@@ -6,6 +6,10 @@ export type ContactStatus = 'nouveau' | 'lu' | 'traite'
 export type DpeRating = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G'
 export type UserRole = 'user' | 'admin'
 export type Locale = 'fr' | 'en'
+export type HealthDomain = 'humidite' | 'isolation' | 'ventilation' | 'menuiseries' | 'electricite' | 'toiture' | 'plomberie'
+export type HealthUrgency = 'faible' | 'modere' | 'eleve' | 'critique'
+export type WorkStatus = 'planifie' | 'en_cours' | 'termine'
+export type DocumentType = 'dpe' | 'amiante' | 'plomb' | 'electricite' | 'gaz' | 'erp' | 'termites' | 'assainissement' | 'autre'
 
 export interface BrhDiagnosticRow {
   id: string
@@ -23,6 +27,8 @@ export interface BrhDiagnosticRow {
   contact_email: string
   results: Record<string, unknown> | null
   status: DiagnosticStatus
+  current_step: number
+  equipment: Record<string, unknown> | null
   admin_notes: string | null
   created_at: string
   updated_at: string
@@ -41,6 +47,7 @@ export interface BrhHomeRow {
   heating_type: string | null
   insulation_type: string | null
   dpe_rating: DpeRating | null
+  health_score: number | null
   photos: string[]
   notes: string | null
   created_at: string
@@ -128,6 +135,51 @@ export interface ProfileRow {
   updated_at: string
 }
 
+export interface BrhHealthRecordRow {
+  id: string
+  home_id: string
+  user_id: string
+  domain: HealthDomain
+  score: number | null
+  urgency: HealthUrgency | null
+  symptoms: string[]
+  notes: string | null
+  assessed_at: string
+  created_at: string
+  updated_at: string
+}
+
+export interface BrhWorkHistoryRow {
+  id: string
+  home_id: string
+  user_id: string
+  domain: HealthDomain | 'autre'
+  title: string
+  description: string | null
+  contractor: string | null
+  cost: number | null
+  status: WorkStatus
+  work_date: string | null
+  completed_at: string | null
+  documents: string[]
+  created_at: string
+  updated_at: string
+}
+
+export interface BrhHomeDocumentRow {
+  id: string
+  home_id: string
+  user_id: string
+  doc_type: DocumentType
+  title: string
+  file_url: string | null
+  issued_at: string | null
+  expires_at: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -138,6 +190,9 @@ export interface Database {
       brh_articles: { Row: BrhArticleRow; Insert: Omit<BrhArticleRow, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Omit<BrhArticleRow, 'id'>> }
       brh_contacts: { Row: BrhContactRow; Insert: Omit<BrhContactRow, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Omit<BrhContactRow, 'id'>> }
       profiles: { Row: ProfileRow; Insert: Omit<ProfileRow, 'created_at' | 'updated_at'>; Update: Partial<Omit<ProfileRow, 'id'>> }
+      brh_health_records: { Row: BrhHealthRecordRow; Insert: Omit<BrhHealthRecordRow, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Omit<BrhHealthRecordRow, 'id'>> }
+      brh_work_history: { Row: BrhWorkHistoryRow; Insert: Omit<BrhWorkHistoryRow, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Omit<BrhWorkHistoryRow, 'id'>> }
+      brh_home_documents: { Row: BrhHomeDocumentRow; Insert: Omit<BrhHomeDocumentRow, 'id' | 'created_at' | 'updated_at'>; Update: Partial<Omit<BrhHomeDocumentRow, 'id'>> }
     }
   }
 }

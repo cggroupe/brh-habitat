@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin, Home } from 'lucide-react'
+import { Phone, Mail, MapPin, Home } from 'lucide-react'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -22,35 +22,6 @@ export default function Footer() {
             <p className="text-gray-400 text-sm leading-relaxed">
               Spécialiste de la rénovation énergétique en Bretagne, nous accompagnons les propriétaires dans tous leurs projets d'amélioration de l'habitat.
             </p>
-            <div className="flex gap-4">
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Suivre BRH sur Facebook"
-                className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-primary transition-colors"
-              >
-                <Facebook size={16} />
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Suivre BRH sur Instagram"
-                className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-primary transition-colors"
-              >
-                <Instagram size={16} />
-              </a>
-              <a
-                href="https://linkedin.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Suivre BRH sur LinkedIn"
-                className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-primary transition-colors"
-              >
-                <Linkedin size={16} />
-              </a>
-            </div>
           </div>
 
           {/* Col 2 : Nous contacter */}
@@ -62,14 +33,14 @@ export default function Footer() {
             </div>
             <div className="flex items-start gap-3 text-gray-400 text-sm">
               <Phone size={16} className="text-primary shrink-0" />
-              <a href="tel:0784863951" className="hover:text-primary transition-colors">
-                07 84 86 39 51
+              <a href="tel:0219005305" className="hover:text-primary transition-colors">
+                02 19 00 53 05
               </a>
             </div>
             <div className="flex items-start gap-3 text-gray-400 text-sm">
               <Mail size={16} className="text-primary shrink-0" />
-              <a href="mailto:contact@contact-brh.fr" className="hover:text-primary transition-colors">
-                contact@contact-brh.fr
+              <a href="mailto:relationsclients@contact-brh.fr" className="hover:text-primary transition-colors">
+                relationsclients@contact-brh.fr
               </a>
             </div>
           </div>
@@ -119,7 +90,7 @@ export default function Footer() {
         <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
           <p>&copy; {currentYear} Bretagne Rénovation Habitat. Tous droits réservés.</p>
           <div className="flex items-center gap-2">
-            Fait avec ❤️ en Bretagne
+            Fait en Bretagne
           </div>
         </div>
       </div>

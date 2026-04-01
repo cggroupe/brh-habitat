@@ -33,7 +33,7 @@ export default function PolitiqueConfidentialitePage() {
               Conformement au Reglement General sur la Protection des Donnees (RGPD) et a la loi
               Informatique et Libertes, vous disposez d'un droit d'acces, de rectification,
               de suppression et d'opposition au traitement de vos donnees personnelles.
-              Pour exercer ces droits, contactez-nous a : contact@contact-brh.fr
+              Pour exercer ces droits, contactez-nous a : relationsclients@contact-brh.fr
             </p>
           </section>
 
@@ -60,8 +60,8 @@ export default function PolitiqueConfidentialitePage() {
               Pour toute question relative a la protection de vos donnees personnelles :<br />
               BRH - Bretagne Renovation Habitat<br />
               35 rue de Kervao, 29490 Guipavas<br />
-              Email : contact@contact-brh.fr<br />
-              Telephone : 07 84 86 39 51
+              Email : relationsclients@contact-brh.fr<br />
+              Telephone : 02 19 00 53 05
             </p>
           </section>
         </div>

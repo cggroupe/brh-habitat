@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MapPin, Phone, Mail, Clock, ArrowRight, CheckCircle, Send, Shield, Star } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { useCreateContact } from '@/hooks/queries'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -28,6 +28,10 @@ const INITIAL_FORM: FormState = {
   message: '',
 }
 
+// ─── Validation ───────────────────────────────────────────────────────────────
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 // ─── Contact info items ───────────────────────────────────────────────────────
 
 const contactItems = [
@@ -41,15 +45,15 @@ const contactItems = [
   {
     icon: Phone,
     label: 'Telephone',
-    value: '07 84 86 39 51',
-    href: 'tel:0784863951',
+    value: '02 19 00 53 05',
+    href: 'tel:0219005305',
     isLink: true,
   },
   {
     icon: Mail,
     label: 'Email',
-    value: 'contact@contact-brh.fr',
-    href: 'mailto:contact@contact-brh.fr',
+    value: 'relationsclients@contact-brh.fr',
+    href: 'mailto:relationsclients@contact-brh.fr',
     isLink: true,
   },
 ] as const
@@ -69,9 +73,12 @@ const inputBase =
 
 export default function ContactPage() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM)
-  const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null)
+  const createContact = useCreateContact()
+
+  const isOnCooldown = cooldownUntil !== null && Date.now() < cooldownUntil
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -82,29 +89,42 @@ export default function ContactPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setSubmitting(true)
     setSubmitError(null)
 
-    const { error } = await supabase.from('brh_contacts').insert({
-      nom: form.nom.trim(),
-      email: form.email.trim().toLowerCase(),
-      telephone: form.telephone.trim() || null,
-      sujet: form.sujet || null,
-      message: form.message.trim(),
-    })
-
-    setSubmitting(false)
-
-    if (error) {
-      console.error('Erreur envoi contact:', error)
-      setSubmitError(
-        'Une erreur est survenue lors de l\'envoi. Veuillez reessayer ou nous appeler directement au 07 84 86 39 51.'
-      )
+    // ── Validation ──────────────────────────────────────────────────────────
+    if (form.nom.trim().length < 2) {
+      setSubmitError('Le nom doit contenir au moins 2 caracteres.')
+      return
+    }
+    if (!EMAIL_REGEX.test(form.email.trim())) {
+      setSubmitError('Veuillez saisir une adresse email valide.')
+      return
+    }
+    if (form.message.trim().length < 10) {
+      setSubmitError('Le message doit contenir au moins 10 caracteres.')
       return
     }
 
-    setSubmitted(true)
-    setForm(INITIAL_FORM)
+    try {
+      await createContact.mutateAsync({
+        nom: form.nom.trim(),
+        email: form.email.trim().toLowerCase(),
+        telephone: form.telephone.trim() || null,
+        sujet: form.sujet || null,
+        message: form.message.trim(),
+        status: 'nouveau',
+        admin_notes: null,
+      })
+
+      setCooldownUntil(Date.now() + 30_000)
+      setSubmitted(true)
+      setForm(INITIAL_FORM)
+    } catch (err) {
+      console.error('Erreur envoi contact:', err)
+      setSubmitError(
+        'Une erreur est survenue lors de l\'envoi. Veuillez reessayer ou nous appeler directement au 02 19 00 53 05.'
+      )
+    }
   }
 
   return (
@@ -314,10 +334,10 @@ export default function ContactPage() {
                     {/* Submit */}
                     <button
                       type="submit"
-                      disabled={submitting}
+                      disabled={createContact.isPending || isOnCooldown}
                       className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-primary text-white font-display font-bold text-base rounded-lg hover:bg-primary-dark transition-colors shadow-lg shadow-primary/30 disabled:opacity-60 disabled:cursor-not-allowed uppercase tracking-wide"
                     >
-                      {submitting ? (
+                      {createContact.isPending ? (
                         <>
                           <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                           Envoi en cours...

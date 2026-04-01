@@ -4,6 +4,12 @@ import { useAuth } from '@/hooks/useAuth'
 export default function AuthGuard() {
   const { isAuthenticated, loading } = useAuth()
 
+  // Si le user est deja dans le store (set par LoginPage/RegisterPage),
+  // on ne bloque pas sur le loading
+  if (isAuthenticated) {
+    return <Outlet />
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -15,9 +21,5 @@ export default function AuthGuard() {
     )
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/connexion" replace />
-  }
-
-  return <Outlet />
+  return <Navigate to="/connexion" replace />
 }

@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
   BarChart3,
@@ -11,12 +10,11 @@ import {
   ArrowRight,
   Clock,
 } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { useDashboardStats, useRecentDiagnostics } from '@/hooks/queries'
 import {
   DIAGNOSTIC_STATUS_LABELS,
   DIAGNOSTIC_STATUS_COLORS,
 } from '@/data/constants'
-import type { BrhDiagnosticRow } from '@/types/database'
 
 interface StatCard {
   label: string
@@ -27,53 +25,9 @@ interface StatCard {
   to: string
 }
 
-async function fetchDashboardStats() {
-  const [
-    { count: diagnosticsCount },
-    { count: usersCount },
-    { count: casesCount },
-    { count: rdvCount },
-  ] = await Promise.all([
-    supabase.from('brh_diagnostics').select('*', { count: 'exact', head: true }),
-    supabase.from('profiles').select('*', { count: 'exact', head: true }),
-    supabase
-      .from('brh_cases')
-      .select('*', { count: 'exact', head: true })
-      .in('status', ['nouveau', 'en_cours', 'devis', 'travaux']),
-    supabase
-      .from('brh_appointments')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'demande'),
-  ])
-
-  return {
-    diagnostics: diagnosticsCount ?? 0,
-    users: usersCount ?? 0,
-    activeCases: casesCount ?? 0,
-    pendingRdv: rdvCount ?? 0,
-  }
-}
-
-async function fetchRecentDiagnostics(): Promise<BrhDiagnosticRow[]> {
-  const { data } = await supabase
-    .from('brh_diagnostics')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(5)
-
-  return data ?? []
-}
-
 export default function AdminDashboard() {
-  const { data: stats, isLoading: loadingStats } = useQuery({
-    queryKey: ['dashboard', 'stats'],
-    queryFn: fetchDashboardStats,
-  })
-
-  const { data: recentDiagnostics = [], isLoading: loadingRecent } = useQuery({
-    queryKey: ['dashboard', 'recent-diagnostics'],
-    queryFn: fetchRecentDiagnostics,
-  })
+  const { data: stats, isLoading: loadingStats } = useDashboardStats()
+  const { data: recentDiagnostics = [], isLoading: loadingRecent } = useRecentDiagnostics()
 
   const statCards: StatCard[] = [
     {

@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { useAppStore } from '@/stores/appStore'
 import { ArrowRight, Shield } from 'lucide-react'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const setUser = useAppStore((s) => s.setUser)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -15,14 +17,38 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password })
 
     if (authError) {
       setError('Email ou mot de passe incorrect')
       setLoading(false)
-    } else {
-      navigate('/tableau-de-bord')
+      return
     }
+
+    // Charger le profil dans le store AVANT de naviguer
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, email, full_name, role, avatar_url')
+      .eq('id', data.user.id)
+      .single()
+
+    if (profileError || !profile) {
+      console.error('[Login] Profile fetch error:', profileError)
+      setError('Impossible de charger votre profil. Veuillez reessayer.')
+      setLoading(false)
+      return
+    }
+
+    setUser({
+      id: profile.id,
+      email: profile.email,
+      full_name: profile.full_name ?? '',
+      role: profile.role as 'user' | 'admin',
+      avatar_url: profile.avatar_url ?? undefined,
+    })
+
+    setLoading(false)
+    navigate('/tableau-de-bord')
   }
 
   return (

@@ -1,4 +1,4 @@
-import { Lightbulb, Phone } from 'lucide-react'
+import { Lightbulb, Phone, Mail } from 'lucide-react'
 
 const STEP_TIPS: Record<number, string> = {
   1: "Selectionnez tous les problemes qui vous preoccupent, meme ceux qui semblent mineurs. Un diagnostic complet permet d'identifier les interactions entre les pathologies.",
@@ -35,13 +35,22 @@ export function SidePanel({ step }: SidePanelProps) {
       <div className="p-6 bg-white rounded-xl border border-slate-100">
         <h4 className="text-sm font-bold text-slate-900 mb-4">Besoin d'aide ?</h4>
         <a
-          href="tel:+33298000000"
+          href="tel:0219005305"
           className="flex items-center gap-3 text-primary hover:underline transition-all"
         >
           <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
             <Phone size={14} className="text-primary" />
           </div>
-          <span className="text-sm font-bold">02 98 00 00 00</span>
+          <span className="text-sm font-bold">02 19 00 53 05</span>
+        </a>
+        <a
+          href="mailto:relationsclients@contact-brh.fr"
+          className="flex items-center gap-3 text-primary hover:underline transition-all mt-3"
+        >
+          <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <Mail size={14} className="text-primary" />
+          </div>
+          <span className="text-sm font-bold">relationsclients@contact-brh.fr</span>
         </a>
         <p className="text-[11px] text-slate-400 mt-4 leading-snug">
           Nos experts sont disponibles du lundi au vendredi, de 9h a 18h.

@@ -10,8 +10,8 @@ export default function MentionsLegalesPage() {
               BRH - Bretagne Renovation Habitat<br />
               35 rue de Kervao<br />
               29490 Guipavas<br />
-              Telephone : 07 84 86 39 51<br />
-              Email : contact@contact-brh.fr
+              Telephone : 02 19 00 53 05<br />
+              Email : relationsclients@contact-brh.fr
             </p>
           </section>
 

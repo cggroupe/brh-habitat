@@ -28,6 +28,8 @@ import {
   fetchDiagnosticById,
   createDiagnostic,
   updateDiagnosticStatus,
+  fetchUserDraftDiagnostic,
+  fetchUserCompletedDiagnostics,
 } from '@/api/diagnostics'
 import {
   fetchProfiles,
@@ -45,6 +47,29 @@ import {
   deleteArticle,
   toggleArticlePublished,
 } from '@/api/articles'
+import { createContact } from '@/api/contacts'
+import {
+  fetchDashboardStats,
+  fetchRecentDiagnostics,
+  fetchUserCounts,
+} from '@/api/dashboard'
+import {
+  fetchHealthRecordsByHome,
+  upsertHealthRecord,
+  deleteHealthRecord,
+} from '@/api/health-records'
+import {
+  fetchWorkHistoryByHome,
+  createWorkEntry,
+  updateWorkEntry,
+  deleteWorkEntry,
+} from '@/api/work-history'
+import {
+  fetchDocumentsByHome,
+  createDocument,
+  updateDocument,
+  deleteDocument,
+} from '@/api/home-documents'
 
 // --- Type imports ---
 import type { DiagnosticStatus, CaseStatus, UserRole } from '@/types/database'
@@ -58,6 +83,12 @@ type CaseInsert = Database['public']['Tables']['brh_cases']['Insert']
 type CaseUpdate = Database['public']['Tables']['brh_cases']['Update']
 type AppointmentInsert = Database['public']['Tables']['brh_appointments']['Insert']
 type AppointmentUpdate = Database['public']['Tables']['brh_appointments']['Update']
+type ContactInsert = Database['public']['Tables']['brh_contacts']['Insert']
+type HealthRecordInsert = Database['public']['Tables']['brh_health_records']['Insert']
+type WorkHistoryInsert = Database['public']['Tables']['brh_work_history']['Insert']
+type WorkHistoryUpdate = Database['public']['Tables']['brh_work_history']['Update']
+type HomeDocumentInsert = Database['public']['Tables']['brh_home_documents']['Insert']
+type HomeDocumentUpdate = Database['public']['Tables']['brh_home_documents']['Update']
 type DiagnosticInsert = Database['public']['Tables']['brh_diagnostics']['Insert']
 type ArticleInsert = Database['public']['Tables']['brh_articles']['Insert']
 type ArticleUpdate = Database['public']['Tables']['brh_articles']['Update']
@@ -248,6 +279,22 @@ export function useCreateDiagnostic() {
   })
 }
 
+export function useUserDraftDiagnostic(userId: string | undefined) {
+  return useQuery({
+    queryKey: ['diagnostics', 'draft', userId],
+    queryFn: () => fetchUserDraftDiagnostic(userId!),
+    enabled: !!userId,
+  })
+}
+
+export function useUserCompletedDiagnostics(userId: string | undefined) {
+  return useQuery({
+    queryKey: ['diagnostics', 'completed', userId],
+    queryFn: () => fetchUserCompletedDiagnostics(userId!),
+    enabled: !!userId,
+  })
+}
+
 export function useUpdateDiagnosticStatus() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -386,6 +433,165 @@ export function useToggleArticlePublished() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['articles'] })
       queryClient.setQueryData(['articles', 'slug', data.slug], data)
+    },
+  })
+}
+
+// ===========================================================================
+// CONTACTS
+// ===========================================================================
+
+export function useCreateContact() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: ContactInsert) => createContact(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contacts'] })
+    },
+  })
+}
+
+// ===========================================================================
+// DASHBOARD / ADMIN STATS
+// ===========================================================================
+
+export function useDashboardStats() {
+  return useQuery({
+    queryKey: ['dashboard', 'stats'],
+    queryFn: fetchDashboardStats,
+  })
+}
+
+export function useRecentDiagnostics(limit = 5) {
+  return useQuery({
+    queryKey: ['dashboard', 'recent-diagnostics', limit],
+    queryFn: () => fetchRecentDiagnostics(limit),
+  })
+}
+
+export function useUserCounts(userIds: string[]) {
+  return useQuery({
+    queryKey: ['dashboard', 'user-counts', userIds],
+    queryFn: () => fetchUserCounts(userIds),
+    enabled: userIds.length > 0,
+  })
+}
+
+// ===========================================================================
+// HEALTH RECORDS (Carnet de sante)
+// ===========================================================================
+
+export function useHomeHealthRecords(homeId: string | undefined) {
+  return useQuery({
+    queryKey: ['health-records', homeId],
+    queryFn: () => fetchHealthRecordsByHome(homeId!),
+    enabled: !!homeId,
+  })
+}
+
+export function useUpsertHealthRecord() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: HealthRecordInsert) => upsertHealthRecord(payload),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['health-records', data.home_id] })
+      queryClient.invalidateQueries({ queryKey: ['homes'] })
+    },
+  })
+}
+
+export function useDeleteHealthRecord() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => deleteHealthRecord(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['health-records'] })
+    },
+  })
+}
+
+// ===========================================================================
+// WORK HISTORY (Historique travaux)
+// ===========================================================================
+
+export function useHomeWorkHistory(homeId: string | undefined) {
+  return useQuery({
+    queryKey: ['work-history', homeId],
+    queryFn: () => fetchWorkHistoryByHome(homeId!),
+    enabled: !!homeId,
+  })
+}
+
+export function useCreateWorkEntry() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: WorkHistoryInsert) => createWorkEntry(payload),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['work-history', data.home_id] })
+    },
+  })
+}
+
+export function useUpdateWorkEntry() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: WorkHistoryUpdate }) =>
+      updateWorkEntry(id, payload),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['work-history', data.home_id] })
+    },
+  })
+}
+
+export function useDeleteWorkEntry() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => deleteWorkEntry(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['work-history'] })
+    },
+  })
+}
+
+// ===========================================================================
+// HOME DOCUMENTS (Diagnostics obligatoires)
+// ===========================================================================
+
+export function useHomeDocuments(homeId: string | undefined) {
+  return useQuery({
+    queryKey: ['home-documents', homeId],
+    queryFn: () => fetchDocumentsByHome(homeId!),
+    enabled: !!homeId,
+  })
+}
+
+export function useCreateDocument() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: HomeDocumentInsert) => createDocument(payload),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['home-documents', data.home_id] })
+    },
+  })
+}
+
+export function useUpdateDocument() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: HomeDocumentUpdate }) =>
+      updateDocument(id, payload),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['home-documents', data.home_id] })
+    },
+  })
+}
+
+export function useDeleteDocument() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => deleteDocument(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['home-documents'] })
     },
   })
 }
