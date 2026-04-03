@@ -55,6 +55,7 @@ export default function RegisterParticulierPage() {
         data: {
           full_name: form.fullName,
           role: 'particulier',
+          phone: form.phone || null,
         },
       },
     })
@@ -66,11 +67,7 @@ export default function RegisterParticulierPage() {
     }
 
     if (data.user) {
-      // Mettre a jour le profil
-      await supabase
-        .from('profiles')
-        .update({ role: 'particulier', phone: form.phone || null })
-        .eq('id', data.user.id)
+      // Le trigger handle_new_user() cree le profil avec role='particulier' automatiquement
 
       // Creer l'affilie avec code de parrainage unique
       await supabase.from('brh_affiliates').insert({

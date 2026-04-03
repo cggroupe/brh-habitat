@@ -47,6 +47,7 @@ export default function RegisterProPage() {
         data: {
           full_name: form.fullName,
           role: 'pro',
+          phone: form.phone || null,
         },
       },
     })
@@ -58,11 +59,7 @@ export default function RegisterProPage() {
     }
 
     if (data.user) {
-      // Mettre a jour le profil avec le role pro et le telephone
-      await supabase
-        .from('profiles')
-        .update({ role: 'pro', phone: form.phone || null })
-        .eq('id', data.user.id)
+      // Le trigger handle_new_user() cree le profil avec role='pro' automatiquement
 
       // Creer l'entreprise
       const { data: company } = await supabase
