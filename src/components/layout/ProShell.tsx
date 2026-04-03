@@ -1,55 +1,46 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import {
   LayoutDashboard,
-  Home,
-  FolderOpen,
-  Calendar,
-  MessageSquare,
-  BookOpen,
-  Users,
-  Handshake,
   UserPlus,
   Euro,
-  Gift,
-  SlidersHorizontal,
-  Settings,
+  Users,
+  MessageSquare,
+  Building2,
   LogOut,
   ChevronRight,
   Share2,
+  QrCode,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
 import PortalMobileNav from '@/components/shared/PortalMobileNav'
 
-const adminNavItems = [
-  { to: '/admin', label: 'Tableau de bord', icon: LayoutDashboard },
-  { to: '/admin/logements', label: 'Logements', icon: Home },
-  { to: '/admin/dossiers', label: 'Dossiers', icon: FolderOpen },
-  { to: '/admin/rdv', label: 'Rendez-vous', icon: Calendar },
-  { to: '/admin/messages', label: 'Messages', icon: MessageSquare },
-  { to: '/admin/articles', label: 'Articles', icon: BookOpen },
-  { to: '/admin/utilisateurs', label: 'Utilisateurs', icon: Users },
-  { to: '/admin/partenaires', label: 'Partenaires', icon: Handshake },
-  { to: '/admin/prospects', label: 'Prospects', icon: UserPlus },
-  { to: '/admin/commissions', label: 'Commissions', icon: Euro },
-  { to: '/admin/catalogue', label: 'Catalogue', icon: Gift },
-  { to: '/admin/parametres', label: 'Parametres', icon: SlidersHorizontal },
-  { to: '/admin/publications', label: 'Publications', icon: Share2 },
+const proNavItems = [
+  { to: '/pro', label: 'Tableau de bord', icon: LayoutDashboard },
+  { to: '/pro/prospects', label: 'Prospects', icon: UserPlus },
+  { to: '/pro/commissions', label: 'Commissions', icon: Euro },
+  { to: '/pro/equipe', label: 'Equipe', icon: Users },
+  { to: '/pro/messages', label: 'Messages', icon: MessageSquare },
+  { to: '/pro/profil', label: 'Mon entreprise', icon: Building2 },
+  { to: '/pro/reseaux-sociaux', label: 'Reseaux sociaux', icon: Share2 },
+  { to: '/pro/qrcode', label: 'Mon QR Code', icon: QrCode },
 ]
 
-export default function AdminShell() {
+export default function ProShell() {
   const { user, signOut } = useAuth()
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-background">
-      <PortalMobileNav portalLabel="Admin" navItems={adminNavItems} rootPath="/admin" />
+      {/* Mobile nav */}
+      <PortalMobileNav portalLabel="Partenaire" navItems={proNavItems} rootPath="/pro" />
 
+      {/* Desktop sidebar */}
       <aside className="hidden md:flex w-64 shrink-0 bg-primary-dark flex-col min-h-screen">
         <div className="p-5 border-b border-white/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="font-accent text-2xl tracking-wider text-white">BRH</span>
-              <span className="font-display text-xs text-primary-light uppercase tracking-widest">Admin</span>
+              <span className="font-display text-xs text-primary-light uppercase tracking-widest">Partenaire</span>
             </div>
             <NotificationBell />
           </div>
@@ -63,18 +54,18 @@ export default function AdminShell() {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-display text-white truncate">{user.full_name}</p>
-                <p className="text-xs text-primary-light font-body">Administrateur</p>
+                <p className="text-xs text-primary-light font-body">Partenaire Pro</p>
               </div>
             </div>
           </div>
         )}
 
-        <nav className="flex-1 py-4 px-3 overflow-y-auto">
-          {adminNavItems.map(({ to, label, icon: Icon }) => (
+        <nav className="flex-1 py-4 px-3">
+          {proNavItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
-              end={to === '/admin'}
+              end={to === '/pro'}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-sm font-body transition-colors ${
                   isActive
@@ -90,14 +81,7 @@ export default function AdminShell() {
           ))}
         </nav>
 
-        <div className="p-3 border-t border-white/10 space-y-1">
-          <NavLink
-            to="/tableau-de-bord"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body text-green-200 hover:bg-white/10 hover:text-white transition-colors"
-          >
-            <Settings size={17} />
-            Espace client
-          </NavLink>
+        <div className="p-3 border-t border-white/10">
           <button
             onClick={() => void signOut()}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-body text-green-200 hover:bg-white/10 hover:text-white transition-colors"

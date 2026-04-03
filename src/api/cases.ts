@@ -86,3 +86,12 @@ export async function updateCase(
 
   return data
 }
+
+export async function deleteCase(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('brh_cases')
+    .delete()
+    .eq('id', id)
+
+  if (error) throw error
+}

@@ -90,3 +90,12 @@ export async function updateAppointment(
 
   return data
 }
+
+export async function deleteAppointment(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('brh_appointments')
+    .delete()
+    .eq('id', id)
+
+  if (error) throw error
+}

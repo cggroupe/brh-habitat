@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { Plus, Pencil, Trash2, FileText, AlertTriangle, CheckCircle2, Clock, X, Save, Upload, Download, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { formatLocalDate } from '@/lib/utils'
 import type { BrhHomeDocumentRow, DocumentType } from '@/types/database'
 import { DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS, DOCUMENT_VALIDITY_YEARS } from '@/data/constants'
 
@@ -58,7 +59,7 @@ export function DocumentsList({ documents, homeId, userId, onCreate, onUpdate, o
     const d = new Date(issuedAt)
     d.setFullYear(d.getFullYear() + Math.floor(years))
     if (years % 1 !== 0) d.setMonth(d.getMonth() + Math.round((years % 1) * 12))
-    return d.toISOString().slice(0, 10)
+    return formatLocalDate(d)
   }
 
   async function uploadFile(f: File): Promise<string | null> {

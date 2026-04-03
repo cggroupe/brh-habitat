@@ -176,8 +176,8 @@ export function CalendarPicker({ departement, onSlotSelected, selectedSlot }: Ca
 
     fetch(`${BOOKING_API_URL}?${params.toString()}`, {
       headers: {
-        apikey: BRHCRM_ANON_KEY!,
-        Authorization: `Bearer ${BRHCRM_ANON_KEY}`,
+        apikey: BRHCRM_ANON_KEY ?? '',
+        Authorization: `Bearer ${BRHCRM_ANON_KEY ?? ''}`,
       },
     })
       .then((res) => {

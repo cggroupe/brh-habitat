@@ -92,7 +92,7 @@ function DiagnosticCard({ diag }: { diag: BrhDiagnosticRow }) {
           <Clock size={11} /> {date}
         </span>
         <span>{diag.types.length} domaine{diag.types.length > 1 ? 's' : ''}</span>
-        {diag.property_surface > 0 && <span>{diag.property_surface} m²</span>}
+        {diag.property_surface && diag.property_surface > 0 && <span>{diag.property_surface} m²</span>}
       </div>
       <div className="flex flex-wrap gap-1 mt-2">
         {diag.types.slice(0, 4).map((t) => (

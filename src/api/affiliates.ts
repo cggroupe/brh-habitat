@@ -1,0 +1,60 @@
+import { supabase } from '@/lib/supabase'
+import type { BrhAffiliateRow, BrhPointsTransactionRow, BrhProspectRow } from '@/types/partner'
+import { PAGE_SIZE } from '@/data/constants'
+
+export interface AffiliateWithProfile extends BrhAffiliateRow {
+  profile: { full_name: string; email: string; avatar_url: string | null }
+}
+
+export interface PaginatedAffiliates {
+  data: AffiliateWithProfile[]
+  count: number
+  page: number
+}
+
+export async function fetchMyAffiliate(userId: string): Promise<BrhAffiliateRow | null> {
+  const { data, error } = await supabase
+    .from('brh_affiliates')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}
+
+export async function fetchAllAffiliates(page: number): Promise<PaginatedAffiliates> {
+  const from = page * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
+
+  const { data, error, count } = await supabase
+    .from('brh_affiliates')
+    .select('*, profile:profiles(full_name, email, avatar_url)', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(from, to)
+
+  if (error) throw error
+  return { data: (data ?? []) as unknown as AffiliateWithProfile[], count: count ?? 0, page }
+}
+
+export async function fetchAffiliateProspects(affiliateId: string): Promise<BrhProspectRow[]> {
+  const { data, error } = await supabase
+    .from('brh_prospects')
+    .select('*')
+    .eq('affiliate_id', affiliateId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return (data ?? []) as unknown as BrhProspectRow[]
+}
+
+export async function fetchPointsHistory(affiliateId: string): Promise<BrhPointsTransactionRow[]> {
+  const { data, error } = await supabase
+    .from('brh_points_transactions')
+    .select('*')
+    .eq('affiliate_id', affiliateId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data ?? []
+}

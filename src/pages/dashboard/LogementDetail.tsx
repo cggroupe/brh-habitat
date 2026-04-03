@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { formatLocalDate } from '@/lib/utils'
 import {
   ArrowLeft,
   Home,
@@ -505,7 +506,7 @@ export default function LogementDetail() {
                   urgency: getUrgencyFromScore(score),
                   symptoms,
                   notes: notes || null,
-                  assessed_at: new Date().toISOString().slice(0, 10),
+                  assessed_at: formatLocalDate(),
                 })
               }}
             />
@@ -519,7 +520,7 @@ export default function LogementDetail() {
               userId={user.id}
               onCreate={(w) => createWork.mutate({ ...w, documents: [] })}
               onUpdate={(wid, payload) => updateWork.mutate({ id: wid, payload })}
-              onDelete={(wid) => deleteWork.mutate(wid)}
+              onDelete={(wid) => deleteWork.mutate({ id: wid, homeId: home.id })}
             />
           )}
 
@@ -531,7 +532,7 @@ export default function LogementDetail() {
               userId={user.id}
               onCreate={(d) => createDoc.mutate(d)}
               onUpdate={(did, payload) => updateDoc.mutate({ id: did, payload })}
-              onDelete={(did) => deleteDoc.mutate(did)}
+              onDelete={(did) => deleteDoc.mutate({ id: did, homeId: home.id })}
             />
           )}
         </div>

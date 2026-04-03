@@ -43,12 +43,26 @@ export default function LoginPage() {
       id: profile.id,
       email: profile.email,
       full_name: profile.full_name ?? '',
-      role: profile.role as 'user' | 'admin',
+      role: profile.role,
       avatar_url: profile.avatar_url ?? undefined,
     })
 
     setLoading(false)
-    navigate('/tableau-de-bord')
+
+    // Redirect par role
+    switch (profile.role) {
+      case 'admin':
+        navigate('/admin')
+        break
+      case 'pro':
+        navigate('/pro')
+        break
+      case 'particulier':
+        navigate('/particulier')
+        break
+      default:
+        navigate('/tableau-de-bord')
+    }
   }
 
   return (

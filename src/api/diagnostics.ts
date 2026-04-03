@@ -155,6 +155,15 @@ export async function upsertDraftDiagnostic(
   return data
 }
 
+export async function deleteDiagnostic(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('brh_diagnostics')
+    .delete()
+    .eq('id', id)
+
+  if (error) throw error
+}
+
 export async function updateDiagnosticStatus(
   id: string,
   status: DiagnosticStatus,

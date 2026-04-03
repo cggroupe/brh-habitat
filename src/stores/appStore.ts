@@ -1,10 +1,11 @@
 import { create } from 'zustand'
+import type { UserRole } from '@/types/database'
 
 export interface User {
   id: string
   email: string
   full_name: string
-  role: 'user' | 'admin'
+  role: UserRole
   avatar_url?: string
 }
 

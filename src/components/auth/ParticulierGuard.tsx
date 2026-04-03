@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 
-export default function AdminGuard() {
-  const { isAuthenticated, isAdmin, loading } = useAuth()
+export default function ParticulierGuard() {
+  const { isAuthenticated, user, loading } = useAuth()
 
   if (loading) {
     return (
@@ -19,7 +19,7 @@ export default function AdminGuard() {
     return <Navigate to="/connexion" replace />
   }
 
-  if (!isAdmin) {
+  if (user?.role !== 'particulier' && user?.role !== 'admin') {
     return <Navigate to="/tableau-de-bord" replace />
   }
 

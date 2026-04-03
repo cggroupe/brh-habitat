@@ -4,7 +4,7 @@ export type AppointmentType = 'diagnostic' | 'devis' | 'visite' | 'suivi'
 export type AppointmentStatus = 'pending' | 'demande' | 'confirme' | 'annule' | 'termine'
 export type ContactStatus = 'nouveau' | 'lu' | 'traite'
 export type DpeRating = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G'
-export type UserRole = 'user' | 'admin'
+export type UserRole = 'user' | 'admin' | 'pro' | 'particulier'
 export type Locale = 'fr' | 'en'
 export type HealthDomain = 'humidite' | 'isolation' | 'ventilation' | 'menuiseries' | 'electricite' | 'toiture' | 'plomberie'
 export type HealthUrgency = 'faible' | 'modere' | 'eleve' | 'critique'
@@ -15,16 +15,16 @@ export interface BrhDiagnosticRow {
   id: string
   user_id: string | null
   types: string[]
-  property_type: string
-  property_address: string
-  property_surface: number
-  property_year: number
-  property_floors: number
+  property_type: string | null
+  property_address: string | null
+  property_surface: number | null
+  property_year: number | null
+  property_floors: number | null
   symptoms: Record<string, string[]>
   photos: string[]
-  contact_name: string
-  contact_phone: string
-  contact_email: string
+  contact_name: string | null
+  contact_phone: string | null
+  contact_email: string | null
   results: Record<string, unknown> | null
   status: DiagnosticStatus
   current_step: number
