@@ -171,6 +171,7 @@ function RequestModal({ userId, onClose }: RequestModalProps) {
       contact_email: null,
       diagnostic_id: null,
       preferred_slot: null,
+      referral_code: null,
     }
 
     createMutation.mutate(payload, {

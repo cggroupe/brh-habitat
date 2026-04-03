@@ -30,6 +30,7 @@ export interface BrhDiagnosticRow {
   current_step: number
   equipment: Record<string, unknown> | null
   admin_notes: string | null
+  referral_code: string | null
   created_at: string
   updated_at: string
 }
@@ -89,6 +90,7 @@ export interface BrhAppointmentRow {
   preferred_slot: string | null
   notes: string | null
   admin_notes: string | null
+  referral_code: string | null
   created_at: string
   updated_at: string
 }

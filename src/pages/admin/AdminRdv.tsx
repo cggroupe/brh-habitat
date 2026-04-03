@@ -208,7 +208,14 @@ export default function AdminRdv() {
                           </span>
                         </td>
                         <td className="px-4 py-3 font-body text-sm text-text-primary">
-                          <span className="italic text-text-light">—</span>
+                          <div>
+                            {rdv.contact_name || <span className="italic text-text-light">—</span>}
+                            {rdv.referral_code && (
+                              <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-display bg-purple-100 text-purple-700">
+                                Affilie: {rdv.referral_code}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3 font-body text-sm text-text-secondary whitespace-nowrap">
                           {new Date(rdv.requested_date).toLocaleDateString('fr-FR')}

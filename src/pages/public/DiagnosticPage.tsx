@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { useDiagnosticStore } from '@/stores/diagnosticStore'
 import { analyzeDiagnostic } from '@/lib/diagnostic-engine'
@@ -20,6 +20,7 @@ const TOTAL_STEPS = 5
 
 export default function DiagnosticPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { user } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -38,8 +39,18 @@ export default function DiagnosticPage() {
     property,
     equipment,
     symptoms,
+    referralCode,
+    setReferralCode,
     reset,
   } = useDiagnosticStore()
+
+  // Capturer le code parrainage depuis l'URL (?ref=CODE)
+  useEffect(() => {
+    const ref = searchParams.get('ref')
+    if (ref && ref !== referralCode) {
+      setReferralCode(ref)
+    }
+  }, [searchParams, referralCode, setReferralCode])
 
   // Sauvegarder le brouillon en DB (utilisateur connecté uniquement)
   const saveDraft = useCallback(async (nextStepValue?: number) => {
@@ -132,6 +143,7 @@ export default function DiagnosticPage() {
             current_step: 5,
             results: results as unknown as Record<string, unknown>,
             status: 'pending' as const,
+            referral_code: referralCode ?? undefined,
           })
 
           navigate(`/diagnostic/resultats/${draftId}`, { state: { results } })
@@ -161,6 +173,7 @@ export default function DiagnosticPage() {
         results: results as unknown as Record<string, unknown>,
         status: 'pending' as const,
         admin_notes: null,
+        referral_code: referralCode ?? null,
       }
 
       try {

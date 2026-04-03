@@ -51,8 +51,11 @@ interface DiagnosticState {
   equipment: DiagnosticEquipment
   symptoms: Record<DiagnosticType, string[]>
   contact: DiagnosticContact
+  /** Code parrainage affilie capte depuis l'URL (?ref=CODE) */
+  referralCode: string | null
 
   setDraftId: (id: string | null) => void
+  setReferralCode: (code: string | null) => void
   setStep: (step: number) => void
   nextStep: () => void
   prevStep: () => void
@@ -94,6 +97,7 @@ const initialState = {
   equipment: {} as DiagnosticEquipment,
   symptoms: { ...initialSymptoms },
   contact: {} as DiagnosticContact,
+  referralCode: null as string | null,
 }
 
 export const useDiagnosticStore = create<DiagnosticState>()(
@@ -102,6 +106,8 @@ export const useDiagnosticStore = create<DiagnosticState>()(
       ...initialState,
 
       setDraftId: (id) => set({ draftId: id }),
+
+      setReferralCode: (code) => set({ referralCode: code }),
 
       setStep: (step) => set({ step }),
 
@@ -181,6 +187,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
         equipment: state.equipment,
         symptoms: state.symptoms,
         contact: state.contact,
+        referralCode: state.referralCode,
       }),
     },
   ),

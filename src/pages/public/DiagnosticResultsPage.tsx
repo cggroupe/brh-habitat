@@ -766,6 +766,7 @@ export default function DiagnosticResultsPage() {
           diagnosticSummary={diagnosticSummary}
           propertyAddress={store.property.address}
           resteACharge={resteAChargeStr}
+          referralCode={store.referralCode}
         />
       )}
     </div>

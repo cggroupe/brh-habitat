@@ -19,6 +19,7 @@ interface ContactRdvModalProps {
   diagnosticSummary: string
   propertyAddress?: string
   resteACharge?: string
+  referralCode?: string | null
 }
 
 interface FormState {
@@ -96,6 +97,7 @@ export function ContactRdvModal({
   diagnosticSummary,
   propertyAddress,
   resteACharge,
+  referralCode,
 }: ContactRdvModalProps) {
   const [form, setForm] = useState<FormState>({
     nom: '',
@@ -175,6 +177,7 @@ export function ContactRdvModal({
           diagnostic_id: diagnosticId && diagnosticId !== 'local' ? diagnosticId : undefined,
           diagnostic_summary: diagnosticSummary || undefined,
           departement,
+          referral_code: referralCode || undefined,
         }),
       })
 
@@ -205,10 +208,12 @@ export function ContactRdvModal({
             form.message.trim() ? `Message : ${form.message.trim()}` : null,
             diagnosticSummary ? `Diagnostic : ${diagnosticSummary}` : null,
             resteACharge ? `Reste a charge estime : ${resteACharge}` : null,
+            referralCode ? `Source affilie : ${referralCode}` : null,
           ]
             .filter(Boolean)
             .join('\n'),
           status: 'confirme',
+          referral_code: referralCode || null,
         })
 
       if (apptError) {
