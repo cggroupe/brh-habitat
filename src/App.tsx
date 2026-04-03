@@ -28,6 +28,7 @@ const RegisterParticulierPage = lazy(() => import('@/pages/public/RegisterPartic
 const ServicesPage = lazy(() => import('@/pages/public/ServicesPage'))
 const MentionsLegalesPage = lazy(() => import('@/pages/public/MentionsLegalesPage'))
 const PolitiqueConfidentialitePage = lazy(() => import('@/pages/public/PolitiqueConfidentialitePage'))
+const PartenairesPage = lazy(() => import('@/pages/public/PartenairesPage'))
 const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'))
 
 // Lazy loaded pages — Dashboard (user)
@@ -115,6 +116,7 @@ export default function App() {
               <Route path="/inscription" element={<RegisterPage />} />
               <Route path="/inscription/pro" element={<RegisterProPage />} />
               <Route path="/inscription/particulier" element={<RegisterParticulierPage />} />
+              <Route path="/partenaires" element={<PartenairesPage />} />
               <Route path="/mentions-legales" element={<MentionsLegalesPage />} />
               <Route path="/politique-de-confidentialite" element={<PolitiqueConfidentialitePage />} />
             </Route>

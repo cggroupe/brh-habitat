@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { X, Home, Search, BookOpen, Phone, LayoutDashboard, LogIn, UserPlus, LogOut, User, Wrench } from 'lucide-react'
+import { X, Home, Search, BookOpen, Phone, LayoutDashboard, LogIn, UserPlus, LogOut, User, Wrench, Handshake } from 'lucide-react'
 import { useAppStore } from '@/stores/appStore'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -32,6 +32,7 @@ export default function MobileDrawer() {
     { to: '/diagnostic', label: 'Diagnostic gratuit', icon: Search },
     { to: '/articles', label: 'Guides', icon: BookOpen },
     { to: '/contact', label: 'Contact', icon: Phone },
+    { to: '/partenaires', label: 'Partenaires', icon: Handshake },
   ]
 
   const authLinks = user

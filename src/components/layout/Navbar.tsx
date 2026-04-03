@@ -1,5 +1,5 @@
 import { Link, NavLink } from 'react-router-dom'
-import { Menu, User, LogOut, LayoutDashboard, ChevronDown, Home } from 'lucide-react'
+import { Menu, User, LogOut, LayoutDashboard, ChevronDown, Home, Handshake } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { useAppStore } from '@/stores/appStore'
 import { useAuth } from '@/hooks/useAuth'
@@ -26,6 +26,7 @@ export default function Navbar() {
     { to: '/diagnostic', label: 'Diagnostic', end: false },
     { to: '/articles', label: 'Guides', end: false },
     { to: '/contact', label: 'Contact', end: false },
+    { to: '/partenaires', label: 'Partenaires', end: false },
   ]
 
   return (
@@ -103,6 +104,26 @@ export default function Navbar() {
                         onClick={() => setUserMenuOpen(false)}
                       >
                         Administration
+                      </Link>
+                    )}
+                    {user.role === 'pro' && (
+                      <Link
+                        to="/pro"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-background hover:text-primary transition-colors"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <Handshake size={15} />
+                        Espace partenaire
+                      </Link>
+                    )}
+                    {user.role === 'particulier' && (
+                      <Link
+                        to="/particulier"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-background hover:text-primary transition-colors"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <Handshake size={15} />
+                        Espace affilie
                       </Link>
                     )}
                     <hr className="my-1 border-slate-100" />
