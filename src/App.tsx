@@ -29,6 +29,7 @@ const ServicesPage = lazy(() => import('@/pages/public/ServicesPage'))
 const MentionsLegalesPage = lazy(() => import('@/pages/public/MentionsLegalesPage'))
 const PolitiqueConfidentialitePage = lazy(() => import('@/pages/public/PolitiqueConfidentialitePage'))
 const PartenairesPage = lazy(() => import('@/pages/public/PartenairesPage'))
+const AssistantPage = lazy(() => import('@/pages/public/AssistantPage'))
 const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'))
 
 // Lazy loaded pages — Dashboard (user)
@@ -68,6 +69,7 @@ const ProSocial = lazy(() => import('@/pages/pro/ProSocial'))
 const ProQRCode = lazy(() => import('@/pages/pro/ProQRCode'))
 const AdminPublications = lazy(() => import('@/pages/admin/AdminPublications'))
 const ProVendeurs = lazy(() => import('@/pages/pro/ProVendeurs'))
+const ProAssistant = lazy(() => import('@/pages/pro/ProAssistant'))
 
 // Lazy loaded pages — Particulier
 const PartDashboard = lazy(() => import('@/pages/particulier/PartDashboard'))
@@ -79,6 +81,7 @@ const PartMessages = lazy(() => import('@/pages/particulier/PartMessages'))
 const PartSocial = lazy(() => import('@/pages/particulier/PartSocial'))
 const PartSimulation = lazy(() => import('@/pages/particulier/PartSimulation'))
 const PartVendeurs = lazy(() => import('@/pages/particulier/PartVendeurs'))
+const PartAssistant = lazy(() => import('@/pages/particulier/PartAssistant'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -119,6 +122,7 @@ export default function App() {
               <Route path="/inscription/pro" element={<RegisterProPage />} />
               <Route path="/inscription/particulier" element={<RegisterParticulierPage />} />
               <Route path="/partenaires" element={<PartenairesPage />} />
+              <Route path="/assistant" element={<AssistantPage />} />
               <Route path="/mentions-legales" element={<MentionsLegalesPage />} />
               <Route path="/politique-de-confidentialite" element={<PolitiqueConfidentialitePage />} />
             </Route>
@@ -170,6 +174,7 @@ export default function App() {
                 <Route path="/pro/reseaux-sociaux" element={<ProSocial />} />
                 <Route path="/pro/qrcode" element={<ProQRCode />} />
                 <Route path="/pro/vendeurs" element={<ProVendeurs />} />
+                <Route path="/pro/assistant" element={<ProAssistant />} />
               </Route>
             </Route>
 
@@ -185,6 +190,7 @@ export default function App() {
                 <Route path="/particulier/reseaux-sociaux" element={<PartSocial />} />
                 <Route path="/particulier/simulateur" element={<PartSimulation />} />
                 <Route path="/particulier/vendeurs" element={<PartVendeurs />} />
+                <Route path="/particulier/assistant" element={<PartAssistant />} />
               </Route>
             </Route>
 

@@ -27,6 +27,7 @@ export default function Navbar() {
     { to: '/articles', label: 'Guides', end: false },
     { to: '/contact', label: 'Contact', end: false },
     { to: '/partenaires', label: 'Partenaires', end: false },
+    { to: '/assistant', label: 'Assistant IA', end: false },
   ]
 
   return (
