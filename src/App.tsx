@@ -67,6 +67,7 @@ const ProProfil = lazy(() => import('@/pages/pro/ProProfil'))
 const ProSocial = lazy(() => import('@/pages/pro/ProSocial'))
 const ProQRCode = lazy(() => import('@/pages/pro/ProQRCode'))
 const AdminPublications = lazy(() => import('@/pages/admin/AdminPublications'))
+const ProVendeurs = lazy(() => import('@/pages/pro/ProVendeurs'))
 
 // Lazy loaded pages — Particulier
 const PartDashboard = lazy(() => import('@/pages/particulier/PartDashboard'))
@@ -77,6 +78,7 @@ const PartPoints = lazy(() => import('@/pages/particulier/PartPoints'))
 const PartMessages = lazy(() => import('@/pages/particulier/PartMessages'))
 const PartSocial = lazy(() => import('@/pages/particulier/PartSocial'))
 const PartSimulation = lazy(() => import('@/pages/particulier/PartSimulation'))
+const PartVendeurs = lazy(() => import('@/pages/particulier/PartVendeurs'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -167,6 +169,7 @@ export default function App() {
                 <Route path="/pro/profil" element={<ProProfil />} />
                 <Route path="/pro/reseaux-sociaux" element={<ProSocial />} />
                 <Route path="/pro/qrcode" element={<ProQRCode />} />
+                <Route path="/pro/vendeurs" element={<ProVendeurs />} />
               </Route>
             </Route>
 
@@ -181,6 +184,7 @@ export default function App() {
                 <Route path="/particulier/messages" element={<PartMessages />} />
                 <Route path="/particulier/reseaux-sociaux" element={<PartSocial />} />
                 <Route path="/particulier/simulateur" element={<PartSimulation />} />
+                <Route path="/particulier/vendeurs" element={<PartVendeurs />} />
               </Route>
             </Route>
 

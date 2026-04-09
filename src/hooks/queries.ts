@@ -1085,3 +1085,25 @@ export function useMonthlyPostCount(userId: string | undefined) {
     enabled: !!userId,
   })
 }
+
+// ===========================================================================
+// PARTNER PLATFORM — RECRUITMENT
+// ===========================================================================
+
+import { fetchMyRecruits, fetchMyRecruitmentCommissions } from '@/api/recruitment'
+
+export function useMyRecruits(recruiterId: string | undefined) {
+  return useQuery({
+    queryKey: ['recruitment', 'recruits', recruiterId],
+    queryFn: () => fetchMyRecruits(recruiterId!),
+    enabled: !!recruiterId,
+  })
+}
+
+export function useMyRecruitmentCommissions(recruiterId: string | undefined) {
+  return useQuery({
+    queryKey: ['recruitment', 'commissions', recruiterId],
+    queryFn: () => fetchMyRecruitmentCommissions(recruiterId!),
+    enabled: !!recruiterId,
+  })
+}

@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Share2,
   QrCode,
+  Network,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -24,6 +25,7 @@ const proNavItems = [
   { to: '/pro/profil', label: 'Mon entreprise', icon: Building2 },
   { to: '/pro/reseaux-sociaux', label: 'Reseaux sociaux', icon: Share2 },
   { to: '/pro/qrcode', label: 'Mon QR Code', icon: QrCode },
+  { to: '/pro/vendeurs', label: 'Mon reseau', icon: Network },
 ]
 
 export default function ProShell() {

@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Link2,
   Share2,
+  UserPlus,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -22,6 +23,7 @@ const partNavItems = [
   { to: '/particulier/messages', label: 'Messages', icon: MessageSquare },
   { to: '/particulier/simulateur', label: 'Liens simulateur', icon: Link2 },
   { to: '/particulier/reseaux-sociaux', label: 'Reseaux sociaux', icon: Share2 },
+  { to: '/particulier/vendeurs', label: 'Mes vendeurs', icon: UserPlus },
 ]
 
 export default function ParticulierShell() {

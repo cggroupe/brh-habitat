@@ -17,6 +17,7 @@ export default function RegisterParticulierPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const refCode = searchParams.get('ref')
+  const recruiter = searchParams.get('recruiter')
   const setUser = useAppStore((s) => s.setUser)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -70,10 +71,18 @@ export default function RegisterParticulierPage() {
       // Le trigger handle_new_user() cree le profil avec role='particulier' automatiquement
 
       // Creer l'affilie avec code de parrainage unique
-      await supabase.from('brh_affiliates').insert({
+      const { error: affiliateError } = await supabase.from('brh_affiliates').insert({
         id: data.user.id,
         referral_code: generateReferralCode(),
       })
+
+      // Si recrute via un lien de recrutement, lier le recruteur
+      if (!affiliateError && recruiter) {
+        await supabase
+          .from('brh_affiliates')
+          .update({ recruited_by: recruiter })
+          .eq('id', data.user.id)
+      }
 
       // Charger profil et naviguer
       const { data: profile } = await supabase

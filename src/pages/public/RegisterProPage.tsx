@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/appStore'
 import { Building2, ArrowRight } from 'lucide-react'
 
 export default function RegisterProPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const recruiter = searchParams.get('recruiter')
   const setUser = useAppStore((s) => s.setUser)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -72,6 +74,14 @@ export default function RegisterProPage() {
         })
         .select()
         .single()
+
+      // Si recrute via un lien de recrutement, lier le recruteur
+      if (company && recruiter) {
+        await supabase
+          .from('brh_companies')
+          .update({ recruited_by: recruiter })
+          .eq('id', company.id)
+      }
 
       // Ajouter comme owner dans company_members
       if (company) {
