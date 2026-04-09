@@ -12,6 +12,7 @@ import {
   QrCode,
   Network,
   Sparkles,
+  Calculator,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -27,6 +28,7 @@ const proNavItems = [
   { to: '/pro/reseaux-sociaux', label: 'Reseaux sociaux', icon: Share2 },
   { to: '/pro/qrcode', label: 'Mon QR Code', icon: QrCode },
   { to: '/pro/vendeurs', label: 'Mon reseau', icon: Network },
+  { to: '/pro/chiffrage', label: 'Chiffrage IA', icon: Calculator },
   { to: '/pro/assistant', label: 'IA Batiment', icon: Sparkles },
 ]
 

@@ -70,6 +70,7 @@ const ProQRCode = lazy(() => import('@/pages/pro/ProQRCode'))
 const AdminPublications = lazy(() => import('@/pages/admin/AdminPublications'))
 const ProVendeurs = lazy(() => import('@/pages/pro/ProVendeurs'))
 const ProAssistant = lazy(() => import('@/pages/pro/ProAssistant'))
+const ProChiffrage = lazy(() => import('@/pages/pro/ProChiffrage'))
 
 // Lazy loaded pages — Particulier
 const PartDashboard = lazy(() => import('@/pages/particulier/PartDashboard'))
@@ -82,6 +83,7 @@ const PartSocial = lazy(() => import('@/pages/particulier/PartSocial'))
 const PartSimulation = lazy(() => import('@/pages/particulier/PartSimulation'))
 const PartVendeurs = lazy(() => import('@/pages/particulier/PartVendeurs'))
 const PartAssistant = lazy(() => import('@/pages/particulier/PartAssistant'))
+const PartChiffrage = lazy(() => import('@/pages/particulier/PartChiffrage'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -175,6 +177,7 @@ export default function App() {
                 <Route path="/pro/qrcode" element={<ProQRCode />} />
                 <Route path="/pro/vendeurs" element={<ProVendeurs />} />
                 <Route path="/pro/assistant" element={<ProAssistant />} />
+                <Route path="/pro/chiffrage" element={<ProChiffrage />} />
               </Route>
             </Route>
 
@@ -191,6 +194,7 @@ export default function App() {
                 <Route path="/particulier/simulateur" element={<PartSimulation />} />
                 <Route path="/particulier/vendeurs" element={<PartVendeurs />} />
                 <Route path="/particulier/assistant" element={<PartAssistant />} />
+                <Route path="/particulier/chiffrage" element={<PartChiffrage />} />
               </Route>
             </Route>
 
