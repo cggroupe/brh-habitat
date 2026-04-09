@@ -1090,12 +1090,20 @@ export function useMonthlyPostCount(userId: string | undefined) {
 // PARTNER PLATFORM — RECRUITMENT
 // ===========================================================================
 
-import { fetchMyRecruits, fetchMyRecruitmentCommissions } from '@/api/recruitment'
+import { fetchMyRecruitTree, fetchNetworkStats, fetchMyRecruitmentCommissions } from '@/api/recruitment'
 
-export function useMyRecruits(recruiterId: string | undefined) {
+export function useMyRecruitTree(recruiterId: string | undefined) {
   return useQuery({
-    queryKey: ['recruitment', 'recruits', recruiterId],
-    queryFn: () => fetchMyRecruits(recruiterId!),
+    queryKey: ['recruitment', 'tree', recruiterId],
+    queryFn: () => fetchMyRecruitTree(recruiterId!),
+    enabled: !!recruiterId,
+  })
+}
+
+export function useNetworkStats(recruiterId: string | undefined) {
+  return useQuery({
+    queryKey: ['recruitment', 'stats', recruiterId],
+    queryFn: () => fetchNetworkStats(recruiterId!),
     enabled: !!recruiterId,
   })
 }
