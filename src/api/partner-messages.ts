@@ -7,39 +7,22 @@ export interface ThreadWithLastMessage extends BrhMessageThreadRow {
 }
 
 export async function fetchMyThreads(userId: string): Promise<ThreadWithLastMessage[]> {
-  const { data: threads, error } = await supabase
-    .from('brh_message_threads')
-    .select('*')
-    .eq('participant_id', userId)
-    .eq('is_archived', false)
-    .order('last_message_at', { ascending: false })
+  // Requete unique via RPC (pas de N+1)
+  const { data, error } = await supabase.rpc('get_my_threads_enriched', { p_user_id: userId })
 
   if (error) throw error
 
-  const enriched: ThreadWithLastMessage[] = []
-  for (const thread of threads ?? []) {
-    const { data: messages } = await supabase
-      .from('brh_messages')
-      .select('body, is_read, sender_id')
-      .eq('thread_id', thread.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-
-    const unreadCount = await supabase
-      .from('brh_messages')
-      .select('*', { count: 'exact', head: true })
-      .eq('thread_id', thread.id)
-      .eq('is_read', false)
-      .neq('sender_id', userId)
-
-    enriched.push({
-      ...(thread as unknown as BrhMessageThreadRow),
-      last_message: messages?.[0]?.body ?? undefined,
-      unread_count: unreadCount.count ?? 0,
-    })
-  }
-
-  return enriched
+  return (data ?? []).map((row: Record<string, unknown>) => ({
+    id: row.id as string,
+    subject: row.subject as string,
+    participant_id: row.participant_id as string | null,
+    participant_type: row.participant_type as 'pro' | 'particulier',
+    last_message_at: row.last_message_at as string,
+    is_archived: row.is_archived as boolean,
+    created_at: row.created_at as string,
+    last_message: (row.last_message as string) ?? undefined,
+    unread_count: Number(row.unread_count ?? 0),
+  }))
 }
 
 export async function fetchThreadMessages(threadId: string): Promise<BrhMessageRow[]> {

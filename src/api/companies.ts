@@ -82,32 +82,15 @@ export async function fetchCompanyDashboardStats(companyId: string): Promise<Com
     .eq('id', companyId)
     .single()
 
-  let commissionsDues = 0
-  let commissionsVersees = 0
+  // Requete unique via RPC (pas de .in() illimite)
+  const { data: stats } = await supabase.rpc('get_company_commission_stats', { p_company_id: companyId })
 
-  // Fallback: fetch quotes via prospects
-  const { data: prospects } = await supabase
-    .from('brh_prospects')
-    .select('id')
-    .eq('company_id', companyId)
-
-  if (prospects && prospects.length > 0) {
-    const prospectIds = prospects.map((p) => p.id)
-    const { data: quotesData } = await supabase
-      .from('brh_quotes')
-      .select('commission_amount, commission_status')
-      .in('prospect_id', prospectIds)
-
-    for (const q of quotesData ?? []) {
-      if (q.commission_status === 'versee') commissionsVersees += q.commission_amount ?? 0
-      else commissionsDues += q.commission_amount ?? 0
-    }
-  }
+  const row = Array.isArray(stats) ? stats[0] : stats
 
   return {
     totalCa: company?.total_ca_apporte ?? 0,
-    commissionsDues,
-    commissionsVersees,
+    commissionsDues: Number(row?.dues ?? 0),
+    commissionsVersees: Number(row?.versees ?? 0),
     level: company?.level ?? 'bronze',
     commissionRate: company?.commission_rate_percent ?? 0,
   }

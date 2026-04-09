@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/appStore'
 import type { UserRole } from '@/types/database'
@@ -39,12 +39,11 @@ async function fetchProfile(userId: string): Promise<ProfileData | null> {
 export function useAuth() {
   const { user, setUser } = useAppStore()
   const initRef = useRef(false)
+  const [isInitialized, setIsInitialized] = useState(() => !!useAppStore.getState().user)
 
   useEffect(() => {
     let mounted = true
 
-    // Validation en arriere-plan : verifier que la session est toujours valide
-    // Sans bloquer l'affichage (le user du localStorage est deja la)
     async function validateSession() {
       if (initRef.current) return
       initRef.current = true
@@ -53,22 +52,21 @@ export function useAuth() {
         const { data: { session } } = await supabase.auth.getSession()
 
         if (!session) {
-          // Session expiree : nettoyer
           if (mounted && useAppStore.getState().user) {
             setUser(null)
           }
-          return
-        }
-
-        // Rafraichir le profil silencieusement si le user est connecte
-        const profile = await fetchProfile(session.user.id)
-        if (mounted && profile) {
-          setUser(profileToUser(profile))
-        } else if (mounted && !profile) {
-          setUser(null)
+        } else {
+          const profile = await fetchProfile(session.user.id)
+          if (mounted && profile) {
+            setUser(profileToUser(profile))
+          } else if (mounted && !profile) {
+            setUser(null)
+          }
         }
       } catch {
-        // Erreur reseau : garder le user du cache, ne pas bloquer
+        // Erreur reseau : garder le user du cache
+      } finally {
+        if (mounted) setIsInitialized(true)
       }
     }
 
@@ -108,11 +106,12 @@ export function useAuth() {
     setUser(null)
   }
 
+  // loading = true seulement si pas de cache ET session pas encore validee
+  const loading = !user && !isInitialized
+
   return {
     user,
-    // Le loading est false si on a un user cache (localStorage)
-    // True seulement au tout premier chargement sans cache
-    loading: false,
+    loading,
     error: null,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',

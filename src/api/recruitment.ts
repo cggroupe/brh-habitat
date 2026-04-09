@@ -6,7 +6,6 @@ export interface RecruitedPartner {
   email: string
   role: string
   created_at: string
-  // Stats
   prospects_count: number
   signed_count: number
 }
@@ -24,83 +23,20 @@ export interface RecruitmentCommission {
 }
 
 export async function fetchMyRecruits(recruiterId: string): Promise<RecruitedPartner[]> {
-  // Chercher les affilies recrutes
-  const { data: affiliateRecruits } = await supabase
-    .from('brh_affiliates')
-    .select('id')
-    .eq('recruited_by', recruiterId)
+  // Requete unique via RPC (pas de N+1)
+  const { data, error } = await supabase.rpc('get_recruit_stats', { p_recruiter_id: recruiterId })
 
-  // Chercher les companies recrutees
-  const { data: companyRecruits } = await supabase
-    .from('brh_companies')
-    .select('owner_id')
-    .eq('recruited_by', recruiterId)
+  if (error) throw error
 
-  const recruitedIds = [
-    ...(affiliateRecruits ?? []).map((a) => a.id),
-    ...(companyRecruits ?? []).filter((c) => c.owner_id).map((c) => c.owner_id!),
-  ]
-
-  if (recruitedIds.length === 0) return []
-
-  // Charger les profils
-  const { data: profiles } = await supabase
-    .from('profiles')
-    .select('id, full_name, email, role, created_at')
-    .in('id', recruitedIds)
-
-  // Charger les stats prospects par recrue
-  const result: RecruitedPartner[] = []
-  for (const profile of profiles ?? []) {
-    let prospectsCount = 0
-    let signedCount = 0
-
-    if (profile.role === 'particulier') {
-      const { count: total } = await supabase
-        .from('brh_prospects')
-        .select('*', { count: 'exact', head: true })
-        .eq('affiliate_id', profile.id)
-      const { count: signed } = await supabase
-        .from('brh_prospects')
-        .select('*', { count: 'exact', head: true })
-        .eq('affiliate_id', profile.id)
-        .in('status', ['signe', 'termine'])
-      prospectsCount = total ?? 0
-      signedCount = signed ?? 0
-    } else if (profile.role === 'pro') {
-      const { data: company } = await supabase
-        .from('brh_companies')
-        .select('id')
-        .eq('owner_id', profile.id)
-        .limit(1)
-        .maybeSingle()
-      if (company) {
-        const { count: total } = await supabase
-          .from('brh_prospects')
-          .select('*', { count: 'exact', head: true })
-          .eq('company_id', company.id)
-        const { count: signed } = await supabase
-          .from('brh_prospects')
-          .select('*', { count: 'exact', head: true })
-          .eq('company_id', company.id)
-          .in('status', ['signe', 'termine'])
-        prospectsCount = total ?? 0
-        signedCount = signed ?? 0
-      }
-    }
-
-    result.push({
-      id: profile.id,
-      full_name: profile.full_name ?? '—',
-      email: profile.email,
-      role: profile.role,
-      created_at: profile.created_at,
-      prospects_count: prospectsCount,
-      signed_count: signedCount,
-    })
-  }
-
-  return result
+  return (data ?? []).map((row: Record<string, unknown>) => ({
+    id: row.profile_id as string,
+    full_name: (row.full_name as string) ?? '—',
+    email: row.email as string,
+    role: row.role as string,
+    created_at: row.created_at as string,
+    prospects_count: Number(row.prospects_count ?? 0),
+    signed_count: Number(row.signed_count ?? 0),
+  }))
 }
 
 export async function fetchMyRecruitmentCommissions(recruiterId: string): Promise<RecruitmentCommission[]> {
@@ -112,7 +48,6 @@ export async function fetchMyRecruitmentCommissions(recruiterId: string): Promis
 
   if (error) throw error
 
-  // Enrichir avec les noms des recrues
   const recruits = data ?? []
   const recruitedIds = [...new Set(recruits.map((r) => r.recruited_id).filter(Boolean))]
 
