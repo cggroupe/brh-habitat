@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Calendar, AlertCircle, CheckCircle2, Save, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAdminAppointments, useUpdateAppointment } from '@/hooks/queries'
 import {
@@ -46,20 +46,26 @@ export default function AdminRdv() {
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   // Initialize edit states for rows not yet tracked
-  rdvList.forEach((r) => {
-    if (!(r.id in editStates)) {
-      setEditStates((prev) => ({
-        ...prev,
-        [r.id]: {
+  useEffect(() => {
+    const newStates: Record<string, EditState> = {}
+    let hasNew = false
+    rdvList.forEach((r) => {
+      if (!(r.id in editStates)) {
+        hasNew = true
+        newStates[r.id] = {
           status: r.status,
           confirmedDate: r.confirmed_date ? r.confirmed_date.slice(0, 10) : '',
           dirty: false,
           saved: false,
           error: null,
-        },
-      }))
+        }
+      }
+    })
+    if (hasNew) {
+      setEditStates((prev) => ({ ...prev, ...newStates }))
     }
-  })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rdvList])
 
   function updateEdit(id: string, patch: Partial<EditState>) {
     setEditStates((prev) => ({

@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { formatLocalDate } from '@/lib/utils'
 import type { BrhSocialPostRow } from '@/types/partner'
 import { PAGE_SIZE } from '@/data/constants'
 
@@ -74,7 +75,7 @@ export async function updateSocialPostStatus(
     payload.validated_at = new Date().toISOString()
     const expiry = new Date()
     expiry.setDate(expiry.getDate() + 30)
-    payload.expiry_check_date = expiry.toISOString().slice(0, 10)
+    payload.expiry_check_date = formatLocalDate(expiry)
   }
   if (rejectionReason) payload.rejection_reason = rejectionReason
   if (adminNotes) payload.admin_notes = adminNotes

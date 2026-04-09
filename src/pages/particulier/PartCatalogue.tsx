@@ -112,15 +112,19 @@ export default function PartCatalogue() {
   const isLoading = loadingAffiliate || loadingRewards
 
   async function handleConfirm(shippingAddress?: string) {
-    if (!affiliate || !selectedReward) return
-    await createClaim.mutateAsync({
-      affiliateId: affiliate.id,
-      rewardId: selectedReward.id,
-      pointsSpent: selectedReward.points_required,
-      shippingAddress,
-    })
-    setClaimSuccess(selectedReward.name)
-    setSelectedReward(null)
+    if (!affiliate || !selectedReward || createClaim.isPending) return
+    try {
+      await createClaim.mutateAsync({
+        affiliateId: affiliate.id,
+        rewardId: selectedReward.id,
+        pointsSpent: selectedReward.points_required,
+        shippingAddress,
+      })
+      setClaimSuccess(selectedReward.name)
+      setSelectedReward(null)
+    } catch {
+      // L'erreur est geree par React Query (createClaim.error)
+    }
   }
 
   return (

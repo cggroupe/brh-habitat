@@ -18,14 +18,13 @@ export async function fetchCompanyMembers(companyId: string): Promise<CompanyMem
 }
 
 export async function inviteMember(companyId: string, email: string): Promise<void> {
-  // Trouver le profil par email
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('id, role')
-    .eq('email', email)
-    .single()
+  // Trouver le profil par email via RPC SECURITY DEFINER (contourne RLS profiles)
+  const { data: results, error: rpcError } = await supabase
+    .rpc('find_profile_by_email', { search_email: email })
 
-  if (profileError || !profile) {
+  const profile = Array.isArray(results) ? results[0] : results
+
+  if (rpcError || !profile) {
     throw new Error('Aucun compte trouve avec cet email. L\'utilisateur doit d\'abord creer un compte.')
   }
 

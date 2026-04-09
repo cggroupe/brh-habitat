@@ -64,7 +64,7 @@ export default function RegisterProPage() {
       // Le trigger handle_new_user() cree le profil avec role='pro' automatiquement
 
       // Creer l'entreprise
-      const { data: company } = await supabase
+      const { data: company, error: companyError } = await supabase
         .from('brh_companies')
         .insert({
           owner_id: data.user.id,
@@ -74,6 +74,12 @@ export default function RegisterProPage() {
         })
         .select()
         .single()
+
+      if (companyError) {
+        setError('Erreur lors de la creation de l\'entreprise. Veuillez reessayer.')
+        setLoading(false)
+        return
+      }
 
       // Si recrute via un lien de recrutement, lier le recruteur
       if (company && recruiter) {

@@ -164,13 +164,13 @@ export default function AdminParametres() {
     const { error } = await supabase
       .from('brh_platform_settings')
       .update({ ...settings, updated_at: new Date().toISOString() })
-      .eq('key', 'default')
+      .eq('key', 'global')
 
     if (error) {
       // Try upsert if row doesn't exist yet
       const { error: upsertError } = await supabase
         .from('brh_platform_settings')
-        .upsert({ key: 'default', ...settings, updated_at: new Date().toISOString() })
+        .upsert({ key: 'global', ...settings, updated_at: new Date().toISOString() })
 
       if (upsertError) {
         setSaveError('Erreur lors de la sauvegarde : ' + upsertError.message)
