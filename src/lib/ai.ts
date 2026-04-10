@@ -8,14 +8,19 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string
 
 const AI_PROXY_URL = `${SUPABASE_URL}/functions/v1/ai-proxy`
 
-export async function sendToAI(messages: { role: string; content: string }[]): Promise<string> {
+export type AIMode = 'visiteur' | 'pro' | 'chiffrage'
+
+export async function sendToAI(messages: { role: string; content: string }[], mode: AIMode = 'visiteur'): Promise<string> {
+  // Filtrer les system prompts — le serveur gere le system prompt selon l'endpoint
+  const filteredMessages = messages.filter((m) => m.role !== 'system')
+
   const response = await fetch(AI_PROXY_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
     },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ mode, messages: filteredMessages }),
   })
 
   if (!response.ok) {

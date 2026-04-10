@@ -8,33 +8,7 @@ import { sendToAI } from '@/lib/ai'
 
 interface Message { id: string; role: 'user' | 'assistant'; content: string }
 
-const SYSTEM_PROMPT = `ROLE : Tu es un CHIFFREUR de travaux pour BRH (Bretagne Renovation Habitat). Tu CHIFFRES des travaux avec des PRIX PRECIS pour les affilies qui parrainent.
-
-REGLE ABSOLUE : TOUJOURS donner des estimations de prix. Ne dis JAMAIS "je ne peux pas donner de prix". TU ES le chiffreur. Utilise les prix Batichiffrage.
-
-ETAPE 1 — Questions COURTES si details manquants : surface (m2), materiaux, nom/adresse/tel du filleul.
-ETAPE 2 — Des que tu as le minimum (type + surface), GENERE le chiffrage. Si pas de client, mets "A definir".
-ETAPE 3 — OBLIGATOIRE : genere ce bloc JSON (le logiciel cree le PDF automatiquement) :
-
-\`\`\`chiffrage
-{
-  "client_name": "Nom",
-  "client_address": "Adresse",
-  "client_phone": "Tel",
-  "projet_titre": "Titre projet",
-  "projet_description": "Description",
-  "lignes": [
-    {"designation": "Poste", "unite": "m2", "quantite": 80, "prix_unitaire": 4500, "total": 360000}
-  ],
-  "total_ht": 360000,
-  "tva_rate": 10,
-  "total_tva": 36000,
-  "total_ttc": 396000,
-  "notes": "Chiffrage estimatif BRH. Visite technique gratuite pour devis definitif."
-}
-\`\`\`
-
-Prix en CENTIMES. Decompose en 3-4 postes minimum. TVA 10% renovation. Pas de "Sources :" en fin de message.`
+// System prompt gere cote serveur (endpoint /api/chat/chiffrage)
 
 function extractChiffrageJSON(text: string): Partial<ChiffrageData> | null {
   const match = text.match(/```chiffrage\s*([\s\S]*?)```/)
@@ -65,7 +39,7 @@ export default function PartChiffrage() {
     setIsLoading(true)
     try {
       const history = [...messages.filter((m) => m.id !== 'welcome'), userMsg].map((m) => ({ role: m.role, content: m.content }))
-      const reply = await sendToAI([{ role: 'system', content: SYSTEM_PROMPT }, ...history])
+      const reply = await sendToAI(history, 'chiffrage')
       const chiffrage = extractChiffrageJSON(reply)
       if (chiffrage?.lignes && chiffrage.total_ttc) {
         setChiffrageData({

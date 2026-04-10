@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send, Bot, User, Loader2, AlertCircle, Sparkles } from 'lucide-react'
-import { sendToAI as sendToAIProxy } from '@/lib/ai'
+import { sendToAI, type AIMode } from '@/lib/ai'
 
 export type ChatMode = 'visiteur' | 'pro'
 
@@ -16,41 +16,15 @@ interface ChatAIProps {
   userName?: string
 }
 
-const SYSTEM_PROMPTS: Record<ChatMode, string> = {
-  visiteur: `Tu es l'assistant IA de BRH (Bretagne Renovation Habitat). Tu aides les particuliers avec leurs projets de renovation.
-
-TU FAIS 2 CHOSES :
-1. CONSEIL : Tu expliques les travaux de maniere simple et accessible. Tu alertes sur les dangers (amiante, electricite, securite). Tu donnes des conseils pratiques.
-2. ESTIMATION : Quand on te demande combien ca coute ou un chiffrage, tu DONNES TOUJOURS des fourchettes de prix realistes basees sur les tarifs courants en Bretagne. Ne dis JAMAIS "contactez un professionnel" sans donner une estimation d'abord.
-
-REGLES :
-- Reponds en francais, de maniere claire et accessible (pas trop technique)
-- Donne des fourchettes de prix quand c'est pertinent (ex: "comptez entre 60 et 120 EUR/m2 pour de l'ardoise posee")
-- Alerte sur les points de vigilance (securite, reglementation, amiante avant 1997, etc.)
-- A la fin de tes estimations, precise toujours : "Pour un chiffrage precis et gratuit, utilisez notre simulateur ou demandez un rendez-vous BRH."
-- N'ecris PAS de references bibliographiques ou de "Sources :" en fin de message`,
-
-  pro: `Tu es un assistant IA specialise dans le batiment et la renovation pour les professionnels BRH. Tu connais les DTU, les normes NF, le code du travail BTP, les reglementations thermiques RE2020, les Eurocodes.
-
-TU DONNES TOUJOURS :
-- Des reponses techniques precises avec references DTU/normes
-- Des fourchettes de prix quand on te demande (utilise tes connaissances Batichiffrage)
-- Des alertes securite et reglementation pertinentes
-
-Ne dis JAMAIS "je ne peux pas donner de prix". Tu es un expert batiment, tu connais les prix du marche.
-N'ecris PAS de "Sources :" en fin de message.`,
+// Les system prompts sont geres cote serveur (3 endpoints distincts)
+const MODE_MAP: Record<ChatMode, AIMode> = {
+  visiteur: 'visiteur',
+  pro: 'pro',
 }
 
 const WELCOME_MESSAGES: Record<ChatMode, string> = {
   visiteur: 'Bonjour ! Je suis l\'assistant BRH Habitat. Posez-moi vos questions sur la renovation : prix, conseils, alertes securite... Je peux aussi vous estimer le cout de vos travaux.',
   pro: 'Bonjour ! Je suis votre assistant IA batiment. DTU, normes, estimations de prix, reglementations — posez vos questions techniques.',
-}
-
-async function callAI(messages: { role: string; content: string }[], mode: ChatMode): Promise<string> {
-  return sendToAIProxy([
-    { role: 'system', content: SYSTEM_PROMPTS[mode] },
-    ...messages,
-  ])
 }
 
 export default function ChatAI({ mode, userName }: ChatAIProps) {
@@ -95,7 +69,7 @@ export default function ChatAI({ mode, userName }: ChatAIProps) {
         content: m.content,
       }))
 
-      const reply = await callAI(history, mode)
+      const reply = await sendToAI(history, MODE_MAP[mode])
 
       setMessages((prev) => [
         ...prev,
@@ -126,7 +100,7 @@ export default function ChatAI({ mode, userName }: ChatAIProps) {
             {mode === 'visiteur' ? 'Assistant BRH' : 'IA Batiment BRH'}
           </h2>
           <p className="font-body text-xs text-green-200">
-            {mode === 'visiteur' ? 'Posez vos questions sur la renovation' : 'Assistant technique professionnel'}
+            {mode === 'visiteur' ? 'Conseils renovation + estimations de prix' : 'Assistant technique professionnel'}
           </p>
         </div>
       </div>
@@ -139,11 +113,7 @@ export default function ChatAI({ mode, userName }: ChatAIProps) {
             <div key={msg.id} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
               <div className={`flex gap-2.5 max-w-[85%] ${isUser ? 'flex-row-reverse' : ''}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${isUser ? 'bg-primary' : 'bg-slate-100'}`}>
-                  {isUser ? (
-                    <User size={14} className="text-white" />
-                  ) : (
-                    <Bot size={14} className="text-primary" />
-                  )}
+                  {isUser ? <User size={14} className="text-white" /> : <Bot size={14} className="text-primary" />}
                 </div>
                 <div className={`px-4 py-3 rounded-2xl ${isUser ? 'bg-primary text-white rounded-br-sm' : 'bg-slate-100 text-slate-800 rounded-bl-sm'}`}>
                   <p className="font-body text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
@@ -191,7 +161,7 @@ export default function ChatAI({ mode, userName }: ChatAIProps) {
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={mode === 'visiteur' ? 'Ex: Ma toiture a 30 ans, que faire ?' : 'Ex: DTU toiture terrasse vegetalisee ?'}
+            placeholder={mode === 'visiteur' ? 'Ex: Combien coute une toiture en ardoise ?' : 'Ex: DTU toiture terrasse vegetalisee ?'}
             className="flex-1 px-4 py-3 border border-slate-200 rounded-full font-body text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             disabled={isLoading}
           />
