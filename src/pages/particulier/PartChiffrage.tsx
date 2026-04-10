@@ -25,9 +25,9 @@ export default function PartChiffrage() {
   const [isLoading, setIsLoading] = useState(false)
   const [chiffrageData, setChiffrageData] = useState<ChiffrageData | null>(null)
   const [generatingPdf, setGeneratingPdf] = useState(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const messagesRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
+  useEffect(() => { if (messagesRef.current) messagesRef.current.scrollTop = messagesRef.current.scrollHeight }, [messages])
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault()
@@ -95,7 +95,7 @@ export default function PartChiffrage() {
             </button>
           </div>
         )}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <div ref={messagesRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
           {messages.map((msg) => {
             const isUser = msg.role === 'user'
             return (
@@ -119,7 +119,6 @@ export default function PartChiffrage() {
               </div>
             </div></div>
           )}
-          <div ref={bottomRef} />
         </div>
         <form onSubmit={(e) => void handleSend(e)} className="px-4 py-3 border-t border-slate-100 bg-white flex gap-2">
           <input value={input} onChange={(e) => setInput(e.target.value)} disabled={isLoading} placeholder="Decrivez les travaux..."

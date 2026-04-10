@@ -37,9 +37,9 @@ export default function ProChiffrage() {
   const [isLoading, setIsLoading] = useState(false)
   const [chiffrageData, setChiffrageData] = useState<ChiffrageData | null>(null)
   const [generatingPdf, setGeneratingPdf] = useState(false)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const messagesRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
+  useEffect(() => { if (messagesRef.current) messagesRef.current.scrollTop = messagesRef.current.scrollHeight }, [messages])
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault()
@@ -149,7 +149,7 @@ export default function ProChiffrage() {
         )}
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <div ref={messagesRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
           {messages.map((msg) => {
             const isUser = msg.role === 'user'
             return (
@@ -176,7 +176,6 @@ export default function ProChiffrage() {
               </div>
             </div>
           )}
-          <div ref={bottomRef} />
         </div>
 
         {/* Input */}

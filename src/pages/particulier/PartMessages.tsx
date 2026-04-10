@@ -27,7 +27,7 @@ export default function PartMessages() {
   const [newBody, setNewBody] = useState('')
   const [creating, setCreating] = useState(false)
   const [loading, setLoading] = useState(true)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const messagesRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!user?.id) return
@@ -42,7 +42,7 @@ export default function PartMessages() {
   }, [activeThread, user?.id])
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messagesRef.current) messagesRef.current.scrollTop = messagesRef.current.scrollHeight
   }, [messages])
 
   async function handleSend(e: React.FormEvent) {
@@ -161,7 +161,7 @@ export default function PartMessages() {
                 </span>
               </div>
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+              <div ref={messagesRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
                 {messages.map((msg) => {
                   const isMe = msg.sender_id === user?.id
                   return (
@@ -173,7 +173,6 @@ export default function PartMessages() {
                     </div>
                   )
                 })}
-                <div ref={bottomRef} />
               </div>
               {/* Input */}
               <form onSubmit={(e) => void handleSend(e)} className="px-4 py-3 border-t border-slate-100 flex gap-2">
