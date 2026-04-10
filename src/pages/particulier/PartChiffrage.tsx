@@ -4,8 +4,7 @@ import { pdf } from '@react-pdf/renderer'
 import { useAuth } from '@/hooks/useAuth'
 import { ChiffragePDF, type ChiffrageData, type ChiffrageLineItem } from '@/lib/chiffrage-pdf'
 import { formatLocalDate } from '@/lib/utils'
-
-const AI_API_URL = import.meta.env.VITE_AI_API_URL as string | undefined
+import { sendToAI } from '@/lib/ai'
 
 interface Message { id: string; role: 'user' | 'assistant'; content: string }
 
@@ -68,9 +67,7 @@ export default function PartChiffrage() {
     setIsLoading(true)
     try {
       const history = [...messages.filter((m) => m.id !== 'welcome'), userMsg].map((m) => ({ role: m.role, content: m.content }))
-      const response = await fetch(AI_API_URL ?? '', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...history] }) })
-      const data = await response.json()
-      const reply = data.choices?.[0]?.message?.content ?? data.response ?? 'Reponse indisponible.'
+      const reply = await sendToAI([{ role: 'system', content: SYSTEM_PROMPT }, ...history])
       const chiffrage = extractChiffrageJSON(reply)
       if (chiffrage?.lignes && chiffrage.total_ttc) {
         setChiffrageData({

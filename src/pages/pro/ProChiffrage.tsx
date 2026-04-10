@@ -5,8 +5,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { useMyCompany } from '@/hooks/queries'
 import { ChiffragePDF, type ChiffrageData, type ChiffrageLineItem } from '@/lib/chiffrage-pdf'
 import { formatLocalDate } from '@/lib/utils'
+import { sendToAI } from '@/lib/ai'
 
-const AI_API_URL = import.meta.env.VITE_AI_API_URL as string | undefined
 
 interface Message {
   id: string
@@ -87,16 +87,7 @@ export default function ProChiffrage() {
     try {
       const history = [...messages.filter((m) => m.id !== 'welcome'), userMsg].map((m) => ({ role: m.role, content: m.content }))
 
-      const response = await fetch(AI_API_URL ?? '', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...history],
-        }),
-      })
-
-      const data = await response.json()
-      const reply = data.choices?.[0]?.message?.content ?? data.response ?? 'Reponse indisponible.'
+      const reply = await sendToAI([{ role: 'system', content: SYSTEM_PROMPT }, ...history])
 
       // Detecter si l'IA a genere un chiffrage JSON
       const chiffrage = extractChiffrageJSON(reply)

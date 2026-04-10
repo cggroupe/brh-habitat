@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send, Bot, User, Loader2, AlertCircle, Sparkles } from 'lucide-react'
-
-const AI_API_URL = import.meta.env.VITE_AI_API_URL as string | undefined
+import { sendToAI as sendToAIProxy } from '@/lib/ai'
 
 export type ChatMode = 'visiteur' | 'pro'
 
@@ -27,34 +26,11 @@ const WELCOME_MESSAGES: Record<ChatMode, string> = {
   pro: 'Bonjour ! Je suis votre assistant IA batiment. Posez-moi vos questions techniques : DTU, normes, reglementations, bonnes pratiques de renovation.',
 }
 
-async function sendToAI(messages: { role: string; content: string }[], mode: ChatMode): Promise<string> {
-  if (!AI_API_URL) {
-    // Mode demo si l'API n'est pas configuree
-    await new Promise((r) => setTimeout(r, 1000))
-    if (mode === 'visiteur') {
-      return 'Merci pour votre question ! Pour obtenir une reponse personnalisee, je vous invite a lancer notre **simulateur gratuit** qui analysera votre situation en detail. Vous pouvez y acceder depuis le menu "Diagnostic" du site.\n\nEn attendant, n\'hesitez pas a me poser d\'autres questions sur la renovation !'
-    }
-    return 'Bonne question ! L\'IA batiment BRH est en cours de configuration. Une fois activee, je pourrai vous repondre avec precision sur les DTU, normes NF, reglementations thermiques et bonnes pratiques de renovation.\n\nContactez l\'equipe BRH pour activer cette fonctionnalite.'
-  }
-
-  const response = await fetch(AI_API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPTS[mode] },
-        ...messages,
-      ],
-    }),
-  })
-
-  if (!response.ok) {
-    throw new Error(`Erreur serveur (${response.status})`)
-  }
-
-  const data = await response.json()
-  // Support format OpenAI-compatible ou format simple { response: "..." }
-  return data.choices?.[0]?.message?.content ?? data.response ?? data.message ?? 'Reponse indisponible.'
+async function callAI(messages: { role: string; content: string }[], mode: ChatMode): Promise<string> {
+  return sendToAIProxy([
+    { role: 'system', content: SYSTEM_PROMPTS[mode] },
+    ...messages,
+  ])
 }
 
 export default function ChatAI({ mode, userName }: ChatAIProps) {
@@ -99,7 +75,7 @@ export default function ChatAI({ mode, userName }: ChatAIProps) {
         content: m.content,
       }))
 
-      const reply = await sendToAI(history, mode)
+      const reply = await callAI(history, mode)
 
       setMessages((prev) => [
         ...prev,
@@ -133,11 +109,6 @@ export default function ChatAI({ mode, userName }: ChatAIProps) {
             {mode === 'visiteur' ? 'Posez vos questions sur la renovation' : 'Assistant technique professionnel'}
           </p>
         </div>
-        {!AI_API_URL && (
-          <span className="ml-auto px-2 py-1 rounded text-[10px] font-body bg-amber-400/20 text-amber-200">
-            Mode demo
-          </span>
-        )}
       </div>
 
       {/* Messages */}
