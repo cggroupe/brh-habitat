@@ -17,7 +17,8 @@ interface Message {
 // System prompt gere cote serveur (endpoint /api/chat/chiffrage)
 
 function extractChiffrageJSON(text: string): Partial<ChiffrageData> | null {
-  const match = text.match(/```chiffrage\s*([\s\S]*?)```/)
+  // Accepte ```chiffrage ou ```json
+  const match = text.match(/```(?:chiffrage|json)\s*([\s\S]*?)```/)
   if (!match) return null
   try {
     return JSON.parse(match[1].trim())
@@ -81,7 +82,7 @@ export default function ProChiffrage() {
       }
 
       // Afficher la reponse sans le bloc JSON
-      const cleanReply = reply.replace(/```chiffrage[\s\S]*?```/g, '').trim()
+      const cleanReply = reply.replace(/```(?:chiffrage|json)[\s\S]*?```/g, '').trim()
       setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: 'assistant', content: cleanReply || 'Votre chiffrage est pret ! Cliquez sur "Telecharger le PDF" ci-dessous.' }])
     } catch {
       setMessages((prev) => [...prev, { id: `e-${Date.now()}`, role: 'assistant', content: 'Erreur de communication avec l\'IA. Veuillez reessayer.' }])
