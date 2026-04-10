@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { ChiffragePDF, type ChiffrageData, type ChiffrageLineItem } from '@/lib/chiffrage-pdf'
 import { formatLocalDate } from '@/lib/utils'
 import { sendToAI } from '@/lib/ai'
+import { supabase } from '@/lib/supabase'
 
 interface Message { id: string; role: 'user' | 'assistant'; content: string }
 
@@ -42,14 +43,25 @@ export default function PartChiffrage() {
       const reply = await sendToAI(history, 'chiffrage')
       const chiffrage = extractChiffrageJSON(reply)
       if (chiffrage?.lignes && chiffrage.total_ttc) {
-        setChiffrageData({
+        const ref = `CHF-${Date.now().toString(36).toUpperCase()}`
+        const chiffrageComplete: ChiffrageData = {
           client_name: chiffrage.client_name ?? 'Client', client_address: chiffrage.client_address, client_phone: chiffrage.client_phone,
           partner_name: user?.full_name ?? '', partner_type: 'particulier',
           projet_titre: chiffrage.projet_titre ?? 'Travaux de renovation', projet_description: chiffrage.projet_description,
           lignes: chiffrage.lignes as ChiffrageLineItem[], total_ht: chiffrage.total_ht ?? 0, tva_rate: chiffrage.tva_rate ?? 10,
           total_tva: chiffrage.total_tva ?? 0, total_ttc: chiffrage.total_ttc ?? 0, notes: chiffrage.notes,
-          date: formatLocalDate(), reference: `CHF-${Date.now().toString(36).toUpperCase()}`,
-        })
+          date: formatLocalDate(), reference: ref,
+        }
+        setChiffrageData(chiffrageComplete)
+        supabase.from('brh_chiffrages').insert({
+          user_id: user?.id, reference: ref,
+          client_name: chiffrageComplete.client_name, client_address: chiffrageComplete.client_address ?? null,
+          client_phone: chiffrageComplete.client_phone ?? null, projet_titre: chiffrageComplete.projet_titre,
+          projet_description: chiffrageComplete.projet_description ?? null, lignes: chiffrageComplete.lignes,
+          total_ht: chiffrageComplete.total_ht, tva_rate: chiffrageComplete.tva_rate,
+          total_tva: chiffrageComplete.total_tva, total_ttc: chiffrageComplete.total_ttc,
+          notes: chiffrageComplete.notes ?? null,
+        }).then(({ error: e }) => { if (e) console.error('Erreur sauvegarde chiffrage:', e) })
       }
       const cleanReply = reply.replace(/```(?:chiffrage|json)[\s\S]*?```/g, '').trim()
       setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: 'assistant', content: cleanReply || 'Votre chiffrage est pret ! Telechargez le PDF ci-dessous.' }])

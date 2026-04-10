@@ -6,6 +6,7 @@ import { useMyCompany } from '@/hooks/queries'
 import { ChiffragePDF, type ChiffrageData, type ChiffrageLineItem } from '@/lib/chiffrage-pdf'
 import { formatLocalDate } from '@/lib/utils'
 import { sendToAI } from '@/lib/ai'
+import { supabase } from '@/lib/supabase'
 
 
 interface Message {
@@ -61,7 +62,7 @@ export default function ProChiffrage() {
       const chiffrage = extractChiffrageJSON(reply)
       if (chiffrage && chiffrage.lignes && chiffrage.total_ttc) {
         const ref = `CHF-${Date.now().toString(36).toUpperCase()}`
-        setChiffrageData({
+        const chiffrageComplete: ChiffrageData = {
           client_name: chiffrage.client_name ?? 'Client',
           client_address: chiffrage.client_address,
           client_phone: chiffrage.client_phone,
@@ -78,6 +79,27 @@ export default function ProChiffrage() {
           notes: chiffrage.notes,
           date: formatLocalDate(),
           reference: ref,
+        }
+        setChiffrageData(chiffrageComplete)
+
+        // Sauvegarder en base
+        supabase.from('brh_chiffrages').insert({
+          user_id: user?.id,
+          company_id: company?.id ?? null,
+          reference: ref,
+          client_name: chiffrageComplete.client_name,
+          client_address: chiffrageComplete.client_address ?? null,
+          client_phone: chiffrageComplete.client_phone ?? null,
+          projet_titre: chiffrageComplete.projet_titre,
+          projet_description: chiffrageComplete.projet_description ?? null,
+          lignes: chiffrageComplete.lignes,
+          total_ht: chiffrageComplete.total_ht,
+          tva_rate: chiffrageComplete.tva_rate,
+          total_tva: chiffrageComplete.total_tva,
+          total_ttc: chiffrageComplete.total_ttc,
+          notes: chiffrageComplete.notes ?? null,
+        }).then(({ error: saveErr }) => {
+          if (saveErr) console.error('Erreur sauvegarde chiffrage:', saveErr)
         })
       }
 
