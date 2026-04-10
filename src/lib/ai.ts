@@ -23,5 +23,11 @@ export async function sendToAI(messages: { role: string; content: string }[]): P
   }
 
   const data = await response.json()
-  return data.choices?.[0]?.message?.content ?? data.response ?? 'Reponse indisponible.'
+  const raw = data.choices?.[0]?.message?.content ?? data.response ?? 'Reponse indisponible.'
+
+  // Nettoyer les blocs "Sources : ..." ajoutes par le RAG
+  return raw
+    .replace(/\n---\n\*Sources?\s*:.*$/s, '')
+    .replace(/\n\*Sources?\s*:.*$/s, '')
+    .trim()
 }

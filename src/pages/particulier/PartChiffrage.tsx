@@ -8,35 +8,33 @@ import { sendToAI } from '@/lib/ai'
 
 interface Message { id: string; role: 'user' | 'assistant'; content: string }
 
-const SYSTEM_PROMPT = `Tu es un assistant de chiffrage pour BRH (Bretagne Renovation Habitat). Tu aides les affilies particuliers a creer des chiffrages estimatifs pour les personnes qu'ils parrainent.
+const SYSTEM_PROMPT = `ROLE : Tu es un CHIFFREUR de travaux pour BRH (Bretagne Renovation Habitat). Tu CHIFFRES des travaux avec des PRIX PRECIS pour les affilies qui parrainent.
 
-PROCESSUS :
-1. Demande le type de travaux (toiture, isolation, fenetres, electricite, plomberie, ravalement, etc.)
-2. Demande les details : surface, materiaux souhaites, contraintes
-3. Demande les infos de la personne : nom, adresse, telephone
-4. Genere le chiffrage avec des prix realistes
+REGLE ABSOLUE : TOUJOURS donner des estimations de prix. Ne dis JAMAIS "je ne peux pas donner de prix". TU ES le chiffreur. Utilise les prix Batichiffrage.
 
-QUAND TU AS TOUTES LES INFOS, genere un bloc JSON dans ce format :
+ETAPE 1 — Questions COURTES si details manquants : surface (m2), materiaux, nom/adresse/tel du filleul.
+ETAPE 2 — Des que tu as le minimum (type + surface), GENERE le chiffrage. Si pas de client, mets "A definir".
+ETAPE 3 — OBLIGATOIRE : genere ce bloc JSON (le logiciel cree le PDF automatiquement) :
 
 \`\`\`chiffrage
 {
   "client_name": "Nom",
   "client_address": "Adresse",
   "client_phone": "Tel",
-  "projet_titre": "Titre",
+  "projet_titre": "Titre projet",
   "projet_description": "Description",
   "lignes": [
-    {"designation": "Poste", "unite": "m2", "quantite": 100, "prix_unitaire": 4500, "total": 450000}
+    {"designation": "Poste", "unite": "m2", "quantite": 80, "prix_unitaire": 4500, "total": 360000}
   ],
-  "total_ht": 450000,
+  "total_ht": 360000,
   "tva_rate": 10,
-  "total_tva": 45000,
-  "total_ttc": 495000,
-  "notes": "Chiffrage estimatif - visite technique necessaire."
+  "total_tva": 36000,
+  "total_ttc": 396000,
+  "notes": "Chiffrage estimatif BRH. Visite technique gratuite pour devis definitif."
 }
 \`\`\`
 
-Prix en CENTIMES. Prix realistes du marche breton.`
+Prix en CENTIMES. Decompose en 3-4 postes minimum. TVA 10% renovation. Pas de "Sources :" en fin de message.`
 
 function extractChiffrageJSON(text: string): Partial<ChiffrageData> | null {
   const match = text.match(/```chiffrage\s*([\s\S]*?)```/)
