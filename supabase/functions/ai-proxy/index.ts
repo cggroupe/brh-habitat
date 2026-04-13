@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
       status: response.status,
       headers: { ...cors, 'Content-Type': 'application/json' },
     })
-  } catch (err) {
+  } catch {
     return new Response(
       JSON.stringify({ error: 'Erreur serveur' }),
       { status: 502, headers: { ...cors, 'Content-Type': 'application/json' } },

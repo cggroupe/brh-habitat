@@ -125,7 +125,7 @@ export default function PartSocial() {
       if (error) throw error
       setScreenshotPath(path)
       setScreenshotName(file.name)
-    } catch (err) {
+    } catch {
       setUploadError('Echec du telechargement. Reessayez.')
     } finally {
       setUploading(false)

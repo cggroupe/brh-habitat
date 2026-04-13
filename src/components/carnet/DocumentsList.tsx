@@ -89,7 +89,7 @@ export function DocumentsList({ documents, homeId, userId, onCreate, onUpdate, o
     return signedData?.signedUrl ?? urlData.publicUrl ?? path
   }
 
-  async function handleDownload(fileUrl: string, _title: string) {
+  async function handleDownload(fileUrl: string, _title?: string) {
     // Si c'est un path storage (pas une URL signee), creer une URL signee
     if (!fileUrl.startsWith('http')) {
       const { data } = await supabase.storage
