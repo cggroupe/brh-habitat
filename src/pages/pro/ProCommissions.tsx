@@ -36,7 +36,8 @@ export default function ProCommissions() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!company?.id) return
+    const companyId = company?.id
+    if (!companyId) return
 
     async function fetchQuotes() {
       setLoading(true)
@@ -47,7 +48,7 @@ export default function ProCommissions() {
         const { data: prospects, error: prospectError } = await supabase
           .from('brh_prospects')
           .select('id, client_first_name, client_last_name, client_city')
-          .eq('company_id', company!.id)
+          .eq('company_id', companyId)
 
         if (prospectError) throw prospectError
         if (!prospects?.length) {
