@@ -18,7 +18,7 @@ interface Badge {
   id: string
   name: string
   description: string
-  icon_name: string
+  icon: string
   color: string
   condition_type: string
   condition_value: number
@@ -104,6 +104,7 @@ export default function PartBadges() {
           case 'points_earned': currentValue = points_earned; break
           case 'recruits_total': currentValue = recruits_total; break
           case 'chiffrages_total': currentValue = chiffrages_total; break
+          case 'level_reached': currentValue = points_earned; break
         }
         if (currentValue >= badge.condition_value) {
           toUnlock.push(badge.id)
@@ -134,6 +135,7 @@ export default function PartBadges() {
       case 'points_earned': current = points_earned; break
       case 'recruits_total': current = recruits_total; break
       case 'chiffrages_total': current = chiffrages_total; break
+      case 'level_reached': current = points_earned; break
     }
     return { current: Math.min(current, badge.condition_value), total: badge.condition_value }
   }
@@ -186,7 +188,7 @@ export default function PartBadges() {
             const isUnlocked = unlockedIds.has(badge.id)
             const userBadge = userBadges.find((ub) => ub.badge_id === badge.id)
             const { current, total } = getProgress(badge)
-            const IconComponent = ICON_MAP[badge.icon_name] ?? Award
+            const IconComponent = ICON_MAP[badge.icon] ?? Award
             const pct = Math.round((current / total) * 100)
 
             return (

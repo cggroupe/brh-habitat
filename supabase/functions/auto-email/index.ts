@@ -122,11 +122,11 @@ Deno.serve(async (req) => {
         .single()
 
       if (!affiliateError && affiliate) {
-        // Retrouver le profil lie a cet affilie (via auth user id)
+        // brh_affiliates.id = profiles.id (meme UUID)
         const { data: affiliateProfile } = await supabaseAdmin
           .from('profiles')
           .select('email, full_name')
-          .eq('affiliate_id', prospect.affiliate_id)
+          .eq('id', prospect.affiliate_id)
           .maybeSingle()
 
         if (affiliateProfile?.email) {

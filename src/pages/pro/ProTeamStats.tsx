@@ -31,7 +31,13 @@ export default function ProTeamStats() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_team_stats', { p_company_id: company!.id })
       if (error) throw error
-      return (data ?? []) as TeamMemberStat[]
+      return (data ?? []).map((r: Record<string, unknown>) => ({
+        member_id: r.member_id as string,
+        full_name: r.full_name as string,
+        prospects_total: Number(r.prospects_count ?? 0),
+        prospects_signes: Number(r.signed_count ?? 0),
+        ca_apporte: Number(r.total_ca ?? 0),
+      })) as TeamMemberStat[]
     },
     enabled: !!company?.id,
   })
