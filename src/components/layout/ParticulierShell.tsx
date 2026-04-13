@@ -18,8 +18,17 @@ import {
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
 import PortalMobileNav from '@/components/shared/PortalMobileNav'
+import { useTenant } from '@/config/TenantContext'
+import type { TenantFeatures } from '@/config/tenant.types'
 
-const partNavPrincipal = [
+interface NavItemDef {
+  to: string
+  label: string
+  icon: React.ElementType
+  feature?: keyof TenantFeatures
+}
+
+const partNavPrincipal: NavItemDef[] = [
   { to: '/particulier', label: 'Tableau de bord', icon: LayoutDashboard },
   { to: '/particulier/parrainages', label: 'Parrainages', icon: Users },
   { to: '/particulier/catalogue', label: 'Catalogue', icon: Gift },
@@ -27,17 +36,15 @@ const partNavPrincipal = [
   { to: '/particulier/messages', label: 'Messages', icon: MessageSquare },
 ]
 
-const partNavOutils = [
-  { to: '/particulier/simulateur', label: 'Simulateur', icon: Link2 },
-  { to: '/particulier/reseaux-sociaux', label: 'Reseaux sociaux', icon: Share2 },
-  { to: '/particulier/vendeurs', label: 'Vendeurs', icon: UserPlus },
-  { to: '/particulier/chiffrage', label: 'Chiffrage IA', icon: Calculator },
-  { to: '/particulier/chiffrages', label: 'Mes chiffrages', icon: FileText },
-  { to: '/particulier/badges', label: 'Badges', icon: Award },
-  { to: '/particulier/assistant', label: 'IA Batiment', icon: Sparkles },
+const partNavOutils: NavItemDef[] = [
+  { to: '/particulier/simulateur', label: 'Simulateur', icon: Link2, feature: 'simulationLinks' },
+  { to: '/particulier/reseaux-sociaux', label: 'Reseaux sociaux', icon: Share2, feature: 'socialMediaPosts' },
+  { to: '/particulier/vendeurs', label: 'Vendeurs', icon: UserPlus, feature: 'recruitmentPyramid' },
+  { to: '/particulier/chiffrage', label: 'Chiffrage IA', icon: Calculator, feature: 'aiChiffrage' },
+  { to: '/particulier/chiffrages', label: 'Mes chiffrages', icon: FileText, feature: 'aiChiffrage' },
+  { to: '/particulier/badges', label: 'Badges', icon: Award, feature: 'badgesGamification' },
+  { to: '/particulier/assistant', label: 'IA Batiment', icon: Sparkles, feature: 'aiAssistantTechnique' },
 ]
-
-const partNavItems = [...partNavPrincipal, ...partNavOutils]
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   isActive
@@ -46,6 +53,13 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
 
 export default function ParticulierShell() {
   const { user, signOut } = useAuth()
+  const { branding, features } = useTenant()
+
+  const filteredOutils = partNavOutils.filter(
+    (item) => !item.feature || features[item.feature]
+  )
+
+  const partNavItems = [...partNavPrincipal, ...filteredOutils]
 
   return (
     <div className="flex min-h-screen">
@@ -55,13 +69,16 @@ export default function ParticulierShell() {
       {/* Desktop sidebar */}
       <aside
         className="hidden md:flex fixed left-0 top-0 h-screen w-72 flex-col overflow-y-auto z-50 py-8 px-4"
-        style={{ background: 'linear-gradient(180deg, #1c7b1d 0%, #0a4a0b 100%)' }}
+        style={{
+          background: `linear-gradient(180deg, ${branding.colors.sidebarGradientFrom} 0%, ${branding.colors.sidebarGradientTo} 100%)`,
+        }}
       >
         {/* Logo block */}
         <div className="mb-10 px-4">
           <div className="leading-none">
-            <span className="text-xl font-bold tracking-tighter text-white uppercase">BRETAGNE </span>
-            <span className="text-xl font-bold tracking-tighter text-white uppercase">HABITAT</span>
+            <span className="text-xl font-bold tracking-tighter text-white uppercase">
+              {branding.companyName}
+            </span>
           </div>
           <p className="text-[10px] tracking-widest text-green-100/60 uppercase font-bold mt-1">
             Portail Affilie
@@ -102,7 +119,7 @@ export default function ParticulierShell() {
             Outils &amp; Gestion
           </p>
           <nav className="flex flex-col gap-0.5">
-            {partNavOutils.map(({ to, label, icon: Icon }) => (
+            {filteredOutils.map(({ to, label, icon: Icon }) => (
               <NavLink key={to} to={to} end={false} className={navLinkClass}>
                 <Icon size={18} className="mr-3 shrink-0" />
                 <span className="text-xs font-bold uppercase tracking-wider">{label}</span>
@@ -129,20 +146,22 @@ export default function ParticulierShell() {
             </p>
           </div>
 
-          {/* CG Groupe branding */}
-          <div className="flex items-center gap-3 mt-4 px-2">
-            <div className="w-10 h-10 rounded-full bg-white shadow-lg shadow-black/20 flex items-center justify-center shrink-0 overflow-hidden">
-              <img
-                src="/images/cg-groupe-icon.png"
-                alt="CG Groupe"
-                className="w-7 h-7 object-contain"
-              />
+          {/* Parent brand block — hidden if parentBrand is undefined */}
+          {branding.parentBrand && (
+            <div className="flex items-center gap-3 mt-4 px-2">
+              <div className="w-10 h-10 rounded-full bg-white shadow-lg shadow-black/20 flex items-center justify-center shrink-0 overflow-hidden">
+                <img
+                  src={branding.parentBrand.iconUrl}
+                  alt={branding.parentBrand.name}
+                  className="w-7 h-7 object-contain"
+                />
+              </div>
+              <div>
+                <p className="text-[11px] font-bold text-white/80 tracking-wide">{branding.parentBrand.name}</p>
+                <p className="text-[9px] text-green-200/50 italic">{branding.parentBrand.tagline}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-[11px] font-bold text-white/80 tracking-wide">CG Groupe</p>
-              <p className="text-[9px] text-green-200/50 italic">Investir dans l'avenir</p>
-            </div>
-          </div>
+          )}
 
           {/* Sign out */}
           <button

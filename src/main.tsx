@@ -4,6 +4,8 @@ import * as Sentry from '@sentry/react'
 import './index.css'
 import '@/i18n'
 import App from './App'
+import { TenantProvider } from '@/config/TenantContext'
+import { tenant } from '@/config/tenant'
 
 // ---------------------------------------------------------------------------
 // Sentry — Monitoring & Error Tracking
@@ -43,10 +45,25 @@ function FallbackUI({ error }: { error: Error }) {
   )
 }
 
+// ---------------------------------------------------------------------------
+// Tenant — Injection des couleurs CSS custom properties
+// ---------------------------------------------------------------------------
+const root = document.documentElement
+const { colors } = tenant.branding
+root.style.setProperty('--color-primary', colors.primary)
+root.style.setProperty('--color-primary-dark', colors.primaryDark)
+root.style.setProperty('--color-primary-light', colors.primaryLight)
+root.style.setProperty('--color-primary-green', colors.secondary)
+root.style.setProperty('--color-secondary', colors.secondary)
+root.style.setProperty('--color-accent', colors.accent)
+root.style.setProperty('--color-background', colors.background)
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <SentryErrorBoundary fallback={({ error }) => <FallbackUI error={error as Error} />}>
-      <App />
+      <TenantProvider>
+        <App />
+      </TenantProvider>
     </SentryErrorBoundary>
   </StrictMode>,
 )

@@ -3,10 +3,12 @@ import { Menu, User, LogOut, LayoutDashboard, ChevronDown, Home, Handshake } fro
 import { useState, useRef, useEffect } from 'react'
 import { useAppStore } from '@/stores/appStore'
 import { useAuth } from '@/hooks/useAuth'
+import { useTenant } from '@/config/TenantContext'
 
 export default function Navbar() {
   const { openDrawer } = useAppStore()
   const { user, signOut } = useAuth()
+  const { branding } = useTenant()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
 
@@ -41,7 +43,7 @@ export default function Navbar() {
               <Home size={28} strokeWidth={1.5} />
             </div>
             <h1 className="font-display font-bold text-xl leading-tight tracking-tight text-slate-900">
-              BRETAGNE<br />RÉNOVATION HABITAT
+              {branding.companyName}
             </h1>
           </Link>
 

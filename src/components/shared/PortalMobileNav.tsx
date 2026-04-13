@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { Menu, X, LogOut, ChevronRight } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
+import { useTenant } from '@/config/TenantContext'
 
 interface NavItem {
   to: string
@@ -18,6 +19,7 @@ interface PortalMobileNavProps {
 
 export default function PortalMobileNav({ portalLabel, navItems, rootPath }: PortalMobileNavProps) {
   const { user, signOut } = useAuth()
+  const { branding } = useTenant()
   const [open, setOpen] = useState(false)
   const location = useLocation()
 
@@ -40,7 +42,7 @@ export default function PortalMobileNav({ portalLabel, navItems, rootPath }: Por
           <Menu size={20} />
         </button>
         <div className="flex items-center gap-2">
-          <span className="font-accent text-lg tracking-wider text-white">BRH</span>
+          <span className="font-accent text-lg tracking-wider text-white">{branding.companyShortName}</span>
           <span className="font-display text-[10px] text-primary-light uppercase tracking-widest">{portalLabel}</span>
         </div>
         <NotificationBell />
@@ -58,7 +60,7 @@ export default function PortalMobileNav({ portalLabel, navItems, rootPath }: Por
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-white/10">
           <div className="flex items-center gap-2">
-            <span className="font-accent text-xl tracking-wider text-white">BRH</span>
+            <span className="font-accent text-xl tracking-wider text-white">{branding.companyShortName}</span>
             <span className="font-display text-xs text-primary-light uppercase tracking-widest">{portalLabel}</span>
           </div>
           <button onClick={() => setOpen(false)} className="p-1.5 text-green-200 hover:text-white">

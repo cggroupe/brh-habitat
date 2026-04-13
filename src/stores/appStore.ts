@@ -19,8 +19,9 @@ interface AppState {
   closeDrawer: () => void
 }
 
-// Persistence localStorage pour eviter le re-fetch au refresh
-const STORAGE_KEY = 'brh-user'
+// Persistence localStorage — cle dynamique par tenant
+import { tenant } from '@/config/tenant'
+const STORAGE_KEY = `${tenant.tenantId}-user`
 
 function loadUser(): User | null {
   try {

@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
 import { Phone, Mail, MapPin, Home } from 'lucide-react'
+import { useTenant } from '@/config/TenantContext'
 
 export default function Footer() {
+  const { branding } = useTenant()
   const currentYear = new Date().getFullYear()
 
   return (
@@ -16,11 +18,11 @@ export default function Footer() {
                 <Home size={36} strokeWidth={1.5} />
               </span>
               <h2 className="font-display font-bold text-lg leading-tight">
-                BRETAGNE<br />RÉNOVATION HABITAT
+                {branding.companyName}
               </h2>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
-              Spécialiste de la rénovation énergétique en Bretagne, nous accompagnons les propriétaires dans tous leurs projets d'amélioration de l'habitat.
+              {branding.description}
             </p>
           </div>
 
@@ -29,18 +31,24 @@ export default function Footer() {
             <h3 className="font-display font-bold text-xl mb-2">Nous contacter</h3>
             <div className="flex items-start gap-3 text-gray-400 text-sm">
               <MapPin size={16} className="text-primary mt-0.5 shrink-0" />
-              <span>35 rue de Kervao, 29490 Guipavas</span>
+              <span>{branding.address}, {branding.postalCode} {branding.city}</span>
             </div>
             <div className="flex items-start gap-3 text-gray-400 text-sm">
               <Phone size={16} className="text-primary shrink-0" />
-              <a href="tel:0219005305" className="hover:text-primary transition-colors">
-                02 19 00 53 05
+              <a
+                href={`tel:${branding.phone.replace(/\s/g, '')}`}
+                className="hover:text-primary transition-colors"
+              >
+                {branding.phone}
               </a>
             </div>
             <div className="flex items-start gap-3 text-gray-400 text-sm">
               <Mail size={16} className="text-primary shrink-0" />
-              <a href="mailto:relationsclients@contact-brh.fr" className="hover:text-primary transition-colors">
-                relationsclients@contact-brh.fr
+              <a
+                href={`mailto:${branding.email}`}
+                className="hover:text-primary transition-colors"
+              >
+                {branding.email}
               </a>
             </div>
           </div>
@@ -88,7 +96,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
-          <p>&copy; {currentYear} Bretagne Rénovation Habitat. Tous droits réservés.</p>
+          <p>&copy; {currentYear} {branding.companyName}. Tous droits réservés.</p>
           <div className="flex items-center gap-2">
             Fait en Bretagne
           </div>

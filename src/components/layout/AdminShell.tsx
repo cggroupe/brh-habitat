@@ -20,6 +20,7 @@ import {
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
 import PortalMobileNav from '@/components/shared/PortalMobileNav'
+import { useTenant } from '@/config/TenantContext'
 
 const adminNavItems = [
   { to: '/admin', label: 'Tableau de bord', icon: LayoutDashboard },
@@ -39,6 +40,7 @@ const adminNavItems = [
 
 export default function AdminShell() {
   const { user, signOut } = useAuth()
+  const { branding } = useTenant()
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-background">
@@ -48,7 +50,9 @@ export default function AdminShell() {
         <div className="p-5 border-b border-white/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-accent text-2xl tracking-wider text-white">BRH</span>
+              <span className="font-accent text-2xl tracking-wider text-white">
+                {branding.companyShortName}
+              </span>
               <span className="font-display text-xs text-primary-light uppercase tracking-widest">Admin</span>
             </div>
             <NotificationBell />
