@@ -129,14 +129,19 @@ export default function ParticulierShell() {
             </p>
           </div>
 
-          {/* CG Groupe logo */}
-          <div className="flex flex-col items-center mt-4">
-            <img
-              src="/images/cg-groupe-logo.png"
-              alt="CG Groupe"
-              className="w-8 h-8 opacity-60 mx-auto"
-            />
-            <p className="text-[10px] text-green-100/40 text-center mt-1">Cree par CG Groupe</p>
+          {/* CG Groupe branding */}
+          <div className="flex items-center gap-3 mt-4 px-2">
+            <div className="w-10 h-10 rounded-full bg-white shadow-lg shadow-black/20 flex items-center justify-center shrink-0 overflow-hidden">
+              <img
+                src="/images/cg-groupe-icon.png"
+                alt="CG Groupe"
+                className="w-7 h-7 object-contain"
+              />
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-white/80 tracking-wide">CG Groupe</p>
+              <p className="text-[9px] text-green-200/50 italic">Investir dans l'avenir</p>
+            </div>
           </div>
 
           {/* Sign out */}
