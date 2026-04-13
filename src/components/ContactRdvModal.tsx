@@ -124,7 +124,7 @@ export function ContactRdvModal({
           contact_name: form.nom.trim(),
           contact_phone: phoneClean,
           contact_email: form.email.trim().toLowerCase(),
-          requested_date: new Date(dispos[0].date).toISOString(),
+          requested_date: (() => { const [y, m, d] = dispos[0].date.split('-').map(Number); return new Date(y, m - 1, d, 12, 0, 0).toISOString() })(),
           preferred_slot: dispoText,
           notes: [
             `Disponibilites client :\n${dispoText}`,
