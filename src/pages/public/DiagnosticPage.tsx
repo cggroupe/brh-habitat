@@ -1,3 +1,4 @@
+import { logError } from '@/lib/error'
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
@@ -76,7 +77,7 @@ export default function DiagnosticPage() {
         setDraftId(result.id)
       }
     } catch (err) {
-      console.error('Erreur sauvegarde brouillon:', err)
+      logError('Erreur sauvegarde brouillon', err)
     } finally {
       savingRef.current = false
     }
@@ -150,7 +151,7 @@ export default function DiagnosticPage() {
           reset()
           return
         } catch (err) {
-          console.error('Erreur finalisation brouillon:', err)
+          logError('Erreur finalisation brouillon', err)
         }
       }
 
@@ -184,7 +185,7 @@ export default function DiagnosticPage() {
           .single()
 
         if (error) {
-          console.error('Supabase error:', error)
+          logError('Supabase diagnostic error', error)
           navigate('/diagnostic/resultats/local', { state: { results } })
           reset()
           return
@@ -193,12 +194,12 @@ export default function DiagnosticPage() {
         navigate(`/diagnostic/resultats/${data.id}`, { state: { results } })
         reset()
       } catch (fetchErr) {
-        console.error('Supabase fetch error:', fetchErr)
+        logError('Supabase diagnostic fetch error', fetchErr)
         navigate('/diagnostic/resultats/local', { state: { results } })
         reset()
       }
     } catch (err) {
-      console.error('Submit error:', err)
+      logError('Diagnostic submit error', err)
       setSubmitError('Une erreur est survenue. Veuillez reessayer.')
     } finally {
       setIsSubmitting(false)

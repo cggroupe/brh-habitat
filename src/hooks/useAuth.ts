@@ -104,6 +104,11 @@ export function useAuth() {
     initRef.current = false
     await supabase.auth.signOut()
     setUser(null)
+    // Nettoyer tous les stores persistants
+    try {
+      const { useDiagnosticStore } = await import('@/stores/diagnosticStore')
+      useDiagnosticStore.getState().reset()
+    } catch { /* ignore */ }
   }
 
   // loading = true seulement si pas de cache ET session pas encore validee

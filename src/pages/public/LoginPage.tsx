@@ -1,3 +1,4 @@
+import { logError } from '@/lib/error'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
@@ -33,7 +34,7 @@ export default function LoginPage() {
       .single()
 
     if (profileError || !profile) {
-      console.error('[Login] Profile fetch error:', profileError)
+      logError('Login profile fetch error', profileError)
       setError('Impossible de charger votre profil. Veuillez reessayer.')
       setLoading(false)
       return

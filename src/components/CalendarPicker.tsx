@@ -1,3 +1,4 @@
+import { logError } from '@/lib/error'
 import { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight, Phone } from 'lucide-react'
 
@@ -190,7 +191,7 @@ export function CalendarPicker({ departement, onSlotSelected, selectedSlot }: Ca
       })
       .catch((err) => {
         if (cancelled) return
-        console.error('CalendarPicker fetch error:', err)
+        logError('CalendarPicker fetch error', err)
         setFetchError('Impossible de charger les creneaux. Appelez-nous au 02 19 00 53 05.')
       })
       .finally(() => {

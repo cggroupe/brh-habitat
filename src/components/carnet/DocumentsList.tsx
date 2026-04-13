@@ -1,3 +1,4 @@
+import { logError } from '@/lib/error'
 import { useState, useRef } from 'react'
 import { Plus, Pencil, Trash2, FileText, AlertTriangle, CheckCircle2, Clock, X, Save, Upload, Download, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -71,7 +72,7 @@ export function DocumentsList({ documents, homeId, userId, onCreate, onUpdate, o
       .upload(path, f, { contentType: f.type, upsert: false })
 
     if (error) {
-      console.error('Upload error:', error)
+      logError('Upload error', error)
       setUploadError('Erreur lors du telechargement du fichier.')
       return null
     }

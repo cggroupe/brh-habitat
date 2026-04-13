@@ -11,7 +11,7 @@ const ENDPOINTS: Record<string, string> = {
 
 // BRHCRM Supabase pour les prix Batichiffrage
 const BRHCRM_URL = 'https://woicuzcxfdknxqdjuamj.supabase.co'
-const BRHCRM_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndvaWN1emN4ZmRrbnhxZGp1YW1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMTQyMTAsImV4cCI6MjA4Nzc5MDIxMH0.T5DGvWeKBZ3ZptILnK7Ap1xq_GyF23bYng39eFMWUys'
+const BRHCRM_KEY = Deno.env.get('BRHCRM_ANON_KEY') ?? ''
 
 const CATEGORY_MAP: Record<string, string[]> = {
   toiture: ['couverture', 'charpente', 'zinguerie'],

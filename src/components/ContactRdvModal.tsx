@@ -1,3 +1,4 @@
+import { logError } from '@/lib/error'
 import { useState } from 'react'
 import { CalendarDays, CheckCircle2, Lock, X, Plus, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -163,7 +164,7 @@ export function ContactRdvModal({
 
       setIsConfirmed(true)
     } catch (err) {
-      console.error('ContactRdvModal submit error:', err)
+      logError('ContactRdvModal submit error', err)
       setSubmitError('Une erreur inattendue est survenue. Veuillez reessayer ou nous appeler au 02 19 00 53 05.')
     } finally {
       setIsLoading(false)

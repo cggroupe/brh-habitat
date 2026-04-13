@@ -1,3 +1,4 @@
+import { logError } from '@/lib/error'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MapPin, Phone, Mail, Clock, ArrowRight, CheckCircle, Send, Shield, Star } from 'lucide-react'
@@ -120,7 +121,7 @@ export default function ContactPage() {
       setSubmitted(true)
       setForm(INITIAL_FORM)
     } catch (err) {
-      console.error('Erreur envoi contact:', err)
+      logError('Erreur envoi contact', err)
       setSubmitError(
         'Une erreur est survenue lors de l\'envoi. Veuillez reessayer ou nous appeler directement au 02 19 00 53 05.'
       )

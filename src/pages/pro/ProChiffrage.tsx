@@ -1,12 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send, Bot, User, Loader2, FileDown, Calculator, Sparkles, RotateCcw } from 'lucide-react'
-import { pdf } from '@react-pdf/renderer'
 import { useAuth } from '@/hooks/useAuth'
 import { useMyCompany } from '@/hooks/queries'
-import { ChiffragePDF, type ChiffrageData, type ChiffrageLineItem } from '@/lib/chiffrage-pdf'
+import type { ChiffrageData, ChiffrageLineItem } from '@/lib/chiffrage-pdf'
 import { formatLocalDate } from '@/lib/utils'
 import { sendToAI } from '@/lib/ai'
-import { supabase } from '@/lib/supabase'
+import { saveChiffrage } from '@/api/chiffrages'
 
 
 interface Message {
@@ -82,25 +81,10 @@ export default function ProChiffrage() {
         }
         setChiffrageData(chiffrageComplete)
 
-        // Sauvegarder en base
-        supabase.from('brh_chiffrages').insert({
-          user_id: user?.id,
-          company_id: company?.id ?? null,
-          reference: ref,
-          client_name: chiffrageComplete.client_name,
-          client_address: chiffrageComplete.client_address ?? null,
-          client_phone: chiffrageComplete.client_phone ?? null,
-          projet_titre: chiffrageComplete.projet_titre,
-          projet_description: chiffrageComplete.projet_description ?? null,
-          lignes: chiffrageComplete.lignes,
-          total_ht: chiffrageComplete.total_ht,
-          tva_rate: chiffrageComplete.tva_rate,
-          total_tva: chiffrageComplete.total_tva,
-          total_ttc: chiffrageComplete.total_ttc,
-          notes: chiffrageComplete.notes ?? null,
-        }).then(({ error: saveErr }) => {
-          if (saveErr) console.error('Erreur sauvegarde chiffrage:', saveErr)
-        })
+        // Sauvegarder en base via API layer
+        if (user?.id) {
+          saveChiffrage(chiffrageComplete, user.id, company?.id).catch(() => { /* non bloquant */ })
+        }
       }
 
       // Afficher la reponse sans le bloc JSON
@@ -117,6 +101,8 @@ export default function ProChiffrage() {
     if (!chiffrageData) return
     setGeneratingPdf(true)
     try {
+      const { pdf } = await import('@react-pdf/renderer')
+      const { ChiffragePDF } = await import('@/lib/chiffrage-pdf')
       const blob = await pdf(<ChiffragePDF data={chiffrageData} />).toBlob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
