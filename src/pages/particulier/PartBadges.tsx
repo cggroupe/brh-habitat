@@ -141,35 +141,38 @@ export default function PartBadges() {
   }
 
   return (
-    <div className="p-6 lg:p-10">
+    <div className="p-8 lg:p-10">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <Award size={24} className="text-primary" />
-          <h1 className="font-display text-2xl uppercase tracking-wide text-slate-900">
+      <div className="flex items-start justify-between mb-8">
+        <div>
+          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Progression</p>
+          <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-[#1b1c1c]">
             Mes badges
           </h1>
         </div>
-        <div className="bg-white rounded-xl px-4 py-2 shadow-sm border border-slate-100 flex items-center gap-2">
+        <div className="bg-white rounded-2xl px-5 py-3 shadow-[0_8px_30px_rgba(27,28,28,0.04)] flex items-center gap-2.5">
           <Trophy size={16} className="text-amber-500" />
-          <span className="font-display text-sm text-slate-700">
-            {unlockedCount} / {allBadges.length} obtenus
-          </span>
+          <div>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Obtenus</p>
+            <p className="font-display font-bold text-sm text-[#1b1c1c]">
+              {unlockedCount} / {allBadges.length}
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Progress bar global */}
       {allBadges.length > 0 && (
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-100 mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="font-body text-sm text-slate-600">Progression generale</span>
-            <span className="font-display text-sm text-primary">
+        <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm text-[#404a3c] font-medium">Progression generale</span>
+            <span className="font-display font-bold text-sm text-[#1c7b1d]">
               {Math.round((unlockedCount / allBadges.length) * 100)}%
             </span>
           </div>
-          <div className="w-full bg-slate-100 rounded-full h-2.5">
+          <div className="w-full bg-[#f5f3f2] rounded-full h-3 overflow-hidden">
             <div
-              className="bg-primary h-2.5 rounded-full transition-all duration-700"
+              className="bg-gradient-to-r from-[#1c7b1d] to-[#2da82e] h-3 rounded-full transition-all duration-700"
               style={{ width: `${(unlockedCount / allBadges.length) * 100}%` }}
             />
           </div>
@@ -178,9 +181,13 @@ export default function PartBadges() {
 
       {/* Badges grid */}
       {allBadges.length === 0 ? (
-        <div className="bg-white rounded-xl p-12 shadow-sm border border-slate-100 text-center">
-          <Award size={48} className="text-slate-300 mx-auto mb-4" />
-          <p className="font-display text-lg text-slate-500">Aucun badge disponible pour l'instant</p>
+        <div className="bg-white rounded-2xl p-14 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
+          <div className="w-16 h-16 bg-[#f5f3f2] rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <Award size={28} className="text-[#707a6a]" />
+          </div>
+          <p className="font-display text-lg font-bold uppercase tracking-[0.05em] text-[#404a3c]">
+            Aucun badge disponible pour l'instant
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -194,52 +201,57 @@ export default function PartBadges() {
             return (
               <div
                 key={badge.id}
-                className={`bg-white rounded-xl p-5 shadow-sm border text-center relative overflow-hidden transition-all ${
+                className={`bg-white rounded-2xl p-5 text-center relative overflow-hidden transition-all ${
                   isUnlocked
-                    ? 'border-primary/30 ring-1 ring-primary/20'
-                    : 'border-slate-100 opacity-70'
+                    ? 'shadow-[0_8px_30px_rgba(28,123,29,0.15)] ring-1 ring-[#1c7b1d]/20'
+                    : 'shadow-[0_8px_30px_rgba(27,28,28,0.04)] opacity-70'
                 }`}
               >
+                {/* Glow effect for unlocked */}
+                {isUnlocked && (
+                  <div className="absolute inset-0 bg-gradient-to-b from-[#1c7b1d]/5 to-transparent rounded-2xl pointer-events-none" />
+                )}
+
                 {/* Icon */}
                 <div
-                  className={`w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center relative ${
-                    isUnlocked ? 'bg-primary/10' : 'bg-slate-100'
+                  className={`w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center relative ${
+                    isUnlocked ? 'bg-[#1c7b1d]/10' : 'bg-[#f5f3f2]'
                   }`}
                 >
                   <IconComponent
                     size={26}
-                    className={isUnlocked ? 'text-primary' : 'text-slate-400'}
+                    className={isUnlocked ? '' : 'text-[#707a6a]/50'}
                     style={isUnlocked ? { color: badge.color } : undefined}
                   />
                   {!isUnlocked && (
-                    <div className="absolute inset-0 rounded-full bg-slate-200/60 flex items-center justify-center">
-                      <Lock size={14} className="text-slate-400" />
+                    <div className="absolute inset-0 rounded-2xl bg-[#f5f3f2]/80 flex items-center justify-center">
+                      <Lock size={14} className="text-[#707a6a]" />
                     </div>
                   )}
                 </div>
 
                 {/* Name + desc */}
-                <p className={`font-display text-xs uppercase tracking-wide mb-1 ${isUnlocked ? 'text-slate-900' : 'text-slate-500'}`}>
+                <p className={`font-bold text-xs uppercase tracking-wide mb-1 ${isUnlocked ? 'text-[#1b1c1c]' : 'text-[#707a6a]'}`}>
                   {badge.name}
                 </p>
-                <p className="font-body text-xs text-slate-400 leading-snug mb-3">
+                <p className="text-xs text-[#707a6a] leading-snug mb-3">
                   {badge.description}
                 </p>
 
                 {/* Unlocked date or progress */}
                 {isUnlocked ? (
-                  <span className="inline-block bg-primary/10 text-primary font-body text-xs px-2 py-0.5 rounded-full">
+                  <span className="inline-block bg-[#1c7b1d]/10 text-[#1c7b1d] text-xs px-2.5 py-1 rounded-full font-medium">
                     {userBadge?.unlocked_at ? formatDate(userBadge.unlocked_at) : 'Obtenu'}
                   </span>
                 ) : (
                   <div>
-                    <div className="w-full bg-slate-100 rounded-full h-1.5 mb-1">
+                    <div className="w-full bg-[#f5f3f2] rounded-full h-1.5 mb-1.5 overflow-hidden">
                       <div
-                        className="bg-primary/40 h-1.5 rounded-full"
+                        className="bg-gradient-to-r from-[#1c7b1d] to-[#2da82e] h-1.5 rounded-full transition-all"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <span className="font-body text-xs text-slate-400">
+                    <span className="text-[10px] text-[#707a6a] font-medium">
                       {current} / {total} pour debloquer
                     </span>
                   </div>

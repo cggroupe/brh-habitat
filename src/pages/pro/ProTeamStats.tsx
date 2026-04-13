@@ -1,4 +1,4 @@
-import { BarChart3, Loader2, Trophy, Medal, Award } from 'lucide-react'
+import { BarChart3, Trophy, Medal, Award } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
@@ -16,10 +16,31 @@ function formatEur(cents: number): string {
   return `${(cents / 100).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} EUR`
 }
 
-const PODIUM_COLORS = [
-  { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-300', icon: Trophy, label: '1er' },
-  { bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-300', icon: Medal, label: '2eme' },
-  { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-300', icon: Award, label: '3eme' },
+const PODIUM_CONFIG = [
+  {
+    bg: 'bg-gradient-to-br from-amber-100 to-amber-50',
+    iconBg: 'bg-amber-100',
+    text: 'text-amber-700',
+    icon: Trophy,
+    label: '1er',
+    ring: 'ring-1 ring-amber-200',
+  },
+  {
+    bg: 'bg-gradient-to-br from-slate-100 to-slate-50',
+    iconBg: 'bg-slate-100',
+    text: 'text-slate-600',
+    icon: Medal,
+    label: '2eme',
+    ring: 'ring-1 ring-slate-200',
+  },
+  {
+    bg: 'bg-gradient-to-br from-orange-100 to-orange-50',
+    iconBg: 'bg-orange-100',
+    text: 'text-orange-700',
+    icon: Award,
+    label: '3eme',
+    ring: 'ring-1 ring-orange-200',
+  },
 ]
 
 export default function ProTeamStats() {
@@ -47,11 +68,11 @@ export default function ProTeamStats() {
   const maxProspects = Math.max(...stats.map((s) => s.prospects_total), 1)
 
   return (
-    <div className="p-6 lg:p-10">
+    <div className="p-8 lg:p-10">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
-        <BarChart3 size={24} className="text-primary" />
-        <h1 className="font-display text-2xl uppercase tracking-wide text-slate-900">
+      <div className="mb-8">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Performance</p>
+        <h1 className="font-display text-3xl font-bold tracking-[0.05em] text-[#1b1c1c] uppercase">
           Statistiques equipe
         </h1>
       </div>
@@ -59,15 +80,17 @@ export default function ProTeamStats() {
       {/* Loading */}
       {(isLoading || !company) && (
         <div className="flex items-center justify-center py-20">
-          <Loader2 size={32} className="text-primary animate-spin" />
+          <div className="w-10 h-10 border-3 border-[#1c7b1d]/30 border-t-[#1c7b1d] rounded-full animate-spin" />
         </div>
       )}
 
       {!isLoading && company && stats.length === 0 && (
-        <div className="bg-white rounded-xl p-12 shadow-sm border border-slate-100 text-center">
-          <BarChart3 size={48} className="text-slate-300 mx-auto mb-4" />
-          <p className="font-display text-lg text-slate-500">Aucune donnee disponible</p>
-          <p className="font-body text-sm text-slate-400 mt-1">
+        <div className="bg-white rounded-2xl p-14 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
+          <div className="w-16 h-16 rounded-2xl bg-[#f5f3f2] flex items-center justify-center mx-auto mb-5">
+            <BarChart3 size={28} className="text-[#707a6a]/30" />
+          </div>
+          <p className="font-display text-lg font-bold text-[#1b1c1c] uppercase tracking-wide mb-2">Aucune donnee</p>
+          <p className="text-sm text-[#707a6a]">
             Invitez des membres a rejoindre votre equipe pour voir leurs statistiques.
           </p>
         </div>
@@ -77,24 +100,24 @@ export default function ProTeamStats() {
         <>
           {/* Podium top 3 */}
           {sorted.length >= 2 && (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               {sorted.slice(0, 3).map((member, idx) => {
-                const config = PODIUM_COLORS[idx]
+                const config = PODIUM_CONFIG[idx]
                 const IconComponent = config.icon
                 return (
                   <div
                     key={member.member_id}
-                    className={`bg-white rounded-xl p-5 shadow-sm border ${config.border} text-center`}
+                    className={`rounded-2xl p-6 ${config.bg} ${config.ring} text-center shadow-[0_4px_16px_rgba(27,28,28,0.06)]`}
                   >
-                    <div className={`w-12 h-12 rounded-full ${config.bg} mx-auto mb-3 flex items-center justify-center`}>
+                    <div className={`w-12 h-12 rounded-2xl ${config.iconBg} mx-auto mb-3 flex items-center justify-center`}>
                       <IconComponent size={20} className={config.text} />
                     </div>
-                    <span className={`font-body text-xs ${config.text} font-semibold`}>{config.label}</span>
-                    <p className="font-display text-sm text-slate-900 mt-1 truncate">{member.full_name}</p>
-                    <p className="font-display text-base font-semibold text-primary mt-1">
+                    <span className={`text-[10px] font-bold uppercase tracking-widest ${config.text}`}>{config.label}</span>
+                    <p className="font-bold text-sm text-[#1b1c1c] mt-1.5 truncate">{member.full_name}</p>
+                    <p className="font-display text-base font-bold text-[#1c7b1d] mt-1">
                       {formatEur(member.ca_apporte)}
                     </p>
-                    <p className="font-body text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-[#707a6a] mt-0.5">
                       {member.prospects_signes} signe{member.prospects_signes > 1 ? 's' : ''}
                     </p>
                   </div>
@@ -104,65 +127,68 @@ export default function ProTeamStats() {
           )}
 
           {/* Summary KPIs */}
-          <div className="grid grid-cols-3 gap-4 mb-8">
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-100 text-center">
-              <p className="font-display text-2xl text-slate-900">
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
+              <p className="font-display text-2xl text-[#1b1c1c] font-bold">
                 {stats.reduce((acc, s) => acc + s.prospects_total, 0)}
               </p>
-              <p className="font-body text-xs text-slate-500 mt-1">Prospects total</p>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mt-1.5">Prospects total</p>
             </div>
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-100 text-center">
-              <p className="font-display text-2xl text-primary">
+            <div className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
+              <p className="font-display text-2xl text-[#1c7b1d] font-bold">
                 {stats.reduce((acc, s) => acc + s.prospects_signes, 0)}
               </p>
-              <p className="font-body text-xs text-slate-500 mt-1">Signes total</p>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mt-1.5">Signes total</p>
             </div>
-            <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-100 text-center">
-              <p className="font-display text-lg text-slate-900">
+            <div className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
+              <p className="font-display text-base text-[#1b1c1c] font-bold leading-tight">
                 {formatEur(stats.reduce((acc, s) => acc + s.ca_apporte, 0))}
               </p>
-              <p className="font-body text-xs text-slate-500 mt-1">CA total apporte</p>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mt-1.5">CA total apporte</p>
             </div>
           </div>
 
           {/* Bar chart + table */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100">
-              <h2 className="font-display text-sm uppercase tracking-wide text-slate-700">
+          <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] overflow-hidden">
+            <div className="px-6 py-5 bg-[#f5f3f2]">
+              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">
                 Detail par membre
-              </h2>
+              </p>
             </div>
-            <div className="divide-y divide-slate-50">
-              {sorted.map((member) => {
+            <div>
+              {sorted.map((member, idx) => {
                 const caBarPct = maxCa > 0 ? (member.ca_apporte / maxCa) * 100 : 0
                 const prospBarPct = maxProspects > 0 ? (member.prospects_total / maxProspects) * 100 : 0
                 return (
-                  <div key={member.member_id} className="px-5 py-4">
+                  <div
+                    key={member.member_id}
+                    className={`px-6 py-5 hover:bg-[#f5f3f2]/50 transition-colors ${idx > 0 ? 'border-t border-[#f5f3f2]' : ''}`}
+                  >
                     {/* Name row */}
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-display text-sm shrink-0">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#1c7b1d]/20 to-[#0a4a0b]/10 flex items-center justify-center text-[#1c7b1d] font-bold text-sm shrink-0">
                           {member.full_name.charAt(0).toUpperCase()}
                         </div>
-                        <span className="font-body text-sm text-slate-800 font-medium">{member.full_name}</span>
+                        <span className="font-bold text-sm text-[#1b1c1c]">{member.full_name}</span>
                       </div>
                       <div className="text-right">
-                        <p className="font-display text-sm font-semibold text-slate-900">{formatEur(member.ca_apporte)}</p>
-                        <p className="font-body text-xs text-slate-400">
+                        <p className="font-display text-sm font-bold text-[#1b1c1c]">{formatEur(member.ca_apporte)}</p>
+                        <p className="text-xs text-[#707a6a]">
                           {member.prospects_signes} signe{member.prospects_signes > 1 ? 's' : ''} / {member.prospects_total} prospect{member.prospects_total > 1 ? 's' : ''}
                         </p>
                       </div>
                     </div>
 
                     {/* CA bar */}
-                    <div className="mb-1.5">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-body text-xs text-slate-400">CA apporte</span>
-                        <span className="font-body text-xs text-primary">{formatEur(member.ca_apporte)}</span>
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">CA apporte</span>
+                        <span className="text-[10px] font-bold text-[#1c7b1d]">{formatEur(member.ca_apporte)}</span>
                       </div>
-                      <div className="w-full bg-slate-100 rounded-full h-2">
+                      <div className="w-full bg-[#f5f3f2] rounded-full h-2">
                         <div
-                          className="bg-primary h-2 rounded-full transition-all duration-500"
+                          className="bg-gradient-to-r from-[#1c7b1d] to-[#0a4a0b] h-2 rounded-full transition-all duration-700"
                           style={{ width: `${caBarPct}%` }}
                         />
                       </div>
@@ -170,13 +196,13 @@ export default function ProTeamStats() {
 
                     {/* Prospects bar */}
                     <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-body text-xs text-slate-400">Prospects</span>
-                        <span className="font-body text-xs text-slate-600">{member.prospects_total}</span>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Prospects</span>
+                        <span className="text-[10px] font-bold text-[#404a3c]">{member.prospects_total}</span>
                       </div>
-                      <div className="w-full bg-slate-100 rounded-full h-2">
+                      <div className="w-full bg-[#f5f3f2] rounded-full h-2">
                         <div
-                          className="bg-primary/40 h-2 rounded-full transition-all duration-500"
+                          className="bg-[#1c7b1d]/30 h-2 rounded-full transition-all duration-700"
                           style={{ width: `${prospBarPct}%` }}
                         />
                       </div>

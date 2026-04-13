@@ -104,39 +104,49 @@ export default function PartParrainageNew() {
 
   if (submitted) {
     return (
-      <div className="p-6 lg:p-10 flex flex-col items-center justify-center min-h-64">
-        <div className="bg-white rounded-xl p-10 shadow-sm border border-slate-100 text-center max-w-sm">
-          <CheckCircle size={48} className="text-green-500 mx-auto mb-4" />
-          <p className="font-display text-xl uppercase tracking-wide text-slate-900 mb-2">Parrainage envoyé !</p>
-          <p className="font-body text-sm text-slate-500">Votre parrainage a bien été transmis à l'équipe BRH. Redirection en cours...</p>
+      <div className="p-8 lg:p-10 flex flex-col items-center justify-center min-h-64">
+        <div className="bg-white rounded-2xl p-12 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center max-w-sm">
+          <div className="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <CheckCircle size={32} className="text-green-500" />
+          </div>
+          <p className="font-display text-xl font-bold uppercase tracking-[0.05em] text-[#1b1c1c] mb-3">
+            Parrainage envoyé !
+          </p>
+          <p className="text-sm text-[#707a6a]">
+            Votre parrainage a bien été transmis à l'équipe BRH. Redirection en cours...
+          </p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="p-6 lg:p-10">
+    <div className="p-8 lg:p-10">
       <Link
         to="/particulier/parrainages"
-        className="flex items-center gap-2 text-sm font-body text-slate-500 hover:text-primary mb-6 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-[#707a6a] hover:text-[#1c7b1d] mb-6 transition-colors"
       >
         <ArrowLeft size={16} />
         Retour aux parrainages
       </Link>
 
-      <h1 className="font-display text-2xl uppercase tracking-wide text-slate-900 mb-8">
-        Nouveau parrainage
-      </h1>
+      <div className="mb-8">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Partenariat</p>
+        <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-[#1b1c1c]">
+          Nouveau parrainage
+        </h1>
+      </div>
 
       <form onSubmit={handleSubmit} noValidate>
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 mb-5">
-          <h2 className="font-display text-sm uppercase tracking-wide text-slate-500 mb-5">
+        {/* Informations contact */}
+        <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] mb-5">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-5">
             Informations du contact
-          </h2>
+          </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="font-body text-sm text-slate-700 font-medium mb-1.5 block">
+              <label className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2 block">
                 Prénom <span className="text-red-500">*</span>
               </label>
               <input
@@ -145,15 +155,15 @@ export default function PartParrainageNew() {
                 value={form.client_first_name}
                 onChange={handleChange}
                 placeholder="Jean"
-                className={`w-full font-body text-sm px-4 py-2.5 border rounded-lg outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 ${errors.client_first_name ? 'border-red-400 bg-red-50' : 'border-slate-200 bg-white'}`}
+                className={`w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-[#f5f3f2] placeholder:text-[#707a6a]/50 text-[#1b1c1c] focus:ring-2 focus:ring-[#1c7b1d]/30 focus:bg-white ${errors.client_first_name ? 'ring-2 ring-red-400 bg-red-50' : ''}`}
               />
               {errors.client_first_name && (
-                <p className="font-body text-xs text-red-500 mt-1">{errors.client_first_name}</p>
+                <p className="text-xs text-red-500 mt-1.5">{errors.client_first_name}</p>
               )}
             </div>
 
             <div>
-              <label className="font-body text-sm text-slate-700 font-medium mb-1.5 block">
+              <label className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2 block">
                 Nom <span className="text-red-500">*</span>
               </label>
               <input
@@ -162,15 +172,15 @@ export default function PartParrainageNew() {
                 value={form.client_last_name}
                 onChange={handleChange}
                 placeholder="Dupont"
-                className={`w-full font-body text-sm px-4 py-2.5 border rounded-lg outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 ${errors.client_last_name ? 'border-red-400 bg-red-50' : 'border-slate-200 bg-white'}`}
+                className={`w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-[#f5f3f2] placeholder:text-[#707a6a]/50 text-[#1b1c1c] focus:ring-2 focus:ring-[#1c7b1d]/30 focus:bg-white ${errors.client_last_name ? 'ring-2 ring-red-400 bg-red-50' : ''}`}
               />
               {errors.client_last_name && (
-                <p className="font-body text-xs text-red-500 mt-1">{errors.client_last_name}</p>
+                <p className="text-xs text-red-500 mt-1.5">{errors.client_last_name}</p>
               )}
             </div>
 
             <div>
-              <label className="font-body text-sm text-slate-700 font-medium mb-1.5 block">
+              <label className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2 block">
                 Téléphone <span className="text-red-500">*</span>
               </label>
               <input
@@ -179,53 +189,58 @@ export default function PartParrainageNew() {
                 value={form.client_phone}
                 onChange={handleChange}
                 placeholder="06 12 34 56 78"
-                className={`w-full font-body text-sm px-4 py-2.5 border rounded-lg outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 ${errors.client_phone ? 'border-red-400 bg-red-50' : 'border-slate-200 bg-white'}`}
+                className={`w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-[#f5f3f2] placeholder:text-[#707a6a]/50 text-[#1b1c1c] focus:ring-2 focus:ring-[#1c7b1d]/30 focus:bg-white ${errors.client_phone ? 'ring-2 ring-red-400 bg-red-50' : ''}`}
               />
               {errors.client_phone && (
-                <p className="font-body text-xs text-red-500 mt-1">{errors.client_phone}</p>
+                <p className="text-xs text-red-500 mt-1.5">{errors.client_phone}</p>
               )}
             </div>
 
             <div>
-              <label className="font-body text-sm text-slate-700 font-medium mb-1.5 block">Ville</label>
+              <label className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2 block">
+                Ville
+              </label>
               <input
                 type="text"
                 name="client_city"
                 value={form.client_city}
                 onChange={handleChange}
                 placeholder="Brest"
-                className="w-full font-body text-sm px-4 py-2.5 border border-slate-200 rounded-lg outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white"
+                className="w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-[#f5f3f2] placeholder:text-[#707a6a]/50 text-[#1b1c1c] focus:ring-2 focus:ring-[#1c7b1d]/30 focus:bg-white"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label className="font-body text-sm text-slate-700 font-medium mb-1.5 block">Adresse</label>
+              <label className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2 block">
+                Adresse
+              </label>
               <input
                 type="text"
                 name="client_address"
                 value={form.client_address}
                 onChange={handleChange}
                 placeholder="12 rue des Lilas"
-                className="w-full font-body text-sm px-4 py-2.5 border border-slate-200 rounded-lg outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white"
+                className="w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-[#f5f3f2] placeholder:text-[#707a6a]/50 text-[#1b1c1c] focus:ring-2 focus:ring-[#1c7b1d]/30 focus:bg-white"
               />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 mb-5">
-          <h2 className="font-display text-sm uppercase tracking-wide text-slate-500 mb-5">
+        {/* Type de travaux */}
+        <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] mb-5">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-5">
             Type de travaux <span className="text-red-500">*</span>
-          </h2>
+          </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {WORK_TYPES.map(wt => (
               <button
                 key={wt.value}
                 type="button"
                 onClick={() => toggleWorkType(wt.value)}
-                className={`font-body text-sm px-4 py-2.5 rounded-lg border transition-all ${
+                className={`text-sm px-4 py-3 rounded-xl font-medium transition-all ${
                   form.work_type.includes(wt.value)
-                    ? 'bg-primary text-white border-primary'
-                    : 'bg-white text-slate-600 border-slate-200 hover:border-primary/50'
+                    ? 'bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white shadow-[0_4px_12px_rgba(28,123,29,0.3)]'
+                    : 'bg-[#f5f3f2] text-[#404a3c] hover:bg-[#e8e5e2]'
                 }`}
               >
                 {wt.label}
@@ -233,47 +248,48 @@ export default function PartParrainageNew() {
             ))}
           </div>
           {errors.work_type && (
-            <p className="font-body text-xs text-red-500 mt-3">{errors.work_type}</p>
+            <p className="text-xs text-red-500 mt-3">{errors.work_type}</p>
           )}
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 mb-6">
-          <h2 className="font-display text-sm uppercase tracking-wide text-slate-500 mb-5">
+        {/* Notes */}
+        <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] mb-6">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-5">
             Notes complémentaires
-          </h2>
+          </p>
           <textarea
             name="notes"
             value={form.notes}
             onChange={handleChange}
             rows={3}
             placeholder="Informations supplémentaires utiles pour l'équipe BRH (optionnel)..."
-            className="w-full font-body text-sm px-4 py-3 border border-slate-200 rounded-lg outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white resize-none"
+            className="w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-[#f5f3f2] placeholder:text-[#707a6a]/50 text-[#1b1c1c] focus:ring-2 focus:ring-[#1c7b1d]/30 focus:bg-white resize-none"
           />
         </div>
 
         <div className="flex gap-3 justify-end">
           <Link
             to="/particulier/parrainages"
-            className="px-5 py-2.5 font-body text-sm text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+            className="px-6 py-3 text-sm font-medium text-[#404a3c] bg-[#f5f3f2] rounded-xl hover:bg-[#e8e5e2] transition-colors"
           >
             Annuler
           </Link>
           <button
             type="submit"
             disabled={createProspect.isPending}
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white font-display text-sm rounded-lg hover:bg-primary-dark transition-colors uppercase tracking-wide disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {createProspect.isPending ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
-              <Send size={15} />
+              <Send size={14} />
             )}
             Envoyer le parrainage
           </button>
         </div>
 
         {createProspect.isError && (
-          <p className="font-body text-sm text-red-500 text-right mt-3">
+          <p className="text-sm text-red-500 text-right mt-3">
             Une erreur est survenue. Veuillez réessayer.
           </p>
         )}

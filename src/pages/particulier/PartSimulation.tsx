@@ -77,78 +77,78 @@ export default function PartSimulation() {
 
   if (isLoading) {
     return (
-      <div className="p-6 lg:p-10 flex items-center justify-center min-h-64">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="p-8 lg:p-10 flex items-center justify-center min-h-64">
+        <div className="w-8 h-8 border-4 border-[#1c7b1d] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="p-6 lg:p-10">
+    <div className="p-8 lg:p-10">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
-        <Link2 size={24} className="text-primary" />
-        <div>
-          <h1 className="font-display text-2xl uppercase tracking-wide text-slate-900">
-            Liens simulateur
-          </h1>
-          <p className="font-body text-sm text-slate-500">
-            Partagez le simulateur BRH avec votre code de parrainage
-          </p>
-        </div>
+      <div className="mb-8">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Partage</p>
+        <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-[#1b1c1c]">
+          Liens simulateur
+        </h1>
+        <p className="text-sm text-[#707a6a] mt-1">
+          Partagez le simulateur BRH avec votre code de parrainage
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left column */}
-        <div className="space-y-6">
+        <div className="space-y-5">
           {/* Short code block */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-            <div className="flex items-center gap-2 mb-4">
-              <Zap size={18} className="text-amber-500" />
-              <h2 className="font-display text-base uppercase tracking-wide text-slate-900">
+          <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
+            <div className="flex items-center gap-2.5 mb-5">
+              <div className="w-9 h-9 bg-amber-50 rounded-xl flex items-center justify-center">
+                <Zap size={16} className="text-amber-500" />
+              </div>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">
                 Mon code court
-              </h2>
+              </p>
             </div>
 
             {shortCode ? (
               <>
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="font-display text-4xl tracking-[0.3em] text-amber-600 bg-amber-50 px-6 py-3 rounded-xl flex-1 text-center border border-amber-200">
+                  <span className="font-display text-4xl font-bold tracking-[0.3em] text-amber-600 bg-amber-50 px-6 py-4 rounded-2xl flex-1 text-center">
                     {shortCode}
                   </span>
                   <button
                     onClick={() => void handleCopyShort()}
-                    className="p-3 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
+                    className="p-3.5 rounded-xl bg-[#f5f3f2] hover:bg-[#e8e5e2] transition-colors"
                     title="Copier le code court"
                   >
                     {copiedShort
                       ? <CheckCircle size={20} className="text-green-500" />
-                      : <Copy size={20} className="text-slate-500" />
+                      : <Copy size={20} className="text-[#404a3c]" />
                     }
                   </button>
                 </div>
                 {copiedShort && (
-                  <p className="font-body text-xs text-green-600">Code copie !</p>
+                  <p className="text-xs text-green-600 font-medium">Code copie !</p>
                 )}
-                <p className="font-body text-xs text-slate-400 mt-2">
+                <p className="text-xs text-[#707a6a] mt-2">
                   Donnez ce code a l'oral — vos contacts le saisissent directement sur le site.
                 </p>
               </>
             ) : (
               <>
-                <p className="font-body text-sm text-slate-500 mb-4">
+                <p className="text-sm text-[#707a6a] mb-5">
                   Vous n'avez pas encore de code court memorisable.
                   Generez-en un en un clic pour le partager facilement a l'oral.
                 </p>
                 {codeError && (
-                  <p className="font-body text-xs text-red-600 mb-3">{codeError}</p>
+                  <p className="text-xs text-red-600 mb-3">{codeError}</p>
                 )}
                 <button
                   onClick={() => void handleGenerateShortCode()}
                   disabled={generatingCode}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-lg font-body text-sm font-medium hover:bg-amber-600 transition-colors disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-5 py-3 bg-amber-500 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-amber-600 transition-colors disabled:opacity-50"
                 >
-                  <RefreshCw size={15} className={generatingCode ? 'animate-spin' : ''} />
+                  <RefreshCw size={14} className={generatingCode ? 'animate-spin' : ''} />
                   {generatingCode ? 'Generation...' : 'Generer mon code court'}
                 </button>
               </>
@@ -157,17 +157,19 @@ export default function PartSimulation() {
 
           {/* Referral code reminder */}
           {affiliate?.referral_code && (
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-              <div className="flex items-center gap-2 mb-3">
-                <Link2 size={16} className="text-primary" />
-                <h2 className="font-display text-base uppercase tracking-wide text-slate-900">
+            <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-9 h-9 bg-[#1c7b1d]/10 rounded-xl flex items-center justify-center">
+                  <Link2 size={16} className="text-[#1c7b1d]" />
+                </div>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">
                   Mon code parrainage
-                </h2>
+                </p>
               </div>
-              <div className="font-display text-2xl tracking-widest text-primary bg-primary/5 px-4 py-2 rounded-lg text-center border border-primary/10">
+              <div className="font-display text-2xl font-bold tracking-widest text-[#1c7b1d] bg-[#1c7b1d]/5 px-4 py-3 rounded-xl text-center">
                 {affiliate.referral_code}
               </div>
-              <p className="font-body text-xs text-slate-400 mt-2">
+              <p className="text-xs text-[#707a6a] mt-2">
                 Code utilise dans tous vos liens de partage.
               </p>
             </div>
@@ -175,28 +177,30 @@ export default function PartSimulation() {
         </div>
 
         {/* Right column — Simulator link builder */}
-        <div className="space-y-6">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-            <div className="flex items-center gap-2 mb-5">
-              <Link2 size={18} className="text-primary" />
-              <h2 className="font-display text-base uppercase tracking-wide text-slate-900">
+        <div className="space-y-5">
+          <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
+            <div className="flex items-center gap-2.5 mb-5">
+              <div className="w-9 h-9 bg-[#1c7b1d]/10 rounded-xl flex items-center justify-center">
+                <Link2 size={16} className="text-[#1c7b1d]" />
+              </div>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">
                 Generer un lien simulateur
-              </h2>
+              </p>
             </div>
 
             {/* Work type selector */}
             <div className="mb-5">
-              <p className="font-body text-sm font-medium text-slate-700 mb-3">
-                Type de travaux <span className="text-slate-400 font-normal">(optionnel)</span>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-3">
+                Type de travaux <span className="normal-case font-normal text-[#707a6a]/70">(optionnel)</span>
               </p>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => setSelectedWorkType('')}
-                  className={`px-3 py-1.5 rounded-lg border text-xs font-body transition-colors ${
+                  className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                     selectedWorkType === ''
-                      ? 'border-primary bg-primary/5 text-primary font-medium'
-                      : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                      ? 'bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white'
+                      : 'bg-[#f5f3f2] text-[#404a3c] hover:bg-[#e8e5e2]'
                   }`}
                 >
                   Tous
@@ -206,10 +210,10 @@ export default function PartSimulation() {
                     key={wt.value}
                     type="button"
                     onClick={() => setSelectedWorkType(wt.value === selectedWorkType ? '' : wt.value)}
-                    className={`px-3 py-1.5 rounded-lg border text-xs font-body transition-colors ${
+                    className={`px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                       selectedWorkType === wt.value
-                        ? 'border-primary bg-primary/5 text-primary font-medium'
-                        : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                        ? 'bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white'
+                        : 'bg-[#f5f3f2] text-[#404a3c] hover:bg-[#e8e5e2]'
                     }`}
                   >
                     {wt.label}
@@ -219,33 +223,33 @@ export default function PartSimulation() {
             </div>
 
             {/* Link preview */}
-            <div className="mb-4">
-              <p className="font-body text-sm font-medium text-slate-700 mb-2">Votre lien</p>
+            <div className="mb-5">
+              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2">Votre lien</p>
               <div className="flex items-center gap-2">
                 <input
                   readOnly
                   value={simLink}
-                  className="flex-1 font-body text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 truncate focus:outline-none"
+                  className="flex-1 text-xs text-[#404a3c] bg-[#f5f3f2] rounded-xl px-4 py-3 truncate focus:outline-none"
                 />
                 <button
                   onClick={() => void handleCopySim()}
                   disabled={!simLink}
-                  className="p-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-40"
+                  className="p-3 rounded-xl bg-[#f5f3f2] hover:bg-[#e8e5e2] transition-colors disabled:opacity-40"
                   title="Copier le lien"
                 >
                   {copiedSim
                     ? <CheckCircle size={18} className="text-green-500" />
-                    : <Copy size={18} className="text-slate-500" />
+                    : <Copy size={18} className="text-[#404a3c]" />
                   }
                 </button>
               </div>
               {copiedSim && (
-                <p className="font-body text-xs text-green-600 mt-1">Lien copie !</p>
+                <p className="text-xs text-green-600 font-medium mt-1">Lien copie !</p>
               )}
             </div>
 
             {/* Share buttons */}
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <a
                 href={simLink ? getWhatsAppShareUrl(
                   `Estimez votre projet de renovation avec BRH Habitat — c'est gratuit !`,
@@ -253,32 +257,34 @@ export default function PartSimulation() {
                 ) : '#'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-green-500 text-white rounded-lg font-body text-sm font-medium hover:bg-green-600 transition-colors ${!simLink ? 'pointer-events-none opacity-40' : ''}`}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-500 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-green-600 transition-colors ${!simLink ? 'pointer-events-none opacity-40' : ''}`}
               >
-                <MessageCircle size={16} />
+                <MessageCircle size={15} />
                 WhatsApp
               </a>
               <a
                 href={simLink ? getSmsShareUrl(
                   `Estimez votre projet de renovation avec BRH Habitat : ${simLink}`,
                 ) : '#'}
-                className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-700 text-white rounded-lg font-body text-sm font-medium hover:bg-slate-800 transition-colors ${!simLink ? 'pointer-events-none opacity-40' : ''}`}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[#1b1c1c] text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#2d2e2e] transition-colors ${!simLink ? 'pointer-events-none opacity-40' : ''}`}
               >
-                <Smartphone size={16} />
+                <Smartphone size={15} />
                 SMS
               </a>
             </div>
           </div>
 
           {/* Stats placeholder */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-            <div className="flex items-center gap-2 mb-3">
-              <Link2 size={16} className="text-slate-400" />
-              <h2 className="font-display text-base uppercase tracking-wide text-slate-400">
+          <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-9 h-9 bg-[#f5f3f2] rounded-xl flex items-center justify-center">
+                <Link2 size={16} className="text-[#707a6a]" />
+              </div>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">
                 Statistiques des liens
-              </h2>
+              </p>
             </div>
-            <p className="font-body text-sm text-slate-400">
+            <p className="text-sm text-[#707a6a]">
               Fonctionnalite bientot disponible — le suivi des clics et des simulations generees par vos liens apparaitra ici.
             </p>
           </div>

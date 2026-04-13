@@ -60,18 +60,18 @@ const POST_TYPES: { value: SocialPostType; label: string }[] = [
 
 function StatusBadge({ status }: { status: BrhSocialPostRow['status'] }) {
   const cfg = {
-    validee:              { label: 'Validee',       cls: 'bg-green-100 text-green-700',  Icon: CheckCircle },
-    en_attente:           { label: 'En attente',    cls: 'bg-yellow-100 text-yellow-700',Icon: Clock },
-    en_cours_verification:{ label: 'En verification',cls:'bg-blue-100 text-blue-700',    Icon: Clock },
-    refusee:              { label: 'Refusee',       cls: 'bg-red-100 text-red-700',      Icon: XCircle },
-    expiree:              { label: 'Expiree',       cls: 'bg-slate-100 text-slate-500',  Icon: AlertCircle },
+    validee:              { label: 'Validee',          cls: 'bg-green-100 text-green-700',  Icon: CheckCircle },
+    en_attente:           { label: 'En attente',       cls: 'bg-yellow-100 text-yellow-700',Icon: Clock },
+    en_cours_verification:{ label: 'En verification',  cls: 'bg-blue-100 text-blue-700',    Icon: Clock },
+    refusee:              { label: 'Refusee',          cls: 'bg-red-100 text-red-700',      Icon: XCircle },
+    expiree:              { label: 'Expiree',          cls: 'bg-[#f5f3f2] text-[#707a6a]', Icon: AlertCircle },
   }[status]
 
   if (!cfg) return null
   const { label, cls, Icon } = cfg
   return (
-    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-body font-medium ${cls}`}>
-      <Icon size={12} />
+    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${cls}`}>
+      <Icon size={11} />
       {label}
     </span>
   )
@@ -176,32 +176,32 @@ export default function PartSocial() {
     !!platform && !!postType && urlValid && !!screenshotPath && !uploading && !limitReached
 
   return (
-    <div className="p-6 lg:p-10">
+    <div className="p-8 lg:p-10">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div className="flex items-center gap-3">
-          <Share2 size={24} className="text-primary" />
-          <div>
-            <h1 className="font-display text-2xl uppercase tracking-wide text-slate-900">
-              Publications reseaux sociaux
-            </h1>
-            <p className="font-body text-sm text-slate-500">Soumettez vos publications BRH et gagnez des points</p>
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+        <div>
+          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Réseaux sociaux</p>
+          <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-[#1b1c1c]">
+            Publications
+          </h1>
+          <p className="text-sm text-[#707a6a] mt-1">Soumettez vos publications BRH et gagnez des points</p>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className={`font-body text-sm px-3 py-1.5 rounded-full font-medium ${
-            limitReached ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600'
+          <div className={`text-xs px-4 py-2.5 rounded-xl font-bold uppercase tracking-widest ${
+            limitReached
+              ? 'bg-red-100 text-red-700'
+              : 'bg-[#f5f3f2] text-[#707a6a]'
           }`}>
-            {monthlyCount}/{MONTHLY_LIMIT} publications ce mois
-          </span>
+            {monthlyCount}/{MONTHLY_LIMIT} ce mois
+          </div>
           {!showForm && (
             <button
               onClick={() => setShowForm(true)}
               disabled={limitReached}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-body text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-5 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Plus size={16} />
+              <Plus size={15} />
               Soumettre
             </button>
           )}
@@ -210,33 +210,36 @@ export default function PartSocial() {
 
       {/* Inline form */}
       {showForm && (
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 mb-6">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-display text-lg uppercase tracking-wide text-slate-900">
-              Nouvelle publication
-            </h2>
-            <button onClick={resetForm} className="p-1 text-slate-400 hover:text-slate-600">
-              <X size={20} />
+        <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] mb-6">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Formulaire</p>
+              <h2 className="font-display text-xl font-bold uppercase tracking-[0.05em] text-[#1b1c1c]">
+                Nouvelle publication
+              </h2>
+            </div>
+            <button onClick={resetForm} className="p-2 text-[#707a6a] hover:text-[#1b1c1c] rounded-xl hover:bg-[#f5f3f2] transition-colors">
+              <X size={18} />
             </button>
           </div>
 
           <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
             {/* Platform */}
             <div>
-              <p className="font-body text-sm font-medium text-slate-700 mb-2">Plateforme</p>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-3">Plateforme</p>
               <div className="flex flex-wrap gap-2">
                 {PLATFORMS.map(({ value, label, Icon }) => (
                   <button
                     key={value}
                     type="button"
                     onClick={() => setPlatform(value)}
-                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-body transition-colors ${
+                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${
                       platform === value
-                        ? 'border-primary bg-primary/5 text-primary font-medium'
-                        : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                        ? 'bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white'
+                        : 'bg-[#f5f3f2] text-[#404a3c] hover:bg-[#e8e5e2]'
                     }`}
                   >
-                    <Icon size={15} />
+                    <Icon size={14} />
                     {label}
                   </button>
                 ))}
@@ -245,14 +248,14 @@ export default function PartSocial() {
 
             {/* Post type */}
             <div>
-              <label htmlFor="post-type" className="font-body text-sm font-medium text-slate-700 mb-2 block">
+              <label htmlFor="post-type" className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2 block">
                 Type de publication
               </label>
               <select
                 id="post-type"
                 value={postType}
                 onChange={e => setPostType(e.target.value as SocialPostType)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 font-body text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                className="w-full bg-[#f5f3f2] rounded-xl px-4 py-3 text-sm text-[#1b1c1c] focus:outline-none focus:ring-2 focus:ring-[#1c7b1d]/30 focus:bg-white transition-all"
               >
                 <option value="">Choisir un type...</option>
                 {POST_TYPES.map(t => (
@@ -263,7 +266,7 @@ export default function PartSocial() {
 
             {/* URL */}
             <div>
-              <label htmlFor="post-url" className="font-body text-sm font-medium text-slate-700 mb-2 block">
+              <label htmlFor="post-url" className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2 block">
                 URL de la publication
               </label>
               <div className="relative">
@@ -273,8 +276,10 @@ export default function PartSocial() {
                   value={postUrl}
                   onChange={e => setPostUrl(e.target.value)}
                   placeholder="https://..."
-                  className={`w-full border rounded-lg px-3 py-2.5 font-body text-sm pr-9 focus:outline-none focus:ring-2 focus:ring-primary/30 ${
-                    postUrl && !urlValid ? 'border-red-300 bg-red-50' : 'border-slate-200'
+                  className={`w-full rounded-xl px-4 py-3 pr-10 text-sm text-[#1b1c1c] placeholder:text-[#707a6a]/50 focus:outline-none focus:ring-2 focus:ring-[#1c7b1d]/30 transition-all ${
+                    postUrl && !urlValid
+                      ? 'bg-red-50 ring-2 ring-red-300'
+                      : 'bg-[#f5f3f2] focus:bg-white'
                   }`}
                 />
                 {postUrl && urlValid && (
@@ -282,20 +287,20 @@ export default function PartSocial() {
                     href={postUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#707a6a] hover:text-[#1c7b1d]"
                   >
                     <ExternalLink size={15} />
                   </a>
                 )}
               </div>
               {postUrl && !urlValid && (
-                <p className="font-body text-xs text-red-600 mt-1">L'URL doit commencer par http:// ou https://</p>
+                <p className="text-xs text-red-600 mt-1.5">L'URL doit commencer par http:// ou https://</p>
               )}
             </div>
 
             {/* Screenshot */}
             <div>
-              <p className="font-body text-sm font-medium text-slate-700 mb-2">Capture d'ecran</p>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2">Capture d'ecran</p>
               <input
                 ref={fileRef}
                 type="file"
@@ -304,13 +309,13 @@ export default function PartSocial() {
                 onChange={(e) => void handleFileChange(e)}
               />
               {screenshotPath ? (
-                <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-2xl">
                   <CheckCircle size={16} className="text-green-600 shrink-0" />
-                  <span className="font-body text-sm text-green-700 truncate flex-1">{screenshotName}</span>
+                  <span className="text-sm text-green-700 truncate flex-1 font-medium">{screenshotName}</span>
                   <button
                     type="button"
                     onClick={() => { setScreenshotPath(''); setScreenshotName('') }}
-                    className="text-slate-400 hover:text-red-500"
+                    className="text-green-400 hover:text-red-500 transition-colors"
                   >
                     <X size={15} />
                   </button>
@@ -320,19 +325,19 @@ export default function PartSocial() {
                   type="button"
                   onClick={() => fileRef.current?.click()}
                   disabled={uploading}
-                  className="w-full flex items-center justify-center gap-2 p-4 border-2 border-dashed border-slate-200 rounded-lg text-slate-500 hover:border-primary hover:text-primary transition-colors disabled:opacity-50 font-body text-sm"
+                  className="w-full flex items-center justify-center gap-2 p-5 border-2 border-dashed border-[#e8e5e2] rounded-2xl text-[#707a6a] hover:border-[#1c7b1d] hover:text-[#1c7b1d] transition-all disabled:opacity-50 text-sm font-medium"
                 >
                   <Upload size={16} />
-                  {uploading ? 'Telechargement...' : 'Choisir une capture d\'ecran'}
+                  {uploading ? 'Telechargement...' : "Choisir une capture d'ecran"}
                 </button>
               )}
-              {uploadError && <p className="font-body text-xs text-red-600 mt-1">{uploadError}</p>}
+              {uploadError && <p className="text-xs text-red-600 mt-1.5">{uploadError}</p>}
             </div>
 
             {/* Description */}
             <div>
-              <label htmlFor="description" className="font-body text-sm font-medium text-slate-700 mb-2 block">
-                Description <span className="text-slate-400 font-normal">(optionnel)</span>
+              <label htmlFor="description" className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2 block">
+                Description <span className="normal-case font-normal text-[#707a6a]/70">(optionnel)</span>
               </label>
               <textarea
                 id="description"
@@ -340,27 +345,27 @@ export default function PartSocial() {
                 onChange={e => setDescription(e.target.value)}
                 rows={3}
                 placeholder="Decrivez brievement votre publication..."
-                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 font-body text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                className="w-full bg-[#f5f3f2] rounded-xl px-4 py-3 text-sm text-[#1b1c1c] placeholder:text-[#707a6a]/50 resize-none focus:outline-none focus:ring-2 focus:ring-[#1c7b1d]/30 focus:bg-white transition-all"
               />
             </div>
 
             {/* Reward preview */}
             {reward > 0 && (
-              <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
                 <Star size={16} className="text-amber-500 shrink-0" />
-                <p className="font-body text-sm text-amber-800">
-                  Recompense estimee : <span className="font-display font-semibold">{reward} EUR</span>
+                <p className="text-sm text-amber-800">
+                  Recompense estimee : <span className="font-bold">{reward} EUR</span>
                   {' '}({reward * 10} points)
                 </p>
               </div>
             )}
 
             {submitError && (
-              <p className="font-body text-sm text-red-600">{submitError}</p>
+              <p className="text-sm text-red-600">{submitError}</p>
             )}
 
             {limitReached && (
-              <p className="font-body text-sm text-red-600">
+              <p className="text-sm text-red-600 font-medium">
                 Limite mensuelle atteinte ({MONTHLY_LIMIT} publications). Revenez le mois prochain.
               </p>
             )}
@@ -369,14 +374,14 @@ export default function PartSocial() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="flex-1 px-4 py-2.5 border border-slate-200 rounded-lg font-body text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                className="flex-1 px-4 py-3 bg-[#f5f3f2] rounded-xl text-sm font-medium text-[#404a3c] hover:bg-[#e8e5e2] transition-colors"
               >
                 Annuler
               </button>
               <button
                 type="submit"
                 disabled={!canSubmit || createPost.isPending}
-                className="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg font-body text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-4 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {createPost.isPending ? 'Envoi...' : 'Soumettre'}
               </button>
@@ -388,55 +393,57 @@ export default function PartSocial() {
       {/* Posts list */}
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-[#1c7b1d] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : posts.length === 0 ? (
-        <div className="bg-white rounded-xl p-10 shadow-sm border border-slate-100 text-center">
-          <Share2 size={32} className="text-slate-300 mx-auto mb-3" />
-          <p className="font-display text-slate-500 uppercase tracking-wide text-sm">
+        <div className="bg-white rounded-2xl p-14 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
+          <div className="w-16 h-16 bg-[#f5f3f2] rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <Share2 size={28} className="text-[#707a6a]" />
+          </div>
+          <p className="font-display text-lg font-bold uppercase tracking-[0.05em] text-[#404a3c] mb-2">
             Aucune publication soumise
           </p>
-          <p className="font-body text-xs text-slate-400 mt-1">
+          <p className="text-sm text-[#707a6a]">
             Partagez vos publications BRH Habitat pour gagner des points.
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {posts.map(post => (
             <div
               key={post.id}
-              className="bg-white rounded-xl p-5 shadow-sm border border-slate-100"
+              className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]"
             >
               <div className="flex flex-col sm:flex-row sm:items-start gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <span className="font-display text-sm uppercase tracking-wide text-slate-700">
+                    <span className="font-bold text-sm text-[#1b1c1c] uppercase tracking-wide">
                       {PLATFORM_LABELS[post.platform]}
                     </span>
-                    <span className="text-slate-300">·</span>
-                    <span className="font-body text-xs text-slate-500 capitalize">{post.post_type}</span>
+                    <span className="text-[#707a6a]/40">·</span>
+                    <span className="text-xs text-[#707a6a] capitalize">{post.post_type}</span>
                     <StatusBadge status={post.status} />
                   </div>
                   <a
                     href={isSafeUrl(post.post_url)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-body text-xs text-primary hover:underline truncate block max-w-xs"
+                    className="text-xs text-[#1c7b1d] hover:underline truncate block max-w-xs"
                   >
                     {post.post_url}
                   </a>
                   {post.description && (
-                    <p className="font-body text-xs text-slate-500 mt-1 line-clamp-2">{post.description}</p>
+                    <p className="text-xs text-[#707a6a] mt-1 line-clamp-2">{post.description}</p>
                   )}
                   {post.rejection_reason && (
-                    <p className="font-body text-xs text-red-600 mt-1">Motif : {post.rejection_reason}</p>
+                    <p className="text-xs text-red-600 mt-1 font-medium">Motif : {post.rejection_reason}</p>
                   )}
                 </div>
                 <div className="text-right shrink-0">
                   {post.reward_points && (
-                    <p className="font-display text-sm text-amber-600">+{post.reward_points} pts</p>
+                    <p className="font-display font-bold text-sm text-amber-600">+{post.reward_points} pts</p>
                   )}
-                  <p className="font-body text-xs text-slate-400 mt-0.5">{formatDate(post.created_at)}</p>
+                  <p className="text-xs text-[#707a6a] mt-0.5">{formatDate(post.created_at)}</p>
                 </div>
               </div>
             </div>

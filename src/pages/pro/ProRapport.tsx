@@ -40,7 +40,7 @@ function monthRangeDates(month: number, year: number): { from: string; to: strin
 }
 
 function formatEurDisplay(cents: number): string {
-  return (cents / 100).toLocaleString('fr-FR') + ' €'
+  return (cents / 100).toLocaleString('fr-FR') + ' EUR'
 }
 
 function monthLabel(month: number, year: number): string {
@@ -60,7 +60,6 @@ async function fetchMonthStats(
 ): Promise<{ stats: RapportMonthStats; prospects: RapportProspectLine[] }> {
   const { from, to } = monthRangeDates(month, year)
 
-  // Prospects crees ce mois
   const { data: prospectRows, error: pErr } = await supabase
     .from('brh_prospects')
     .select('id, client_first_name, client_last_name, work_type, status, created_at')
@@ -74,7 +73,6 @@ async function fetchMonthStats(
   const rows = prospectRows ?? []
   const prospectIds = rows.map((p) => p.id)
 
-  // Devis signes pour ces prospects
   let quoteRows: Array<{
     id: string
     prospect_id: string | null
@@ -94,13 +92,11 @@ async function fetchMonthStats(
     quoteRows = qRows ?? []
   }
 
-  // Indexer les quotes par prospect_id
   const quoteByProspect = new Map<string, typeof quoteRows[number]>()
   for (const q of quoteRows) {
     if (q.prospect_id) quoteByProspect.set(q.prospect_id, q)
   }
 
-  // Calculer les stats
   const nbProspects = rows.length
   const nbSignes = rows.filter((p) => p.status === 'signe' || p.status === 'termine').length
 
@@ -117,7 +113,6 @@ async function fetchMonthStats(
     }
   }
 
-  // Construire les lignes de prospects
   const prospectLines: RapportProspectLine[] = rows.map((p) => {
     const q = quoteByProspect.get(p.id)
     return {
@@ -153,7 +148,6 @@ export default function ProRapport() {
   const [error, setError] = useState<string | null>(null)
   const [pdfReady, setPdfReady] = useState(false)
 
-  // Reset PDF quand le mois change
   useEffect(() => {
     setPdfReady(false)
     setRapportData(null)
@@ -169,10 +163,8 @@ export default function ProRapport() {
     try {
       const { month, year } = parseMonthValue(selectedValue)
 
-      // Mois courant
       const { stats, prospects } = await fetchMonthStats(company.id, month, year)
 
-      // Mois precedent
       let prevStats: RapportMonthStats | null = null
       const prevDate = new Date(year, month - 2, 1)
       const prevMonth = prevDate.getMonth() + 1
@@ -208,17 +200,17 @@ export default function ProRapport() {
 
   if (loadingCompany) {
     return (
-      <div className="p-6 lg:p-10 flex items-center justify-center min-h-[300px]">
-        <p className="font-body text-slate-400">Chargement...</p>
+      <div className="p-8 lg:p-10 flex items-center justify-center min-h-[300px]">
+        <div className="w-8 h-8 border-3 border-[#1c7b1d]/30 border-t-[#1c7b1d] rounded-full animate-spin" />
       </div>
     )
   }
 
   if (!company) {
     return (
-      <div className="p-6 lg:p-10">
-        <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-100 text-center">
-          <p className="font-body text-slate-500">Aucune entreprise associee a votre compte.</p>
+      <div className="p-8 lg:p-10">
+        <div className="bg-white rounded-2xl p-12 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
+          <p className="text-[#707a6a]">Aucune entreprise associee a votre compte.</p>
         </div>
       </div>
     )
@@ -227,26 +219,24 @@ export default function ProRapport() {
   const selectedPeriod = parseMonthValue(selectedValue)
 
   return (
-    <div className="p-6 lg:p-10 max-w-3xl mx-auto">
+    <div className="p-8 lg:p-10 max-w-3xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 bg-[#1c7b1d]/10 rounded-xl flex items-center justify-center">
-          <FileText size={20} className="text-[#1c7b1d]" />
-        </div>
-        <div>
-          <h1 className="font-display text-xl text-slate-900">Rapport mensuel</h1>
-          <p className="font-body text-sm text-slate-400">Telechargez votre rapport partenaire en PDF</p>
-        </div>
+      <div className="mb-8">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Bilan</p>
+        <h1 className="font-display text-3xl font-bold tracking-[0.05em] text-[#1b1c1c] uppercase">
+          Rapport mensuel
+        </h1>
+        <p className="text-sm text-[#707a6a] mt-1">Telechargez votre rapport partenaire en PDF</p>
       </div>
 
       {/* Selecteur de mois */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 mb-6">
-        <label className="block font-display text-sm text-slate-800 mb-2">Periode</label>
+      <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] p-6 mb-5">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-3">Periode</p>
         <div className="flex gap-3 items-end">
           <select
             value={selectedValue}
             onChange={(e) => setSelectedValue(e.target.value)}
-            className="flex-1 px-4 py-3 rounded-xl border border-slate-200 font-body text-sm text-slate-900 bg-white focus:outline-none focus:border-[#1c7b1d] focus:ring-2 focus:ring-[#1c7b1d]/10"
+            className="flex-1 px-4 py-3 rounded-xl border border-[#f5f3f2] hover:border-[#707a6a]/30 text-sm text-[#1b1c1c] bg-white focus:outline-none focus:border-[#1c7b1d]/40 focus:ring-2 focus:ring-[#1c7b1d]/20 transition-colors"
           >
             {options.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -256,16 +246,16 @@ export default function ProRapport() {
             type="button"
             onClick={() => void handleGenerate()}
             disabled={loading}
-            className="px-5 py-3 rounded-xl bg-[#1c7b1d] text-white font-display text-sm hover:bg-[#1c7b1d]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
+            className="flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-[#1c7b1d]/20 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 shrink-0"
           >
             {loading ? (
               <>
-                <Loader2 size={15} className="animate-spin" />
+                <Loader2 size={13} className="animate-spin" />
                 Generation...
               </>
             ) : (
               <>
-                <FileText size={15} />
+                <FileText size={13} />
                 Generer le rapport
               </>
             )}
@@ -275,51 +265,51 @@ export default function ProRapport() {
 
       {/* Erreur */}
       {error && (
-        <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-6">
-          <p className="font-body text-sm text-red-600">{error}</p>
+        <div className="bg-red-50 rounded-2xl px-5 py-4 mb-5">
+          <p className="text-sm text-red-600 font-medium">{error}</p>
         </div>
       )}
 
       {/* Preview des stats */}
       {pdfReady && rapportData && (
         <>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 mb-6">
-            <h2 className="font-display text-base text-slate-900 mb-4">
+          <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] p-6 mb-5">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-5">
               Apercu — {monthLabel(selectedPeriod.month, selectedPeriod.year)}
-            </h2>
+            </p>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               <StatPreviewCard
-                icon={<Euro size={16} className="text-[#1c7b1d]" />}
+                icon={<Euro size={15} className="text-[#1c7b1d]" />}
                 label="CA apporte"
                 value={formatEurDisplay(rapportData.stats.ca_apporte)}
                 prev={rapportData.prev_stats ? formatEurDisplay(rapportData.prev_stats.ca_apporte) : null}
               />
               <StatPreviewCard
-                icon={<TrendingUp size={16} className="text-blue-500" />}
+                icon={<TrendingUp size={15} className="text-blue-500" />}
                 label="Commissions dues"
                 value={formatEurDisplay(rapportData.stats.commissions_dues)}
                 prev={rapportData.prev_stats ? formatEurDisplay(rapportData.prev_stats.commissions_dues) : null}
               />
               <StatPreviewCard
-                icon={<CheckCircle size={16} className="text-emerald-500" />}
+                icon={<CheckCircle size={15} className="text-emerald-500" />}
                 label="Comm. versees"
                 value={formatEurDisplay(rapportData.stats.commissions_versees)}
                 prev={null}
               />
               <StatPreviewCard
-                icon={<Users size={16} className="text-orange-400" />}
+                icon={<Users size={15} className="text-amber-500" />}
                 label="Prospects soumis"
                 value={String(rapportData.stats.nb_prospects)}
                 prev={rapportData.prev_stats ? String(rapportData.prev_stats.nb_prospects) : null}
               />
               <StatPreviewCard
-                icon={<CheckCircle size={16} className="text-[#1c7b1d]" />}
+                icon={<CheckCircle size={15} className="text-[#1c7b1d]" />}
                 label="Signes"
                 value={String(rapportData.stats.nb_signes)}
                 prev={rapportData.prev_stats ? String(rapportData.prev_stats.nb_signes) : null}
               />
               <StatPreviewCard
-                icon={<TrendingUp size={16} className="text-purple-500" />}
+                icon={<TrendingUp size={15} className="text-purple-500" />}
                 label="Taux conversion"
                 value={
                   rapportData.stats.nb_prospects > 0
@@ -331,34 +321,37 @@ export default function ProRapport() {
             </div>
 
             {/* Bouton de telechargement PDF */}
-              <button
-                onClick={() => void downloadRapportPdf(rapportData, selectedPeriod.month, selectedPeriod.year)}
-                className="w-full py-3.5 rounded-xl bg-[#1c7b1d] text-white font-display text-sm flex items-center justify-center gap-2 hover:bg-[#1c7b1d]/90 transition-colors shadow-lg shadow-[#1c7b1d]/25"
-              >
-                <Download size={16} />
-                Telecharger le rapport PDF
-              </button>
+            <button
+              onClick={() => void downloadRapportPdf(rapportData, selectedPeriod.month, selectedPeriod.year)}
+              className="w-full py-4 rounded-xl bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white font-bold uppercase text-xs tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-[#1c7b1d]/20 hover:-translate-y-0.5 transition-all"
+            >
+              <Download size={15} />
+              Telecharger le rapport PDF
+            </button>
           </div>
 
           {/* Liste des prospects */}
           {rapportData.prospects.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-100">
-                <h3 className="font-display text-sm text-slate-900">
+            <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] overflow-hidden">
+              <div className="px-6 py-5 bg-[#f5f3f2]">
+                <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">
                   Prospects du mois ({rapportData.prospects.length})
-                </h3>
+                </p>
               </div>
-              <div className="divide-y divide-slate-50">
+              <div>
                 {rapportData.prospects.map((p, i) => (
-                  <div key={i} className="px-5 py-3 flex items-center justify-between gap-4">
+                  <div
+                    key={i}
+                    className={`px-6 py-4 flex items-center justify-between gap-4 hover:bg-[#f5f3f2]/50 transition-colors ${i > 0 ? 'border-t border-[#f5f3f2]' : ''}`}
+                  >
                     <div className="min-w-0">
-                      <p className="font-body text-sm text-slate-900 truncate">{p.client_name}</p>
-                      <p className="font-body text-xs text-slate-400 truncate">{p.work_type}</p>
+                      <p className="text-sm font-semibold text-[#1b1c1c] truncate">{p.client_name}</p>
+                      <p className="text-xs text-[#707a6a] truncate">{p.work_type}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <StatusBadge status={p.status} />
                       {p.commission_amount !== null && (
-                        <span className="font-body text-xs text-[#1c7b1d] font-medium">
+                        <span className="text-xs font-bold text-[#1c7b1d]">
                           {formatEurDisplay(p.commission_amount)}
                         </span>
                       )}
@@ -390,14 +383,14 @@ function StatPreviewCard({
   prev: string | null
 }) {
   return (
-    <div className="bg-slate-50 rounded-xl p-4">
-      <div className="flex items-center gap-1.5 mb-1.5">
+    <div className="bg-[#f5f3f2] rounded-2xl p-4">
+      <div className="flex items-center gap-2 mb-2">
         {icon}
-        <span className="font-body text-xs text-slate-500">{label}</span>
+        <span className="text-[10px] uppercase tracking-wider font-bold text-[#707a6a]">{label}</span>
       </div>
-      <p className="font-display text-base text-slate-900">{value}</p>
+      <p className="font-display text-base font-bold text-[#1b1c1c]">{value}</p>
       {prev !== null && (
-        <p className="font-body text-xs text-slate-400 mt-0.5">Prec. : {prev}</p>
+        <p className="text-[10px] text-[#707a6a] mt-0.5">Prec. : {prev}</p>
       )}
     </div>
   )
@@ -414,16 +407,16 @@ const PROSPECT_STATUS_LABELS: Record<string, string> = {
 
 const PROSPECT_STATUS_BADGE: Record<string, string> = {
   nouveau: 'bg-blue-50 text-blue-700',
-  etude: 'bg-orange-50 text-orange-700',
+  etude: 'bg-amber-50 text-amber-700',
   devis_envoye: 'bg-yellow-50 text-yellow-700',
-  signe: 'bg-green-50 text-green-700',
+  signe: 'bg-[#1c7b1d]/10 text-[#1c7b1d]',
   termine: 'bg-emerald-50 text-emerald-700',
-  perdu: 'bg-slate-100 text-slate-500',
+  perdu: 'bg-[#f5f3f2] text-[#707a6a]',
 }
 
 function StatusBadge({ status }: { status: string }) {
   return (
-    <span className={`font-body text-xs px-2 py-0.5 rounded-full ${PROSPECT_STATUS_BADGE[status] ?? 'bg-slate-100 text-slate-500'}`}>
+    <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${PROSPECT_STATUS_BADGE[status] ?? 'bg-[#f5f3f2] text-[#707a6a]'}`}>
       {PROSPECT_STATUS_LABELS[status] ?? status}
     </span>
   )

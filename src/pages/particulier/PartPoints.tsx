@@ -16,7 +16,7 @@ const TYPE_COLORS: Record<PointsTransactionType, string> = {
   bonus_mensuel:    'bg-purple-100 text-purple-700',
   bonus_annuel:     'bg-amber-100 text-amber-700',
   echange_cadeau:   'bg-orange-100 text-orange-700',
-  ajustement_admin: 'bg-slate-100 text-slate-600',
+  ajustement_admin: 'bg-[#f5f3f2] text-[#707a6a]',
 }
 
 function formatDate(dateString: string): string {
@@ -34,46 +34,56 @@ export default function PartPoints() {
   const totalEarned = affiliate?.total_points_earned ?? 0
 
   return (
-    <div className="p-6 lg:p-10">
+    <div className="p-8 lg:p-10">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
-        <History size={24} className="text-primary" />
-        <h1 className="font-display text-2xl uppercase tracking-wide text-slate-900">
+      <div className="mb-8">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Fidélité</p>
+        <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-[#1b1c1c]">
           Historique de points
         </h1>
       </div>
 
       {/* Résumé */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-          <div className="flex items-center gap-2 mb-2">
-            <Award size={18} className="text-primary" />
-            <span className="font-body text-sm text-slate-500 uppercase tracking-wide">Solde actuel</span>
+        <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-9 h-9 bg-[#1c7b1d]/10 rounded-xl flex items-center justify-center">
+              <Award size={16} className="text-[#1c7b1d]" />
+            </div>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Solde actuel</p>
           </div>
-          <p className="font-display text-4xl text-primary">{balance.toLocaleString('fr-FR')}</p>
-          <p className="font-body text-sm text-slate-400 mt-1">points disponibles</p>
+          <p className="font-display text-4xl font-bold text-[#1c7b1d]">{balance.toLocaleString('fr-FR')}</p>
+          <p className="text-sm text-[#707a6a] mt-1">points disponibles</p>
         </div>
 
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp size={18} className="text-green-500" />
-            <span className="font-body text-sm text-slate-500 uppercase tracking-wide">Total gagné</span>
+        <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center">
+              <TrendingUp size={16} className="text-green-500" />
+            </div>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Total gagné</p>
           </div>
-          <p className="font-display text-4xl text-slate-900">{totalEarned.toLocaleString('fr-FR')}</p>
-          <p className="font-body text-sm text-slate-400 mt-1">points cumulés depuis le début</p>
+          <p className="font-display text-4xl font-bold text-[#1b1c1c]">{totalEarned.toLocaleString('fr-FR')}</p>
+          <p className="text-sm text-[#707a6a] mt-1">points cumulés depuis le début</p>
         </div>
       </div>
 
       {/* Transactions */}
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-[#1c7b1d] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : transactions.length === 0 ? (
-        <div className="bg-white rounded-xl p-12 shadow-sm border border-slate-100 text-center">
-          <History size={48} className="text-slate-200 mx-auto mb-4" />
-          <p className="font-display text-lg uppercase tracking-wide text-slate-400 mb-2">Aucune transaction</p>
-          <p className="font-body text-sm text-slate-400">Vos points apparaitront ici après vos premiers parrainages.</p>
+        <div className="bg-white rounded-2xl p-14 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
+          <div className="w-16 h-16 bg-[#f5f3f2] rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <History size={28} className="text-[#707a6a]" />
+          </div>
+          <p className="font-display text-lg font-bold uppercase tracking-[0.05em] text-[#404a3c] mb-2">
+            Aucune transaction
+          </p>
+          <p className="text-sm text-[#707a6a]">
+            Vos points apparaitront ici après vos premiers parrainages.
+          </p>
         </div>
       ) : (
         <>
@@ -82,19 +92,19 @@ export default function PartPoints() {
             {transactions.map(tx => {
               const isPositive = tx.points > 0
               return (
-                <div key={tx.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex items-center gap-4">
+                <div key={tx.id} className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgba(27,28,28,0.04)] flex items-center gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`inline-flex px-2 py-0.5 rounded text-xs font-body font-medium ${TYPE_COLORS[tx.type]}`}>
+                      <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium ${TYPE_COLORS[tx.type]}`}>
                         {TYPE_LABELS[tx.type]}
                       </span>
                     </div>
                     {tx.description && (
-                      <p className="font-body text-sm text-slate-500 truncate">{tx.description}</p>
+                      <p className="text-sm text-[#404a3c] truncate">{tx.description}</p>
                     )}
-                    <p className="font-body text-xs text-slate-400 mt-1">{formatDate(tx.created_at)}</p>
+                    <p className="text-xs text-[#707a6a] mt-1">{formatDate(tx.created_at)}</p>
                   </div>
-                  <span className={`font-display text-lg shrink-0 ${isPositive ? 'text-green-600' : 'text-red-500'}`}>
+                  <span className={`font-display text-lg font-bold shrink-0 ${isPositive ? 'text-[#1c7b1d]' : 'text-red-500'}`}>
                     {isPositive ? '+' : ''}{tx.points.toLocaleString('fr-FR')} pts
                   </span>
                 </div>
@@ -103,31 +113,31 @@ export default function PartPoints() {
           </div>
 
           {/* Desktop : table */}
-          <div className="hidden md:block bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="hidden md:block bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left font-display text-xs uppercase tracking-wide text-slate-500 px-6 py-4">Date</th>
-                  <th className="text-left font-display text-xs uppercase tracking-wide text-slate-500 px-6 py-4">Type</th>
-                  <th className="text-left font-display text-xs uppercase tracking-wide text-slate-500 px-6 py-4">Description</th>
-                  <th className="text-right font-display text-xs uppercase tracking-wide text-slate-500 px-6 py-4">Points</th>
+                <tr className="bg-[#f5f3f2]">
+                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a] px-6 py-4">Date</th>
+                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a] px-6 py-4">Type</th>
+                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a] px-6 py-4">Description</th>
+                  <th className="text-right text-[10px] uppercase tracking-widest font-bold text-[#707a6a] px-6 py-4">Points</th>
                 </tr>
               </thead>
               <tbody>
                 {transactions.map(tx => {
                   const isPositive = tx.points > 0
                   return (
-                    <tr key={tx.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-body text-sm text-slate-500">{formatDate(tx.created_at)}</td>
+                    <tr key={tx.id} className="hover:bg-[#f5f3f2]/50 transition-colors">
+                      <td className="px-6 py-4 text-sm text-[#707a6a]">{formatDate(tx.created_at)}</td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex px-2.5 py-1 rounded text-xs font-body font-medium ${TYPE_COLORS[tx.type]}`}>
+                        <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium ${TYPE_COLORS[tx.type]}`}>
                           {TYPE_LABELS[tx.type]}
                         </span>
                       </td>
-                      <td className="px-6 py-4 font-body text-sm text-slate-600">
-                        {tx.description ?? <span className="text-slate-300">—</span>}
+                      <td className="px-6 py-4 text-sm text-[#404a3c]">
+                        {tx.description ?? <span className="text-[#707a6a]/40">—</span>}
                       </td>
-                      <td className={`px-6 py-4 font-display text-base text-right ${isPositive ? 'text-green-600' : 'text-red-500'}`}>
+                      <td className={`px-6 py-4 font-display text-base font-bold text-right ${isPositive ? 'text-[#1c7b1d]' : 'text-red-500'}`}>
                         {isPositive ? '+' : ''}{tx.points.toLocaleString('fr-FR')} pts
                       </td>
                     </tr>

@@ -20,11 +20,11 @@ import type { SocialPlatform, SocialPostType, SocialPostStatus } from '@/types/p
 
 // Platform config
 const PLATFORMS: { value: SocialPlatform; label: string; icon: React.ReactNode; rewardCents: number }[] = [
-  { value: 'facebook', label: 'Facebook', icon: <Facebook size={16} />, rewardCents: 5000 },
-  { value: 'instagram', label: 'Instagram', icon: <Instagram size={16} />, rewardCents: 5000 },
-  { value: 'linkedin', label: 'LinkedIn', icon: <Linkedin size={16} />, rewardCents: 5000 },
-  { value: 'tiktok', label: 'TikTok (video)', icon: <Youtube size={16} />, rewardCents: 10000 },
-  { value: 'google_business', label: 'Google Business', icon: <Star size={16} />, rewardCents: 3000 },
+  { value: 'facebook', label: 'Facebook', icon: <Facebook size={15} />, rewardCents: 5000 },
+  { value: 'instagram', label: 'Instagram', icon: <Instagram size={15} />, rewardCents: 5000 },
+  { value: 'linkedin', label: 'LinkedIn', icon: <Linkedin size={15} />, rewardCents: 5000 },
+  { value: 'tiktok', label: 'TikTok (video)', icon: <Youtube size={15} />, rewardCents: 10000 },
+  { value: 'google_business', label: 'Google Business', icon: <Star size={15} />, rewardCents: 3000 },
 ]
 
 const POST_TYPES: { value: SocialPostType; label: string }[] = [
@@ -35,11 +35,11 @@ const POST_TYPES: { value: SocialPostType; label: string }[] = [
 ]
 
 const STATUS_CONFIG: Record<SocialPostStatus, { label: string; className: string; icon: React.ReactNode }> = {
-  en_attente: { label: 'En attente', className: 'bg-yellow-50 text-yellow-700', icon: <Clock size={12} /> },
-  en_cours_verification: { label: 'En verification', className: 'bg-blue-50 text-blue-700', icon: <Clock size={12} /> },
-  validee: { label: 'Validee', className: 'bg-green-50 text-green-700', icon: <CheckCircle size={12} /> },
-  refusee: { label: 'Refusee', className: 'bg-red-50 text-red-700', icon: <XCircle size={12} /> },
-  expiree: { label: 'Expiree', className: 'bg-slate-100 text-slate-500', icon: <XCircle size={12} /> },
+  en_attente: { label: 'En attente', className: 'bg-amber-50 text-amber-700', icon: <Clock size={11} /> },
+  en_cours_verification: { label: 'En verification', className: 'bg-blue-50 text-blue-700', icon: <Clock size={11} /> },
+  validee: { label: 'Validee', className: 'bg-[#1c7b1d]/10 text-[#1c7b1d]', icon: <CheckCircle size={11} /> },
+  refusee: { label: 'Refusee', className: 'bg-red-50 text-red-600', icon: <XCircle size={11} /> },
+  expiree: { label: 'Expiree', className: 'bg-[#f5f3f2] text-[#707a6a]', icon: <XCircle size={11} /> },
 }
 
 function formatEur(cents: number): string {
@@ -82,7 +82,6 @@ export default function ProSocial() {
     setUploading(true)
 
     try {
-      // Upload screenshot
       const ext = screenshotFile.name.split('.').pop() ?? 'png'
       const path = `pro/${company.id}/${Date.now()}.${ext}`
       const { error: uploadError } = await supabase.storage
@@ -104,7 +103,6 @@ export default function ProSocial() {
         reward_amount_cents: rewardCents,
       })
 
-      // Reset form
       setPostUrl('')
       setDescription('')
       setScreenshotFile(null)
@@ -118,64 +116,68 @@ export default function ProSocial() {
     }
   }
 
-  return (
-    <div className="p-6 lg:p-10">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-2">
-        <Share2 size={24} className="text-primary" />
-        <h1 className="font-display text-2xl uppercase tracking-wide text-slate-900">
-          Publications reseaux sociaux
-        </h1>
-      </div>
-      <p className="font-body text-sm text-slate-500 mb-8">
-        Partagez vos realisations BRH et obtenez une carte cadeau.
-      </p>
+  const inputClass = 'w-full px-4 py-3 rounded-xl border border-[#f5f3f2] hover:border-[#707a6a]/30 text-sm text-[#1b1c1c] bg-white focus:outline-none focus:ring-2 focus:ring-[#1c7b1d]/20 focus:border-[#1c7b1d]/40 transition-colors'
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  return (
+    <div className="p-8 lg:p-10">
+      {/* Header */}
+      <div className="mb-8">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Marketing</p>
+        <h1 className="font-display text-3xl font-bold tracking-[0.05em] text-[#1b1c1c] uppercase">
+          Publications sociales
+        </h1>
+        <p className="text-sm text-[#707a6a] mt-1">
+          Partagez vos realisations BRH et obtenez une carte cadeau.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Form */}
         <div>
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 mb-4">
+          <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
             {/* Monthly counter */}
             <div className="flex items-center justify-between mb-5">
-              <span className="font-body text-sm text-slate-600">Publications ce mois</span>
-              <span className={`font-display text-sm font-semibold px-3 py-1 rounded-full ${
-                limitReached ? 'bg-red-50 text-red-600' : 'bg-green-50 text-primary'
+              <span className="text-xs font-bold text-[#404a3c] uppercase tracking-wider">Publications ce mois</span>
+              <span className={`font-display text-sm font-bold px-3 py-1.5 rounded-full ${
+                limitReached
+                  ? 'bg-red-50 text-red-600'
+                  : 'bg-[#1c7b1d]/10 text-[#1c7b1d]'
               }`}>
                 {monthlyCount}/{MONTHLY_LIMIT}
               </span>
             </div>
 
             {limitReached && (
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-5">
-                <p className="font-body text-xs text-orange-700">
+              <div className="bg-amber-50 rounded-xl p-4 mb-5">
+                <p className="text-xs text-amber-700 font-medium">
                   Limite mensuelle atteinte. Vous pourrez soumettre de nouvelles publications le mois prochain.
                 </p>
               </div>
             )}
 
             {success && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-5 flex items-center gap-2">
-                <CheckCircle size={16} className="text-green-600 shrink-0" />
-                <p className="font-body text-xs text-green-700">Publication soumise avec succes !</p>
+              <div className="bg-[#1c7b1d]/10 rounded-xl p-4 mb-5 flex items-center gap-3">
+                <CheckCircle size={15} className="text-[#1c7b1d] shrink-0" />
+                <p className="text-xs text-[#1c7b1d] font-medium">Publication soumise avec succes !</p>
               </div>
             )}
 
             <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
               {/* Platform selector */}
               <div>
-                <label className="font-body text-xs text-slate-500 uppercase tracking-wide mb-2 block">
+                <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-3">
                   Plateforme
-                </label>
+                </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {PLATFORMS.map((p) => (
                     <button
                       key={p.value}
                       type="button"
                       onClick={() => setPlatform(p.value)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-body transition-colors ${
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wide transition-all ${
                         platform === p.value
-                          ? 'border-primary bg-primary/5 text-primary font-semibold'
-                          : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                          ? 'bg-[#1c7b1d]/10 text-[#1c7b1d] ring-1 ring-[#1c7b1d]/30'
+                          : 'bg-[#f5f3f2] text-[#707a6a] hover:text-[#1b1c1c]'
                       }`}
                     >
                       {p.icon}
@@ -187,13 +189,13 @@ export default function ProSocial() {
 
               {/* Post type */}
               <div>
-                <label className="font-body text-xs text-slate-500 uppercase tracking-wide mb-1.5 block">
+                <label className="block text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2">
                   Type de publication
                 </label>
                 <select
                   value={postType}
                   onChange={(e) => setPostType(e.target.value as SocialPostType)}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 font-body text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className={inputClass}
                 >
                   {POST_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -203,7 +205,7 @@ export default function ProSocial() {
 
               {/* URL */}
               <div>
-                <label className="font-body text-xs text-slate-500 uppercase tracking-wide mb-1.5 block">
+                <label className="block text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2">
                   URL de la publication
                 </label>
                 <input
@@ -212,25 +214,27 @@ export default function ProSocial() {
                   value={postUrl}
                   onChange={(e) => setPostUrl(e.target.value)}
                   placeholder="https://www.facebook.com/..."
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 font-body text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className={inputClass}
                 />
               </div>
 
               {/* Screenshot */}
               <div>
-                <label className="font-body text-xs text-slate-500 uppercase tracking-wide mb-1.5 block">
+                <label className="block text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2">
                   Capture d'ecran
                 </label>
                 <div
-                  className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center cursor-pointer hover:border-primary/40 transition-colors"
+                  className="border-2 border-dashed border-[#f5f3f2] hover:border-[#1c7b1d]/30 rounded-2xl p-5 text-center cursor-pointer transition-colors"
                   onClick={() => fileRef.current?.click()}
                 >
                   {screenshotFile ? (
-                    <p className="font-body text-sm text-primary">{screenshotFile.name}</p>
+                    <p className="text-sm font-medium text-[#1c7b1d]">{screenshotFile.name}</p>
                   ) : (
-                    <div className="flex flex-col items-center gap-1.5">
-                      <Upload size={20} className="text-slate-300" />
-                      <p className="font-body text-xs text-slate-400">Cliquer pour ajouter une image</p>
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-10 h-10 rounded-xl bg-[#f5f3f2] flex items-center justify-center">
+                        <Upload size={18} className="text-[#707a6a]/50" />
+                      </div>
+                      <p className="text-xs text-[#707a6a]">Cliquer pour ajouter une image</p>
                     </div>
                   )}
                 </div>
@@ -245,7 +249,7 @@ export default function ProSocial() {
 
               {/* Description */}
               <div>
-                <label className="font-body text-xs text-slate-500 uppercase tracking-wide mb-1.5 block">
+                <label className="block text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2">
                   Description (optionnel)
                 </label>
                 <textarea
@@ -253,24 +257,24 @@ export default function ProSocial() {
                   onChange={(e) => setDescription(e.target.value)}
                   rows={3}
                   placeholder="Decrivez votre publication..."
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 font-body text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                  className={`${inputClass} resize-none`}
                 />
               </div>
 
               {/* Reward preview */}
-              <div className="bg-green-50 border border-green-100 rounded-lg px-4 py-3 flex items-center justify-between">
-                <span className="font-body text-sm text-slate-600">Carte cadeau estimee</span>
-                <span className="font-display text-lg text-primary font-bold">{formatEur(rewardCents)}</span>
+              <div className="bg-[#1c7b1d]/10 rounded-xl px-5 py-4 flex items-center justify-between">
+                <span className="text-xs font-bold text-[#404a3c] uppercase tracking-wider">Carte cadeau estimee</span>
+                <span className="font-display text-lg font-bold text-[#1c7b1d]">{formatEur(rewardCents)}</span>
               </div>
 
               {formError && (
-                <p className="font-body text-xs text-red-500">{formError}</p>
+                <p className="text-xs text-red-500 font-medium">{formError}</p>
               )}
 
               <button
                 type="submit"
                 disabled={limitReached || uploading || createPost.isPending}
-                className="w-full bg-primary text-white font-body text-sm font-semibold py-2.5 px-4 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white py-3 px-6 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-[#1c7b1d]/20 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               >
                 {uploading || createPost.isPending ? 'Envoi en cours...' : 'Soumettre la publication'}
               </button>
@@ -280,20 +284,22 @@ export default function ProSocial() {
 
         {/* Past submissions */}
         <div>
-          <h2 className="font-display text-sm uppercase tracking-wide text-slate-700 mb-3">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-4">
             Mes soumissions
-          </h2>
+          </p>
 
           {loadingPosts && (
-            <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-100 text-center">
-              <p className="font-body text-slate-400 text-sm">Chargement...</p>
+            <div className="bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
+              <div className="w-7 h-7 border-3 border-[#1c7b1d]/30 border-t-[#1c7b1d] rounded-full animate-spin mx-auto" />
             </div>
           )}
 
           {!loadingPosts && posts.length === 0 && (
-            <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-100 text-center">
-              <Share2 size={36} className="text-slate-200 mx-auto mb-3" />
-              <p className="font-body text-slate-400 text-sm">Aucune publication soumise.</p>
+            <div className="bg-white rounded-2xl p-10 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
+              <div className="w-14 h-14 rounded-2xl bg-[#f5f3f2] flex items-center justify-center mx-auto mb-3">
+                <Share2 size={22} className="text-[#707a6a]/30" />
+              </div>
+              <p className="text-sm font-medium text-[#707a6a]">Aucune publication soumise.</p>
             </div>
           )}
 
@@ -303,38 +309,40 @@ export default function ProSocial() {
                 const cfg = STATUS_CONFIG[post.status] ?? STATUS_CONFIG.en_attente
                 const platformCfg = PLATFORMS.find((p) => p.value === post.platform)
                 return (
-                  <div key={post.id} className="bg-white rounded-xl p-4 shadow-sm border border-slate-100">
+                  <div key={post.id} className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-slate-500 shrink-0">{platformCfg?.icon}</span>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 rounded-xl bg-[#f5f3f2] flex items-center justify-center text-[#707a6a] shrink-0">
+                          {platformCfg?.icon}
+                        </div>
                         <div className="min-w-0">
-                          <p className="font-body text-sm text-slate-800 truncate">{platformCfg?.label}</p>
+                          <p className="text-sm font-semibold text-[#1b1c1c] truncate">{platformCfg?.label}</p>
                           <a
                             href={isSafeUrl(post.post_url)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="font-body text-xs text-primary flex items-center gap-1 hover:underline truncate"
+                            className="text-xs text-[#1c7b1d] flex items-center gap-1 hover:underline truncate font-medium"
                           >
-                            Voir la publication <ExternalLink size={10} />
+                            Voir la publication <ExternalLink size={9} />
                           </a>
                         </div>
                       </div>
-                      <span className={`shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-body ${cfg.className}`}>
+                      <span className={`shrink-0 flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${cfg.className}`}>
                         {cfg.icon} {cfg.label}
                       </span>
                     </div>
-                    <div className="mt-2 flex items-center justify-between">
-                      <span className="font-body text-xs text-slate-400">
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-xs text-[#707a6a]">
                         {new Date(post.created_at).toLocaleDateString('fr-FR')}
                       </span>
                       {post.reward_amount_cents != null && (
-                        <span className="font-body text-xs text-primary font-semibold">
+                        <span className="text-xs font-bold text-[#1c7b1d]">
                           {formatEur(post.reward_amount_cents)}
                         </span>
                       )}
                     </div>
                     {post.rejection_reason && (
-                      <p className="mt-2 font-body text-xs text-red-500 bg-red-50 rounded px-2 py-1">
+                      <p className="mt-2 text-xs text-red-500 font-medium bg-red-50 rounded-xl px-3 py-2">
                         Motif : {post.rejection_reason}
                       </p>
                     )}

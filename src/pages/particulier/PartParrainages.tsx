@@ -37,38 +37,42 @@ export default function PartParrainages() {
   const isLoading = loadingAffiliate || loadingProspects
 
   return (
-    <div className="p-6 lg:p-10">
+    <div className="p-8 lg:p-10">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <Users size={24} className="text-primary" />
-          <h1 className="font-display text-2xl uppercase tracking-wide text-slate-900">
+        <div>
+          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Partenariat</p>
+          <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-[#1b1c1c]">
             Mes parrainages
           </h1>
         </div>
         <Link
           to="/particulier/parrainages/nouveau"
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white font-display text-sm rounded-lg hover:bg-primary-dark transition-colors uppercase tracking-wide"
+          className="flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity"
         >
-          <Plus size={16} />
+          <Plus size={15} />
           Parrainer
         </Link>
       </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-[#1c7b1d] border-t-transparent rounded-full animate-spin" />
         </div>
       ) : prospects.length === 0 ? (
-        <div className="bg-white rounded-xl p-12 shadow-sm border border-slate-100 text-center">
-          <Users size={48} className="text-slate-200 mx-auto mb-4" />
-          <p className="font-display text-lg uppercase tracking-wide text-slate-400 mb-2">Aucun parrainage</p>
-          <p className="font-body text-sm text-slate-400 mb-6">Parrainez vos proches pour gagner des points !</p>
+        <div className="bg-white rounded-2xl p-14 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
+          <div className="w-16 h-16 bg-[#f5f3f2] rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <Users size={28} className="text-[#707a6a]" />
+          </div>
+          <p className="font-display text-lg font-bold uppercase tracking-[0.05em] text-[#404a3c] mb-2">
+            Aucun parrainage
+          </p>
+          <p className="text-sm text-[#707a6a] mb-8">Parrainez vos proches pour gagner des points !</p>
           <Link
             to="/particulier/parrainages/nouveau"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-display text-sm rounded-lg hover:bg-primary-dark transition-colors uppercase tracking-wide"
+            className="inline-flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity"
           >
-            <Plus size={16} />
+            <Plus size={15} />
             Mon premier parrainage
           </Link>
         </div>
@@ -79,41 +83,41 @@ export default function PartParrainages() {
             {prospects.map(prospect => {
               const status = STATUS_CONFIG[prospect.status]
               return (
-                <div key={prospect.id} className="bg-white rounded-xl p-5 shadow-sm border border-slate-100">
+                <div key={prospect.id} className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <p className="font-display text-base text-slate-900">
+                      <p className="font-bold text-[#1b1c1c] text-base">
                         {prospect.client_first_name} {prospect.client_last_name}
                       </p>
                       {prospect.client_phone && (
                         <div className="flex items-center gap-1.5 mt-1">
-                          <Phone size={12} className="text-slate-400" />
-                          <span className="font-body text-sm text-slate-500">{prospect.client_phone}</span>
+                          <Phone size={12} className="text-[#707a6a]" />
+                          <span className="text-sm text-[#707a6a]">{prospect.client_phone}</span>
                         </div>
                       )}
                     </div>
-                    <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-body font-medium ${status.bg} ${status.color}`}>
+                    <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${status.bg} ${status.color}`}>
                       {status.label}
                     </span>
                   </div>
                   {prospect.client_city && (
                     <div className="flex items-center gap-1.5 mb-2">
-                      <MapPin size={12} className="text-slate-400" />
-                      <span className="font-body text-sm text-slate-500">{prospect.client_city}</span>
+                      <MapPin size={12} className="text-[#707a6a]" />
+                      <span className="text-sm text-[#707a6a]">{prospect.client_city}</span>
                     </div>
                   )}
                   {prospect.work_type && prospect.work_type.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mb-3">
                       {prospect.work_type.map(wt => (
-                        <span key={wt} className="font-body text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                        <span key={wt} className="text-xs bg-[#f5f3f2] text-[#404a3c] px-2 py-0.5 rounded-lg font-medium">
                           {WORK_TYPE_LABELS[wt] ?? wt}
                         </span>
                       ))}
                     </div>
                   )}
-                  <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                  <div className="flex items-center gap-1.5 text-xs text-[#707a6a]">
                     <Clock size={12} />
-                    <span className="font-body">{formatDate(prospect.created_at)}</span>
+                    <span>{formatDate(prospect.created_at)}</span>
                   </div>
                 </div>
               )
@@ -121,46 +125,46 @@ export default function PartParrainages() {
           </div>
 
           {/* Desktop : table */}
-          <div className="hidden md:block bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="hidden md:block bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left font-display text-xs uppercase tracking-wide text-slate-500 px-6 py-4">Client</th>
-                  <th className="text-left font-display text-xs uppercase tracking-wide text-slate-500 px-6 py-4">Téléphone</th>
-                  <th className="text-left font-display text-xs uppercase tracking-wide text-slate-500 px-6 py-4">Travaux</th>
-                  <th className="text-left font-display text-xs uppercase tracking-wide text-slate-500 px-6 py-4">Statut</th>
-                  <th className="text-left font-display text-xs uppercase tracking-wide text-slate-500 px-6 py-4">Date</th>
+                <tr className="bg-[#f5f3f2]">
+                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a] px-6 py-4">Client</th>
+                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a] px-6 py-4">Téléphone</th>
+                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a] px-6 py-4">Travaux</th>
+                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a] px-6 py-4">Statut</th>
+                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a] px-6 py-4">Date</th>
                 </tr>
               </thead>
               <tbody>
-                {prospects.map((prospect, i) => {
+                {prospects.map((prospect) => {
                   const status = STATUS_CONFIG[prospect.status]
                   return (
-                    <tr key={prospect.id} className={`border-b border-slate-50 hover:bg-slate-50/50 transition-colors ${i % 2 === 0 ? '' : 'bg-slate-50/20'}`}>
+                    <tr key={prospect.id} className="hover:bg-[#f5f3f2]/50 transition-colors">
                       <td className="px-6 py-4">
-                        <p className="font-body text-sm font-medium text-slate-900">
+                        <p className="text-sm font-semibold text-[#1b1c1c]">
                           {prospect.client_first_name} {prospect.client_last_name}
                         </p>
                         {prospect.client_city && (
-                          <p className="font-body text-xs text-slate-400">{prospect.client_city}</p>
+                          <p className="text-xs text-[#707a6a] mt-0.5">{prospect.client_city}</p>
                         )}
                       </td>
-                      <td className="px-6 py-4 font-body text-sm text-slate-600">{prospect.client_phone}</td>
+                      <td className="px-6 py-4 text-sm text-[#404a3c]">{prospect.client_phone}</td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1">
                           {(prospect.work_type ?? []).map(wt => (
-                            <span key={wt} className="font-body text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                            <span key={wt} className="text-xs bg-[#f5f3f2] text-[#404a3c] px-2 py-0.5 rounded-lg font-medium">
                               {WORK_TYPE_LABELS[wt] ?? wt}
                             </span>
                           ))}
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-body font-medium ${status.bg} ${status.color}`}>
+                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${status.bg} ${status.color}`}>
                           {status.label}
                         </span>
                       </td>
-                      <td className="px-6 py-4 font-body text-sm text-slate-500">{formatDate(prospect.created_at)}</td>
+                      <td className="px-6 py-4 text-sm text-[#707a6a]">{formatDate(prospect.created_at)}</td>
                     </tr>
                   )
                 })}
