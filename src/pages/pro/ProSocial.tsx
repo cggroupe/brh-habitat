@@ -1,3 +1,4 @@
+import { isSafeUrl } from '@/lib/utils'
 import { useState, useRef } from 'react'
 import {
   Share2,
@@ -309,7 +310,7 @@ export default function ProSocial() {
                         <div className="min-w-0">
                           <p className="font-body text-sm text-slate-800 truncate">{platformCfg?.label}</p>
                           <a
-                            href={post.post_url}
+                            href={isSafeUrl(post.post_url)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="font-body text-xs text-primary flex items-center gap-1 hover:underline truncate"

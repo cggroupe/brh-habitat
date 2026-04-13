@@ -1,4 +1,18 @@
 /**
+ * Valide qu'une URL est safe (http/https uniquement, pas javascript:)
+ */
+export function isSafeUrl(url: string | null | undefined): string {
+  if (!url) return '#'
+  try {
+    const parsed = new URL(url)
+    if (parsed.protocol === 'https:' || parsed.protocol === 'http:') return url
+    return '#'
+  } catch {
+    return '#'
+  }
+}
+
+/**
  * Formate une date en string YYYY-MM-DD en utilisant la date locale (pas UTC).
  * Remplace toISOString().slice(0,10) qui cause un decalage de jour hors UTC.
  */

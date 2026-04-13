@@ -1,3 +1,4 @@
+import { isSafeUrl } from '@/lib/utils'
 import { useState, useRef } from 'react'
 import {
   Share2, Facebook, Instagram, Linkedin, Video, Star, Clock,
@@ -417,7 +418,7 @@ export default function PartSocial() {
                     <StatusBadge status={post.status} />
                   </div>
                   <a
-                    href={post.post_url}
+                    href={isSafeUrl(post.post_url)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-body text-xs text-primary hover:underline truncate block max-w-xs"

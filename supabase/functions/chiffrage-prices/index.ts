@@ -1,5 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../_shared/cors.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.96.0'
+import { getCorsHeaders } from '../_shared/cors.ts'
 
 // Se connecte a BRHCRM Supabase pour chercher les prix Batichiffrage
 const BRHCRM_URL = 'https://woicuzcxfdknxqdjuamj.supabase.co'
@@ -25,7 +25,7 @@ const CATEGORY_MAP: Record<string, string[]> = {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: getCorsHeaders(req) })
   }
 
   try {
@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     if (!BRHCRM_SERVICE_KEY) {
       return new Response(
         JSON.stringify({ error: 'BRHCRM non configure' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
       )
     }
 
@@ -70,12 +70,12 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ ouvrages: data ?? [], count: (data ?? []).length }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      { status: 200, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
     )
   } catch (err) {
     return new Response(
       JSON.stringify({ error: 'Erreur recherche prix', details: String(err) }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
     )
   }
 })

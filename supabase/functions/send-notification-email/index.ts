@@ -1,5 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../_shared/cors.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.96.0'
+import { getCorsHeaders } from '../_shared/cors.ts'
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? ''
 const EMAIL_FROM = Deno.env.get('EMAIL_FROM') ?? 'noreply@brh-habitat.fr'
@@ -12,7 +12,7 @@ interface EmailPayload {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: getCorsHeaders(req) })
   }
 
   try {
@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
     if (!recipient_id || !subject || !html) {
       return new Response(
         JSON.stringify({ error: 'recipient_id, subject et html requis' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
       )
     }
 
@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     if (profileError || !profile?.email) {
       return new Response(
         JSON.stringify({ error: 'Destinataire introuvable' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: 404, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
       )
     }
 
@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
       console.warn('RESEND_API_KEY non configure — email non envoye')
       return new Response(
         JSON.stringify({ warning: 'Email provider non configure', to: profile.email }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: 200, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
       )
     }
 
@@ -72,20 +72,20 @@ Deno.serve(async (req) => {
       console.error('Resend error:', errorText)
       return new Response(
         JSON.stringify({ error: 'Echec envoi email', details: errorText }),
-        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: 502, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
       )
     }
 
     const result = await response.json()
     return new Response(
       JSON.stringify({ success: true, email_id: result.id }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      { status: 200, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
     )
   } catch (err) {
     console.error('send-notification-email error:', err)
     return new Response(
       JSON.stringify({ error: 'Erreur interne' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
     )
   }
 })

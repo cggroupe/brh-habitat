@@ -1,3 +1,4 @@
+import { isSafeUrl } from '@/lib/utils'
 import { useState } from 'react'
 import {
   Share2,
@@ -179,7 +180,7 @@ export default function AdminPublications() {
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             <a
-                              href={post.post_url}
+                              href={isSafeUrl(post.post_url)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-primary hover:underline"

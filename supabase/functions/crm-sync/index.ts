@@ -1,12 +1,12 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { corsHeaders } from '../_shared/cors.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.96.0'
+import { getCorsHeaders } from '../_shared/cors.ts'
 
 const CRM_API_URL = Deno.env.get('CRM_API_URL') ?? ''
 const CRM_API_KEY = Deno.env.get('CRM_API_KEY') ?? ''
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: getCorsHeaders(req) })
   }
 
   try {
@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
     if (!prospect_id) {
       return new Response(
         JSON.stringify({ error: 'prospect_id requis' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
       )
     }
 
@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
     if (fetchError || !prospect) {
       return new Response(
         JSON.stringify({ error: 'Prospect introuvable' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: 404, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
       )
     }
 
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
       console.warn('CRM_API_URL ou CRM_API_KEY non configure — sync ignoree')
       return new Response(
         JSON.stringify({ warning: 'CRM non configure', prospect_id }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        { status: 200, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
       )
     }
 
@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
 
           return new Response(
             JSON.stringify({ success: true, crm_id: crmData.id }),
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+            { status: 200, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
           )
         }
 
@@ -111,13 +111,13 @@ Deno.serve(async (req) => {
     console.error('CRM sync echouee apres 3 tentatives:', lastError?.message)
     return new Response(
       JSON.stringify({ error: 'CRM sync echouee', details: lastError?.message }),
-      { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      { status: 502, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
     )
   } catch (err) {
     console.error('crm-sync error:', err)
     return new Response(
       JSON.stringify({ error: 'Erreur interne' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
     )
   }
 })
