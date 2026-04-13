@@ -166,6 +166,8 @@ export interface BrhMessageRow {
   body: string
   is_read: boolean
   read_at: string | null
+  attachment_url: string | null
+  attachment_name: string | null
   created_at: string
 }
 

@@ -71,6 +71,9 @@ const AdminPublications = lazy(() => import('@/pages/admin/AdminPublications'))
 const ProVendeurs = lazy(() => import('@/pages/pro/ProVendeurs'))
 const ProAssistant = lazy(() => import('@/pages/pro/ProAssistant'))
 const ProChiffrage = lazy(() => import('@/pages/pro/ProChiffrage'))
+const ProChiffrages = lazy(() => import('@/pages/pro/ProChiffrages'))
+const ProTeamStats = lazy(() => import('@/pages/pro/ProTeamStats'))
+const ProRapport = lazy(() => import('@/pages/pro/ProRapport'))
 
 // Lazy loaded pages — Particulier
 const PartDashboard = lazy(() => import('@/pages/particulier/PartDashboard'))
@@ -84,6 +87,8 @@ const PartSimulation = lazy(() => import('@/pages/particulier/PartSimulation'))
 const PartVendeurs = lazy(() => import('@/pages/particulier/PartVendeurs'))
 const PartAssistant = lazy(() => import('@/pages/particulier/PartAssistant'))
 const PartChiffrage = lazy(() => import('@/pages/particulier/PartChiffrage'))
+const PartChiffrages = lazy(() => import('@/pages/particulier/PartChiffrages'))
+const PartBadges = lazy(() => import('@/pages/particulier/PartBadges'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -178,6 +183,9 @@ export default function App() {
                 <Route path="/pro/vendeurs" element={<ProVendeurs />} />
                 <Route path="/pro/assistant" element={<ProAssistant />} />
                 <Route path="/pro/chiffrage" element={<ProChiffrage />} />
+                <Route path="/pro/chiffrages" element={<ProChiffrages />} />
+                <Route path="/pro/stats-equipe" element={<ProTeamStats />} />
+                <Route path="/pro/rapport" element={<ProRapport />} />
               </Route>
             </Route>
 
@@ -195,6 +203,8 @@ export default function App() {
                 <Route path="/particulier/vendeurs" element={<PartVendeurs />} />
                 <Route path="/particulier/assistant" element={<PartAssistant />} />
                 <Route path="/particulier/chiffrage" element={<PartChiffrage />} />
+                <Route path="/particulier/chiffrages" element={<PartChiffrages />} />
+                <Route path="/particulier/badges" element={<PartBadges />} />
               </Route>
             </Route>
 

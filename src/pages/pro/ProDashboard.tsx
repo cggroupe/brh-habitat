@@ -1,5 +1,7 @@
+import { useMemo } from 'react'
 import { LayoutDashboard, TrendingUp, Euro, UserPlus, CheckCircle, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
 import {
   useMyCompany,
@@ -7,6 +9,8 @@ import {
   useCompanyProspectStats,
   useCompanyProspects,
 } from '@/hooks/queries'
+import { MonthlyCAChart } from '@/components/pro/MonthlyCAChart'
+import { supabase } from '@/lib/supabase'
 import type { ProspectStatus } from '@/types/partner'
 
 const LEVEL_COLORS: Record<string, string> = {
@@ -34,8 +38,43 @@ const STATUS_LABELS: Record<ProspectStatus, string> = {
   perdu: 'Perdu',
 }
 
+const MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aou', 'Sep', 'Oct', 'Nov', 'Dec']
+
 function formatEur(centimes: number): string {
   return (centimes / 100).toLocaleString('fr-FR') + ' EUR'
+}
+
+// Build last 6 months as { year, month } descending
+function getLast6Months(): { year: number; month: number; label: string }[] {
+  const now = new Date()
+  const result = []
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    result.push({ year: d.getFullYear(), month: d.getMonth(), label: MONTH_NAMES[d.getMonth()] })
+  }
+  return result
+}
+
+// Fetch signed quotes for the company's prospects over the last 6 months
+async function fetchMonthlyCA(prospectIds: string[]): Promise<{ signed_at: string; amount: number }[]> {
+  if (prospectIds.length === 0) return []
+
+  const now = new Date()
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1)
+  // Use local date parts to avoid UTC shift
+  const y = sixMonthsAgo.getFullYear()
+  const m = String(sixMonthsAgo.getMonth() + 1).padStart(2, '0')
+  const d = String(sixMonthsAgo.getDate()).padStart(2, '0')
+  const isoStart = `${y}-${m}-${d}`
+
+  const { data, error } = await supabase
+    .from('brh_quotes')
+    .select('amount, signed_at')
+    .in('prospect_id', prospectIds)
+    .gte('signed_at', isoStart)
+
+  if (error) throw error
+  return (data ?? []) as { signed_at: string; amount: number }[]
 }
 
 export default function ProDashboard() {
@@ -44,6 +83,32 @@ export default function ProDashboard() {
   const { data: stats, isLoading: loadingStats } = useCompanyDashboardStats(company?.id)
   const { data: prospectStats } = useCompanyProspectStats(company?.id)
   const { data: recentProspects } = useCompanyProspects(company?.id, 0)
+
+  // Collect all prospect IDs to query quotes
+  const allProspectIds = useMemo(
+    () => recentProspects?.data?.map((p) => p.id) ?? [],
+    [recentProspects?.data],
+  )
+
+  const { data: rawQuotes, isLoading: loadingQuotes } = useQuery({
+    queryKey: ['company-monthly-ca', company?.id, allProspectIds.length],
+    queryFn: () => fetchMonthlyCA(allProspectIds),
+    enabled: allProspectIds.length > 0,
+  })
+
+  // Group quotes by month
+  const monthlyCA = useMemo(() => {
+    const months = getLast6Months()
+    return months.map(({ year, month, label }) => {
+      const amount = (rawQuotes ?? [])
+        .filter((q) => {
+          const d = new Date(q.signed_at)
+          return d.getFullYear() === year && d.getMonth() === month
+        })
+        .reduce((sum, q) => sum + (q.amount ?? 0), 0)
+      return { label, amount }
+    })
+  }, [rawQuotes])
 
   if (loadingCompany) {
     return (
@@ -66,6 +131,7 @@ export default function ProDashboard() {
   const levelClass = LEVEL_COLORS[stats?.level ?? company.level] ?? LEVEL_COLORS.bronze
   const statuses: ProspectStatus[] = ['nouveau', 'etude', 'devis_envoye', 'signe', 'termine', 'perdu']
   const total = prospectStats?.total ?? 0
+  const signedCount = prospectStats?.signe ?? 0
 
   return (
     <div className="p-6 lg:p-10">
@@ -127,6 +193,14 @@ export default function ProDashboard() {
           <p className="font-display text-2xl text-slate-900">{prospectStats?.total ?? 0}</p>
         </div>
       </div>
+
+      {/* Monthly CA chart */}
+      <MonthlyCAChart
+        monthlyCA={monthlyCA}
+        totalProspects={total}
+        signedProspects={signedCount}
+        loading={loadingQuotes && allProspectIds.length > 0}
+      />
 
       {/* Pipeline mini */}
       {total > 0 && (

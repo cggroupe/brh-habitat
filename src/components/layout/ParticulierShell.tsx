@@ -12,6 +12,8 @@ import {
   UserPlus,
   Sparkles,
   Calculator,
+  FileText,
+  Award,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -27,6 +29,8 @@ const partNavItems = [
   { to: '/particulier/reseaux-sociaux', label: 'Reseaux sociaux', icon: Share2 },
   { to: '/particulier/vendeurs', label: 'Mes vendeurs', icon: UserPlus },
   { to: '/particulier/chiffrage', label: 'Chiffrage IA', icon: Calculator },
+  { to: '/particulier/chiffrages', label: 'Mes chiffrages', icon: FileText },
+  { to: '/particulier/badges', label: 'Mes badges', icon: Award },
   { to: '/particulier/assistant', label: 'IA Batiment', icon: Sparkles },
 ]
 

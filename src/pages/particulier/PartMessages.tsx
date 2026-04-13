@@ -1,9 +1,18 @@
 import { useState, useEffect, useRef } from 'react'
-import { MessageSquare, Send, Plus, ArrowLeft, X } from 'lucide-react'
+import { MessageSquare, Send, Plus, ArrowLeft, X, Paperclip, CheckCheck, FileText } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { fetchMyThreads, fetchThreadMessages, createThread, sendMessage, markThreadMessagesRead } from '@/api/partner-messages'
+import {
+  fetchMyThreads,
+  fetchThreadMessages,
+  createThread,
+  sendMessage,
+  markThreadMessagesRead,
+  uploadMessageAttachment,
+} from '@/api/partner-messages'
 import type { BrhMessageRow } from '@/types/partner'
 import type { ThreadWithLastMessage } from '@/api/partner-messages'
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB
 
 function timeAgo(d: string): string {
   const diff = Date.now() - new Date(d).getTime()
@@ -13,6 +22,28 @@ function timeAgo(d: string): string {
   const h = Math.floor(min / 60)
   if (h < 24) return `${h}h`
   return `${Math.floor(h / 24)}j`
+}
+
+function AttachmentPreview({ url, name }: { url: string; name: string }) {
+  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(name)
+  if (isImage) {
+    return (
+      <a href={url} target="_blank" rel="noopener noreferrer" className="block mt-2">
+        <img src={url} alt={name} className="max-w-[180px] max-h-32 rounded-lg object-cover border border-white/20" />
+      </a>
+    )
+  }
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-2 mt-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+    >
+      <FileText size={14} className="shrink-0" />
+      <span className="font-body text-xs truncate max-w-[160px]">{name}</span>
+    </a>
+  )
 }
 
 export default function PartMessages() {
@@ -27,7 +58,11 @@ export default function PartMessages() {
   const [newBody, setNewBody] = useState('')
   const [creating, setCreating] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [attachError, setAttachError] = useState<string | null>(null)
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [uploadingFile, setUploadingFile] = useState(false)
   const messagesRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!user?.id) return
@@ -45,15 +80,54 @@ export default function PartMessages() {
     if (messagesRef.current) messagesRef.current.scrollTop = messagesRef.current.scrollHeight
   }, [messages])
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAttachError(null)
+    if (file.size > MAX_FILE_SIZE) {
+      setAttachError('Fichier trop volumineux (max 5 Mo)')
+      e.target.value = ''
+      return
+    }
+    setPendingFile(file)
+  }
+
   async function handleSend(e: React.FormEvent) {
     e.preventDefault()
-    if (!newMsg.trim() || !activeThread || !user?.id) return
+    if ((!newMsg.trim() && !pendingFile) || !activeThread || !user?.id) return
     setSending(true)
-    const msg = await sendMessage(activeThread, user.id, newMsg.trim())
+    setUploadingFile(false)
+
+    let attachmentUrl: string | undefined
+    let attachmentName: string | undefined
+
+    if (pendingFile) {
+      setUploadingFile(true)
+      try {
+        const result = await uploadMessageAttachment(user.id, activeThread, pendingFile)
+        attachmentUrl = result.url
+        attachmentName = result.name
+      } catch {
+        setAttachError("Echec de l'envoi du fichier")
+        setSending(false)
+        setUploadingFile(false)
+        return
+      }
+      setUploadingFile(false)
+    }
+
+    const msg = await sendMessage(
+      activeThread,
+      user.id,
+      newMsg.trim() || (attachmentName ?? ''),
+      attachmentUrl,
+      attachmentName,
+    )
     setMessages((prev) => [...prev, msg])
     setNewMsg('')
+    setPendingFile(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
     setSending(false)
-    // Refresh threads
     fetchMyThreads(user.id).then(setThreads)
   }
 
@@ -90,8 +164,10 @@ export default function PartMessages() {
           <MessageSquare size={24} className="text-primary" />
           <h1 className="font-display text-2xl uppercase tracking-wide text-slate-900">Messages</h1>
         </div>
-        <button onClick={() => { setShowNew(true); setActiveThread(null) }}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-white font-display text-sm rounded-lg hover:bg-primary-dark transition-colors uppercase tracking-wide">
+        <button
+          onClick={() => { setShowNew(true); setActiveThread(null) }}
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-white font-display text-sm rounded-lg hover:bg-primary-dark transition-colors uppercase tracking-wide"
+        >
           <Plus size={16} /> Nouveau message
         </button>
       </div>
@@ -108,12 +184,17 @@ export default function PartMessages() {
           ) : (
             <div className="flex-1 overflow-y-auto divide-y divide-slate-50">
               {threads.map((t) => (
-                <button key={t.id} onClick={() => { setActiveThread(t.id); setShowNew(false) }}
-                  className={`w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors ${activeThread === t.id ? 'bg-primary/5' : ''}`}>
+                <button
+                  key={t.id}
+                  onClick={() => { setActiveThread(t.id); setShowNew(false) }}
+                  className={`w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors ${activeThread === t.id ? 'bg-primary/5' : ''}`}
+                >
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-display text-sm text-slate-800 truncate">{t.subject}</span>
                     {t.unread_count > 0 && (
-                      <span className="w-5 h-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">{t.unread_count}</span>
+                      <span className="w-5 h-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                        {t.unread_count}
+                      </span>
                     )}
                   </div>
                   <p className="font-body text-xs text-slate-400 truncate">{t.last_message ?? '...'}</p>
@@ -130,23 +211,35 @@ export default function PartMessages() {
             <div className="flex-1 p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="font-display text-lg uppercase tracking-wide text-slate-900">Nouveau message</h2>
-                <button onClick={() => setShowNew(false)} className="p-1.5 text-slate-400 hover:text-slate-600"><X size={18} /></button>
+                <button onClick={() => setShowNew(false)} className="p-1.5 text-slate-400 hover:text-slate-600">
+                  <X size={18} />
+                </button>
               </div>
               <form onSubmit={(e) => void handleCreateThread(e)} className="space-y-4">
                 <div>
                   <label className="font-body text-sm text-slate-600 mb-1 block">Sujet</label>
-                  <input value={newSubject} onChange={(e) => setNewSubject(e.target.value)}
+                  <input
+                    value={newSubject}
+                    onChange={(e) => setNewSubject(e.target.value)}
                     className="w-full px-3 py-2.5 border border-slate-200 rounded-lg font-body text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    placeholder="Ex: Question sur mon parrainage" />
+                    placeholder="Ex: Question sur mon parrainage"
+                  />
                 </div>
                 <div>
                   <label className="font-body text-sm text-slate-600 mb-1 block">Message</label>
-                  <textarea value={newBody} onChange={(e) => setNewBody(e.target.value)} rows={5}
+                  <textarea
+                    value={newBody}
+                    onChange={(e) => setNewBody(e.target.value)}
+                    rows={5}
                     className="w-full px-3 py-2.5 border border-slate-200 rounded-lg font-body text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none"
-                    placeholder="Ecrivez votre message a l'equipe BRH..." />
+                    placeholder="Ecrivez votre message a l'equipe BRH..."
+                  />
                 </div>
-                <button type="submit" disabled={creating || !newSubject.trim() || !newBody.trim()}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-display text-sm rounded-lg hover:bg-primary-dark transition-colors uppercase tracking-wide disabled:opacity-60">
+                <button
+                  type="submit"
+                  disabled={creating || !newSubject.trim() || !newBody.trim()}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-display text-sm rounded-lg hover:bg-primary-dark transition-colors uppercase tracking-wide disabled:opacity-60"
+                >
                   <Send size={15} /> {creating ? 'Envoi...' : 'Envoyer'}
                 </button>
               </form>
@@ -155,11 +248,14 @@ export default function PartMessages() {
             <>
               {/* Thread header */}
               <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-3">
-                <button onClick={() => setActiveThread(null)} className="md:hidden p-1 text-slate-400"><ArrowLeft size={18} /></button>
+                <button onClick={() => setActiveThread(null)} className="md:hidden p-1 text-slate-400">
+                  <ArrowLeft size={18} />
+                </button>
                 <span className="font-display text-sm uppercase tracking-wide text-slate-700">
                   {threads.find((t) => t.id === activeThread)?.subject ?? 'Conversation'}
                 </span>
               </div>
+
               {/* Messages */}
               <div ref={messagesRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
                 {messages.map((msg) => {
@@ -167,21 +263,79 @@ export default function PartMessages() {
                   return (
                     <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl ${isMe ? 'bg-primary text-white rounded-br-sm' : 'bg-slate-100 text-slate-800 rounded-bl-sm'}`}>
-                        <p className="font-body text-sm whitespace-pre-wrap">{msg.body}</p>
-                        <p className={`font-body text-[10px] mt-1 ${isMe ? 'text-white/60' : 'text-slate-400'}`}>{timeAgo(msg.created_at)}</p>
+                        {/* Body — only show if not purely an attachment placeholder */}
+                        {(msg.body && msg.body !== msg.attachment_name) && (
+                          <p className="font-body text-sm whitespace-pre-wrap">{msg.body}</p>
+                        )}
+                        {/* Attachment */}
+                        {msg.attachment_url && msg.attachment_name && (
+                          <AttachmentPreview url={msg.attachment_url} name={msg.attachment_name} />
+                        )}
+                        {/* Footer: time + read indicator */}
+                        <div className={`flex items-center justify-end gap-1 mt-1 ${isMe ? 'text-white/60' : 'text-slate-400'}`}>
+                          <span className="font-body text-[10px]">{timeAgo(msg.created_at)}</span>
+                          {isMe && msg.is_read && (
+                            <CheckCheck size={12} className="text-white/80" />
+                          )}
+                        </div>
                       </div>
                     </div>
                   )
                 })}
               </div>
+
+              {/* Pending file indicator */}
+              {pendingFile && (
+                <div className="mx-4 mb-1 flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-lg">
+                  <Paperclip size={12} className="text-primary" />
+                  <span className="font-body text-xs text-primary truncate flex-1">{pendingFile.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => { setPendingFile(null); if (fileInputRef.current) fileInputRef.current.value = '' }}
+                    className="text-primary/60 hover:text-primary"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              )}
+              {attachError && (
+                <p className="mx-4 mb-1 font-body text-xs text-red-500">{attachError}</p>
+              )}
+
               {/* Input */}
-              <form onSubmit={(e) => void handleSend(e)} className="px-4 py-3 border-t border-slate-100 flex gap-2">
-                <input value={newMsg} onChange={(e) => setNewMsg(e.target.value)}
+              <form onSubmit={(e) => void handleSend(e)} className="px-4 py-3 border-t border-slate-100 flex gap-2 items-center">
+                {/* Hidden file input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,application/pdf"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                <button
+                  type="button"
+                  onClick={() => { setAttachError(null); fileInputRef.current?.click() }}
+                  className="p-2 text-slate-400 hover:text-primary transition-colors shrink-0"
+                  title="Joindre un fichier"
+                >
+                  <Paperclip size={18} />
+                </button>
+                <input
+                  value={newMsg}
+                  onChange={(e) => setNewMsg(e.target.value)}
                   className="flex-1 px-4 py-2.5 border border-slate-200 rounded-full font-body text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  placeholder="Votre message..." />
-                <button type="submit" disabled={sending || !newMsg.trim()}
-                  className="p-2.5 bg-primary text-white rounded-full hover:bg-primary-dark transition-colors disabled:opacity-60">
-                  <Send size={16} />
+                  placeholder="Votre message..."
+                />
+                <button
+                  type="submit"
+                  disabled={sending || (!newMsg.trim() && !pendingFile)}
+                  className="p-2.5 bg-primary text-white rounded-full hover:bg-primary-dark transition-colors disabled:opacity-60"
+                >
+                  {uploadingFile ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Send size={16} />
+                  )}
                 </button>
               </form>
             </>

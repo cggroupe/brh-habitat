@@ -13,6 +13,8 @@ import {
   Network,
   Sparkles,
   Calculator,
+  FileText,
+  BarChart3,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -29,6 +31,9 @@ const proNavItems = [
   { to: '/pro/qrcode', label: 'Mon QR Code', icon: QrCode },
   { to: '/pro/vendeurs', label: 'Mon reseau', icon: Network },
   { to: '/pro/chiffrage', label: 'Chiffrage IA', icon: Calculator },
+  { to: '/pro/chiffrages', label: 'Mes chiffrages', icon: FileText },
+  { to: '/pro/rapport', label: 'Rapport mensuel', icon: BarChart3 },
+  { to: '/pro/stats-equipe', label: 'Stats equipe', icon: BarChart3 },
   { to: '/pro/assistant', label: 'IA Batiment', icon: Sparkles },
 ]
 

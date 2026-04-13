@@ -1,8 +1,9 @@
 import { logError } from '@/lib/error'
 import { useState } from 'react'
-import { CalendarDays, CheckCircle2, Lock, X, Plus, Trash2 } from 'lucide-react'
+import { CalendarDays, CheckCircle2, Lock, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { formatLocalDate } from '@/lib/utils'
+import { CalendarWidget } from '@/components/shared/CalendarWidget'
+import type { DispoSlot } from '@/components/shared/CalendarWidget'
 
 interface ContactRdvModalProps {
   onClose: () => void
@@ -24,11 +25,6 @@ interface FormErrors {
   nom?: string
   telephone?: string
   email?: string
-}
-
-interface DispoSlot {
-  date: string
-  periode: 'matin' | 'apres-midi'
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -71,32 +67,17 @@ export function ContactRdvModal({
   })
   const [errors, setErrors] = useState<FormErrors>({})
   const [dispos, setDispos] = useState<DispoSlot[]>([])
-  const [newDate, setNewDate] = useState('')
-  const [newPeriode, setNewPeriode] = useState<'matin' | 'apres-midi'>('matin')
   const [isLoading, setIsLoading] = useState(false)
   const [isConfirmed, setIsConfirmed] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const prenom = form.nom.trim().split(' ')[0] ?? form.nom.trim()
-  const today = formatLocalDate()
 
   const handleChange = (field: keyof FormState, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }))
     if (errors[field as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }))
     }
-  }
-
-  function addDispo() {
-    if (!newDate) return
-    const exists = dispos.some((d) => d.date === newDate && d.periode === newPeriode)
-    if (exists) return
-    setDispos((prev) => [...prev, { date: newDate, periode: newPeriode }].sort((a, b) => a.date.localeCompare(b.date)))
-    setNewDate('')
-  }
-
-  function removeDispo(index: number) {
-    setDispos((prev) => prev.filter((_, i) => i !== index))
   }
 
   const handleSubmit = async () => {
@@ -263,42 +244,12 @@ export function ContactRdvModal({
                   Vos disponibilites <span className="text-red-500">*</span>
                 </label>
                 <p className="font-body text-xs text-slate-400 mb-3">
-                  Indiquez les creneaux ou vous etes disponible. L'equipe BRH vous recontactera pour confirmer.
+                  Cliquez sur les creneaux ou vous etes disponible. L'equipe BRH vous recontactera pour confirmer.
                 </p>
-
-                {/* Sélecteur d'ajout */}
-                <div className="flex gap-2 mb-3">
-                  <input type="date" min={today} value={newDate} onChange={(e) => setNewDate(e.target.value)}
-                    className="flex-1 px-3 py-2.5 rounded-xl border border-slate-200 font-body text-sm text-slate-900 focus:outline-none focus:border-[#1c7b1d] focus:ring-2 focus:ring-[#1c7b1d]/10" />
-                  <select value={newPeriode} onChange={(e) => setNewPeriode(e.target.value as 'matin' | 'apres-midi')}
-                    className="px-3 py-2.5 rounded-xl border border-slate-200 font-body text-sm text-slate-900 bg-white focus:outline-none focus:border-[#1c7b1d]">
-                    <option value="matin">Matin</option>
-                    <option value="apres-midi">Apres-midi</option>
-                  </select>
-                  <button type="button" onClick={addDispo} disabled={!newDate}
-                    className="px-3 py-2.5 rounded-xl bg-[#1c7b1d] text-white hover:bg-[#1c7b1d]/90 transition-colors disabled:opacity-40">
-                    <Plus size={16} />
-                  </button>
-                </div>
-
-                {/* Liste des dispos */}
-                {dispos.length > 0 && (
-                  <div className="space-y-2">
-                    {dispos.map((d, i) => (
-                      <div key={i} className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
-                        <div className="flex items-center gap-2">
-                          <CalendarDays size={14} className="text-[#1c7b1d]" />
-                          <span className="font-body text-xs text-[#1c7b1d] font-medium capitalize">
-                            {formatDateLabel(d.date)} — {d.periode === 'matin' ? 'Matin (8h-12h)' : 'Apres-midi (14h-18h)'}
-                          </span>
-                        </div>
-                        <button type="button" onClick={() => removeDispo(i)} className="p-1 text-red-400 hover:text-red-600">
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <CalendarWidget
+                  selectedSlots={dispos}
+                  onSlotsChange={setDispos}
+                />
               </div>
 
               {/* Message */}
