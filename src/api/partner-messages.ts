@@ -101,7 +101,7 @@ export async function sendMessage(
     .update({ last_message_at: new Date().toISOString() })
     .eq('id', validated.threadId)
 
-  if (threadError) logError(threadError)
+  if (threadError) logError('Failed to update thread last_message_at', threadError)
 
   return brhMessageRowSchema.parse(data) as BrhMessageRow
 }

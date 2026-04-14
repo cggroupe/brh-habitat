@@ -17,6 +17,6 @@ export function useSaveChiffrage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['chiffrages'] })
     },
-    onError: (err: Error) => logError(err),
+    onError: (err: Error) => logError('saveChiffrage failed', err),
   })
 }

@@ -18,6 +18,7 @@ export const affiliateWithProfileSchema = z.object({
   points_balance: z.number(),
   total_points_earned: z.number(),
   level: z.string(),
+  recruited_by: z.string().nullable().optional(),
   created_at: z.string(),
   profile: z.object({
     full_name: z.string(),

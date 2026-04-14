@@ -29,7 +29,7 @@ export function useNotifications(userId: string | undefined) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
     },
-    onError: (err: Error) => logError(err),
+    onError: (err: Error) => logError('markNotificationRead failed', err),
   })
 
   const markAllRead = useMutation({
@@ -37,7 +37,7 @@ export function useNotifications(userId: string | undefined) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
     },
-    onError: (err: Error) => logError(err),
+    onError: (err: Error) => logError('markAllNotificationsRead failed', err),
   })
 
   // Supabase Realtime — ecouter les nouvelles notifications
