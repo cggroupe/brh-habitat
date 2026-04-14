@@ -36,6 +36,7 @@ export function useArticleBySlug(slug: string | undefined) {
 export function useAdminArticles(page: number) {
   return useQuery({
     queryKey: ['articles', 'admin', page],
+    staleTime: 2 * 60_000,
     queryFn: () => fetchAllArticles(page),
   })
 }

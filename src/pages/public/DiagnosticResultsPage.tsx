@@ -105,7 +105,7 @@ export default function DiagnosticResultsPage() {
     const map: Partial<Record<DiagnosticType, number>> = {}
     for (const type of store.selectedTypes) map[type] = 0
     return map as Record<DiagnosticType, number>
-  }, [aides, store.selectedTypes])
+  }, [store.selectedTypes])
 
   const diagnosticSummary = useMemo(() => {
     if (!results) return ''

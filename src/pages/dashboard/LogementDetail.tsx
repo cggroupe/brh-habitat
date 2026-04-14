@@ -14,7 +14,7 @@ import { HealthTabNavigation, type CarnetTab } from '@/components/carnet/HealthT
 import { HealthOverview } from '@/components/carnet/HealthOverview'
 import { WorkHistoryList } from '@/components/carnet/WorkHistoryList'
 import { DocumentsList } from '@/components/carnet/DocumentsList'
-import { getUrgencyFromScore } from '@/components/carnet/HealthScoreGauge'
+import { getUrgencyFromScore } from '@/lib/health'
 import { LogementHeader } from './logement-detail/LogementHeader'
 import { LogementInfosTab, type EditFormValues } from './logement-detail/LogementInfosTab'
 import { LogementSidebar } from './logement-detail/LogementSidebar'

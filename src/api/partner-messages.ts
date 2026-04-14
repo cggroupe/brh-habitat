@@ -95,10 +95,12 @@ export async function sendMessage(
 
   if (error) throw error
 
-  await supabase
+  const { error: threadError } = await supabase
     .from('brh_message_threads')
     .update({ last_message_at: new Date().toISOString() })
     .eq('id', validated.threadId)
+
+  if (threadError) console.error('Failed to update thread last_message_at:', threadError)
 
   return brhMessageRowSchema.parse(data) as BrhMessageRow
 }

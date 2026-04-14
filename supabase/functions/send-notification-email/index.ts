@@ -26,10 +26,43 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Auth JWT obligatoire
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Authorization requise' }),
+        { status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
+      )
+    }
+    const token = authHeader.slice(7)
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
+
+    // Verifier que le token est valide
+    const { data: { user: caller }, error: authError } = await supabase.auth.getUser(token)
+    if (authError || !caller) {
+      return new Response(
+        JSON.stringify({ error: 'Token invalide' }),
+        { status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
+      )
+    }
+
+    // Seuls les admins peuvent envoyer des emails de notification
+    const { data: callerProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', caller.id)
+      .single()
+
+    if (profileError || callerProfile?.role !== 'admin') {
+      return new Response(
+        JSON.stringify({ error: 'Acces reserve aux administrateurs' }),
+        { status: 403, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
+      )
+    }
 
     const { recipient_id, subject, html } = (await req.json()) as EmailPayload
 

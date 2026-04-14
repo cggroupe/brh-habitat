@@ -126,13 +126,17 @@ Deno.serve(async (req) => {
           const crmData = await response.json()
 
           // Stocker l'ID CRM dans le prospect
-          await supabase
+          const { error: updateError } = await supabase
             .from('brh_prospects')
             .update({
               crm_id: crmData.id ?? crmData.prospect_id ?? null,
               crm_synced_at: new Date().toISOString(),
             })
             .eq('id', prospect_id)
+
+          if (updateError) {
+            console.error('Failed to mark prospect as synced:', updateError)
+          }
 
           return new Response(
             JSON.stringify({ success: true, crm_id: crmData.id }),

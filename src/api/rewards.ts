@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import type { BrhRewardsCatalogRow, BrhRewardClaimRow } from '@/types/partner'
+import type { BrhRewardsCatalogRow, BrhRewardClaimRow, RewardClaimStatus } from '@/types/partner'
 import { z } from 'zod'
 
 const affiliateWithNameSchema = z.object({
@@ -95,10 +95,10 @@ export async function fetchAllClaims(): Promise<(BrhRewardClaimRow & { affiliate
 
 export async function updateClaimStatus(
   id: string,
-  status: string,
+  status: RewardClaimStatus,
   adminNotes?: string,
 ): Promise<BrhRewardClaimRow> {
-  const payload: Partial<BrhRewardClaimRow> = { status: status as BrhRewardClaimRow['status'] }
+  const payload: Partial<BrhRewardClaimRow> = { status }
   if (adminNotes !== undefined) payload.admin_notes = adminNotes
 
   const { data, error } = await supabase

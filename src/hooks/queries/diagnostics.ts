@@ -38,6 +38,7 @@ export function useDiagnosticDetail(id: string | undefined) {
 export function useAdminDiagnostics(page: number, status?: DiagnosticStatus) {
   return useQuery({
     queryKey: ['diagnostics', 'admin', page, status],
+    staleTime: 2 * 60_000,
     queryFn: () => fetchDiagnostics(page, status),
   })
 }

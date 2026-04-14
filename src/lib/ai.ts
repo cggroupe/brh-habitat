@@ -14,6 +14,9 @@ export async function sendToAI(messages: { role: string; content: string }[], mo
   // Filtrer les system prompts — le serveur gere le system prompt selon l'endpoint
   const filteredMessages = messages.filter((m) => m.role !== 'system')
 
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 30_000)
+
   const response = await fetch(AI_PROXY_URL, {
     method: 'POST',
     headers: {
@@ -21,7 +24,10 @@ export async function sendToAI(messages: { role: string; content: string }[], mo
       Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
     },
     body: JSON.stringify({ mode, messages: filteredMessages }),
+    signal: controller.signal,
   })
+
+  clearTimeout(timeout)
 
   if (!response.ok) {
     throw new Error(`Erreur IA (${response.status})`)

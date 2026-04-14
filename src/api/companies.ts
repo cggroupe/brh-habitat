@@ -43,13 +43,14 @@ export interface PaginatedCompanies {
 }
 
 export async function fetchMyCompany(userId: string): Promise<BrhCompanyRow | null> {
-  const { data: membership } = await supabase
+  const { data: membership, error: memberError } = await supabase
     .from('brh_company_members')
     .select('company_id')
     .eq('profile_id', userId)
     .limit(1)
     .maybeSingle()
 
+  if (memberError) throw memberError
   if (!membership) return null
 
   const { data, error } = await supabase
@@ -108,11 +109,13 @@ export interface CompanyDashboardStats {
 }
 
 export async function fetchCompanyDashboardStats(companyId: string): Promise<CompanyDashboardStats> {
-  const { data: company } = await supabase
+  const { data: company, error: companyError } = await supabase
     .from('brh_companies')
     .select('total_ca_apporte, level, commission_rate_percent')
     .eq('id', companyId)
     .single()
+
+  if (companyError) throw companyError
 
   // Requete unique via RPC (pas de .in() illimite)
   const { data: stats, error: statsError } = await supabase.rpc('get_company_commission_stats', { p_company_id: companyId })

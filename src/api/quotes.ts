@@ -56,7 +56,7 @@ export async function updateQuoteCommissionStatus(
   paidAt?: string | null,
 ): Promise<BrhQuoteRow> {
   const payload: QuoteUpdate = { commission_status: status }
-  if (paidAt) payload.commission_paid_at = paidAt
+  if (paidAt !== undefined) payload.commission_paid_at = paidAt
 
   const { data, error } = await supabase
     .from('brh_quotes')

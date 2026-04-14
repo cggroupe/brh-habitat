@@ -28,12 +28,8 @@ const URGENCY_LABELS: Record<string, string> = {
   plus: 'Plus de 6 mois',
 }
 
-const BUDGET_LABELS: Record<string, string> = {
-  '<5000': 'Moins de 5 000 EUR',
-  '5000-15000': '5 000 – 15 000 EUR',
-  '15000-30000': '15 000 – 30 000 EUR',
-  '30000-50000': '30 000 – 50 000 EUR',
-  '>50000': 'Plus de 50 000 EUR',
+function formatBudget(cents: number): string {
+  return (cents / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
 }
 
 export default function ProProspectDetail() {
@@ -159,13 +155,13 @@ export default function ProProspectDetail() {
                   </div>
                 </div>
               )}
-              {prospect.estimated_budget && (
+              {prospect.estimated_budget != null && prospect.estimated_budget > 0 && (
                 <div className="flex items-center gap-4">
                   <div className="w-9 h-9 rounded-xl bg-background flex items-center justify-center shrink-0" />
                   <div>
                     <p className="text-[10px] uppercase tracking-wider font-bold text-text-light mb-0.5">Budget estime</p>
                     <p className="text-sm font-medium text-text-primary">
-                      {BUDGET_LABELS[prospect.estimated_budget] ?? prospect.estimated_budget}
+                      {formatBudget(prospect.estimated_budget)}
                     </p>
                   </div>
                 </div>

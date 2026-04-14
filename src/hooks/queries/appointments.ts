@@ -25,6 +25,7 @@ export function useUserAppointments(userId: string | undefined) {
 export function useAdminAppointments(page: number, filters?: AppointmentFilters) {
   return useQuery({
     queryKey: ['appointments', 'admin', page, filters],
+    staleTime: 2 * 60_000,
     queryFn: () => fetchAppointments(page, filters),
   })
 }

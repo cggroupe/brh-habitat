@@ -134,6 +134,7 @@ export default function ProfilPage() {
 
   // Sync newName when user changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync form from auth state
     if (user) setNewName(user.full_name)
   }, [user])
 

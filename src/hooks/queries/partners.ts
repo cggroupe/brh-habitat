@@ -72,7 +72,7 @@ import type { SocialPostInsert } from '@/api/social-posts'
 import { fetchMyRecruitTree, fetchNetworkStats, fetchMyRecruitmentCommissions } from '@/api/recruitment'
 
 // Partner types
-import type { ProspectStatus, CommissionStatus } from '@/types/partner'
+import type { ProspectStatus, CommissionStatus, RewardClaimStatus, SocialPostStatus } from '@/types/partner'
 
 // ===========================================================================
 // COMPANIES
@@ -97,6 +97,7 @@ export function useCompanyDetail(id: string | undefined) {
 export function useAdminCompanies(page: number) {
   return useQuery({
     queryKey: ['companies', 'admin', page],
+    staleTime: 2 * 60_000,
     queryFn: () => fetchAllCompanies(page),
   })
 }
@@ -137,6 +138,7 @@ export function useCompanyProspects(companyId: string | undefined, page: number,
 export function useAdminAllProspects(page: number, status?: ProspectStatus) {
   return useQuery({
     queryKey: ['prospects', 'admin', page, status],
+    staleTime: 2 * 60_000,
     queryFn: () => fetchAllProspects(page, status),
   })
 }
@@ -242,6 +244,7 @@ export function useRemoveMember() {
 export function useAdminQuotes(page: number, commissionStatus?: CommissionStatus) {
   return useQuery({
     queryKey: ['quotes', 'admin', page, commissionStatus],
+    staleTime: 2 * 60_000,
     queryFn: () => fetchAllQuotes(page, commissionStatus),
   })
 }
@@ -293,6 +296,7 @@ export function useMyAffiliate(userId: string | undefined) {
 export function useAdminAffiliates(page: number) {
   return useQuery({
     queryKey: ['affiliates', 'admin', page],
+    staleTime: 2 * 60_000,
     queryFn: () => fetchAllAffiliates(page),
   })
 }
@@ -381,6 +385,7 @@ export function useCreateRewardClaim() {
 export function useAdminClaims() {
   return useQuery({
     queryKey: ['rewards', 'claims', 'admin'],
+    staleTime: 2 * 60_000,
     queryFn: fetchAllClaims,
   })
 }
@@ -388,7 +393,7 @@ export function useAdminClaims() {
 export function useUpdateClaimStatus() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, status, adminNotes }: { id: string; status: string; adminNotes?: string }) =>
+    mutationFn: ({ id, status, adminNotes }: { id: string; status: RewardClaimStatus; adminNotes?: string }) =>
       updateClaimStatus(id, status, adminNotes),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rewards'] })
@@ -410,9 +415,10 @@ export function useMySocialPosts(userId: string | undefined) {
   })
 }
 
-export function useAdminSocialPosts(page: number, status?: string) {
+export function useAdminSocialPosts(page: number, status?: SocialPostStatus) {
   return useQuery({
     queryKey: ['social-posts', 'admin', page, status],
+    staleTime: 2 * 60_000,
     queryFn: () => fetchAllSocialPosts(page, status),
   })
 }
@@ -438,7 +444,7 @@ export function useUpdateSocialPostStatus() {
       adminNotes,
     }: {
       id: string
-      status: string
+      status: SocialPostStatus
       rejectionReason?: string | null
       adminNotes?: string | null
     }) => updateSocialPostStatus(id, status, rejectionReason, adminNotes),

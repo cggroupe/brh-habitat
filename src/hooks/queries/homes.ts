@@ -35,6 +35,7 @@ export function useHomeDetail(id: string | undefined) {
 export function useAdminHomes(page: number, filters?: HomeFilters) {
   return useQuery({
     queryKey: ['homes', 'admin', page, filters],
+    staleTime: 2 * 60_000,
     queryFn: () => fetchHomes(page, filters),
   })
 }

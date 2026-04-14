@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import {
   Award, Lock, Star, Trophy, Zap, Target, Users, TrendingUp,
   Heart, Shield, Flame, Crown, Gift, Medal, Rocket, CheckCircle,
@@ -88,7 +88,7 @@ export default function PartBadges() {
     enabled: !!user?.id,
   })
 
-  const unlockedIds = new Set(userBadges.map((ub) => ub.badge_id))
+  const unlockedIds = useMemo(() => new Set(userBadges.map((ub) => ub.badge_id)), [userBadges])
 
   // Auto-unlock: check conditions and insert if met
   useEffect(() => {
@@ -112,7 +112,8 @@ export default function PartBadges() {
         }
       }
       if (toUnlock.length === 0) return
-      await unlockBadges(user!.id, toUnlock)
+      if (!user?.id) return
+      await unlockBadges(user.id, toUnlock)
       void refetchUserBadges()
     }
 

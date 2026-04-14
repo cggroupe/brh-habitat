@@ -49,11 +49,7 @@ export function ArticleAuthorBio() {
   )
 }
 
-interface ArticleCtaBannerProps {
-  // no dynamic props needed — static content
-}
-
-export function ArticleCtaBanner(_props: ArticleCtaBannerProps) {
+export function ArticleCtaBanner() {
   return (
     <div className="mt-16 relative overflow-hidden rounded-2xl">
       <div

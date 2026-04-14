@@ -127,7 +127,6 @@ export default function AdminParametres() {
   const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
-    setIsLoading(true)
     supabase
       .from('brh_platform_settings')
       .select('*')
@@ -137,6 +136,7 @@ export default function AdminParametres() {
         if (error) {
           setLoadError('Impossible de charger les paramètres.')
         } else if (data) {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { key: _key, updated_at: _ua, ...rest } = data as BrhPlatformSettingsRow
           setSettings(rest)
         }

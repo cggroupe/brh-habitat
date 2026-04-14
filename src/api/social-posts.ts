@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { formatLocalDate } from '@/lib/utils'
-import type { BrhSocialPostRow } from '@/types/partner'
+import type { BrhSocialPostRow, SocialPostStatus } from '@/types/partner'
 import { PAGE_SIZE } from '@/data/constants'
 import { socialPostInsertSchema, brhSocialPostRowSchema, type SocialPostInsert } from './schemas'
 
@@ -23,7 +23,7 @@ export async function fetchMySocialPosts(userId: string): Promise<BrhSocialPostR
   return brhSocialPostRowSchema.array().parse(data ?? []) as BrhSocialPostRow[]
 }
 
-export async function fetchAllSocialPosts(page: number, status?: string): Promise<PaginatedSocialPosts> {
+export async function fetchAllSocialPosts(page: number, status?: SocialPostStatus): Promise<PaginatedSocialPosts> {
   const from = page * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
 
@@ -57,7 +57,7 @@ export async function createSocialPost(payload: SocialPostInsert): Promise<BrhSo
 
 export async function updateSocialPostStatus(
   id: string,
-  status: string,
+  status: SocialPostStatus,
   rejectionReason?: string | null,
   adminNotes?: string | null,
 ): Promise<BrhSocialPostRow> {
@@ -68,8 +68,8 @@ export async function updateSocialPostStatus(
     expiry.setDate(expiry.getDate() + 30)
     payload.expiry_check_date = formatLocalDate(expiry)
   }
-  if (rejectionReason) payload.rejection_reason = rejectionReason
-  if (adminNotes) payload.admin_notes = adminNotes
+  if (rejectionReason !== undefined) payload.rejection_reason = rejectionReason
+  if (adminNotes !== undefined) payload.admin_notes = adminNotes
 
   const { data, error } = await supabase
     .from('brh_social_posts')
@@ -87,12 +87,16 @@ export async function getMonthlyPostCount(userId: string): Promise<number> {
   startOfMonth.setDate(1)
   startOfMonth.setHours(0, 0, 0, 0)
 
+  const y = startOfMonth.getFullYear()
+  const m = String(startOfMonth.getMonth() + 1).padStart(2, '0')
+  const startStr = `${y}-${m}-01`
+
   const { count, error } = await supabase
     .from('brh_social_posts')
     .select('*', { count: 'exact', head: true })
     .eq('submitted_by', userId)
     .neq('status', 'refusee')
-    .gte('created_at', startOfMonth.toISOString())
+    .gte('created_at', startStr)
 
   if (error) throw error
   return count ?? 0

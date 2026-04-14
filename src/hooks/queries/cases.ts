@@ -35,6 +35,7 @@ export function useCaseDetail(id: string | undefined) {
 export function useAdminCases(page: number, status?: CaseStatus) {
   return useQuery({
     queryKey: ['cases', 'admin', page, status],
+    staleTime: 2 * 60_000,
     queryFn: () => fetchCases(page, status),
   })
 }

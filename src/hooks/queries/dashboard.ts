@@ -22,7 +22,7 @@ export function useRecentDiagnostics(limit = 5) {
 
 export function useUserCounts(userIds: string[]) {
   return useQuery({
-    queryKey: ['dashboard', 'user-counts', userIds],
+    queryKey: ['dashboard', 'user-counts', userIds.join(',')],
     queryFn: () => fetchUserCounts(userIds),
     enabled: userIds.length > 0,
   })

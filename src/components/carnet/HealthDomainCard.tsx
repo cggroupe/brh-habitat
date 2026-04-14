@@ -5,7 +5,7 @@ import { HEALTH_DOMAIN_LABELS, HEALTH_DOMAIN_COLORS, URGENCY_LABELS, URGENCY_COL
 import { symptomsByType } from '@/data/symptoms'
 import { healthImpacts, domainSummaries } from '@/data/health-impacts'
 import type { DiagnosticType } from '@/stores/diagnosticStore'
-import { getUrgencyFromScore } from './HealthScoreGauge'
+import { getUrgencyFromScore } from '@/lib/health'
 
 const ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
   Droplets, Thermometer, Wind, Square, Zap, Home, Wrench,
@@ -31,7 +31,7 @@ export function HealthDomainCard({ domain, record, onSave }: Props) {
   const colors = HEALTH_DOMAIN_COLORS[domain]
   const iconName = DOMAIN_ICON[domain]
   const Icon = ICON_MAP[iconName] ?? Home
-  const domainSymptoms = symptomsByType[domain as DiagnosticType] ?? []
+  const domainSymptoms = useMemo(() => symptomsByType[domain as DiagnosticType] ?? [], [domain])
   const summary = domainSummaries[domain]
 
   // Calcul du score automatique depuis les symptomes

@@ -67,7 +67,6 @@ export default function PartMessages() {
 
   useEffect(() => {
     if (!user?.id) return
-    setLoading(true)
     fetchMyThreads(user.id).then(setThreads).finally(() => setLoading(false))
   }, [user?.id])
 
@@ -122,36 +121,46 @@ export default function PartMessages() {
       setUploadingFile(false)
     }
 
-    const msg = await sendMessage(
-      activeThread,
-      user.id,
-      newMsg.trim() || (attachmentName ?? ''),
-      attachmentUrl,
-      attachmentName,
-    )
-    setMessages((prev) => [...prev, msg])
-    setNewMsg('')
-    clearFile()
-    setSending(false)
-    fetchMyThreads(user.id).then(setThreads)
+    try {
+      const msg = await sendMessage(
+        activeThread,
+        user.id,
+        newMsg.trim() || (attachmentName ?? ''),
+        attachmentUrl,
+        attachmentName,
+      )
+      setMessages((prev) => [...prev, msg])
+      setNewMsg('')
+      clearFile()
+      fetchMyThreads(user.id).then(setThreads)
+    } catch {
+      setAttachError("Echec de l'envoi du message")
+    } finally {
+      setSending(false)
+    }
   }
 
   async function handleCreateThread(e: React.FormEvent) {
     e.preventDefault()
     if (!newSubject.trim() || !newBody.trim() || !user?.id) return
     setCreating(true)
-    const thread = await createThread({
-      subject: newSubject.trim(),
-      participantId: user.id,
-      participantType: 'particulier',
-      firstMessage: newBody.trim(),
-    })
-    setShowNew(false)
-    setNewSubject('')
-    setNewBody('')
-    setCreating(false)
-    setActiveThread(thread.id)
-    fetchMyThreads(user.id).then(setThreads)
+    try {
+      const thread = await createThread({
+        subject: newSubject.trim(),
+        participantId: user.id,
+        participantType: 'particulier',
+        firstMessage: newBody.trim(),
+      })
+      setShowNew(false)
+      setNewSubject('')
+      setNewBody('')
+      setActiveThread(thread.id)
+      fetchMyThreads(user.id).then(setThreads)
+    } catch {
+      // erreur geree silencieusement — le bouton se debloque
+    } finally {
+      setCreating(false)
+    }
   }
 
   if (loading) {

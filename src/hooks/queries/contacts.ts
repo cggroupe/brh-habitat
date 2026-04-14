@@ -21,6 +21,7 @@ export function useCreateContact() {
 export function useAdminContacts(page: number, status?: ContactStatus) {
   return useQuery({
     queryKey: ['contacts', 'admin', page, status],
+    staleTime: 2 * 60_000,
     queryFn: () => fetchContacts(page, status),
   })
 }

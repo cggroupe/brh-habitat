@@ -28,7 +28,10 @@ function loadUser(): User | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
-    return JSON.parse(raw) as User
+    const parsed = JSON.parse(raw)
+    // Le role n'est pas persiste en localStorage — il sera charge depuis Supabase via validateSession
+    // On retourne un user partiel pour l'affichage initial (nom, avatar) sans role
+    return { ...parsed, role: parsed.role ?? 'particulier' } as User
   } catch {
     return null
   }
@@ -45,7 +48,11 @@ function loadLocale(): 'fr' | 'en' {
 function saveUser(user: User | null) {
   try {
     if (user) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
+      // Ne PAS persister le role en localStorage (falsifiable via XSS)
+      // On ne stocke que id, email, full_name, avatar_url pour le cache d'affichage
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { role: _role, ...safeFields } = user
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(safeFields))
     } else {
       localStorage.removeItem(STORAGE_KEY)
     }

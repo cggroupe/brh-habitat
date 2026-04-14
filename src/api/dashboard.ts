@@ -9,12 +9,7 @@ export interface DashboardStats {
 }
 
 export async function fetchDashboardStats(): Promise<DashboardStats> {
-  const [
-    { count: diagnosticsCount },
-    { count: usersCount },
-    { count: casesCount },
-    { count: rdvCount },
-  ] = await Promise.all([
+  const results = await Promise.all([
     supabase.from('brh_diagnostics').select('*', { count: 'exact', head: true }),
     supabase.from('profiles').select('*', { count: 'exact', head: true }),
     supabase
@@ -27,21 +22,26 @@ export async function fetchDashboardStats(): Promise<DashboardStats> {
       .eq('status', 'demande'),
   ])
 
+  for (const r of results) {
+    if (r.error) throw r.error
+  }
+
   return {
-    diagnostics: diagnosticsCount ?? 0,
-    users: usersCount ?? 0,
-    activeCases: casesCount ?? 0,
-    pendingRdv: rdvCount ?? 0,
+    diagnostics: results[0].count ?? 0,
+    users: results[1].count ?? 0,
+    activeCases: results[2].count ?? 0,
+    pendingRdv: results[3].count ?? 0,
   }
 }
 
 export async function fetchRecentDiagnostics(limit = 5): Promise<BrhDiagnosticRow[]> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('brh_diagnostics')
     .select('*')
     .order('created_at', { ascending: false })
     .limit(limit)
 
+  if (error) throw error
   return data ?? []
 }
 

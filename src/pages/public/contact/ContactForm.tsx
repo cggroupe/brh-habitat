@@ -1,5 +1,5 @@
 import { logError } from '@/lib/error'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Send, CheckCircle } from 'lucide-react'
 import { useCreateContact } from '@/hooks/queries'
 
@@ -38,7 +38,15 @@ export function ContactForm() {
   const [cooldownUntil, setCooldownUntil] = useState<number | null>(null)
   const createContact = useCreateContact()
 
-  const isOnCooldown = cooldownUntil !== null && Date.now() < cooldownUntil
+  const [now, setNow] = useState(() => Date.now())
+
+  useEffect(() => {
+    if (cooldownUntil === null) return
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [cooldownUntil])
+
+  const isOnCooldown = cooldownUntil !== null && now < cooldownUntil
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>

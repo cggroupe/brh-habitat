@@ -16,11 +16,11 @@ const WORK_TYPES = [
 ]
 
 const BUDGET_OPTIONS = [
-  { value: '<5000', label: 'Moins de 5 000 EUR' },
-  { value: '5000-15000', label: '5 000 – 15 000 EUR' },
-  { value: '15000-30000', label: '15 000 – 30 000 EUR' },
-  { value: '30000-50000', label: '30 000 – 50 000 EUR' },
-  { value: '>50000', label: 'Plus de 50 000 EUR' },
+  { value: '500000', label: 'Moins de 5 000 EUR' },
+  { value: '1500000', label: '5 000 – 15 000 EUR' },
+  { value: '3000000', label: '15 000 – 30 000 EUR' },
+  { value: '5000000', label: '30 000 – 50 000 EUR' },
+  { value: '10000000', label: 'Plus de 50 000 EUR' },
 ]
 
 const URGENCY_OPTIONS = [
@@ -109,8 +109,8 @@ export default function ProProspectNew() {
         client_city: form.client_city.trim() || null,
         client_postal_code: form.client_postal_code.trim() || null,
         work_type: form.work_type,
-        estimated_budget: form.estimated_budget || null,
-        urgency: form.urgency || null,
+        estimated_budget: form.estimated_budget ? parseInt(form.estimated_budget, 10) : null,
+        urgency: (form.urgency || null) as 'immediate' | '3mois' | '6mois' | 'plus' | null,
         notes: form.notes.trim() || null,
       })
       navigate('/pro/prospects')

@@ -35,7 +35,7 @@ export default function ArticlePage() {
   // Load markdown content
   useEffect(() => {
     if (!slug) return
-    setLoading(true)
+     
     setMarkdown('')
     const path = `/src/data/articles/${slug}.md`
     const loader = markdownModules[path]
@@ -65,7 +65,9 @@ export default function ArticlePage() {
     return () => { document.title = 'BRH - Bretagne Renovation Habitat' }
   }, [article])
 
+   
   const toc = useMemo(() => (markdown ? extractH2s(markdown) : []), [markdown])
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- rebuild when markdown changes
   const markdownComponents = useMemo(() => buildMarkdownComponents(), [markdown])
 
   // 404

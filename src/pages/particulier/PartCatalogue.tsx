@@ -16,13 +16,12 @@ function formatValue(cents: number | null): string | null {
 interface ExchangeModalProps {
   reward: BrhRewardsCatalogRow
   balance: number
-  affiliateId: string
   onClose: () => void
   onConfirm: (shippingAddress?: string) => void
   isPending: boolean
 }
 
-function ExchangeModal({ reward, balance, affiliateId: _affiliateId, onClose, onConfirm, isPending }: ExchangeModalProps) {
+function ExchangeModal({ reward, balance, onClose, onConfirm, isPending }: ExchangeModalProps) {
   const [shippingAddress, setShippingAddress] = useState('')
   const isPhysical = reward.type === 'produit_physique'
 
@@ -244,7 +243,6 @@ export default function PartCatalogue() {
         <ExchangeModal
           reward={selectedReward}
           balance={balance}
-          affiliateId={affiliate.id}
           onClose={() => setSelectedReward(null)}
           onConfirm={handleConfirm}
           isPending={createClaim.isPending}

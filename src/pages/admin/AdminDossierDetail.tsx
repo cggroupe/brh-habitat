@@ -44,9 +44,9 @@ export default function AdminDossierDetail() {
   const [estimatedBudget, setEstimatedBudget] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-
   useEffect(() => {
     if (!caseData) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync form fields from server data
     setStatus(caseData.status)
     setAssignedTo(caseData.assigned_to ?? '')
     setAdminNotes(caseData.admin_notes ?? '')

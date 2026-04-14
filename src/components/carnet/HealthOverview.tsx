@@ -1,6 +1,7 @@
 import type { BrhHomeRow, BrhHealthRecordRow, HealthDomain } from '@/types/database'
 import { HEALTH_DOMAINS } from '@/data/constants'
-import { HealthScoreGauge, getUrgencyFromScore } from './HealthScoreGauge'
+import { HealthScoreGauge } from './HealthScoreGauge'
+import { getUrgencyFromScore } from '@/lib/health'
 import { HealthDomainCard } from './HealthDomainCard'
 import { BretagneAlerts } from './BretagneAlerts'
 

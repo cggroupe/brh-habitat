@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Users, AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, ShieldCheck } from 'lucide-react'
 import { useAdminProfiles, useUpdateProfileRole, useUserCounts } from '@/hooks/queries'
 import { useAppStore } from '@/stores/appStore'
@@ -18,7 +18,7 @@ export default function AdminUtilisateurs() {
   const { data, isLoading, isError } = useAdminProfiles(page)
   const updateProfileRole = useUpdateProfileRole()
 
-  const profiles = data?.data ?? []
+  const profiles = useMemo(() => data?.data ?? [], [data?.data])
   const total = data?.count ?? 0
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
@@ -42,6 +42,7 @@ export default function AdminUtilisateurs() {
   // Initialize local roles when profiles load
   useEffect(() => {
     if (profiles.length === 0) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync form from server data
     setLocalRoles((prev) => {
       const next = { ...prev }
       profiles.forEach((p) => {
@@ -132,9 +133,8 @@ export default function AdminUtilisateurs() {
                     const isExpanded = expandedId === profile.id
 
                     return (
-                      <>
+                      <React.Fragment key={profile.id}>
                         <tr
-                          key={profile.id}
                           className={`border-b border-gray-light transition-colors ${isDirty ? 'bg-amber-50' : 'hover:bg-background'} ${isExpanded ? '' : 'last:border-0'}`}
                         >
                           {/* User info */}
@@ -252,7 +252,7 @@ export default function AdminUtilisateurs() {
                             </td>
                           </tr>
                         )}
-                      </>
+                      </React.Fragment>
                     )
                   })}
                 </tbody>

@@ -1,5 +1,6 @@
 import type { HealthUrgency } from '@/types/database'
 import { URGENCY_LABELS, URGENCY_COLORS } from '@/data/constants'
+import { getUrgencyFromScore } from '@/lib/health'
 import { CheckCircle2, Info, TrendingUp, AlertTriangle } from 'lucide-react'
 
 const URGENCY_ICONS = {
@@ -14,13 +15,6 @@ const STROKE_COLORS: Record<HealthUrgency, string> = {
   modere: '#ca8a04',
   eleve: '#ea580c',
   critique: '#dc2626',
-}
-
-export function getUrgencyFromScore(score: number): HealthUrgency {
-  if (score >= 75) return 'critique'
-  if (score >= 50) return 'eleve'
-  if (score >= 25) return 'modere'
-  return 'faible'
 }
 
 interface HealthScoreGaugeProps {

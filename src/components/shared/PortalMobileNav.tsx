@@ -25,6 +25,7 @@ export default function PortalMobileNav({ portalLabel, navItems, rootPath }: Por
 
   // Fermer au changement de route
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: sync UI with route
     setOpen(false)
   }, [location.pathname])
 

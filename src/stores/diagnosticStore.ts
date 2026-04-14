@@ -180,6 +180,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
     }),
     {
       name: `${tenantId}-diagnostic-draft`,
+      version: 1,
       // Ne persister que les données du diagnostic, pas les fonctions
       partialize: (state) => ({
         draftId: state.draftId,

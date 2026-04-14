@@ -1,19 +1,9 @@
 import { MapPin, Ruler, FileText, Thermometer, Layers } from 'lucide-react'
 import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
-import { DPE_RATINGS } from '@/data/constants'
+import { DPE_RATINGS, DPE_BADGE_COLORS } from '@/data/constants'
 import type { BrhHomeRow, DpeRating } from '@/types/database'
 
 // ─── Shared helpers ──────────────────────────────────────────────────────────
-
-const DPE_BADGE_COLORS: Record<DpeRating, string> = {
-  A: 'bg-emerald-100 text-emerald-800',
-  B: 'bg-green-100 text-green-800',
-  C: 'bg-lime-100 text-lime-800',
-  D: 'bg-yellow-100 text-yellow-800',
-  E: 'bg-orange-100 text-orange-800',
-  F: 'bg-red-100 text-red-700',
-  G: 'bg-red-200 text-red-900',
-}
 
 function DpeBadge({ rating }: { rating: DpeRating | null }) {
   if (!rating) return <span className="font-body text-text-light text-sm">Non renseigné</span>

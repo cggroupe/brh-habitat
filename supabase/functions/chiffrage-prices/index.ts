@@ -39,10 +39,36 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { categories, search } = await req.json() as {
+    // Auth JWT obligatoire
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Authorization requise' }),
+        { status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
+      )
+    }
+    const token = authHeader.slice(7)
+    const authSupabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    )
+    const { data: { user: caller }, error: authError } = await authSupabase.auth.getUser(token)
+    if (authError || !caller) {
+      return new Response(
+        JSON.stringify({ error: 'Token invalide' }),
+        { status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
+      )
+    }
+
+    const { categories, search: rawSearch } = await req.json() as {
       categories?: string[]
       search?: string
     }
+
+    // Sanitiser search : max 100 chars, echapper les caracteres speciaux SQL LIKE
+    const search = rawSearch
+      ? rawSearch.slice(0, 100).replace(/[%_\\]/g, '\\$&')
+      : undefined
 
     if (!BRHCRM_SERVICE_KEY) {
       return new Response(

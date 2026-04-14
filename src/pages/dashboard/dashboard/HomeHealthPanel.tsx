@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { Home, MapPin, ChevronDown, HeartPulse, ArrowRight } from 'lucide-react'
 import { HEALTH_DOMAINS, HEALTH_DOMAIN_LABELS, HEALTH_DOMAIN_COLORS } from '@/data/constants'
-import { HealthScoreGauge, getUrgencyFromScore } from '@/components/carnet/HealthScoreGauge'
+import { HealthScoreGauge } from '@/components/carnet/HealthScoreGauge'
+import { getUrgencyFromScore } from '@/lib/health'
 import type { BrhHomeRow } from '@/types/database'
 import type { HealthDomain } from '@/types/database'
 
