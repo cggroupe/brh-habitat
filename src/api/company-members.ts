@@ -6,6 +6,18 @@ export interface CompanyMemberWithProfile extends BrhCompanyMemberRow {
   profile: Pick<ProfileRow, 'id' | 'email' | 'full_name' | 'avatar_url'>
 }
 
+export async function addCompanyMember(
+  companyId: string,
+  profileId: string,
+  memberRole: BrhCompanyMemberRow['member_role'] = 'owner'
+): Promise<void> {
+  const { error } = await supabase
+    .from('brh_company_members')
+    .insert({ company_id: companyId, profile_id: profileId, member_role: memberRole })
+
+  if (error) throw error
+}
+
 export async function fetchCompanyMembers(companyId: string): Promise<CompanyMemberWithProfile[]> {
   const { data, error } = await supabase
     .from('brh_company_members')

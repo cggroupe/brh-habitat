@@ -33,7 +33,7 @@ const STATUS_COLORS: Record<ProspectStatus, string> = {
   nouveau:      'bg-blue-400',
   etude:        'bg-orange-400',
   devis_envoye: 'bg-yellow-400',
-  signe:        'bg-[#1c7b1d]',
+  signe:        'bg-primary',
   termine:      'bg-emerald-600',
   perdu:        'bg-red-400',
 }
@@ -42,7 +42,7 @@ const STATUS_BADGE: Record<ProspectStatus, string> = {
   nouveau:      'bg-blue-50 text-blue-600',
   etude:        'bg-orange-50 text-orange-600',
   devis_envoye: 'bg-yellow-50 text-yellow-700',
-  signe:        'bg-[#1c7b1d]/10 text-[#1c7b1d]',
+  signe:        'bg-primary/10 text-primary',
   termine:      'bg-emerald-50 text-emerald-700',
   perdu:        'bg-red-50 text-red-500',
 }
@@ -128,7 +128,7 @@ export default function ProDashboard() {
   if (loadingCompany) {
     return (
       <div className="p-8 lg:p-10 flex items-center justify-center min-h-[300px]">
-        <div className="w-8 h-8 border-4 border-[#1c7b1d] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -137,7 +137,7 @@ export default function ProDashboard() {
     return (
       <div className="p-8 lg:p-10">
         <div className="bg-white rounded-2xl p-8 shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 text-center">
-          <p className="text-sm text-[#707a6a]">Aucune entreprise associee a votre compte.</p>
+          <p className="text-sm text-text-light">Aucune entreprise associee a votre compte.</p>
         </div>
       </div>
     )
@@ -160,10 +160,10 @@ export default function ProDashboard() {
       {/* ── Top bar ─────────────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
         <div>
-          <h1 className="font-display text-2xl text-[#1b1c1c] tracking-[0.04em]">
-            Bonjour, <span className="text-[#1c7b1d]">{firstName}</span> !
+          <h1 className="font-display text-2xl text-text-primary tracking-[0.04em]">
+            Bonjour, <span className="text-primary">{firstName}</span> !
           </h1>
-          <p className="text-sm text-[#707a6a] mt-0.5">{company.name}</p>
+          <p className="text-sm text-text-light mt-0.5">{company.name}</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -173,8 +173,8 @@ export default function ProDashboard() {
             {levelLabel}
           </span>
           <div className="bg-white rounded-xl px-4 py-2 shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80">
-            <span className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Commission</span>
-            <p className="font-display text-lg text-[#1c7b1d] leading-tight">{commissionRate}%</p>
+            <span className="text-[10px] uppercase tracking-widest font-bold text-text-light">Commission</span>
+            <p className="font-display text-lg text-primary leading-tight">{commissionRate}%</p>
           </div>
         </div>
       </div>
@@ -184,15 +184,15 @@ export default function ProDashboard() {
         {/* CA apporte */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 bg-[#1c7b1d]/10 rounded-xl flex items-center justify-center">
-              <TrendingUp size={20} className="text-[#1c7b1d]" />
+            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+              <TrendingUp size={20} className="text-primary" />
             </div>
-            <ArrowUpRight size={14} className="text-[#81c784]" />
+            <ArrowUpRight size={14} className="text-primary-light" />
           </div>
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">CA apporte</p>
-          <p className="font-display text-2xl text-[#1b1c1c]">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">CA apporte</p>
+          <p className="font-display text-2xl text-text-primary">
             {loadingStats ? (
-              <span className="text-[#707a6a] text-lg">...</span>
+              <span className="text-text-light text-lg">...</span>
             ) : formatEur(stats?.totalCa ?? 0)}
           </p>
         </div>
@@ -205,10 +205,10 @@ export default function ProDashboard() {
             </div>
             <ArrowUpRight size={14} className="text-orange-300" />
           </div>
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Commissions dues</p>
-          <p className="font-display text-2xl text-[#1b1c1c]">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Commissions dues</p>
+          <p className="font-display text-2xl text-text-primary">
             {loadingStats ? (
-              <span className="text-[#707a6a] text-lg">...</span>
+              <span className="text-text-light text-lg">...</span>
             ) : formatEur(stats?.commissionsDues ?? 0)}
           </p>
         </div>
@@ -216,17 +216,17 @@ export default function ProDashboard() {
         {/* Commissions versees */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 bg-[#81c784]/20 rounded-xl flex items-center justify-center">
-              <CheckCircle size={20} className="text-[#1c7b1d]" />
+            <div className="w-10 h-10 bg-primary-light/20 rounded-xl flex items-center justify-center">
+              <CheckCircle size={20} className="text-primary" />
             </div>
-            <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#81c784]/20 text-[#1c7b1d] font-bold">
+            <span className="text-[10px] px-2.5 py-1 rounded-full bg-primary-light/20 text-primary font-bold">
               Verse
             </span>
           </div>
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Commissions versees</p>
-          <p className="font-display text-2xl text-[#1b1c1c]">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Commissions versees</p>
+          <p className="font-display text-2xl text-text-primary">
             {loadingStats ? (
-              <span className="text-[#707a6a] text-lg">...</span>
+              <span className="text-text-light text-lg">...</span>
             ) : formatEur(stats?.commissionsVersees ?? 0)}
           </p>
         </div>
@@ -239,8 +239,8 @@ export default function ProDashboard() {
             </div>
             <ArrowUpRight size={14} className="text-blue-300" />
           </div>
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Prospects total</p>
-          <p className="font-display text-3xl text-[#1b1c1c]">{prospectStats?.total ?? 0}</p>
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Prospects total</p>
+          <p className="font-display text-3xl text-text-primary">{prospectStats?.total ?? 0}</p>
         </div>
       </div>
 
@@ -257,7 +257,7 @@ export default function ProDashboard() {
       {/* ── Pipeline ─────────────────────────────────────────────────────────── */}
       {total > 0 && (
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 mb-6">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-5">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-5">
             Pipeline prospects
           </p>
           <div className="space-y-3">
@@ -266,14 +266,14 @@ export default function ProDashboard() {
               const pct = total > 0 ? Math.round((count / total) * 100) : 0
               return (
                 <div key={s} className="flex items-center gap-4">
-                  <span className="text-[11px] font-bold text-[#404a3c] w-24 shrink-0">{STATUS_LABELS[s]}</span>
-                  <div className="flex-1 bg-[#f5f3f2] rounded-full h-2.5 overflow-hidden">
+                  <span className="text-[11px] font-bold text-text-secondary w-24 shrink-0">{STATUS_LABELS[s]}</span>
+                  <div className="flex-1 bg-background rounded-full h-2.5 overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${STATUS_COLORS[s]}`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <span className="text-[11px] font-bold text-[#707a6a] w-5 text-right tabular-nums">{count}</span>
+                  <span className="text-[11px] font-bold text-text-light w-5 text-right tabular-nums">{count}</span>
                 </div>
               )
             })}
@@ -283,13 +283,13 @@ export default function ProDashboard() {
 
       {/* ── Recent prospects ─────────────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#f5f3f2]">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-background">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light">
             Derniers prospects
           </p>
           <Link
             to="/pro/prospects"
-            className="flex items-center gap-1 text-xs font-bold text-[#1c7b1d] hover:text-[#359932] transition-colors uppercase tracking-wider"
+            className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-green transition-colors uppercase tracking-wider"
           >
             Voir tout <ChevronRight size={13} />
           </Link>
@@ -297,13 +297,13 @@ export default function ProDashboard() {
 
         {!recentProspects?.data?.length ? (
           <div className="p-10 text-center">
-            <div className="w-12 h-12 bg-[#1c7b1d]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <UserPlus size={22} className="text-[#1c7b1d]" />
+            <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <UserPlus size={22} className="text-primary" />
             </div>
-            <p className="text-sm text-[#707a6a] mb-4">Aucun prospect pour le moment.</p>
+            <p className="text-sm text-text-light mb-4">Aucun prospect pour le moment.</p>
             <Link
               to="/pro/prospects/nouveau"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1c7b1d] text-white text-xs font-bold rounded-xl hover:bg-[#359932] transition-colors uppercase tracking-wider"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary-green transition-colors uppercase tracking-wider"
             >
               <UserPlus size={14} />
               Envoyer un prospect
@@ -314,30 +314,30 @@ export default function ProDashboard() {
             {recentProspects.data.slice(0, 5).map((p, idx) => (
               <li
                 key={p.id}
-                className={idx < recentProspects.data.slice(0, 5).length - 1 ? 'border-b border-[#f5f3f2]' : ''}
+                className={idx < recentProspects.data.slice(0, 5).length - 1 ? 'border-b border-background' : ''}
               >
                 <Link
                   to={`/pro/prospects/${p.id}`}
-                  className="flex items-center justify-between px-6 py-3.5 hover:bg-[#f5f3f2]/60 transition-colors group"
+                  className="flex items-center justify-between px-6 py-3.5 hover:bg-background/60 transition-colors group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-[#1c7b1d]/08 rounded-xl flex items-center justify-center shrink-0">
-                      <span className="text-[10px] font-bold text-[#1c7b1d]">
+                    <div className="w-8 h-8 bg-primary/08 rounded-xl flex items-center justify-center shrink-0">
+                      <span className="text-[10px] font-bold text-primary">
                         {p.client_first_name.charAt(0)}{p.client_last_name.charAt(0)}
                       </span>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-[#1b1c1c]">
+                      <p className="text-sm font-semibold text-text-primary">
                         {p.client_first_name} {p.client_last_name}
                       </p>
-                      <p className="text-[11px] text-[#707a6a]">{p.client_city ?? ''}</p>
+                      <p className="text-[11px] text-text-light">{p.client_city ?? ''}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[p.status]}`}>
                       {STATUS_LABELS[p.status]}
                     </span>
-                    <ChevronRight size={14} className="text-[#c8c8c0] group-hover:text-[#707a6a] transition-colors" />
+                    <ChevronRight size={14} className="text-neutral-light group-hover:text-text-light transition-colors" />
                   </div>
                 </Link>
               </li>

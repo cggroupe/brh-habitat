@@ -221,6 +221,48 @@ export interface BrhSimulationShareRow {
   created_at: string
 }
 
+// === Recruitment ===
+export type RecruitmentCommissionSourceType = 'commission_pro' | 'points_particulier'
+export type RecruitmentCommissionStatus = 'en_attente' | 'validee' | 'versee'
+
+export interface BrhRecruitmentCommissionRow {
+  id: string
+  recruiter_id: string
+  recruited_id: string
+  source_type: RecruitmentCommissionSourceType
+  source_amount: number
+  commission_rate_percent: number
+  commission_amount: number
+  reference_id: string | null
+  status: RecruitmentCommissionStatus
+  paid_at: string | null
+  notes: string | null
+  created_at: string
+}
+
+// === Badges / Gamification ===
+export type BadgeConditionType = 'parrainages_total' | 'parrainages_signes' | 'points_earned' | 'level_reached' | 'recruits_total' | 'chiffrages_total'
+
+export interface BrhBadgeRow {
+  id: string
+  code: string
+  name: string
+  description: string
+  icon: string
+  condition_type: BadgeConditionType
+  condition_value: number
+  sort_order: number
+  created_at: string
+}
+
+export interface BrhUserBadgeRow {
+  id: string
+  user_id: string
+  badge_id: string
+  unlocked_at: string
+}
+
+// === Platform Settings ===
 export interface BrhPlatformSettingsRow {
   key: string
   points_per_signed_quote: number

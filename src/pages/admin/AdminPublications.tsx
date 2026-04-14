@@ -2,10 +2,6 @@ import { isSafeUrl } from '@/lib/utils'
 import { useState } from 'react'
 import {
   Share2,
-  Facebook,
-  Instagram,
-  Linkedin,
-  Youtube,
   Star,
   ExternalLink,
   CheckCircle,
@@ -15,6 +11,7 @@ import {
   ChevronRight,
   Image as ImageIcon,
 } from 'lucide-react'
+import { FacebookIcon, InstagramIcon, LinkedinIcon, TiktokIcon } from '@/components/ui/SocialIcons'
 import { useAdminSocialPosts, useUpdateSocialPostStatus } from '@/hooks/queries'
 import { supabase } from '@/lib/supabase'
 import type { SocialPlatform, SocialPostStatus } from '@/types/partner'
@@ -22,10 +19,10 @@ import type { SocialPlatform, SocialPostStatus } from '@/types/partner'
 const PAGE_SIZE = 10
 
 const PLATFORM_CONFIG: Record<SocialPlatform, { label: string; icon: React.ReactNode }> = {
-  facebook: { label: 'Facebook', icon: <Facebook size={14} /> },
-  instagram: { label: 'Instagram', icon: <Instagram size={14} /> },
-  linkedin: { label: 'LinkedIn', icon: <Linkedin size={14} /> },
-  tiktok: { label: 'TikTok', icon: <Youtube size={14} /> },
+  facebook: { label: 'Facebook', icon: <FacebookIcon size={14} /> },
+  instagram: { label: 'Instagram', icon: <InstagramIcon size={14} /> },
+  linkedin: { label: 'LinkedIn', icon: <LinkedinIcon size={14} /> },
+  tiktok: { label: 'TikTok', icon: <TiktokIcon size={14} /> },
   google_business: { label: 'Google', icon: <Star size={14} /> },
 }
 

@@ -1,22 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { formatLocalDate } from '@/lib/utils'
-import {
-  ArrowLeft,
-  Home,
-  Pencil,
-  Trash2,
-  Check,
-  X,
-  Loader2,
-  AlertCircle,
-  Thermometer,
-  Layers,
-  CalendarDays,
-  Ruler,
-  MapPin,
-  FileText,
-} from 'lucide-react'
+import { ArrowLeft, Loader2, AlertCircle, Trash2, X } from 'lucide-react'
 import {
   useHomeDetail, useUpdateHome, useDeleteHome,
   useHomeHealthRecords, useUpsertHealthRecord,
@@ -24,61 +9,61 @@ import {
   useHomeDocuments, useCreateDocument, useUpdateDocument, useDeleteDocument,
 } from '@/hooks/queries'
 import { useAppStore } from '@/stores/appStore'
-import { DPE_RATINGS } from '@/data/constants'
-import type { BrhHomeRow, DpeRating, HealthDomain } from '@/types/database'
+import type { DpeRating, HealthDomain } from '@/types/database'
 import { HealthTabNavigation, type CarnetTab } from '@/components/carnet/HealthTabNavigation'
-import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
 import { HealthOverview } from '@/components/carnet/HealthOverview'
 import { WorkHistoryList } from '@/components/carnet/WorkHistoryList'
 import { DocumentsList } from '@/components/carnet/DocumentsList'
-import { HealthScoreGauge, getUrgencyFromScore } from '@/components/carnet/HealthScoreGauge'
+import { getUrgencyFromScore } from '@/components/carnet/HealthScoreGauge'
+import { LogementHeader } from './logement-detail/LogementHeader'
+import { LogementInfosTab, type EditFormValues } from './logement-detail/LogementInfosTab'
+import { LogementSidebar } from './logement-detail/LogementSidebar'
+import type { BrhHomeRow } from '@/types/database'
 
-// ─── DPE helpers ──────────────────────────────────────────────────────────────
-
-const DPE_BADGE_COLORS: Record<DpeRating, string> = {
-  A: 'bg-emerald-100 text-emerald-800',
-  B: 'bg-green-100 text-green-800',
-  C: 'bg-lime-100 text-lime-800',
-  D: 'bg-yellow-100 text-yellow-800',
-  E: 'bg-orange-100 text-orange-800',
-  F: 'bg-red-100 text-red-700',
-  G: 'bg-red-200 text-red-900',
+interface DeleteModalProps {
+  onConfirm: () => void
+  onCancel: () => void
+  deleting: boolean
 }
 
-function DpeBadge({ rating }: { rating: DpeRating | null }) {
-  if (!rating) return <span className="font-body text-text-light text-sm">Non renseigné</span>
+function DeleteModal({ onConfirm, onCancel, deleting }: DeleteModalProps) {
   return (
-    <span className={`inline-flex items-center justify-center w-9 h-9 rounded-full text-sm font-display font-bold ${DPE_BADGE_COLORS[rating]}`}>
-      {rating}
-    </span>
-  )
-}
-
-// ─── Info row ─────────────────────────────────────────────────────────────────
-
-function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex items-start justify-between py-3 border-b border-gray-light last:border-0">
-      <span className="font-body text-sm text-text-light shrink-0 w-40">{label}</span>
-      <span className="font-body text-sm text-text-primary text-right">{value ?? '—'}</span>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+              <Trash2 size={18} className="text-red-600" />
+            </div>
+            <h2 className="font-display text-base text-text-primary">Supprimer ce logement</h2>
+          </div>
+          <button onClick={onCancel} className="text-text-light hover:text-text-primary transition-colors">
+            <X size={18} />
+          </button>
+        </div>
+        <p className="font-body text-sm text-text-secondary mb-6">
+          Cette action est irréversible. Toutes les données associées (santé, travaux, documents) seront définitivement supprimées.
+        </p>
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            disabled={deleting}
+            className="flex-1 px-4 py-2.5 rounded-xl border border-gray-light text-sm font-body text-text-secondary hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            Annuler
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={deleting}
+            className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-white text-sm font-body hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+            {deleting ? 'Suppression…' : 'Supprimer'}
+          </button>
+        </div>
+      </div>
     </div>
   )
-}
-
-// ─── Edit form ────────────────────────────────────────────────────────────────
-
-interface EditFormValues {
-  address: string
-  city: string
-  postal_code: string
-  property_type: string
-  surface: string
-  year_built: string
-  floors: string
-  heating_type: string
-  insulation_type: string
-  dpe_rating: string
-  notes: string
 }
 
 function homeToForm(home: BrhHomeRow): EditFormValues {
@@ -97,51 +82,6 @@ function homeToForm(home: BrhHomeRow): EditFormValues {
   }
 }
 
-// ─── Delete confirmation modal ────────────────────────────────────────────────
-
-function DeleteModal({
-  onConfirm,
-  onCancel,
-  deleting,
-}: {
-  onConfirm: () => void
-  onCancel: () => void
-  deleting: boolean
-}) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-sm p-6">
-        <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-danger mb-4">
-          <Trash2 size={20} />
-        </div>
-        <h3 className="font-display text-xl text-text-primary mb-2">Supprimer ce logement ?</h3>
-        <p className="font-body text-sm text-text-secondary mb-6">
-          Cette action est irréversible. Le logement et toutes ses données associées seront supprimés définitivement.
-        </p>
-        <div className="flex gap-3">
-          <button
-            onClick={onCancel}
-            disabled={deleting}
-            className="flex-1 px-4 py-2.5 border border-gray-light text-text-secondary font-display text-sm rounded-xl hover:bg-background transition-colors disabled:opacity-50"
-          >
-            Annuler
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={deleting}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-danger text-white font-display text-sm rounded-xl hover:bg-red-600 transition-colors disabled:opacity-60"
-          >
-            {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-            {deleting ? 'Suppression...' : 'Supprimer'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function LogementDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -151,7 +91,6 @@ export default function LogementDetail() {
   const updateMutation = useUpdateHome()
   const deleteMutation = useDeleteHome()
 
-  // Carnet de sante hooks
   const { data: healthRecords = [] } = useHomeHealthRecords(id)
   const upsertHealth = useUpsertHealthRecord()
   const { data: workHistory = [] } = useHomeWorkHistory(id)
@@ -169,14 +108,6 @@ export default function LogementDetail() {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [showDelete, setShowDelete] = useState(false)
 
-  const typeLabel: Record<string, string> = {
-    maison: 'Maison',
-    appartement: 'Appartement',
-    immeuble: 'Immeuble',
-    commerce: 'Commerce',
-    autre: 'Autre',
-  }
-
   const inputCls =
     'w-full px-3.5 py-2.5 border border-gray-light rounded-xl text-sm font-body text-text-primary bg-background focus:outline-none focus:border-primary transition-colors'
 
@@ -193,16 +124,13 @@ export default function LogementDetail() {
     setSaveError(null)
   }
 
-  function handleFormChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) {
+  function handleFormChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
     setForm(prev => prev ? { ...prev, [e.target.name]: e.target.value } : prev)
   }
 
   function handleSave() {
     if (!form || !home) return
     setSaveError(null)
-
     if (!form.address.trim() || !form.city.trim() || !form.postal_code.trim()) {
       setSaveError('Adresse, ville et code postal sont obligatoires.')
       return
@@ -211,7 +139,6 @@ export default function LogementDetail() {
       setSaveError('La surface doit être un nombre positif.')
       return
     }
-
     updateMutation.mutate(
       {
         id: home.id,
@@ -230,13 +157,8 @@ export default function LogementDetail() {
         },
       },
       {
-        onSuccess: () => {
-          setEditing(false)
-          setForm(null)
-        },
-        onError: () => {
-          setSaveError("Impossible de sauvegarder les modifications.")
-        },
+        onSuccess: () => { setEditing(false); setForm(null) },
+        onError: () => setSaveError("Impossible de sauvegarder les modifications."),
       }
     )
   }
@@ -244,12 +166,8 @@ export default function LogementDetail() {
   function handleDelete() {
     if (!home) return
     deleteMutation.mutate(home.id, {
-      onSuccess: () => {
-        navigate('/mes-logements')
-      },
-      onError: () => {
-        setShowDelete(false)
-      },
+      onSuccess: () => navigate('/mes-logements'),
+      onError: () => setShowDelete(false),
     })
   }
 
@@ -285,62 +203,17 @@ export default function LogementDetail() {
         <ArrowLeft size={15} /> Retour aux logements
       </Link>
 
-      {/* Header */}
-      <div className="flex items-start justify-between mb-8 gap-4">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-            <Home size={22} />
-          </div>
-          <div>
-            <h1 className="font-display text-3xl text-text-primary leading-tight">
-              {home.address}
-            </h1>
-            <p className="font-body text-text-secondary mt-1 flex items-center gap-1.5">
-              <MapPin size={13} />
-              {home.postal_code} {home.city}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          {!editing ? (
-            <>
-              <button
-                onClick={startEditing}
-                className="flex items-center gap-1.5 px-4 py-2 border border-gray-light text-text-secondary font-display text-sm rounded-xl hover:border-primary hover:text-primary transition-colors"
-              >
-                <Pencil size={14} />
-                Modifier
-              </button>
-              <button
-                onClick={() => setShowDelete(true)}
-                className="flex items-center gap-1.5 px-4 py-2 border border-red-200 text-danger font-display text-sm rounded-xl hover:bg-red-50 transition-colors"
-              >
-                <Trash2 size={14} />
-                Supprimer
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={cancelEditing}
-                className="flex items-center gap-1.5 px-4 py-2 border border-gray-light text-text-secondary font-display text-sm rounded-xl hover:bg-background transition-colors"
-              >
-                <X size={14} />
-                Annuler
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={updateMutation.isPending}
-                className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white font-display text-sm rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-60"
-              >
-                {updateMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-                {updateMutation.isPending ? 'Sauvegarde...' : 'Sauvegarder'}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
+      <LogementHeader
+        address={home.address}
+        postalCode={home.postal_code}
+        city={home.city}
+        editing={editing}
+        saving={updateMutation.isPending}
+        onStartEditing={startEditing}
+        onCancelEditing={cancelEditing}
+        onSave={handleSave}
+        onShowDelete={() => setShowDelete(true)}
+      />
 
       {saveError && (
         <div className="flex items-center gap-2 p-3 mb-6 bg-red-50 rounded-xl text-sm text-danger font-body">
@@ -352,146 +225,20 @@ export default function LogementDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: tabs + content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Onglets */}
           <HealthTabNavigation activeTab={activeTab} onChange={setActiveTab} />
 
-          {/* === ONGLET INFOS === */}
           {activeTab === 'infos' && (
-            <>
-              {/* Informations générales */}
-              <div className="bg-surface rounded-2xl border border-gray-light p-6">
-                <h2 className="font-display text-lg text-text-primary mb-4 flex items-center gap-2">
-                  <MapPin size={16} className="text-primary" />
-                  Informations générales
-                </h2>
-                {!editing ? (
-                  <>
-                    <InfoRow label="Adresse" value={home.address} />
-                    <InfoRow label="Ville" value={home.city} />
-                    <InfoRow label="Code postal" value={home.postal_code} />
-                    <InfoRow label="Type de bien" value={typeLabel[home.property_type] ?? home.property_type} />
-                  </>
-                ) : (
-                  form && (
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-xs font-display text-text-secondary mb-1.5">Adresse</label>
-                        <AddressAutocomplete
-                          value={form.address}
-                          onChange={(val) => setForm((prev) => prev ? { ...prev, address: val } : prev)}
-                          onSelect={(s) => setForm((prev) => prev ? { ...prev, address: s.address, city: s.city, postal_code: s.postalCode } : prev)}
-                          placeholder="Commencez a taper votre adresse..."
-                          className={`${inputCls} pr-10`}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-xs font-display text-text-secondary mb-1.5">Ville</label>
-                          <input name="city" value={form.city} onChange={handleFormChange} className={inputCls} />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-display text-text-secondary mb-1.5">Code postal</label>
-                          <input name="postal_code" value={form.postal_code} onChange={handleFormChange} className={inputCls} />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-display text-text-secondary mb-1.5">Type de bien</label>
-                        <select name="property_type" value={form.property_type} onChange={handleFormChange} className={inputCls}>
-                          <option value="maison">Maison</option>
-                          <option value="appartement">Appartement</option>
-                          <option value="immeuble">Immeuble</option>
-                          <option value="commerce">Commerce</option>
-                          <option value="autre">Autre</option>
-                        </select>
-                      </div>
-                    </div>
-                  )
-                )}
-              </div>
-
-              {/* Caractéristiques */}
-              <div className="bg-surface rounded-2xl border border-gray-light p-6">
-                <h2 className="font-display text-lg text-text-primary mb-4 flex items-center gap-2">
-                  <Ruler size={16} className="text-primary" />
-                  Caractéristiques
-                </h2>
-                {!editing ? (
-                  <>
-                    <InfoRow label="Surface" value={`${home.surface} m²`} />
-                    <InfoRow label="Année de construction" value={home.year_built} />
-                    <InfoRow label="Nombre d'étages" value={home.floors} />
-                    <InfoRow label="Type de chauffage" value={home.heating_type ?? <span className="text-text-light">Non renseigné</span>} />
-                    <InfoRow label="Type d'isolation" value={home.insulation_type ?? <span className="text-text-light">Non renseigné</span>} />
-                    <div className="flex items-start justify-between py-3">
-                      <span className="font-body text-sm text-text-light shrink-0 w-40">Note DPE</span>
-                      <DpeBadge rating={home.dpe_rating} />
-                    </div>
-                  </>
-                ) : (
-                  form && (
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-xs font-display text-text-secondary mb-1.5">Surface (m²)</label>
-                          <input name="surface" type="number" value={form.surface} onChange={handleFormChange} className={inputCls} />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-display text-text-secondary mb-1.5">Année de construction</label>
-                          <input name="year_built" type="number" value={form.year_built} onChange={handleFormChange} className={inputCls} />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-xs font-display text-text-secondary mb-1.5">Nombre d'étages</label>
-                          <input name="floors" type="number" value={form.floors} onChange={handleFormChange} className={inputCls} />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-display text-text-secondary mb-1.5">Note DPE</label>
-                          <select name="dpe_rating" value={form.dpe_rating} onChange={handleFormChange} className={inputCls}>
-                            <option value="">— Non renseigné —</option>
-                            {DPE_RATINGS.map(r => <option key={r} value={r}>{r}</option>)}
-                          </select>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-display text-text-secondary mb-1.5 flex items-center gap-1.5">
-                          <Thermometer size={12} /> Type de chauffage
-                        </label>
-                        <input name="heating_type" value={form.heating_type} onChange={handleFormChange} placeholder="Gaz, électrique..." className={inputCls} />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-display text-text-secondary mb-1.5 flex items-center gap-1.5">
-                          <Layers size={12} /> Type d'isolation
-                        </label>
-                        <input name="insulation_type" value={form.insulation_type} onChange={handleFormChange} placeholder="Laine de verre..." className={inputCls} />
-                      </div>
-                    </div>
-                  )
-                )}
-              </div>
-
-              {/* Notes */}
-              <div className="bg-surface rounded-2xl border border-gray-light p-6">
-                <h2 className="font-display text-lg text-text-primary mb-4 flex items-center gap-2">
-                  <FileText size={16} className="text-primary" />
-                  Notes
-                </h2>
-                {!editing ? (
-                  home.notes ? (
-                    <p className="font-body text-sm text-text-primary leading-relaxed">{home.notes}</p>
-                  ) : (
-                    <p className="font-body text-sm text-text-light italic">Aucune note.</p>
-                  )
-                ) : (
-                  form && (
-                    <textarea name="notes" value={form.notes} onChange={handleFormChange} rows={4} placeholder="Informations complémentaires..." className={`${inputCls} resize-none`} />
-                  )
-                )}
-              </div>
-            </>
+            <LogementInfosTab
+              home={home}
+              editing={editing}
+              form={form}
+              inputCls={inputCls}
+              onFormChange={handleFormChange}
+              onAddressChange={(val) => setForm(prev => prev ? { ...prev, address: val } : prev)}
+              onAddressSelect={(s) => setForm(prev => prev ? { ...prev, address: s.address, city: s.city, postal_code: s.postalCode } : prev)}
+            />
           )}
 
-          {/* === ONGLET SANTE === */}
           {activeTab === 'sante' && (
             <HealthOverview
               home={home}
@@ -512,7 +259,6 @@ export default function LogementDetail() {
             />
           )}
 
-          {/* === ONGLET TRAVAUX === */}
           {activeTab === 'travaux' && user && (
             <WorkHistoryList
               works={workHistory}
@@ -524,7 +270,6 @@ export default function LogementDetail() {
             />
           )}
 
-          {/* === ONGLET DOCUMENTS === */}
           {activeTab === 'documents' && user && (
             <DocumentsList
               documents={documents}
@@ -538,90 +283,9 @@ export default function LogementDetail() {
         </div>
 
         {/* Right: sidebar */}
-        <div className="space-y-6">
-          {/* Score sante mini */}
-          {healthRecords.length > 0 && (() => {
-            const evaluated = healthRecords.filter((r) => r.score != null)
-            if (evaluated.length === 0) return null
-            const avg = Math.round(evaluated.reduce((s, r) => s + (r.score ?? 0), 0) / evaluated.length)
-            return (
-              <div className="bg-surface rounded-2xl border border-gray-light p-6 flex flex-col items-center">
-                <p className="font-display text-xs text-text-light uppercase tracking-wider mb-3">Score sante</p>
-                <HealthScoreGauge score={avg} size="sm" />
-                <p className="font-body text-xs text-text-light mt-2">{evaluated.length} domaine{evaluated.length > 1 ? 's' : ''}</p>
-              </div>
-            )
-          })()}
-
-          {/* Quick info card */}
-          <div className="bg-surface rounded-2xl border border-gray-light p-6">
-            <h2 className="font-display text-base text-text-primary mb-4">Résumé</h2>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
-                  <Ruler size={14} />
-                </div>
-                <div>
-                  <p className="text-xs font-body text-text-light">Surface</p>
-                  <p className="text-sm font-display text-text-primary">{home.surface} m²</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
-                  <CalendarDays size={14} />
-                </div>
-                <div>
-                  <p className="text-xs font-body text-text-light">Année de construction</p>
-                  <p className="text-sm font-display text-text-primary">{home.year_built}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
-                  <Thermometer size={14} />
-                </div>
-                <div>
-                  <p className="text-xs font-body text-text-light">Chauffage</p>
-                  <p className="text-sm font-display text-text-primary">{home.heating_type ?? '—'}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
-                  <Layers size={14} />
-                </div>
-                <div>
-                  <p className="text-xs font-body text-text-light">Isolation</p>
-                  <p className="text-sm font-display text-text-primary">{home.insulation_type ?? '—'}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Date info */}
-          <div className="bg-surface rounded-2xl border border-gray-light p-6">
-            <h2 className="font-display text-base text-text-primary mb-3">Historique</h2>
-            <div className="space-y-2">
-              <div>
-                <p className="text-xs font-body text-text-light">Ajouté le</p>
-                <p className="text-sm font-body text-text-primary">
-                  {new Date(home.created_at).toLocaleDateString('fr-FR', {
-                    day: 'numeric', month: 'long', year: 'numeric',
-                  })}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-body text-text-light">Dernière modification</p>
-                <p className="text-sm font-body text-text-primary">
-                  {new Date(home.updated_at).toLocaleDateString('fr-FR', {
-                    day: 'numeric', month: 'long', year: 'numeric',
-                  })}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <LogementSidebar home={home} healthRecords={healthRecords} />
       </div>
 
-      {/* Delete modal */}
       {showDelete && (
         <DeleteModal
           onConfirm={handleDelete}

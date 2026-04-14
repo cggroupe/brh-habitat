@@ -31,28 +31,28 @@ function ExchangeModal({ reward, balance, affiliateId: _affiliateId, onClose, on
       <div className="bg-white rounded-2xl p-7 w-full max-w-md shadow-[0_20px_60px_rgba(27,28,28,0.15)]">
         <div className="flex items-start justify-between mb-6">
           <div>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Catalogue cadeaux</p>
-            <h3 className="font-display text-xl font-bold uppercase tracking-[0.05em] text-[#1b1c1c]">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Catalogue cadeaux</p>
+            <h3 className="font-display text-xl font-bold uppercase tracking-[0.05em] text-text-primary">
               Confirmer l'échange
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl hover:bg-[#f5f3f2] transition-colors text-[#707a6a]"
+            className="p-2 rounded-xl hover:bg-background transition-colors text-text-light"
           >
             <X size={18} />
           </button>
         </div>
 
-        <div className="bg-[#f5f3f2] rounded-2xl p-5 mb-5">
-          <p className="font-bold text-[#1b1c1c] mb-1">{reward.name}</p>
+        <div className="bg-background rounded-2xl p-5 mb-5">
+          <p className="font-bold text-text-primary mb-1">{reward.name}</p>
           {reward.description && (
-            <p className="text-sm text-[#707a6a] mb-3">{reward.description}</p>
+            <p className="text-sm text-text-light mb-3">{reward.description}</p>
           )}
           <div className="flex items-center gap-3">
-            <span className="font-display text-xl font-bold text-[#1c7b1d]">{formatPoints(reward.points_required)}</span>
+            <span className="font-display text-xl font-bold text-primary">{formatPoints(reward.points_required)}</span>
             {reward.value_cents && (
-              <span className="text-sm text-[#707a6a]">· Valeur {formatValue(reward.value_cents)}</span>
+              <span className="text-sm text-text-light">· Valeur {formatValue(reward.value_cents)}</span>
             )}
           </div>
         </div>
@@ -66,7 +66,7 @@ function ExchangeModal({ reward, balance, affiliateId: _affiliateId, onClose, on
 
         {isPhysical && (
           <div className="mb-5">
-            <label className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2 flex items-center gap-1.5 block">
+            <label className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-2 flex items-center gap-1.5 block">
               <MapPin size={12} />
               Adresse de livraison
             </label>
@@ -75,7 +75,7 @@ function ExchangeModal({ reward, balance, affiliateId: _affiliateId, onClose, on
               onChange={e => setShippingAddress(e.target.value)}
               rows={3}
               placeholder="Indiquez votre adresse complète pour la livraison..."
-              className="w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-[#f5f3f2] placeholder:text-[#707a6a]/50 text-[#1b1c1c] focus:ring-2 focus:ring-[#1c7b1d]/30 focus:bg-white resize-none"
+              className="w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-background placeholder:text-text-light/50 text-text-primary focus:ring-2 focus:ring-primary/30 focus:bg-white resize-none"
             />
           </div>
         )}
@@ -83,14 +83,14 @@ function ExchangeModal({ reward, balance, affiliateId: _affiliateId, onClose, on
         <div className="flex gap-3 justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-3 text-sm font-medium text-[#404a3c] bg-[#f5f3f2] rounded-xl hover:bg-[#e8e5e2] transition-colors"
+            className="px-5 py-3 text-sm font-medium text-text-secondary bg-background rounded-xl hover:bg-neutral-light transition-colors"
           >
             Annuler
           </button>
           <button
             onClick={() => onConfirm(isPhysical ? shippingAddress || undefined : undefined)}
             disabled={isPending}
-            className="flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-gradient-to-br from-primary to-primary-dark text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isPending ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -138,17 +138,17 @@ export default function PartCatalogue() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Récompenses</p>
-          <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-[#1b1c1c]">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Récompenses</p>
+          <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-text-primary">
             Catalogue cadeaux
           </h1>
         </div>
         {affiliate && (
           <div className="flex items-center gap-2.5 bg-white rounded-2xl px-5 py-3 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
-            <ShoppingBag size={16} className="text-[#1c7b1d]" />
+            <ShoppingBag size={16} className="text-primary" />
             <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Solde</p>
-              <p className="font-display text-lg font-bold text-[#1c7b1d]">{formatPoints(balance)}</p>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-text-light">Solde</p>
+              <p className="font-display text-lg font-bold text-primary">{formatPoints(balance)}</p>
             </div>
           </div>
         )}
@@ -169,14 +169,14 @@ export default function PartCatalogue() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 border-4 border-[#1c7b1d] border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       ) : rewards.length === 0 ? (
         <div className="bg-white rounded-2xl p-14 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
-          <div className="w-16 h-16 bg-[#f5f3f2] rounded-2xl flex items-center justify-center mx-auto mb-5">
-            <Gift size={28} className="text-[#707a6a]" />
+          <div className="w-16 h-16 bg-background rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <Gift size={28} className="text-text-light" />
           </div>
-          <p className="font-display text-lg font-bold uppercase tracking-[0.05em] text-[#404a3c]">
+          <p className="font-display text-lg font-bold uppercase tracking-[0.05em] text-text-secondary">
             Catalogue bientôt disponible
           </p>
         </div>
@@ -191,29 +191,29 @@ export default function PartCatalogue() {
                 className={`bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] overflow-hidden flex flex-col transition-all hover:shadow-[0_12px_40px_rgba(27,28,28,0.08)] ${!canAfford ? 'opacity-70' : ''}`}
               >
                 {/* Image / placeholder */}
-                <div className="h-48 bg-[#f5f3f2] flex items-center justify-center overflow-hidden relative">
+                <div className="h-48 bg-background flex items-center justify-center overflow-hidden relative">
                   {reward.image_url ? (
                     <img src={reward.image_url} alt={reward.name} className="w-full h-full object-cover" />
                   ) : (
-                    <Gift size={40} className="text-[#707a6a]/40" />
+                    <Gift size={40} className="text-text-light/40" />
                   )}
                   {canAfford && (
-                    <div className="absolute top-3 right-3 bg-[#1c7b1d] text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                    <div className="absolute top-3 right-3 bg-primary text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
                       Disponible
                     </div>
                   )}
                 </div>
 
                 <div className="p-5 flex flex-col flex-1">
-                  <p className="font-bold text-[#1b1c1c] mb-1.5">{reward.name}</p>
+                  <p className="font-bold text-text-primary mb-1.5">{reward.name}</p>
                   {reward.description && (
-                    <p className="text-sm text-[#707a6a] mb-4 flex-1 line-clamp-2">{reward.description}</p>
+                    <p className="text-sm text-text-light mb-4 flex-1 line-clamp-2">{reward.description}</p>
                   )}
 
                   <div className="flex items-center gap-2 mt-auto mb-4">
-                    <span className="font-display text-xl font-bold text-[#1c7b1d]">{formatPoints(reward.points_required)}</span>
+                    <span className="font-display text-xl font-bold text-primary">{formatPoints(reward.points_required)}</span>
                     {reward.value_cents && (
-                      <span className="flex items-center gap-1 text-xs text-[#707a6a] bg-[#f5f3f2] px-2.5 py-1 rounded-lg font-medium">
+                      <span className="flex items-center gap-1 text-xs text-text-light bg-background px-2.5 py-1 rounded-lg font-medium">
                         <Tag size={11} />
                         {formatValue(reward.value_cents)}
                       </span>
@@ -223,12 +223,12 @@ export default function PartCatalogue() {
                   {canAfford ? (
                     <button
                       onClick={() => setSelectedReward(reward)}
-                      className="w-full bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-4 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity"
+                      className="w-full bg-gradient-to-br from-primary to-primary-dark text-white px-4 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity"
                     >
                       Echanger
                     </button>
                   ) : (
-                    <div className="w-full px-4 py-3 bg-[#f5f3f2] text-[#707a6a] text-xs rounded-xl text-center font-bold uppercase tracking-widest cursor-not-allowed">
+                    <div className="w-full px-4 py-3 bg-background text-text-light text-xs rounded-xl text-center font-bold uppercase tracking-widest cursor-not-allowed">
                       Manque {formatPoints(missing)}
                     </div>
                   )}

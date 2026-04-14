@@ -90,14 +90,14 @@ export default function PartChiffrages() {
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Documents</p>
-          <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-[#1b1c1c]">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Documents</p>
+          <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-text-primary">
             Mes chiffrages
           </h1>
         </div>
         <Link
           to="/particulier/chiffrage"
-          className="flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2 bg-gradient-to-br from-primary to-primary-dark text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity"
         >
           <Calculator size={15} />
           Nouveau chiffrage
@@ -107,25 +107,25 @@ export default function PartChiffrages() {
       {/* Loading */}
       {isLoading && (
         <div className="flex items-center justify-center py-20">
-          <Loader2 size={32} className="text-[#1c7b1d] animate-spin" />
+          <Loader2 size={32} className="text-primary animate-spin" />
         </div>
       )}
 
       {/* Empty state */}
       {!isLoading && chiffrages.length === 0 && (
         <div className="bg-white rounded-2xl p-14 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
-          <div className="w-16 h-16 bg-[#f5f3f2] rounded-2xl flex items-center justify-center mx-auto mb-5">
-            <FileText size={28} className="text-[#707a6a]" />
+          <div className="w-16 h-16 bg-background rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <FileText size={28} className="text-text-light" />
           </div>
-          <p className="font-display text-lg font-bold uppercase tracking-[0.05em] text-[#404a3c] mb-2">
+          <p className="font-display text-lg font-bold uppercase tracking-[0.05em] text-text-secondary mb-2">
             Aucun chiffrage
           </p>
-          <p className="text-sm text-[#707a6a] mb-8">
+          <p className="text-sm text-text-light mb-8">
             Utilisez le Chiffrage IA pour generer votre premier chiffrage.
           </p>
           <Link
             to="/particulier/chiffrage"
-            className="inline-flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 bg-gradient-to-br from-primary to-primary-dark text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity"
           >
             <Calculator size={15} />
             Chiffrage IA
@@ -139,34 +139,34 @@ export default function PartChiffrages() {
           <div className="hidden md:block bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="bg-[#f5f3f2]">
-                  <th className="px-6 py-4 text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Reference</th>
-                  <th className="px-6 py-4 text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Client</th>
-                  <th className="px-6 py-4 text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Projet</th>
-                  <th className="px-6 py-4 text-right text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Total TTC</th>
-                  <th className="px-6 py-4 text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Date</th>
+                <tr className="bg-background">
+                  <th className="px-6 py-4 text-left text-[10px] uppercase tracking-widest font-bold text-text-light">Reference</th>
+                  <th className="px-6 py-4 text-left text-[10px] uppercase tracking-widest font-bold text-text-light">Client</th>
+                  <th className="px-6 py-4 text-left text-[10px] uppercase tracking-widest font-bold text-text-light">Projet</th>
+                  <th className="px-6 py-4 text-right text-[10px] uppercase tracking-widest font-bold text-text-light">Total TTC</th>
+                  <th className="px-6 py-4 text-left text-[10px] uppercase tracking-widest font-bold text-text-light">Date</th>
                   <th className="px-6 py-4"></th>
                 </tr>
               </thead>
               <tbody>
                 {chiffrages.map((row) => (
-                  <tr key={row.id} className="hover:bg-[#f5f3f2]/50 transition-colors">
+                  <tr key={row.id} className="hover:bg-background/50 transition-colors">
                     <td className="px-6 py-4">
-                      <span className="text-xs bg-[#1c7b1d]/10 text-[#1c7b1d] px-2.5 py-1 rounded-lg font-bold uppercase tracking-wide">
+                      <span className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-lg font-bold uppercase tracking-wide">
                         {row.reference}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm font-semibold text-[#1b1c1c]">{row.client_name}</td>
-                    <td className="px-6 py-4 text-sm text-[#404a3c]">{row.projet_titre}</td>
-                    <td className="px-6 py-4 text-right font-display font-bold text-sm text-[#1b1c1c]">
+                    <td className="px-6 py-4 text-sm font-semibold text-text-primary">{row.client_name}</td>
+                    <td className="px-6 py-4 text-sm text-text-secondary">{row.projet_titre}</td>
+                    <td className="px-6 py-4 text-right font-display font-bold text-sm text-text-primary">
                       {formatEur(row.total_ttc)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-[#707a6a]">{formatDate(row.created_at)}</td>
+                    <td className="px-6 py-4 text-sm text-text-light">{formatDate(row.created_at)}</td>
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => void handleDownload(row)}
                         disabled={downloadingId === row.id}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1c7b1d]/10 text-[#1c7b1d] font-bold text-xs rounded-xl hover:bg-gradient-to-br hover:from-[#1c7b1d] hover:to-[#0a4a0b] hover:text-white transition-all uppercase tracking-widest disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-primary/10 text-primary font-bold text-xs rounded-xl hover:bg-gradient-to-br hover:from-primary hover:to-primary-dark hover:text-white transition-all uppercase tracking-widest disabled:opacity-50"
                       >
                         {downloadingId === row.id
                           ? <Loader2 size={13} className="animate-spin" />
@@ -185,21 +185,21 @@ export default function PartChiffrages() {
             {chiffrages.map((row) => (
               <div key={row.id} className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
                 <div className="flex items-start justify-between mb-3">
-                  <span className="text-xs bg-[#1c7b1d]/10 text-[#1c7b1d] px-2.5 py-1 rounded-lg font-bold uppercase tracking-wide">
+                  <span className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-lg font-bold uppercase tracking-wide">
                     {row.reference}
                   </span>
-                  <span className="text-xs text-[#707a6a]">{formatDate(row.created_at)}</span>
+                  <span className="text-xs text-text-light">{formatDate(row.created_at)}</span>
                 </div>
-                <p className="font-bold text-sm text-[#1b1c1c] mb-0.5">{row.client_name}</p>
-                <p className="text-xs text-[#707a6a] mb-4">{row.projet_titre}</p>
+                <p className="font-bold text-sm text-text-primary mb-0.5">{row.client_name}</p>
+                <p className="text-xs text-text-light mb-4">{row.projet_titre}</p>
                 <div className="flex items-center justify-between">
-                  <span className="font-display font-bold text-base text-[#1b1c1c]">
+                  <span className="font-display font-bold text-base text-text-primary">
                     {formatEur(row.total_ttc)}
                   </span>
                   <button
                     onClick={() => void handleDownload(row)}
                     disabled={downloadingId === row.id}
-                    className="inline-flex items-center gap-1.5 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 bg-gradient-to-br from-primary to-primary-dark text-white px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50"
                   >
                     {downloadingId === row.id
                       ? <Loader2 size={13} className="animate-spin" />

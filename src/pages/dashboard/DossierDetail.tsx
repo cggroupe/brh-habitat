@@ -4,18 +4,16 @@ import {
   FolderOpen,
   Loader2,
   AlertCircle,
-  Home,
   Euro,
-  CalendarDays,
   Wrench,
   User,
   FileText,
   ClipboardList,
-  CheckCircle2,
-  Circle,
 } from 'lucide-react'
-import { useCaseDetail, useHomeDetail } from '@/hooks/queries'
-import { CASE_STATUS_LABELS, CASE_STATUS_COLORS, CASE_STATUSES } from '@/data/constants'
+import { useCaseDetail } from '@/hooks/queries'
+import { CASE_STATUS_LABELS, CASE_STATUS_COLORS } from '@/data/constants'
+import { StatusTimeline } from './dossier-detail/StatusTimeline'
+import { CaseSidebar } from './dossier-detail/CaseSidebar'
 import type { CaseStatus } from '@/types/database'
 
 // ─── Status config ────────────────────────────────────────────────────────────
@@ -36,93 +34,12 @@ function StatusBadge({ status }: { status: CaseStatus }) {
   )
 }
 
-// ─── Timeline ─────────────────────────────────────────────────────────────────
-
-function StatusTimeline({ currentStatus }: { currentStatus: CaseStatus }) {
-  const currentIndex = CASE_STATUSES.indexOf(currentStatus)
-
-  return (
-    <div className="relative">
-      {/* Line */}
-      <div className="absolute top-4 left-4 right-4 h-0.5 bg-gray-light" />
-      <div
-        className="absolute top-4 left-4 h-0.5 bg-primary transition-all duration-500"
-        style={{ width: `${(currentIndex / (CASE_STATUSES.length - 1)) * (100 - 8)}%` }}
-      />
-
-      <div className="relative flex items-start justify-between">
-        {CASE_STATUSES.map((step, index) => {
-          const isCompleted = index < currentIndex
-          const isCurrent = index === currentIndex
-          const isPending = index > currentIndex
-
-          return (
-            <div key={step} className="flex flex-col items-center gap-2 flex-1">
-              <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center z-10 transition-all ${
-                isCompleted
-                  ? 'border-primary bg-primary text-white'
-                  : isCurrent
-                  ? 'border-primary bg-surface text-primary'
-                  : 'border-gray-light bg-surface text-text-light'
-              }`}>
-                {isCompleted ? (
-                  <CheckCircle2 size={14} />
-                ) : isCurrent ? (
-                  <Circle size={10} className="fill-primary" />
-                ) : (
-                  <Circle size={10} />
-                )}
-              </div>
-              <div className="text-center">
-                <p className={`text-[11px] font-display leading-tight ${
-                  isPending ? 'text-text-light' : 'text-text-primary'
-                }`}>
-                  {CASE_STATUS_LABELS[step]}
-                </p>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-// ─── Info row ─────────────────────────────────────────────────────────────────
-
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-start justify-between py-3 border-b border-gray-light last:border-0">
       <span className="font-body text-sm text-text-light shrink-0 w-44">{label}</span>
       <span className="font-body text-sm text-text-primary text-right">{value ?? '—'}</span>
     </div>
-  )
-}
-
-// ─── Linked home sub-component ────────────────────────────────────────────────
-
-function LinkedHomeCard({ homeId }: { homeId: string }) {
-  const { data: linkedHome } = useHomeDetail(homeId)
-
-  if (!linkedHome) return null
-
-  return (
-    <Link
-      to={`/mes-logements/${linkedHome.id}`}
-      className="block bg-surface rounded-2xl border border-gray-light p-6 hover:border-primary hover:shadow-sm transition-all"
-    >
-      <h2 className="font-display text-base text-text-primary mb-3 flex items-center gap-2">
-        <Home size={15} className="text-primary" />
-        Logement associé
-      </h2>
-      <p className="font-body text-sm text-text-primary">{linkedHome.address}</p>
-      <p className="font-body text-xs text-text-light mt-0.5">
-        {linkedHome.postal_code} {linkedHome.city}
-      </p>
-      <p className="font-body text-xs text-primary mt-2 flex items-center gap-1">
-        Voir le logement <ArrowLeft size={11} className="rotate-180" />
-      </p>
-    </Link>
   )
 }
 
@@ -216,14 +133,8 @@ export default function DossierDetail() {
               Informations du dossier
             </h2>
             <InfoRow label="Statut" value={<StatusBadge status={caseRow.status} />} />
-            <InfoRow
-              label="Date de début"
-              value={formatDate(caseRow.start_date)}
-            />
-            <InfoRow
-              label="Date de fin prévue"
-              value={formatDate(caseRow.end_date)}
-            />
+            <InfoRow label="Date de début" value={formatDate(caseRow.start_date)} />
+            <InfoRow label="Date de fin prévue" value={formatDate(caseRow.end_date)} />
             <InfoRow
               label="Budget estimé"
               value={
@@ -311,66 +222,7 @@ export default function DossierDetail() {
         </div>
 
         {/* Right: sidebar */}
-        <div className="space-y-6">
-          {/* Budget card */}
-          {caseRow.estimated_budget !== null && (
-            <div className="bg-surface rounded-2xl border border-gray-light p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center text-primary">
-                  <Euro size={18} />
-                </div>
-                <div>
-                  <p className="text-xs font-body text-text-light">Budget estimé</p>
-                  <p className="font-display text-2xl text-text-primary">
-                    {caseRow.estimated_budget.toLocaleString('fr-FR')} €
-                  </p>
-                </div>
-              </div>
-              <p className="font-body text-xs text-text-light mt-2">
-                Ce montant est une estimation et peut être révisé.
-              </p>
-            </div>
-          )}
-
-          {/* Dates */}
-          <div className="bg-surface rounded-2xl border border-gray-light p-6">
-            <h2 className="font-display text-base text-text-primary mb-4 flex items-center gap-2">
-              <CalendarDays size={15} className="text-primary" />
-              Calendrier
-            </h2>
-            <div className="space-y-3">
-              <div>
-                <p className="text-xs font-body text-text-light">Début prévu</p>
-                <p className="text-sm font-body text-text-primary mt-0.5">
-                  {formatDate(caseRow.start_date)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-body text-text-light">Fin prévue</p>
-                <p className="text-sm font-body text-text-primary mt-0.5">
-                  {formatDate(caseRow.end_date)}
-                </p>
-              </div>
-              {caseRow.start_date && caseRow.end_date && (
-                <div>
-                  <p className="text-xs font-body text-text-light">Durée estimée</p>
-                  <p className="text-sm font-body text-text-primary mt-0.5">
-                    {Math.ceil(
-                      (new Date(caseRow.end_date).getTime() - new Date(caseRow.start_date).getTime()) /
-                      (1000 * 60 * 60 * 24 * 7)
-                    )}{' '}
-                    semaines
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Linked home */}
-          {caseRow.home_id && (
-            <LinkedHomeCard homeId={caseRow.home_id} />
-          )}
-        </div>
+        <CaseSidebar caseRow={caseRow} />
       </div>
     </div>
   )

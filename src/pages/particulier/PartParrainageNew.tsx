@@ -109,10 +109,10 @@ export default function PartParrainageNew() {
           <div className="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
             <CheckCircle size={32} className="text-green-500" />
           </div>
-          <p className="font-display text-xl font-bold uppercase tracking-[0.05em] text-[#1b1c1c] mb-3">
+          <p className="font-display text-xl font-bold uppercase tracking-[0.05em] text-text-primary mb-3">
             Parrainage envoyé !
           </p>
-          <p className="text-sm text-[#707a6a]">
+          <p className="text-sm text-text-light">
             Votre parrainage a bien été transmis à l'équipe BRH. Redirection en cours...
           </p>
         </div>
@@ -124,15 +124,15 @@ export default function PartParrainageNew() {
     <div className="p-8 lg:p-10">
       <Link
         to="/particulier/parrainages"
-        className="inline-flex items-center gap-2 text-sm text-[#707a6a] hover:text-[#1c7b1d] mb-6 transition-colors"
+        className="inline-flex items-center gap-2 text-sm text-text-light hover:text-primary mb-6 transition-colors"
       >
         <ArrowLeft size={16} />
         Retour aux parrainages
       </Link>
 
       <div className="mb-8">
-        <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Partenariat</p>
-        <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-[#1b1c1c]">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Partenariat</p>
+        <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-text-primary">
           Nouveau parrainage
         </h1>
       </div>
@@ -140,13 +140,13 @@ export default function PartParrainageNew() {
       <form onSubmit={handleSubmit} noValidate>
         {/* Informations contact */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] mb-5">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-5">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-5">
             Informations du contact
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2 block">
+              <label className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-2 block">
                 Prénom <span className="text-red-500">*</span>
               </label>
               <input
@@ -155,7 +155,7 @@ export default function PartParrainageNew() {
                 value={form.client_first_name}
                 onChange={handleChange}
                 placeholder="Jean"
-                className={`w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-[#f5f3f2] placeholder:text-[#707a6a]/50 text-[#1b1c1c] focus:ring-2 focus:ring-[#1c7b1d]/30 focus:bg-white ${errors.client_first_name ? 'ring-2 ring-red-400 bg-red-50' : ''}`}
+                className={`w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-background placeholder:text-text-light/50 text-text-primary focus:ring-2 focus:ring-primary/30 focus:bg-white ${errors.client_first_name ? 'ring-2 ring-red-400 bg-red-50' : ''}`}
               />
               {errors.client_first_name && (
                 <p className="text-xs text-red-500 mt-1.5">{errors.client_first_name}</p>
@@ -163,7 +163,7 @@ export default function PartParrainageNew() {
             </div>
 
             <div>
-              <label className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2 block">
+              <label className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-2 block">
                 Nom <span className="text-red-500">*</span>
               </label>
               <input
@@ -172,7 +172,7 @@ export default function PartParrainageNew() {
                 value={form.client_last_name}
                 onChange={handleChange}
                 placeholder="Dupont"
-                className={`w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-[#f5f3f2] placeholder:text-[#707a6a]/50 text-[#1b1c1c] focus:ring-2 focus:ring-[#1c7b1d]/30 focus:bg-white ${errors.client_last_name ? 'ring-2 ring-red-400 bg-red-50' : ''}`}
+                className={`w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-background placeholder:text-text-light/50 text-text-primary focus:ring-2 focus:ring-primary/30 focus:bg-white ${errors.client_last_name ? 'ring-2 ring-red-400 bg-red-50' : ''}`}
               />
               {errors.client_last_name && (
                 <p className="text-xs text-red-500 mt-1.5">{errors.client_last_name}</p>
@@ -180,7 +180,7 @@ export default function PartParrainageNew() {
             </div>
 
             <div>
-              <label className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2 block">
+              <label className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-2 block">
                 Téléphone <span className="text-red-500">*</span>
               </label>
               <input
@@ -189,7 +189,7 @@ export default function PartParrainageNew() {
                 value={form.client_phone}
                 onChange={handleChange}
                 placeholder="06 12 34 56 78"
-                className={`w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-[#f5f3f2] placeholder:text-[#707a6a]/50 text-[#1b1c1c] focus:ring-2 focus:ring-[#1c7b1d]/30 focus:bg-white ${errors.client_phone ? 'ring-2 ring-red-400 bg-red-50' : ''}`}
+                className={`w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-background placeholder:text-text-light/50 text-text-primary focus:ring-2 focus:ring-primary/30 focus:bg-white ${errors.client_phone ? 'ring-2 ring-red-400 bg-red-50' : ''}`}
               />
               {errors.client_phone && (
                 <p className="text-xs text-red-500 mt-1.5">{errors.client_phone}</p>
@@ -197,7 +197,7 @@ export default function PartParrainageNew() {
             </div>
 
             <div>
-              <label className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2 block">
+              <label className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-2 block">
                 Ville
               </label>
               <input
@@ -206,12 +206,12 @@ export default function PartParrainageNew() {
                 value={form.client_city}
                 onChange={handleChange}
                 placeholder="Brest"
-                className="w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-[#f5f3f2] placeholder:text-[#707a6a]/50 text-[#1b1c1c] focus:ring-2 focus:ring-[#1c7b1d]/30 focus:bg-white"
+                className="w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-background placeholder:text-text-light/50 text-text-primary focus:ring-2 focus:ring-primary/30 focus:bg-white"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2 block">
+              <label className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-2 block">
                 Adresse
               </label>
               <input
@@ -220,7 +220,7 @@ export default function PartParrainageNew() {
                 value={form.client_address}
                 onChange={handleChange}
                 placeholder="12 rue des Lilas"
-                className="w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-[#f5f3f2] placeholder:text-[#707a6a]/50 text-[#1b1c1c] focus:ring-2 focus:ring-[#1c7b1d]/30 focus:bg-white"
+                className="w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-background placeholder:text-text-light/50 text-text-primary focus:ring-2 focus:ring-primary/30 focus:bg-white"
               />
             </div>
           </div>
@@ -228,7 +228,7 @@ export default function PartParrainageNew() {
 
         {/* Type de travaux */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] mb-5">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-5">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-5">
             Type de travaux <span className="text-red-500">*</span>
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -239,8 +239,8 @@ export default function PartParrainageNew() {
                 onClick={() => toggleWorkType(wt.value)}
                 className={`text-sm px-4 py-3 rounded-xl font-medium transition-all ${
                   form.work_type.includes(wt.value)
-                    ? 'bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white shadow-[0_4px_12px_rgba(28,123,29,0.3)]'
-                    : 'bg-[#f5f3f2] text-[#404a3c] hover:bg-[#e8e5e2]'
+                    ? 'bg-gradient-to-br from-primary to-primary-dark text-white shadow-[0_4px_12px_rgba(28,123,29,0.3)]'
+                    : 'bg-background text-text-secondary hover:bg-neutral-light'
                 }`}
               >
                 {wt.label}
@@ -254,7 +254,7 @@ export default function PartParrainageNew() {
 
         {/* Notes */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] mb-6">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-5">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-5">
             Notes complémentaires
           </p>
           <textarea
@@ -263,21 +263,21 @@ export default function PartParrainageNew() {
             onChange={handleChange}
             rows={3}
             placeholder="Informations supplémentaires utiles pour l'équipe BRH (optionnel)..."
-            className="w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-[#f5f3f2] placeholder:text-[#707a6a]/50 text-[#1b1c1c] focus:ring-2 focus:ring-[#1c7b1d]/30 focus:bg-white resize-none"
+            className="w-full text-sm px-4 py-3 rounded-xl outline-none transition-all bg-background placeholder:text-text-light/50 text-text-primary focus:ring-2 focus:ring-primary/30 focus:bg-white resize-none"
           />
         </div>
 
         <div className="flex gap-3 justify-end">
           <Link
             to="/particulier/parrainages"
-            className="px-6 py-3 text-sm font-medium text-[#404a3c] bg-[#f5f3f2] rounded-xl hover:bg-[#e8e5e2] transition-colors"
+            className="px-6 py-3 text-sm font-medium text-text-secondary bg-background rounded-xl hover:bg-neutral-light transition-colors"
           >
             Annuler
           </Link>
           <button
             type="submit"
             disabled={createProspect.isPending}
-            className="flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-gradient-to-br from-primary to-primary-dark text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {createProspect.isPending ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

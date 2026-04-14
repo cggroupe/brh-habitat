@@ -47,11 +47,11 @@ export function AidesCard({
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="size-7 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
-                <BadgeEuro size={14} className="text-[#1c7b1d]" />
+                <BadgeEuro size={14} className="text-primary" />
               </div>
               <span className="text-sm text-slate-600">MaPrimeRenov'</span>
             </div>
-            <span className="text-sm font-bold text-[#1c7b1d]">- {formatEur(mprAmount)}</span>
+            <span className="text-sm font-bold text-primary">- {formatEur(mprAmount)}</span>
           </div>
         )}
 
@@ -59,11 +59,11 @@ export function AidesCard({
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="size-7 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
-                <Zap size={14} className="text-[#359932]" />
+                <Zap size={14} className="text-primary-green" />
               </div>
               <span className="text-sm text-slate-600">CEE</span>
             </div>
-            <span className="text-sm font-bold text-[#359932]">- {formatEur(ceeAmount)}</span>
+            <span className="text-sm font-bold text-primary-green">- {formatEur(ceeAmount)}</span>
           </div>
         )}
 
@@ -93,7 +93,7 @@ export function AidesCard({
               </span>
             )}
             {tvaReduite && (
-              <span className="inline-flex items-center gap-1 text-xs font-bold bg-green-50 text-[#1c7b1d] border border-green-100 rounded-full px-2.5 py-1">
+              <span className="inline-flex items-center gap-1 text-xs font-bold bg-green-50 text-primary border border-green-100 rounded-full px-2.5 py-1">
                 TVA 5,5%
               </span>
             )}

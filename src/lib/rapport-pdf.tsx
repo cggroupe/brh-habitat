@@ -1,8 +1,10 @@
 import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
 
-// Couleurs BRH
-const BRH_GREEN = '#1c7b1d'
-const BRH_GREEN_LIGHT = '#359932'
+import { tenant } from '../config/tenant'
+
+// Couleurs depuis le tenant
+const BRH_GREEN = tenant.branding.colors.primary
+const BRH_GREEN_LIGHT = tenant.branding.colors.secondary
 const BRH_GRAY = '#3d3d3d'
 const BRH_GRAY_LIGHT = '#e8e8e8'
 const BRH_RED = '#c62828'

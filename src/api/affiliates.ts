@@ -12,6 +12,23 @@ export interface PaginatedAffiliates {
   page: number
 }
 
+export async function createAffiliate(userId: string, referralCode: string): Promise<void> {
+  const { error } = await supabase
+    .from('brh_affiliates')
+    .insert({ id: userId, referral_code: referralCode })
+
+  if (error) throw error
+}
+
+export async function updateAffiliateRecruiter(userId: string, recruitedBy: string): Promise<void> {
+  const { error } = await supabase
+    .from('brh_affiliates')
+    .update({ recruited_by: recruitedBy })
+    .eq('id', userId)
+
+  if (error) throw error
+}
+
 export async function fetchMyAffiliate(userId: string): Promise<BrhAffiliateRow | null> {
   const { data, error } = await supabase
     .from('brh_affiliates')

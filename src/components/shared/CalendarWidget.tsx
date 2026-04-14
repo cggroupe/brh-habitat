@@ -100,15 +100,15 @@ export function CalendarWidget({ onSlotsChange, selectedSlots }: CalendarWidgetP
       {/* Legende periode */}
       <div className="flex items-center gap-4 mb-3">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-[#1c7b1d]/20 border border-[#1c7b1d]/40" />
+          <div className="w-3 h-3 rounded bg-primary/20 border border-primary/40" />
           <span className="font-body text-xs text-slate-500">Matin (8h-12h)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-[#1c7b1d]/20 border border-[#1c7b1d]/40" />
+          <div className="w-3 h-3 rounded bg-primary/20 border border-primary/40" />
           <span className="font-body text-xs text-slate-500">Apres-midi (14h-18h)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-[#1c7b1d] border border-[#1c7b1d]" />
+          <div className="w-3 h-3 rounded bg-primary border border-primary" />
           <span className="font-body text-xs text-slate-500">Selectionne</span>
         </div>
       </div>
@@ -133,15 +133,15 @@ export function CalendarWidget({ onSlotsChange, selectedSlots }: CalendarWidgetP
                     key={dateKey(day)}
                     className={`rounded-xl border p-2 ${
                       past ? 'opacity-40 pointer-events-none' : ''
-                    } ${today ? 'border-[#1c7b1d]/40 bg-green-50/30' : 'border-slate-200'}`}
+                    } ${today ? 'border-primary/40 bg-green-50/30' : 'border-slate-200'}`}
                   >
                     {/* Jour */}
                     <div className="text-center mb-2">
-                      <p className={`font-display text-xs ${today ? 'text-[#1c7b1d]' : 'text-slate-600'}`}>
+                      <p className={`font-display text-xs ${today ? 'text-primary' : 'text-slate-600'}`}>
                         {dayLabel(day)}
                       </p>
                       {today && (
-                        <span className="inline-block mt-0.5 font-body text-[9px] text-[#1c7b1d] uppercase tracking-wide">
+                        <span className="inline-block mt-0.5 font-body text-[9px] text-primary uppercase tracking-wide">
                           auj.
                         </span>
                       )}
@@ -154,8 +154,8 @@ export function CalendarWidget({ onSlotsChange, selectedSlots }: CalendarWidgetP
                       disabled={past}
                       className={`w-full py-1.5 rounded-lg text-xs font-body transition-all mb-1.5 border ${
                         matinSel
-                          ? 'bg-[#1c7b1d] text-white border-[#1c7b1d]'
-                          : 'bg-white text-slate-600 border-slate-200 hover:border-[#1c7b1d]/50 hover:bg-green-50/50'
+                          ? 'bg-primary text-white border-primary'
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-primary/50 hover:bg-green-50/50'
                       } disabled:pointer-events-none`}
                     >
                       Matin
@@ -168,8 +168,8 @@ export function CalendarWidget({ onSlotsChange, selectedSlots }: CalendarWidgetP
                       disabled={past}
                       className={`w-full py-1.5 rounded-lg text-xs font-body transition-all border ${
                         apremSel
-                          ? 'bg-[#1c7b1d] text-white border-[#1c7b1d]'
-                          : 'bg-white text-slate-600 border-slate-200 hover:border-[#1c7b1d]/50 hover:bg-green-50/50'
+                          ? 'bg-primary text-white border-primary'
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-primary/50 hover:bg-green-50/50'
                       } disabled:pointer-events-none`}
                     >
                       Ap-midi
@@ -200,13 +200,13 @@ export function CalendarWidget({ onSlotsChange, selectedSlots }: CalendarWidgetP
                   key={dateKey(day)}
                   className={`rounded-xl border p-3 ${
                     past ? 'opacity-40 pointer-events-none' : ''
-                  } ${today ? 'border-[#1c7b1d]/40 bg-green-50/30' : 'border-slate-100 bg-white'}`}
+                  } ${today ? 'border-primary/40 bg-green-50/30' : 'border-slate-100 bg-white'}`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className={`font-display text-sm ${today ? 'text-[#1c7b1d]' : 'text-slate-700'} capitalize`}>
+                      <p className={`font-display text-sm ${today ? 'text-primary' : 'text-slate-700'} capitalize`}>
                         {day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'short' })}
-                        {today && <span className="ml-1 font-body text-[10px] text-[#1c7b1d] uppercase">• auj.</span>}
+                        {today && <span className="ml-1 font-body text-[10px] text-primary uppercase">• auj.</span>}
                       </p>
                     </div>
                     <div className="flex gap-2">
@@ -216,8 +216,8 @@ export function CalendarWidget({ onSlotsChange, selectedSlots }: CalendarWidgetP
                         disabled={past}
                         className={`px-3 py-1.5 rounded-lg text-xs font-body transition-all border ${
                           matinSel
-                            ? 'bg-[#1c7b1d] text-white border-[#1c7b1d]'
-                            : 'bg-white text-slate-600 border-slate-200 hover:border-[#1c7b1d]/50'
+                            ? 'bg-primary text-white border-primary'
+                            : 'bg-white text-slate-600 border-slate-200 hover:border-primary/50'
                         }`}
                       >
                         Matin
@@ -228,8 +228,8 @@ export function CalendarWidget({ onSlotsChange, selectedSlots }: CalendarWidgetP
                         disabled={past}
                         className={`px-3 py-1.5 rounded-lg text-xs font-body transition-all border ${
                           apremSel
-                            ? 'bg-[#1c7b1d] text-white border-[#1c7b1d]'
-                            : 'bg-white text-slate-600 border-slate-200 hover:border-[#1c7b1d]/50'
+                            ? 'bg-primary text-white border-primary'
+                            : 'bg-white text-slate-600 border-slate-200 hover:border-primary/50'
                         }`}
                       >
                         Ap-midi

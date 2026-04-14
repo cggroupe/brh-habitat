@@ -91,14 +91,14 @@ export default function ProChiffrages() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Documents</p>
-          <h1 className="font-display text-3xl font-bold tracking-[0.05em] text-[#1b1c1c] uppercase">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Documents</p>
+          <h1 className="font-display text-3xl font-bold tracking-[0.05em] text-text-primary uppercase">
             Mes chiffrages
           </h1>
         </div>
         <Link
           to="/pro/chiffrage"
-          className="inline-flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-[#1c7b1d]/20 hover:-translate-y-0.5 transition-all"
+          className="inline-flex items-center gap-2 bg-gradient-to-br from-primary to-primary-dark text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all"
         >
           <Calculator size={14} />
           Nouveau chiffrage
@@ -108,23 +108,23 @@ export default function ProChiffrages() {
       {/* Loading */}
       {isLoading && (
         <div className="flex items-center justify-center py-20">
-          <div className="w-10 h-10 border-3 border-[#1c7b1d]/30 border-t-[#1c7b1d] rounded-full animate-spin" />
+          <div className="w-10 h-10 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
         </div>
       )}
 
       {/* Empty state */}
       {!isLoading && chiffrages.length === 0 && (
         <div className="bg-white rounded-2xl p-14 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
-          <div className="w-16 h-16 rounded-2xl bg-[#f5f3f2] flex items-center justify-center mx-auto mb-5">
-            <FileText size={28} className="text-[#707a6a]/30" />
+          <div className="w-16 h-16 rounded-2xl bg-background flex items-center justify-center mx-auto mb-5">
+            <FileText size={28} className="text-text-light/30" />
           </div>
-          <p className="font-display text-lg font-bold text-[#1b1c1c] uppercase tracking-wide mb-2">Aucun chiffrage</p>
-          <p className="text-sm text-[#707a6a] mb-7">
+          <p className="font-display text-lg font-bold text-text-primary uppercase tracking-wide mb-2">Aucun chiffrage</p>
+          <p className="text-sm text-text-light mb-7">
             Utilisez le Chiffrage IA pour generer votre premier chiffrage.
           </p>
           <Link
             to="/pro/chiffrage"
-            className="inline-flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-[#1c7b1d]/20 hover:-translate-y-0.5 transition-all"
+            className="inline-flex items-center gap-2 bg-gradient-to-br from-primary to-primary-dark text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all"
           >
             <Calculator size={14} />
             Chiffrage IA
@@ -138,34 +138,34 @@ export default function ProChiffrages() {
           <div className="hidden md:block bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="bg-[#f5f3f2]">
-                  <th className="px-6 py-4 text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Reference</th>
-                  <th className="px-6 py-4 text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Client</th>
-                  <th className="px-6 py-4 text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Projet</th>
-                  <th className="px-6 py-4 text-right text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Total TTC</th>
-                  <th className="px-6 py-4 text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Date</th>
+                <tr className="bg-background">
+                  <th className="px-6 py-4 text-left text-[10px] uppercase tracking-widest font-bold text-text-light">Reference</th>
+                  <th className="px-6 py-4 text-left text-[10px] uppercase tracking-widest font-bold text-text-light">Client</th>
+                  <th className="px-6 py-4 text-left text-[10px] uppercase tracking-widest font-bold text-text-light">Projet</th>
+                  <th className="px-6 py-4 text-right text-[10px] uppercase tracking-widest font-bold text-text-light">Total TTC</th>
+                  <th className="px-6 py-4 text-left text-[10px] uppercase tracking-widest font-bold text-text-light">Date</th>
                   <th className="px-6 py-4" />
                 </tr>
               </thead>
               <tbody>
                 {chiffrages.map((row) => (
-                  <tr key={row.id} className="hover:bg-[#f5f3f2]/50 transition-colors">
+                  <tr key={row.id} className="hover:bg-background/50 transition-colors">
                     <td className="px-6 py-4">
-                      <span className="text-[10px] bg-[#1c7b1d]/10 text-[#1c7b1d] px-3 py-1.5 rounded-full font-bold uppercase tracking-wider">
+                      <span className="text-[10px] bg-primary/10 text-primary px-3 py-1.5 rounded-full font-bold uppercase tracking-wider">
                         {row.reference}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm font-semibold text-[#1b1c1c]">{row.client_name}</td>
-                    <td className="px-6 py-4 text-sm text-[#707a6a]">{row.projet_titre}</td>
-                    <td className="px-6 py-4 text-right font-display text-sm font-bold text-[#1b1c1c]">
+                    <td className="px-6 py-4 text-sm font-semibold text-text-primary">{row.client_name}</td>
+                    <td className="px-6 py-4 text-sm text-text-light">{row.projet_titre}</td>
+                    <td className="px-6 py-4 text-right font-display text-sm font-bold text-text-primary">
                       {formatEur(row.total_ttc)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-[#707a6a]">{formatDate(row.created_at)}</td>
+                    <td className="px-6 py-4 text-sm text-text-light">{formatDate(row.created_at)}</td>
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => void handleDownload(row)}
                         disabled={downloadingId === row.id}
-                        className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#f5f3f2] text-[#404a3c] font-bold text-[10px] rounded-xl hover:bg-[#1c7b1d] hover:text-white transition-all disabled:opacity-50 uppercase tracking-widest"
+                        className="inline-flex items-center gap-1.5 px-3 py-2 bg-background text-text-secondary font-bold text-[10px] rounded-xl hover:bg-primary hover:text-white transition-all disabled:opacity-50 uppercase tracking-widest"
                       >
                         {downloadingId === row.id
                           ? <Loader2 size={12} className="animate-spin" />
@@ -184,21 +184,21 @@ export default function ProChiffrages() {
             {chiffrages.map((row) => (
               <div key={row.id} className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
                 <div className="flex items-start justify-between mb-3">
-                  <span className="text-[10px] bg-[#1c7b1d]/10 text-[#1c7b1d] px-3 py-1.5 rounded-full font-bold uppercase tracking-wider">
+                  <span className="text-[10px] bg-primary/10 text-primary px-3 py-1.5 rounded-full font-bold uppercase tracking-wider">
                     {row.reference}
                   </span>
-                  <span className="text-xs text-[#707a6a]">{formatDate(row.created_at)}</span>
+                  <span className="text-xs text-text-light">{formatDate(row.created_at)}</span>
                 </div>
-                <p className="font-bold text-sm text-[#1b1c1c] mb-0.5">{row.client_name}</p>
-                <p className="text-xs text-[#707a6a] mb-4">{row.projet_titre}</p>
+                <p className="font-bold text-sm text-text-primary mb-0.5">{row.client_name}</p>
+                <p className="text-xs text-text-light mb-4">{row.projet_titre}</p>
                 <div className="flex items-center justify-between">
-                  <span className="font-display text-base font-bold text-[#1b1c1c]">
+                  <span className="font-display text-base font-bold text-text-primary">
                     {formatEur(row.total_ttc)}
                   </span>
                   <button
                     onClick={() => void handleDownload(row)}
                     disabled={downloadingId === row.id}
-                    className="inline-flex items-center gap-1.5 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-md shadow-[#1c7b1d]/20 transition-all disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 bg-gradient-to-br from-primary to-primary-dark text-white px-4 py-2 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 transition-all disabled:opacity-50"
                   >
                     {downloadingId === row.id
                       ? <Loader2 size={12} className="animate-spin" />

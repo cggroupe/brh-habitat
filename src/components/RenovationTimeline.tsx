@@ -70,7 +70,7 @@ export function RenovationTimeline({
       {/* Liste des etapes */}
       <div className="relative">
         {/* Ligne verte verticale */}
-        <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#1c7b1d] via-[#359932] to-slate-200 rounded-full" />
+        <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary via-primary-green to-slate-200 rounded-full" />
 
         <div className="space-y-0">
           {steps.map((step, idx) => {
@@ -82,7 +82,7 @@ export function RenovationTimeline({
                 {/* Step card */}
                 <div className="relative flex gap-4 pb-6">
                   {/* Cercle numerote */}
-                  <div className="relative z-10 shrink-0 size-10 rounded-full bg-[#1c7b1d] text-white flex items-center justify-center text-sm font-black shadow-md shadow-[#1c7b1d]/30">
+                  <div className="relative z-10 shrink-0 size-10 rounded-full bg-primary text-white flex items-center justify-center text-sm font-black shadow-md shadow-primary/30">
                     {step.order}
                   </div>
 
@@ -105,7 +105,7 @@ export function RenovationTimeline({
                         {step.types.map((t) => (
                           <span
                             key={t.type}
-                            className="text-xs font-semibold bg-[#1c7b1d]/10 text-[#1c7b1d] rounded-full px-2.5 py-0.5 capitalize"
+                            className="text-xs font-semibold bg-primary/10 text-primary rounded-full px-2.5 py-0.5 capitalize"
                           >
                             {t.type}
                           </span>

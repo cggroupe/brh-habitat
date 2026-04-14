@@ -1,8 +1,40 @@
 import { supabase } from '@/lib/supabase'
-import type { BrhCompanyRow } from '@/types/partner'
+import type { BrhCompanyRow, CompanyProfession } from '@/types/partner'
 import { PAGE_SIZE } from '@/data/constants'
 
 export type CompanyUpdate = Partial<Omit<BrhCompanyRow, 'id' | 'created_at' | 'updated_at'>>
+
+export interface CreateCompanyPayload {
+  owner_id: string
+  name: string
+  siret?: string | null
+  profession?: CompanyProfession | null
+}
+
+export async function createCompany(payload: CreateCompanyPayload): Promise<BrhCompanyRow> {
+  const { data, error } = await supabase
+    .from('brh_companies')
+    .insert({
+      owner_id: payload.owner_id,
+      name: payload.name,
+      siret: payload.siret ?? null,
+      profession: payload.profession ?? null,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function updateCompanyRecruiter(companyId: string, recruitedBy: string): Promise<void> {
+  const { error } = await supabase
+    .from('brh_companies')
+    .update({ recruited_by: recruitedBy })
+    .eq('id', companyId)
+
+  if (error) throw error
+}
 
 export interface PaginatedCompanies {
   data: BrhCompanyRow[]

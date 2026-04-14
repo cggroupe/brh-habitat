@@ -120,25 +120,25 @@ export default function ProProspectNew() {
   }
 
   const inputClass = (field: keyof FormData) =>
-    `w-full px-4 py-3 rounded-xl border font-body text-sm text-[#1b1c1c] bg-white focus:outline-none focus:ring-2 focus:ring-[#1c7b1d]/20 transition-colors ${
+    `w-full px-4 py-3 rounded-xl border font-body text-sm text-text-primary bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors ${
       errors[field]
         ? 'border-red-300 focus:border-red-400'
-        : 'border-[#f5f3f2] hover:border-[#707a6a]/30 focus:border-[#1c7b1d]/40'
+        : 'border-background hover:border-text-light/30 focus:border-primary/40'
     }`
 
   return (
     <div className="p-8 lg:p-10">
       <Link
         to="/pro/prospects"
-        className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#707a6a] hover:text-[#1c7b1d] mb-8 transition-colors"
+        className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-text-light hover:text-primary mb-8 transition-colors"
       >
         <ArrowLeft size={14} />
         Retour aux prospects
       </Link>
 
       <div className="mb-8">
-        <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Nouveau</p>
-        <h1 className="font-display text-3xl font-bold tracking-[0.05em] text-[#1b1c1c] uppercase">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Nouveau</p>
+        <h1 className="font-display text-3xl font-bold tracking-[0.05em] text-text-primary uppercase">
           Nouveau prospect
         </h1>
       </div>
@@ -146,12 +146,12 @@ export default function ProProspectNew() {
       <form onSubmit={handleSubmit} className="max-w-2xl space-y-5">
         {/* Identite client */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-5">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-5">
             Identite du client
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-[#404a3c] mb-1.5">Prenom *</label>
+              <label className="block text-xs font-bold text-text-secondary mb-1.5">Prenom *</label>
               <input
                 type="text"
                 value={form.client_first_name}
@@ -164,7 +164,7 @@ export default function ProProspectNew() {
               )}
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#404a3c] mb-1.5">Nom *</label>
+              <label className="block text-xs font-bold text-text-secondary mb-1.5">Nom *</label>
               <input
                 type="text"
                 value={form.client_last_name}
@@ -177,7 +177,7 @@ export default function ProProspectNew() {
               )}
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#404a3c] mb-1.5">Telephone *</label>
+              <label className="block text-xs font-bold text-text-secondary mb-1.5">Telephone *</label>
               <input
                 type="tel"
                 value={form.client_phone}
@@ -190,7 +190,7 @@ export default function ProProspectNew() {
               )}
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#404a3c] mb-1.5">Email</label>
+              <label className="block text-xs font-bold text-text-secondary mb-1.5">Email</label>
               <input
                 type="email"
                 value={form.client_email}
@@ -204,12 +204,12 @@ export default function ProProspectNew() {
 
         {/* Adresse */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-5">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-5">
             Adresse du chantier
           </p>
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-[#404a3c] mb-1.5">Adresse</label>
+              <label className="block text-xs font-bold text-text-secondary mb-1.5">Adresse</label>
               <input
                 type="text"
                 value={form.client_address}
@@ -220,7 +220,7 @@ export default function ProProspectNew() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-[#404a3c] mb-1.5">Code postal</label>
+                <label className="block text-xs font-bold text-text-secondary mb-1.5">Code postal</label>
                 <input
                   type="text"
                   value={form.client_postal_code}
@@ -230,7 +230,7 @@ export default function ProProspectNew() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-[#404a3c] mb-1.5">Ville</label>
+                <label className="block text-xs font-bold text-text-secondary mb-1.5">Ville</label>
                 <input
                   type="text"
                   value={form.client_city}
@@ -245,7 +245,7 @@ export default function ProProspectNew() {
 
         {/* Travaux */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-5">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-5">
             Type de travaux *
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -254,8 +254,8 @@ export default function ProProspectNew() {
                 key={wt.value}
                 className={`flex items-center gap-2 px-3 py-3 rounded-xl cursor-pointer transition-all select-none ${
                   form.work_type.includes(wt.value)
-                    ? 'bg-[#1c7b1d]/10 text-[#1c7b1d] ring-1 ring-[#1c7b1d]/30'
-                    : 'bg-[#f5f3f2] text-[#404a3c] hover:bg-[#f5f3f2]'
+                    ? 'bg-primary/10 text-primary ring-1 ring-primary/30'
+                    : 'bg-background text-text-secondary hover:bg-background'
                 }`}
               >
                 <input
@@ -275,12 +275,12 @@ export default function ProProspectNew() {
 
         {/* Budget & Urgence */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-5">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-5">
             Budget et urgence
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-[#404a3c] mb-1.5">Budget estime</label>
+              <label className="block text-xs font-bold text-text-secondary mb-1.5">Budget estime</label>
               <select
                 value={form.estimated_budget}
                 onChange={(e) => handleChange('estimated_budget', e.target.value)}
@@ -293,7 +293,7 @@ export default function ProProspectNew() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#404a3c] mb-1.5">Urgence</label>
+              <label className="block text-xs font-bold text-text-secondary mb-1.5">Urgence</label>
               <select
                 value={form.urgency}
                 onChange={(e) => handleChange('urgency', e.target.value)}
@@ -310,7 +310,7 @@ export default function ProProspectNew() {
 
         {/* Notes */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-5">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-5">
             Notes
           </p>
           <textarea
@@ -318,7 +318,7 @@ export default function ProProspectNew() {
             onChange={(e) => handleChange('notes', e.target.value)}
             rows={4}
             placeholder="Informations complementaires sur le projet..."
-            className="w-full px-4 py-3 rounded-xl border border-[#f5f3f2] hover:border-[#707a6a]/30 font-body text-sm text-[#1b1c1c] bg-white focus:outline-none focus:ring-2 focus:ring-[#1c7b1d]/20 focus:border-[#1c7b1d]/40 transition-colors resize-none"
+            className="w-full px-4 py-3 rounded-xl border border-background hover:border-text-light/30 font-body text-sm text-text-primary bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-colors resize-none"
           />
         </div>
 
@@ -338,14 +338,14 @@ export default function ProProspectNew() {
           <button
             type="submit"
             disabled={createProspect.isPending}
-            className="flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-[#1c7b1d]/20 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+            className="flex items-center gap-2 bg-gradient-to-br from-primary to-primary-dark text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           >
             {createProspect.isPending && <Loader2 size={14} className="animate-spin" />}
             Envoyer le prospect
           </button>
           <Link
             to="/pro/prospects"
-            className="px-6 py-3 bg-white rounded-xl font-bold uppercase text-xs tracking-widest text-[#707a6a] hover:text-[#1b1c1c] shadow-[0_2px_8px_rgba(27,28,28,0.06)] hover:-translate-y-0.5 transition-all"
+            className="px-6 py-3 bg-white rounded-xl font-bold uppercase text-xs tracking-widest text-text-light hover:text-text-primary shadow-[0_2px_8px_rgba(27,28,28,0.06)] hover:-translate-y-0.5 transition-all"
           >
             Annuler
           </Link>

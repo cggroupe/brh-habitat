@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useMyAffiliate, useAffiliateProspects, useMyRecruitTree } from '@/hooks/queries'
+import { unlockBadges } from '@/api/badges'
 
 // Map icon name strings to Lucide components
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -111,10 +112,7 @@ export default function PartBadges() {
         }
       }
       if (toUnlock.length === 0) return
-      await supabase.from('brh_user_badges').upsert(
-        toUnlock.map((badge_id) => ({ user_id: user!.id, badge_id })),
-        { onConflict: 'user_id,badge_id', ignoreDuplicates: true }
-      )
+      await unlockBadges(user!.id, toUnlock)
       void refetchUserBadges()
     }
 
@@ -145,16 +143,16 @@ export default function PartBadges() {
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Progression</p>
-          <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-[#1b1c1c]">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Progression</p>
+          <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-text-primary">
             Mes badges
           </h1>
         </div>
         <div className="bg-white rounded-2xl px-5 py-3 shadow-[0_8px_30px_rgba(27,28,28,0.04)] flex items-center gap-2.5">
           <Trophy size={16} className="text-amber-500" />
           <div>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Obtenus</p>
-            <p className="font-display font-bold text-sm text-[#1b1c1c]">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-text-light">Obtenus</p>
+            <p className="font-display font-bold text-sm text-text-primary">
               {unlockedCount} / {allBadges.length}
             </p>
           </div>
@@ -165,14 +163,14 @@ export default function PartBadges() {
       {allBadges.length > 0 && (
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] mb-6">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-[#404a3c] font-medium">Progression generale</span>
-            <span className="font-display font-bold text-sm text-[#1c7b1d]">
+            <span className="text-sm text-text-secondary font-medium">Progression generale</span>
+            <span className="font-display font-bold text-sm text-primary">
               {Math.round((unlockedCount / allBadges.length) * 100)}%
             </span>
           </div>
-          <div className="w-full bg-[#f5f3f2] rounded-full h-3 overflow-hidden">
+          <div className="w-full bg-background rounded-full h-3 overflow-hidden">
             <div
-              className="bg-gradient-to-r from-[#1c7b1d] to-[#2da82e] h-3 rounded-full transition-all duration-700"
+              className="bg-gradient-to-r from-primary to-primary-dark h-3 rounded-full transition-all duration-700"
               style={{ width: `${(unlockedCount / allBadges.length) * 100}%` }}
             />
           </div>
@@ -182,10 +180,10 @@ export default function PartBadges() {
       {/* Badges grid */}
       {allBadges.length === 0 ? (
         <div className="bg-white rounded-2xl p-14 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
-          <div className="w-16 h-16 bg-[#f5f3f2] rounded-2xl flex items-center justify-center mx-auto mb-5">
-            <Award size={28} className="text-[#707a6a]" />
+          <div className="w-16 h-16 bg-background rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <Award size={28} className="text-text-light" />
           </div>
-          <p className="font-display text-lg font-bold uppercase tracking-[0.05em] text-[#404a3c]">
+          <p className="font-display text-lg font-bold uppercase tracking-[0.05em] text-text-secondary">
             Aucun badge disponible pour l'instant
           </p>
         </div>
@@ -203,55 +201,55 @@ export default function PartBadges() {
                 key={badge.id}
                 className={`bg-white rounded-2xl p-5 text-center relative overflow-hidden transition-all ${
                   isUnlocked
-                    ? 'shadow-[0_8px_30px_rgba(28,123,29,0.15)] ring-1 ring-[#1c7b1d]/20'
+                    ? 'shadow-[0_8px_30px_rgba(28,123,29,0.15)] ring-1 ring-primary/20'
                     : 'shadow-[0_8px_30px_rgba(27,28,28,0.04)] opacity-70'
                 }`}
               >
                 {/* Glow effect for unlocked */}
                 {isUnlocked && (
-                  <div className="absolute inset-0 bg-gradient-to-b from-[#1c7b1d]/5 to-transparent rounded-2xl pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent rounded-2xl pointer-events-none" />
                 )}
 
                 {/* Icon */}
                 <div
                   className={`w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center relative ${
-                    isUnlocked ? 'bg-[#1c7b1d]/10' : 'bg-[#f5f3f2]'
+                    isUnlocked ? 'bg-primary/10' : 'bg-background'
                   }`}
                 >
                   <IconComponent
                     size={26}
-                    className={isUnlocked ? '' : 'text-[#707a6a]/50'}
+                    className={isUnlocked ? '' : 'text-text-light/50'}
                     style={isUnlocked ? { color: badge.color } : undefined}
                   />
                   {!isUnlocked && (
-                    <div className="absolute inset-0 rounded-2xl bg-[#f5f3f2]/80 flex items-center justify-center">
-                      <Lock size={14} className="text-[#707a6a]" />
+                    <div className="absolute inset-0 rounded-2xl bg-background/80 flex items-center justify-center">
+                      <Lock size={14} className="text-text-light" />
                     </div>
                   )}
                 </div>
 
                 {/* Name + desc */}
-                <p className={`font-bold text-xs uppercase tracking-wide mb-1 ${isUnlocked ? 'text-[#1b1c1c]' : 'text-[#707a6a]'}`}>
+                <p className={`font-bold text-xs uppercase tracking-wide mb-1 ${isUnlocked ? 'text-text-primary' : 'text-text-light'}`}>
                   {badge.name}
                 </p>
-                <p className="text-xs text-[#707a6a] leading-snug mb-3">
+                <p className="text-xs text-text-light leading-snug mb-3">
                   {badge.description}
                 </p>
 
                 {/* Unlocked date or progress */}
                 {isUnlocked ? (
-                  <span className="inline-block bg-[#1c7b1d]/10 text-[#1c7b1d] text-xs px-2.5 py-1 rounded-full font-medium">
+                  <span className="inline-block bg-primary/10 text-primary text-xs px-2.5 py-1 rounded-full font-medium">
                     {userBadge?.unlocked_at ? formatDate(userBadge.unlocked_at) : 'Obtenu'}
                   </span>
                 ) : (
                   <div>
-                    <div className="w-full bg-[#f5f3f2] rounded-full h-1.5 mb-1.5 overflow-hidden">
+                    <div className="w-full bg-background rounded-full h-1.5 mb-1.5 overflow-hidden">
                       <div
-                        className="bg-gradient-to-r from-[#1c7b1d] to-[#2da82e] h-1.5 rounded-full transition-all"
+                        className="bg-gradient-to-r from-primary to-primary-dark h-1.5 rounded-full transition-all"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <span className="text-[10px] text-[#707a6a] font-medium">
+                    <span className="text-[10px] text-text-light font-medium">
                       {current} / {total} pour debloquer
                     </span>
                   </div>

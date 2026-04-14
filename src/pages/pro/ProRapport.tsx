@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react'
-import { FileText, Download, TrendingUp, Euro, Users, CheckCircle, Loader2 } from 'lucide-react'
+import { FileText, Loader2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useMyCompany, useCompanyDashboardStats } from '@/hooks/queries'
 import { supabase } from '@/lib/supabase'
 import { logError } from '@/lib/error'
+import { StatsPreviewPanel } from './pro-rapport/StatsPreviewPanel'
+import { ProspectsTable } from './pro-rapport/ProspectsTable'
 import type { RapportData, RapportMonthStats, RapportProspectLine } from '@/lib/rapport-pdf'
 
-
-// ============================================================
-// Helpers date
-// ============================================================
+// ─── Helpers date ──────────────────────────────────────────────────────────────
 
 function monthOptions(): { label: string; value: string }[] {
   const options: { label: string; value: string }[] = []
@@ -39,19 +38,7 @@ function monthRangeDates(month: number, year: number): { from: string; to: strin
   return { from, to }
 }
 
-function formatEurDisplay(cents: number): string {
-  return (cents / 100).toLocaleString('fr-FR') + ' EUR'
-}
-
-function monthLabel(month: number, year: number): string {
-  const date = new Date(year, month - 1, 1)
-  const label = date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
-  return label.charAt(0).toUpperCase() + label.slice(1)
-}
-
-// ============================================================
-// Fetching
-// ============================================================
+// ─── Fetching ──────────────────────────────────────────────────────────────────
 
 async function fetchMonthStats(
   companyId: string,
@@ -132,9 +119,19 @@ async function fetchMonthStats(
   }
 }
 
-// ============================================================
-// Composant principal
-// ============================================================
+async function downloadRapportPdf(data: RapportData, month: number, year: number) {
+  const { pdf } = await import('@react-pdf/renderer')
+  const { RapportPDF } = await import('@/lib/rapport-pdf')
+  const blob = await pdf(<RapportPDF data={data} />).toBlob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `rapport-brh-${year}-${String(month).padStart(2, '0')}.pdf`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+// ─── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ProRapport() {
   const { user } = useAuth()
@@ -162,7 +159,6 @@ export default function ProRapport() {
 
     try {
       const { month, year } = parseMonthValue(selectedValue)
-
       const { stats, prospects } = await fetchMonthStats(company.id, month, year)
 
       let prevStats: RapportMonthStats | null = null
@@ -201,7 +197,7 @@ export default function ProRapport() {
   if (loadingCompany) {
     return (
       <div className="p-8 lg:p-10 flex items-center justify-center min-h-[300px]">
-        <div className="w-8 h-8 border-3 border-[#1c7b1d]/30 border-t-[#1c7b1d] rounded-full animate-spin" />
+        <div className="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
       </div>
     )
   }
@@ -210,7 +206,7 @@ export default function ProRapport() {
     return (
       <div className="p-8 lg:p-10">
         <div className="bg-white rounded-2xl p-12 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
-          <p className="text-[#707a6a]">Aucune entreprise associee a votre compte.</p>
+          <p className="text-text-light">Aucune entreprise associee a votre compte.</p>
         </div>
       </div>
     )
@@ -222,21 +218,21 @@ export default function ProRapport() {
     <div className="p-8 lg:p-10 max-w-3xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Bilan</p>
-        <h1 className="font-display text-3xl font-bold tracking-[0.05em] text-[#1b1c1c] uppercase">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Bilan</p>
+        <h1 className="font-display text-3xl font-bold tracking-[0.05em] text-text-primary uppercase">
           Rapport mensuel
         </h1>
-        <p className="text-sm text-[#707a6a] mt-1">Telechargez votre rapport partenaire en PDF</p>
+        <p className="text-sm text-text-light mt-1">Telechargez votre rapport partenaire en PDF</p>
       </div>
 
       {/* Selecteur de mois */}
       <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] p-6 mb-5">
-        <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-3">Periode</p>
+        <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-3">Periode</p>
         <div className="flex gap-3 items-end">
           <select
             value={selectedValue}
             onChange={(e) => setSelectedValue(e.target.value)}
-            className="flex-1 px-4 py-3 rounded-xl border border-[#f5f3f2] hover:border-[#707a6a]/30 text-sm text-[#1b1c1c] bg-white focus:outline-none focus:border-[#1c7b1d]/40 focus:ring-2 focus:ring-[#1c7b1d]/20 transition-colors"
+            className="flex-1 px-4 py-3 rounded-xl border border-background hover:border-text-light/30 text-sm text-text-primary bg-white focus:outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/20 transition-colors"
           >
             {options.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -246,7 +242,7 @@ export default function ProRapport() {
             type="button"
             onClick={() => void handleGenerate()}
             disabled={loading}
-            className="flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-[#1c7b1d]/20 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 shrink-0"
+            className="flex items-center gap-2 bg-gradient-to-br from-primary to-primary-dark text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 shrink-0"
           >
             {loading ? (
               <>
@@ -273,164 +269,15 @@ export default function ProRapport() {
       {/* Preview des stats */}
       {pdfReady && rapportData && (
         <>
-          <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] p-6 mb-5">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-5">
-              Apercu — {monthLabel(selectedPeriod.month, selectedPeriod.year)}
-            </p>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              <StatPreviewCard
-                icon={<Euro size={15} className="text-[#1c7b1d]" />}
-                label="CA apporte"
-                value={formatEurDisplay(rapportData.stats.ca_apporte)}
-                prev={rapportData.prev_stats ? formatEurDisplay(rapportData.prev_stats.ca_apporte) : null}
-              />
-              <StatPreviewCard
-                icon={<TrendingUp size={15} className="text-blue-500" />}
-                label="Commissions dues"
-                value={formatEurDisplay(rapportData.stats.commissions_dues)}
-                prev={rapportData.prev_stats ? formatEurDisplay(rapportData.prev_stats.commissions_dues) : null}
-              />
-              <StatPreviewCard
-                icon={<CheckCircle size={15} className="text-emerald-500" />}
-                label="Comm. versees"
-                value={formatEurDisplay(rapportData.stats.commissions_versees)}
-                prev={null}
-              />
-              <StatPreviewCard
-                icon={<Users size={15} className="text-amber-500" />}
-                label="Prospects soumis"
-                value={String(rapportData.stats.nb_prospects)}
-                prev={rapportData.prev_stats ? String(rapportData.prev_stats.nb_prospects) : null}
-              />
-              <StatPreviewCard
-                icon={<CheckCircle size={15} className="text-[#1c7b1d]" />}
-                label="Signes"
-                value={String(rapportData.stats.nb_signes)}
-                prev={rapportData.prev_stats ? String(rapportData.prev_stats.nb_signes) : null}
-              />
-              <StatPreviewCard
-                icon={<TrendingUp size={15} className="text-purple-500" />}
-                label="Taux conversion"
-                value={
-                  rapportData.stats.nb_prospects > 0
-                    ? ((rapportData.stats.nb_signes / rapportData.stats.nb_prospects) * 100).toFixed(1) + '%'
-                    : '0%'
-                }
-                prev={null}
-              />
-            </div>
-
-            {/* Bouton de telechargement PDF */}
-            <button
-              onClick={() => void downloadRapportPdf(rapportData, selectedPeriod.month, selectedPeriod.year)}
-              className="w-full py-4 rounded-xl bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white font-bold uppercase text-xs tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-[#1c7b1d]/20 hover:-translate-y-0.5 transition-all"
-            >
-              <Download size={15} />
-              Telecharger le rapport PDF
-            </button>
-          </div>
-
-          {/* Liste des prospects */}
-          {rapportData.prospects.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] overflow-hidden">
-              <div className="px-6 py-5 bg-[#f5f3f2]">
-                <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">
-                  Prospects du mois ({rapportData.prospects.length})
-                </p>
-              </div>
-              <div>
-                {rapportData.prospects.map((p, i) => (
-                  <div
-                    key={i}
-                    className={`px-6 py-4 flex items-center justify-between gap-4 hover:bg-[#f5f3f2]/50 transition-colors ${i > 0 ? 'border-t border-[#f5f3f2]' : ''}`}
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-[#1b1c1c] truncate">{p.client_name}</p>
-                      <p className="text-xs text-[#707a6a] truncate">{p.work_type}</p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <StatusBadge status={p.status} />
-                      {p.commission_amount !== null && (
-                        <span className="text-xs font-bold text-[#1c7b1d]">
-                          {formatEurDisplay(p.commission_amount)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <StatsPreviewPanel
+            rapportData={rapportData}
+            selectedMonth={selectedPeriod.month}
+            selectedYear={selectedPeriod.year}
+            onDownload={() => void downloadRapportPdf(rapportData, selectedPeriod.month, selectedPeriod.year)}
+          />
+          <ProspectsTable prospects={rapportData.prospects} />
         </>
       )}
     </div>
   )
-}
-
-// ============================================================
-// Sous-composants
-// ============================================================
-
-function StatPreviewCard({
-  icon,
-  label,
-  value,
-  prev,
-}: {
-  icon: React.ReactNode
-  label: string
-  value: string
-  prev: string | null
-}) {
-  return (
-    <div className="bg-[#f5f3f2] rounded-2xl p-4">
-      <div className="flex items-center gap-2 mb-2">
-        {icon}
-        <span className="text-[10px] uppercase tracking-wider font-bold text-[#707a6a]">{label}</span>
-      </div>
-      <p className="font-display text-base font-bold text-[#1b1c1c]">{value}</p>
-      {prev !== null && (
-        <p className="text-[10px] text-[#707a6a] mt-0.5">Prec. : {prev}</p>
-      )}
-    </div>
-  )
-}
-
-const PROSPECT_STATUS_LABELS: Record<string, string> = {
-  nouveau: 'Nouveau',
-  etude: 'En etude',
-  devis_envoye: 'Devis envoye',
-  signe: 'Signe',
-  termine: 'Termine',
-  perdu: 'Perdu',
-}
-
-const PROSPECT_STATUS_BADGE: Record<string, string> = {
-  nouveau: 'bg-blue-50 text-blue-700',
-  etude: 'bg-amber-50 text-amber-700',
-  devis_envoye: 'bg-yellow-50 text-yellow-700',
-  signe: 'bg-[#1c7b1d]/10 text-[#1c7b1d]',
-  termine: 'bg-emerald-50 text-emerald-700',
-  perdu: 'bg-[#f5f3f2] text-[#707a6a]',
-}
-
-function StatusBadge({ status }: { status: string }) {
-  return (
-    <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${PROSPECT_STATUS_BADGE[status] ?? 'bg-[#f5f3f2] text-[#707a6a]'}`}>
-      {PROSPECT_STATUS_LABELS[status] ?? status}
-    </span>
-  )
-}
-
-// Download PDF via dynamic import (lazy load @react-pdf/renderer)
-async function downloadRapportPdf(data: RapportData, month: number, year: number) {
-  const { pdf } = await import('@react-pdf/renderer')
-  const { RapportPDF } = await import('@/lib/rapport-pdf')
-  const blob = await pdf(<RapportPDF data={data} />).toBlob()
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `rapport-brh-${year}-${String(month).padStart(2, '0')}.pdf`
-  a.click()
-  URL.revokeObjectURL(url)
 }

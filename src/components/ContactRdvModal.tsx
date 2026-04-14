@@ -167,7 +167,7 @@ export function ContactRdvModal({
         {isConfirmed ? (
           <div className="p-8 text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
-              <CheckCircle2 size={32} className="text-[#1c7b1d]" />
+              <CheckCircle2 size={32} className="text-primary" />
             </div>
             <h2 className="font-display text-2xl text-slate-900 mb-2">Merci {prenom} !</h2>
             <p className="font-body text-slate-500 mb-6 leading-relaxed">
@@ -187,14 +187,14 @@ export function ContactRdvModal({
               </div>
             </div>
             <button type="button" onClick={onClose}
-              className="w-full py-3 rounded-xl bg-[#1c7b1d] text-white font-display text-sm hover:bg-[#1c7b1d]/90 transition-colors">
+              className="w-full py-3 rounded-xl bg-primary text-white font-display text-sm hover:bg-primary/90 transition-colors">
               Revenir a mes resultats
             </button>
           </div>
         ) : (
           <>
             {/* Header */}
-            <div className="bg-gradient-to-br from-[#1c7b1d] to-[#359932] px-7 pt-7 pb-6 text-white">
+            <div className="bg-gradient-to-br from-primary to-primary-dark px-7 pt-7 pb-6 text-white">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
                   <CalendarDays size={20} />
@@ -218,7 +218,7 @@ export function ContactRdvModal({
               <div>
                 <label className="block font-display text-sm text-slate-800 mb-1.5">Nom complet <span className="text-red-500">*</span></label>
                 <input type="text" placeholder="Jean Dupont" value={form.nom} onChange={(e) => handleChange('nom', e.target.value)}
-                  className={`w-full px-4 py-3 rounded-xl border text-sm text-slate-900 placeholder:text-slate-400 font-body focus:outline-none focus:ring-2 transition-all ${errors.nom ? 'border-red-300 focus:ring-red-100 bg-red-50/30' : 'border-slate-200 focus:border-[#1c7b1d] focus:ring-[#1c7b1d]/10'}`} />
+                  className={`w-full px-4 py-3 rounded-xl border text-sm text-slate-900 placeholder:text-slate-400 font-body focus:outline-none focus:ring-2 transition-all ${errors.nom ? 'border-red-300 focus:ring-red-100 bg-red-50/30' : 'border-slate-200 focus:border-primary focus:ring-primary/10'}`} />
                 {errors.nom && <p className="mt-1 text-xs text-red-500 font-body">{errors.nom}</p>}
               </div>
 
@@ -226,7 +226,7 @@ export function ContactRdvModal({
               <div>
                 <label className="block font-display text-sm text-slate-800 mb-1.5">Telephone <span className="text-red-500">*</span></label>
                 <input type="tel" placeholder="06 XX XX XX XX" value={form.telephone} onChange={(e) => handleChange('telephone', e.target.value)}
-                  className={`w-full px-4 py-3 rounded-xl border text-sm text-slate-900 placeholder:text-slate-400 font-body focus:outline-none focus:ring-2 transition-all ${errors.telephone ? 'border-red-300 focus:ring-red-100 bg-red-50/30' : 'border-slate-200 focus:border-[#1c7b1d] focus:ring-[#1c7b1d]/10'}`} />
+                  className={`w-full px-4 py-3 rounded-xl border text-sm text-slate-900 placeholder:text-slate-400 font-body focus:outline-none focus:ring-2 transition-all ${errors.telephone ? 'border-red-300 focus:ring-red-100 bg-red-50/30' : 'border-slate-200 focus:border-primary focus:ring-primary/10'}`} />
                 {errors.telephone && <p className="mt-1 text-xs text-red-500 font-body">{errors.telephone}</p>}
               </div>
 
@@ -234,7 +234,7 @@ export function ContactRdvModal({
               <div>
                 <label className="block font-display text-sm text-slate-800 mb-1.5">Email <span className="text-red-500">*</span></label>
                 <input type="email" placeholder="vous@exemple.com" value={form.email} onChange={(e) => handleChange('email', e.target.value)}
-                  className={`w-full px-4 py-3 rounded-xl border text-sm text-slate-900 placeholder:text-slate-400 font-body focus:outline-none focus:ring-2 transition-all ${errors.email ? 'border-red-300 focus:ring-red-100 bg-red-50/30' : 'border-slate-200 focus:border-[#1c7b1d] focus:ring-[#1c7b1d]/10'}`} />
+                  className={`w-full px-4 py-3 rounded-xl border text-sm text-slate-900 placeholder:text-slate-400 font-body focus:outline-none focus:ring-2 transition-all ${errors.email ? 'border-red-300 focus:ring-red-100 bg-red-50/30' : 'border-slate-200 focus:border-primary focus:ring-primary/10'}`} />
                 {errors.email && <p className="mt-1 text-xs text-red-500 font-body">{errors.email}</p>}
               </div>
 
@@ -259,7 +259,7 @@ export function ContactRdvModal({
                 </label>
                 <textarea rows={3} placeholder="Precisions sur votre projet..." value={form.message}
                   onChange={(e) => handleChange('message', e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 font-body focus:outline-none focus:border-[#1c7b1d] focus:ring-2 focus:ring-[#1c7b1d]/10 transition-all resize-none" />
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 font-body focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all resize-none" />
               </div>
 
               {submitError && (
@@ -267,7 +267,7 @@ export function ContactRdvModal({
               )}
 
               <button type="button" onClick={() => void handleSubmit()} disabled={isLoading || dispos.length === 0}
-                className="w-full py-3.5 rounded-xl bg-[#1c7b1d] text-white font-display text-base flex items-center justify-center gap-2 hover:bg-[#1c7b1d]/90 transition-colors shadow-lg shadow-[#1c7b1d]/25 disabled:opacity-50 disabled:cursor-not-allowed">
+                className="w-full py-3.5 rounded-xl bg-primary text-white font-display text-base flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 disabled:opacity-50 disabled:cursor-not-allowed">
                 {isLoading ? (
                   <>
                     <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">

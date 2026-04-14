@@ -96,12 +96,12 @@ export default function ProProfil() {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  const inputClass = 'w-full px-4 py-3 rounded-xl border border-[#f5f3f2] hover:border-[#707a6a]/30 text-sm text-[#1b1c1c] bg-white focus:outline-none focus:ring-2 focus:ring-[#1c7b1d]/20 focus:border-[#1c7b1d]/40 transition-colors'
+  const inputClass = 'w-full px-4 py-3 rounded-xl border border-background hover:border-text-light/30 text-sm text-text-primary bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-colors'
 
   if (isLoading) {
     return (
       <div className="p-8 lg:p-10 flex items-center justify-center min-h-[300px]">
-        <div className="w-8 h-8 border-3 border-[#1c7b1d]/30 border-t-[#1c7b1d] rounded-full animate-spin" />
+        <div className="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
       </div>
     )
   }
@@ -110,7 +110,7 @@ export default function ProProfil() {
     return (
       <div className="p-8 lg:p-10">
         <div className="bg-white rounded-2xl p-12 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
-          <p className="text-[#707a6a]">Aucune entreprise associee a votre compte.</p>
+          <p className="text-text-light">Aucune entreprise associee a votre compte.</p>
         </div>
       </div>
     )
@@ -123,15 +123,15 @@ export default function ProProfil() {
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Compte partenaire</p>
-          <h1 className="font-display text-3xl font-bold tracking-[0.05em] text-[#1b1c1c] uppercase">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Compte partenaire</p>
+          <h1 className="font-display text-3xl font-bold tracking-[0.05em] text-text-primary uppercase">
             Mon entreprise
           </h1>
         </div>
         {!editMode ? (
           <button
             onClick={startEdit}
-            className="inline-flex items-center gap-2 px-5 py-3 bg-white rounded-xl font-bold uppercase text-xs tracking-widest text-[#707a6a] hover:text-[#1b1c1c] shadow-[0_2px_8px_rgba(27,28,28,0.06)] hover:-translate-y-0.5 transition-all"
+            className="inline-flex items-center gap-2 px-5 py-3 bg-white rounded-xl font-bold uppercase text-xs tracking-widest text-text-light hover:text-text-primary shadow-[0_2px_8px_rgba(27,28,28,0.06)] hover:-translate-y-0.5 transition-all"
           >
             <Pencil size={13} />
             Modifier
@@ -141,14 +141,14 @@ export default function ProProfil() {
             <button
               onClick={handleSave}
               disabled={updateCompany.isPending}
-              className="inline-flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-5 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-[#1c7b1d]/20 hover:-translate-y-0.5 transition-all disabled:opacity-60"
+              className="inline-flex items-center gap-2 bg-gradient-to-br from-primary to-primary-dark text-white px-5 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all disabled:opacity-60"
             >
               {updateCompany.isPending ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
               Sauvegarder
             </button>
             <button
               onClick={cancelEdit}
-              className="inline-flex items-center gap-2 px-5 py-3 bg-[#f5f3f2] text-[#707a6a] font-bold uppercase text-xs tracking-widest rounded-xl hover:text-[#1b1c1c] transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-3 bg-background text-text-light font-bold uppercase text-xs tracking-widest rounded-xl hover:text-text-primary transition-colors"
             >
               <X size={13} />
               Annuler
@@ -162,9 +162,9 @@ export default function ProProfil() {
         <span className={`rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest ${levelConfig.bg} ${levelConfig.text}`}>
           {levelConfig.label}
         </span>
-        <span className="flex items-center gap-1.5 text-sm text-[#707a6a]">
+        <span className="flex items-center gap-1.5 text-sm text-text-light">
           Taux de commission :
-          <strong className="text-[#1b1c1c] font-bold">{company.commission_rate_percent}%</strong>
+          <strong className="text-text-primary font-bold">{company.commission_rate_percent}%</strong>
         </span>
       </div>
 
@@ -189,8 +189,8 @@ export default function ProProfil() {
             { label: 'Profession', value: company.profession ? (PROFESSION_LABELS[company.profession] ?? company.profession) : '—', icon: null },
           ].map(({ label, value }) => (
             <div key={label} className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
-              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-2">{label}</p>
-              <p className="text-sm font-semibold text-[#1b1c1c]">{value}</p>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-2">{label}</p>
+              <p className="text-sm font-semibold text-text-primary">{value}</p>
             </div>
           ))}
         </div>
@@ -198,7 +198,7 @@ export default function ProProfil() {
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] max-w-2xl space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-[#404a3c] mb-1.5">Nom de l'entreprise *</label>
+              <label className="block text-xs font-bold text-text-secondary mb-1.5">Nom de l'entreprise *</label>
               <input
                 type="text"
                 value={form.name}
@@ -207,7 +207,7 @@ export default function ProProfil() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#404a3c] mb-1.5">SIRET</label>
+              <label className="block text-xs font-bold text-text-secondary mb-1.5">SIRET</label>
               <input
                 type="text"
                 value={form.siret}
@@ -218,7 +218,7 @@ export default function ProProfil() {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-bold text-[#404a3c] mb-1.5">Adresse</label>
+            <label className="block text-xs font-bold text-text-secondary mb-1.5">Adresse</label>
             <input
               type="text"
               value={form.address}
@@ -228,7 +228,7 @@ export default function ProProfil() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-[#404a3c] mb-1.5">Code postal</label>
+              <label className="block text-xs font-bold text-text-secondary mb-1.5">Code postal</label>
               <input
                 type="text"
                 value={form.postal_code}
@@ -237,7 +237,7 @@ export default function ProProfil() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[#404a3c] mb-1.5">Ville</label>
+              <label className="block text-xs font-bold text-text-secondary mb-1.5">Ville</label>
               <input
                 type="text"
                 value={form.city}
@@ -247,7 +247,7 @@ export default function ProProfil() {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-bold text-[#404a3c] mb-1.5">Site web</label>
+            <label className="block text-xs font-bold text-text-secondary mb-1.5">Site web</label>
             <input
               type="url"
               value={form.website}
@@ -257,7 +257,7 @@ export default function ProProfil() {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-[#404a3c] mb-1.5">Profession</label>
+            <label className="block text-xs font-bold text-text-secondary mb-1.5">Profession</label>
             <select
               value={form.profession}
               onChange={(e) => handleChange('profession', e.target.value)}

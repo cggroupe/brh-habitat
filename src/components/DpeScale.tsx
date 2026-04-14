@@ -89,8 +89,8 @@ export function DpeScale({ currentClass, targetClass, compact = false }: DpeScal
             {/* Badge "Apres travaux" */}
             {isTarget && !isCurrent && (
               <div className="flex items-center gap-1 animate-fadeIn">
-                <div className="w-3 h-0.5 bg-[#1c7b1d]" />
-                <span className="text-xs font-bold text-[#1c7b1d] whitespace-nowrap">
+                <div className="w-3 h-0.5 bg-primary" />
+                <span className="text-xs font-bold text-primary whitespace-nowrap">
                   Apres travaux
                 </span>
               </div>
@@ -114,7 +114,7 @@ export function DpeScale({ currentClass, targetClass, compact = false }: DpeScal
               className="inline-block w-3 h-3 rounded-sm"
               style={{ backgroundColor: DPE_CLASS_COLORS[targetClass as DpeClass] }}
             />
-            Apres travaux : <strong className="text-[#1c7b1d]">{targetClass}</strong>
+            Apres travaux : <strong className="text-primary">{targetClass}</strong>
           </span>
         </div>
       )}

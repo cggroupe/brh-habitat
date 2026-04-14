@@ -41,14 +41,14 @@ export default function PartParrainages() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Partenariat</p>
-          <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-[#1b1c1c]">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Partenariat</p>
+          <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-text-primary">
             Mes parrainages
           </h1>
         </div>
         <Link
           to="/particulier/parrainages/nouveau"
-          className="flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2 bg-gradient-to-br from-primary to-primary-dark text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity"
         >
           <Plus size={15} />
           Parrainer
@@ -57,20 +57,20 @@ export default function PartParrainages() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 border-4 border-[#1c7b1d] border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       ) : prospects.length === 0 ? (
         <div className="bg-white rounded-2xl p-14 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
-          <div className="w-16 h-16 bg-[#f5f3f2] rounded-2xl flex items-center justify-center mx-auto mb-5">
-            <Users size={28} className="text-[#707a6a]" />
+          <div className="w-16 h-16 bg-background rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <Users size={28} className="text-text-light" />
           </div>
-          <p className="font-display text-lg font-bold uppercase tracking-[0.05em] text-[#404a3c] mb-2">
+          <p className="font-display text-lg font-bold uppercase tracking-[0.05em] text-text-secondary mb-2">
             Aucun parrainage
           </p>
-          <p className="text-sm text-[#707a6a] mb-8">Parrainez vos proches pour gagner des points !</p>
+          <p className="text-sm text-text-light mb-8">Parrainez vos proches pour gagner des points !</p>
           <Link
             to="/particulier/parrainages/nouveau"
-            className="inline-flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 bg-gradient-to-br from-primary to-primary-dark text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest hover:opacity-90 transition-opacity"
           >
             <Plus size={15} />
             Mon premier parrainage
@@ -86,13 +86,13 @@ export default function PartParrainages() {
                 <div key={prospect.id} className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <p className="font-bold text-[#1b1c1c] text-base">
+                      <p className="font-bold text-text-primary text-base">
                         {prospect.client_first_name} {prospect.client_last_name}
                       </p>
                       {prospect.client_phone && (
                         <div className="flex items-center gap-1.5 mt-1">
-                          <Phone size={12} className="text-[#707a6a]" />
-                          <span className="text-sm text-[#707a6a]">{prospect.client_phone}</span>
+                          <Phone size={12} className="text-text-light" />
+                          <span className="text-sm text-text-light">{prospect.client_phone}</span>
                         </div>
                       )}
                     </div>
@@ -102,20 +102,20 @@ export default function PartParrainages() {
                   </div>
                   {prospect.client_city && (
                     <div className="flex items-center gap-1.5 mb-2">
-                      <MapPin size={12} className="text-[#707a6a]" />
-                      <span className="text-sm text-[#707a6a]">{prospect.client_city}</span>
+                      <MapPin size={12} className="text-text-light" />
+                      <span className="text-sm text-text-light">{prospect.client_city}</span>
                     </div>
                   )}
                   {prospect.work_type && prospect.work_type.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mb-3">
                       {prospect.work_type.map(wt => (
-                        <span key={wt} className="text-xs bg-[#f5f3f2] text-[#404a3c] px-2 py-0.5 rounded-lg font-medium">
+                        <span key={wt} className="text-xs bg-background text-text-secondary px-2 py-0.5 rounded-lg font-medium">
                           {WORK_TYPE_LABELS[wt] ?? wt}
                         </span>
                       ))}
                     </div>
                   )}
-                  <div className="flex items-center gap-1.5 text-xs text-[#707a6a]">
+                  <div className="flex items-center gap-1.5 text-xs text-text-light">
                     <Clock size={12} />
                     <span>{formatDate(prospect.created_at)}</span>
                   </div>
@@ -128,32 +128,32 @@ export default function PartParrainages() {
           <div className="hidden md:block bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="bg-[#f5f3f2]">
-                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a] px-6 py-4">Client</th>
-                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a] px-6 py-4">Téléphone</th>
-                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a] px-6 py-4">Travaux</th>
-                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a] px-6 py-4">Statut</th>
-                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-[#707a6a] px-6 py-4">Date</th>
+                <tr className="bg-background">
+                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-text-light px-6 py-4">Client</th>
+                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-text-light px-6 py-4">Téléphone</th>
+                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-text-light px-6 py-4">Travaux</th>
+                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-text-light px-6 py-4">Statut</th>
+                  <th className="text-left text-[10px] uppercase tracking-widest font-bold text-text-light px-6 py-4">Date</th>
                 </tr>
               </thead>
               <tbody>
                 {prospects.map((prospect) => {
                   const status = STATUS_CONFIG[prospect.status]
                   return (
-                    <tr key={prospect.id} className="hover:bg-[#f5f3f2]/50 transition-colors">
+                    <tr key={prospect.id} className="hover:bg-background/50 transition-colors">
                       <td className="px-6 py-4">
-                        <p className="text-sm font-semibold text-[#1b1c1c]">
+                        <p className="text-sm font-semibold text-text-primary">
                           {prospect.client_first_name} {prospect.client_last_name}
                         </p>
                         {prospect.client_city && (
-                          <p className="text-xs text-[#707a6a] mt-0.5">{prospect.client_city}</p>
+                          <p className="text-xs text-text-light mt-0.5">{prospect.client_city}</p>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-sm text-[#404a3c]">{prospect.client_phone}</td>
+                      <td className="px-6 py-4 text-sm text-text-secondary">{prospect.client_phone}</td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1">
                           {(prospect.work_type ?? []).map(wt => (
-                            <span key={wt} className="text-xs bg-[#f5f3f2] text-[#404a3c] px-2 py-0.5 rounded-lg font-medium">
+                            <span key={wt} className="text-xs bg-background text-text-secondary px-2 py-0.5 rounded-lg font-medium">
                               {WORK_TYPE_LABELS[wt] ?? wt}
                             </span>
                           ))}
@@ -164,7 +164,7 @@ export default function PartParrainages() {
                           {status.label}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-[#707a6a]">{formatDate(prospect.created_at)}</td>
+                      <td className="px-6 py-4 text-sm text-text-light">{formatDate(prospect.created_at)}</td>
                     </tr>
                   )
                 })}

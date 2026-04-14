@@ -24,27 +24,27 @@ export default function ProQRCode() {
     <div className="p-8 lg:p-10">
       {/* Header */}
       <div className="mb-8">
-        <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Identite</p>
-        <h1 className="font-display text-3xl font-bold tracking-[0.05em] text-[#1b1c1c] uppercase">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Identite</p>
+        <h1 className="font-display text-3xl font-bold tracking-[0.05em] text-text-primary uppercase">
           Mon QR Code
         </h1>
-        <p className="text-sm text-[#707a6a] mt-1">
+        <p className="text-sm text-text-light mt-1">
           Votre QR code personnalise pour rediriger les clients vers BRH.
         </p>
       </div>
 
       {isLoading && (
         <div className="bg-white rounded-2xl p-14 shadow-[0_8px_30px_rgba(27,28,28,0.04)] flex items-center justify-center">
-          <div className="w-8 h-8 border-3 border-[#1c7b1d]/30 border-t-[#1c7b1d] rounded-full animate-spin" />
+          <div className="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
         </div>
       )}
 
       {!isLoading && !company && (
         <div className="bg-white rounded-2xl p-12 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
-          <div className="w-14 h-14 rounded-2xl bg-[#f5f3f2] flex items-center justify-center mx-auto mb-4">
-            <QrCode size={24} className="text-[#707a6a]/30" />
+          <div className="w-14 h-14 rounded-2xl bg-background flex items-center justify-center mx-auto mb-4">
+            <QrCode size={24} className="text-text-light/30" />
           </div>
-          <p className="text-sm font-medium text-[#707a6a]">Votre profil entreprise est introuvable.</p>
+          <p className="text-sm font-medium text-text-light">Votre profil entreprise est introuvable.</p>
         </div>
       )}
 
@@ -57,10 +57,10 @@ export default function ProQRCode() {
           <div className="space-y-5">
             {/* Instructions */}
             <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
-              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-4">
+              <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-4">
                 Comment l'utiliser
               </p>
-              <p className="text-sm text-[#404a3c] leading-relaxed mb-5">
+              <p className="text-sm text-text-secondary leading-relaxed mb-5">
                 Imprimez ce QR code sur vos cartes de visite, devis et presentations. Quand un client le scanne, il arrive directement sur notre formulaire de contact avec votre reference.
               </p>
               <ul className="space-y-2.5">
@@ -70,8 +70,8 @@ export default function ProQRCode() {
                   'Emails et signatures electroniques',
                   'Affichages sur vos chantiers',
                 ].map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-sm text-[#404a3c]">
-                    <span className="w-2 h-2 rounded-full bg-[#1c7b1d] mt-1.5 shrink-0" />
+                  <li key={item} className="flex items-start gap-3 text-sm text-text-secondary">
+                    <span className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />
                     {item}
                   </li>
                 ))}
@@ -80,36 +80,36 @@ export default function ProQRCode() {
 
             {/* Referral URL */}
             <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
-              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-4">
+              <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-4">
                 Votre lien de reference
               </p>
               <div className="flex items-center gap-2">
-                <div className="flex-1 bg-[#f5f3f2] rounded-xl px-4 py-3 min-w-0">
-                  <p className="text-xs text-[#707a6a] truncate font-medium">{referralUrl}</p>
+                <div className="flex-1 bg-background rounded-xl px-4 py-3 min-w-0">
+                  <p className="text-xs text-text-light truncate font-medium">{referralUrl}</p>
                 </div>
                 <button
                   onClick={() => void handleCopy()}
                   className={`shrink-0 flex items-center gap-1.5 px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all ${
                     copied
-                      ? 'bg-[#1c7b1d]/10 text-[#1c7b1d]'
-                      : 'bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white shadow-md shadow-[#1c7b1d]/20 hover:-translate-y-0.5'
+                      ? 'bg-primary/10 text-primary'
+                      : 'bg-gradient-to-br from-primary to-primary-dark text-white shadow-md shadow-primary/20 hover:-translate-y-0.5'
                   }`}
                 >
                   {copied ? <Check size={13} /> : <Copy size={13} />}
                   {copied ? 'Copie !' : 'Copier'}
                 </button>
               </div>
-              <p className="text-xs text-[#707a6a] mt-2">
+              <p className="text-xs text-text-light mt-2">
                 Partagez ce lien directement ou via le QR code ci-contre.
               </p>
             </div>
 
             {/* Company info */}
-            <div className="bg-[#1c7b1d]/10 rounded-2xl p-5">
-              <p className="text-xs font-bold text-[#1c7b1d]">
+            <div className="bg-primary/10 rounded-2xl p-5">
+              <p className="text-xs font-bold text-primary">
                 Reference partenaire : pro-{company.id.slice(0, 8)}...
               </p>
-              <p className="text-xs text-[#1c7b1d]/80 mt-1.5">
+              <p className="text-xs text-primary/80 mt-1.5">
                 Chaque formulaire soumis via ce lien sera automatiquement associe a votre compte.
               </p>
             </div>

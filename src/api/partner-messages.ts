@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import type { BrhMessageThreadRow, BrhMessageRow } from '@/types/partner'
+import { createThreadSchema, sendMessageSchema } from './schemas'
 
 export interface ThreadWithLastMessage extends BrhMessageThreadRow {
   last_message?: string
@@ -42,12 +43,14 @@ export async function createThread(params: {
   participantType: 'pro' | 'particulier'
   firstMessage: string
 }): Promise<BrhMessageThreadRow> {
+  const validated = createThreadSchema.parse(params)
+
   const { data: thread, error: threadError } = await supabase
     .from('brh_message_threads')
     .insert({
-      subject: params.subject,
-      participant_id: params.participantId,
-      participant_type: params.participantType,
+      subject: validated.subject,
+      participant_id: validated.participantId,
+      participant_type: validated.participantType,
     })
     .select()
     .single()
@@ -58,8 +61,8 @@ export async function createThread(params: {
     .from('brh_messages')
     .insert({
       thread_id: (thread as unknown as BrhMessageThreadRow).id,
-      sender_id: params.participantId,
-      body: params.firstMessage,
+      sender_id: validated.participantId,
+      body: validated.firstMessage,
     })
 
   if (msgError) throw msgError
@@ -74,13 +77,19 @@ export async function sendMessage(
   attachmentUrl?: string,
   attachmentName?: string,
 ): Promise<BrhMessageRow> {
-  const payload: Record<string, unknown> = { thread_id: threadId, sender_id: senderId, body }
-  if (attachmentUrl) payload.attachment_url = attachmentUrl
-  if (attachmentName) payload.attachment_name = attachmentName
+  const validated = sendMessageSchema.parse({ threadId, senderId, body, attachmentUrl, attachmentName })
+
+  const dbPayload: Record<string, unknown> = {
+    thread_id: validated.threadId,
+    sender_id: validated.senderId,
+    body: validated.body,
+  }
+  if (validated.attachmentUrl) dbPayload.attachment_url = validated.attachmentUrl
+  if (validated.attachmentName) dbPayload.attachment_name = validated.attachmentName
 
   const { data, error } = await supabase
     .from('brh_messages')
-    .insert(payload)
+    .insert(dbPayload)
     .select()
     .single()
 
@@ -89,7 +98,7 @@ export async function sendMessage(
   await supabase
     .from('brh_message_threads')
     .update({ last_message_at: new Date().toISOString() })
-    .eq('id', threadId)
+    .eq('id', validated.threadId)
 
   return data as unknown as BrhMessageRow
 }

@@ -25,7 +25,7 @@ export default function QRCodeDownload({ url, companyName }: QRCodeDownloadProps
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     // Green header bar
-    ctx.fillStyle = '#359932'
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-primary-green').trim() || '#359932'
     ctx.fillRect(0, 0, canvas.width, headerHeight)
 
     // Header text

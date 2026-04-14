@@ -132,6 +132,8 @@ export interface ProfileRow {
   full_name: string
   role: UserRole
   avatar_url: string | null
+  phone: string | null
+  is_active: boolean
   locale: Locale | null
   created_at: string
   updated_at: string

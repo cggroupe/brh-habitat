@@ -1,24 +1,9 @@
 import { supabase } from '@/lib/supabase'
 import type { BrhProspectRow, ProspectStatus } from '@/types/partner'
 import { PAGE_SIZE } from '@/data/constants'
+import { prospectInsertSchema, type ProspectInsert } from './schemas'
 
-export interface ProspectInsert {
-  source_type: 'pro' | 'particulier'
-  company_id?: string | null
-  submitted_by?: string | null
-  affiliate_id?: string | null
-  client_first_name: string
-  client_last_name: string
-  client_phone: string
-  client_email?: string | null
-  client_address?: string | null
-  client_city?: string | null
-  client_postal_code?: string | null
-  work_type?: string[]
-  estimated_budget?: string | null
-  urgency?: string | null
-  notes?: string | null
-}
+export type { ProspectInsert } from './schemas'
 
 export type ProspectUpdate = Partial<Omit<BrhProspectRow, 'id' | 'created_at' | 'updated_at'>>
 
@@ -86,9 +71,11 @@ export async function fetchProspectById(id: string): Promise<BrhProspectRow> {
 }
 
 export async function createProspect(payload: ProspectInsert): Promise<BrhProspectRow> {
+  const validated = prospectInsertSchema.parse(payload)
+
   const { data, error } = await supabase
     .from('brh_prospects')
-    .insert(payload)
+    .insert(validated)
     .select()
     .single()
 

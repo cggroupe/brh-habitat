@@ -2,24 +2,17 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
   ArrowLeft,
-  Save,
   AlertCircle,
   CheckCircle2,
-  Home,
-  BarChart3,
-  User,
-  Calendar,
-  Euro,
   Wrench,
-  FileText,
-  Clock,
 } from 'lucide-react'
 import { useCaseDetail, useUpdateCase, useProfileDetail, useHomeDetail, useDiagnosticDetail } from '@/hooks/queries'
 import {
-  CASE_STATUSES,
   CASE_STATUS_LABELS,
   CASE_STATUS_COLORS,
 } from '@/data/constants'
+import { AdminEditForm } from './admin-dossier/AdminEditForm'
+import { LinkedRecordsSidebar } from './admin-dossier/LinkedRecordsSidebar'
 import type { CaseStatus } from '@/types/database'
 
 const STATUS_STEPS: CaseStatus[] = ['nouveau', 'en_cours', 'devis', 'travaux', 'termine']
@@ -30,17 +23,21 @@ export default function AdminDossierDetail() {
   const { data: caseData, isLoading, isError } = useCaseDetail(id)
   const updateCase = useUpdateCase()
 
-  // Fetch linked records via hooks
   const { data: profileData } = useProfileDetail(caseData?.user_id)
   const { data: homeData } = useHomeDetail(caseData?.home_id ?? undefined)
-  const { data: diagnosticData } = useDiagnosticDetail(caseData?.diagnostic_id ?? undefined)
+  const { data: diagnosticRaw } = useDiagnosticDetail(caseData?.diagnostic_id ?? undefined)
+  const diagnosticData = diagnosticRaw
+    ? {
+        contact_name: diagnosticRaw.contact_name ?? '',
+        contact_email: diagnosticRaw.contact_email ?? '',
+        types: diagnosticRaw.types,
+      }
+    : undefined
 
   const userFullName = profileData?.full_name ?? null
 
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
-
-  // Editable fields
   const [status, setStatus] = useState<CaseStatus>('nouveau')
   const [assignedTo, setAssignedTo] = useState('')
   const [adminNotes, setAdminNotes] = useState('')
@@ -48,7 +45,6 @@ export default function AdminDossierDetail() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
 
-  // Populate form when case data loads
   useEffect(() => {
     if (!caseData) return
     setStatus(caseData.status)
@@ -174,122 +170,26 @@ export default function AdminDossierDetail() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column: editable admin fields */}
+        {/* Left column */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Admin edition card */}
-          <div className="bg-surface rounded-2xl border border-gray-light p-6">
-            <h2 className="font-display text-base text-text-primary mb-5 flex items-center gap-2">
-              <FileText size={16} className="text-primary" /> Gestion du dossier
-            </h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Status */}
-              <div>
-                <label className="font-display text-xs text-text-light uppercase tracking-wider block mb-1.5">
-                  Statut
-                </label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as CaseStatus)}
-                  className="w-full px-3 py-2.5 bg-background border border-gray-light rounded-xl font-body text-sm text-text-primary outline-none focus:border-primary transition-colors"
-                >
-                  {CASE_STATUSES.map((s) => (
-                    <option key={s} value={s}>{CASE_STATUS_LABELS[s]}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Assigned to */}
-              <div>
-                <label className="font-display text-xs text-text-light uppercase tracking-wider block mb-1.5">
-                  Assigné à
-                </label>
-                <input
-                  type="text"
-                  value={assignedTo}
-                  onChange={(e) => setAssignedTo(e.target.value)}
-                  placeholder="Nom du conseiller..."
-                  className="w-full px-3 py-2.5 bg-background border border-gray-light rounded-xl font-body text-sm text-text-primary outline-none focus:border-primary transition-colors placeholder:text-text-light"
-                />
-              </div>
-
-              {/* Budget */}
-              <div>
-                <label className="font-display text-xs text-text-light uppercase tracking-wider block mb-1.5">
-                  Budget estimé (€)
-                </label>
-                <input
-                  type="number"
-                  value={estimatedBudget}
-                  onChange={(e) => setEstimatedBudget(e.target.value)}
-                  placeholder="Ex : 15000"
-                  min="0"
-                  className="w-full px-3 py-2.5 bg-background border border-gray-light rounded-xl font-body text-sm text-text-primary outline-none focus:border-primary transition-colors placeholder:text-text-light"
-                />
-              </div>
-
-              {/* Dates */}
-              <div>
-                <label className="font-display text-xs text-text-light uppercase tracking-wider block mb-1.5">
-                  Date de début
-                </label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-background border border-gray-light rounded-xl font-body text-sm text-text-primary outline-none focus:border-primary transition-colors"
-                />
-              </div>
-
-              <div className="sm:col-span-2 sm:w-1/2">
-                <label className="font-display text-xs text-text-light uppercase tracking-wider block mb-1.5">
-                  Date de fin
-                </label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-background border border-gray-light rounded-xl font-body text-sm text-text-primary outline-none focus:border-primary transition-colors"
-                />
-              </div>
-            </div>
-
-            {/* Admin notes */}
-            <div className="mt-4">
-              <label className="font-display text-xs text-text-light uppercase tracking-wider block mb-1.5">
-                Notes administrateur
-              </label>
-              <textarea
-                value={adminNotes}
-                onChange={(e) => setAdminNotes(e.target.value)}
-                rows={4}
-                placeholder="Notes internes (non visibles par le client)..."
-                className="w-full px-3 py-2.5 bg-background border border-gray-light rounded-xl font-body text-sm text-text-primary outline-none focus:border-primary transition-colors resize-none placeholder:text-text-light"
-              />
-            </div>
-
-            {/* Save */}
-            <div className="flex items-center gap-3 mt-5">
-              <button
-                onClick={handleSave}
-                disabled={updateCase.isPending}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white font-display text-sm rounded-xl hover:bg-primary-dark disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-              >
-                <Save size={15} />
-                {updateCase.isPending ? 'Sauvegarde...' : 'Sauvegarder'}
-              </button>
-              {saveSuccess && (
-                <span className="flex items-center gap-1.5 text-success font-body text-sm">
-                  <CheckCircle2 size={15} /> Modifications enregistrées
-                </span>
-              )}
-              {saveError && (
-                <span className="flex items-center gap-1.5 text-danger font-body text-sm">
-                  <AlertCircle size={15} /> {saveError}
-                </span>
-              )}
-            </div>
-          </div>
+          <AdminEditForm
+            status={status}
+            assignedTo={assignedTo}
+            adminNotes={adminNotes}
+            estimatedBudget={estimatedBudget}
+            startDate={startDate}
+            endDate={endDate}
+            isPending={updateCase.isPending}
+            saveSuccess={saveSuccess}
+            saveError={saveError}
+            onStatusChange={setStatus}
+            onAssignedToChange={setAssignedTo}
+            onAdminNotesChange={setAdminNotes}
+            onEstimatedBudgetChange={setEstimatedBudget}
+            onStartDateChange={setStartDate}
+            onEndDateChange={setEndDate}
+            onSave={handleSave}
+          />
 
           {/* Case details */}
           <div className="bg-surface rounded-2xl border border-gray-light p-6">
@@ -326,95 +226,13 @@ export default function AdminDossierDetail() {
           </div>
         </div>
 
-        {/* Right column: metadata + linked records */}
-        <div className="space-y-4">
-          {/* Info summary */}
-          <div className="bg-surface rounded-2xl border border-gray-light p-5">
-            <h3 className="font-display text-sm text-text-primary mb-4 flex items-center gap-2">
-              <User size={14} className="text-primary" /> Client
-            </h3>
-            <p className="font-body text-sm text-text-primary font-medium">{userFullName ?? '—'}</p>
-            <p className="font-body text-xs text-text-light mt-1">ID: {caseData.user_id.slice(0, 8)}…</p>
-          </div>
-
-          {/* Budget summary */}
-          {caseData.estimated_budget != null && (
-            <div className="bg-surface rounded-2xl border border-gray-light p-5">
-              <h3 className="font-display text-sm text-text-primary mb-3 flex items-center gap-2">
-                <Euro size={14} className="text-primary" /> Budget
-              </h3>
-              <p className="font-display text-2xl text-primary">
-                {caseData.estimated_budget.toLocaleString('fr-FR')} €
-              </p>
-            </div>
-          )}
-
-          {/* Dates */}
-          {(caseData.start_date || caseData.end_date) && (
-            <div className="bg-surface rounded-2xl border border-gray-light p-5">
-              <h3 className="font-display text-sm text-text-primary mb-3 flex items-center gap-2">
-                <Calendar size={14} className="text-primary" /> Planning
-              </h3>
-              {caseData.start_date && (
-                <div className="mb-2">
-                  <p className="font-display text-xs text-text-light uppercase tracking-wider">Début</p>
-                  <p className="font-body text-sm text-text-primary">{new Date(caseData.start_date).toLocaleDateString('fr-FR')}</p>
-                </div>
-              )}
-              {caseData.end_date && (
-                <div>
-                  <p className="font-display text-xs text-text-light uppercase tracking-wider">Fin</p>
-                  <p className="font-body text-sm text-text-primary">{new Date(caseData.end_date).toLocaleDateString('fr-FR')}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Linked home */}
-          {homeData && (
-            <div className="bg-surface rounded-2xl border border-gray-light p-5">
-              <h3 className="font-display text-sm text-text-primary mb-3 flex items-center gap-2">
-                <Home size={14} className="text-primary" /> Logement lié
-              </h3>
-              <p className="font-body text-sm text-text-primary font-medium">{homeData.address}</p>
-              <p className="font-body text-xs text-text-secondary mt-0.5">{homeData.city} {homeData.postal_code}</p>
-              <p className="font-body text-xs text-text-light mt-0.5">{homeData.property_type} — {homeData.surface} m²</p>
-            </div>
-          )}
-
-          {/* Linked diagnostic */}
-          {diagnosticData && (
-            <div className="bg-surface rounded-2xl border border-gray-light p-5">
-              <h3 className="font-display text-sm text-text-primary mb-3 flex items-center gap-2">
-                <BarChart3 size={14} className="text-primary" /> Diagnostic lié
-              </h3>
-              <p className="font-body text-sm text-text-primary font-medium">{diagnosticData.contact_name}</p>
-              <p className="font-body text-xs text-text-secondary mt-0.5">{diagnosticData.contact_email}</p>
-              <div className="flex flex-wrap gap-1 mt-2">
-                {diagnosticData.types.map((t) => (
-                  <span key={t} className="inline-block px-2 py-0.5 bg-green-50 text-primary text-xs rounded-full font-body">{t}</span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Timestamps */}
-          <div className="bg-surface rounded-2xl border border-gray-light p-5">
-            <h3 className="font-display text-sm text-text-primary mb-3 flex items-center gap-2">
-              <Clock size={14} className="text-primary" /> Historique
-            </h3>
-            <div className="space-y-2">
-              <div>
-                <p className="font-display text-xs text-text-light uppercase tracking-wider">Créé le</p>
-                <p className="font-body text-sm text-text-primary">{new Date(caseData.created_at).toLocaleDateString('fr-FR')}</p>
-              </div>
-              <div>
-                <p className="font-display text-xs text-text-light uppercase tracking-wider">Mis à jour le</p>
-                <p className="font-body text-sm text-text-primary">{new Date(caseData.updated_at).toLocaleDateString('fr-FR')}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Right column */}
+        <LinkedRecordsSidebar
+          caseData={caseData}
+          userFullName={userFullName}
+          homeData={homeData}
+          diagnosticData={diagnosticData}
+        />
       </div>
     </div>
   )

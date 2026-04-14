@@ -175,7 +175,7 @@ export default function ParticulierShell() {
       </aside>
 
       {/* Main content */}
-      <main className="md:ml-72 flex-1 bg-[#f5f3f2] min-h-screen">
+      <main className="md:ml-72 flex-1 bg-background min-h-screen">
         <Outlet />
       </main>
     </div>

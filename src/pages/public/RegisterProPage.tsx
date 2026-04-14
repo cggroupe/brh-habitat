@@ -3,6 +3,9 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/appStore'
 import { Building2, ArrowRight } from 'lucide-react'
+import { createCompany, updateCompanyRecruiter } from '@/api/companies'
+import { addCompanyMember } from '@/api/company-members'
+import type { CompanyProfession } from '@/types/partner'
 
 export default function RegisterProPage() {
   const navigate = useNavigate()
@@ -64,39 +67,27 @@ export default function RegisterProPage() {
       // Le trigger handle_new_user() cree le profil avec role='pro' automatiquement
 
       // Creer l'entreprise
-      const { data: company, error: companyError } = await supabase
-        .from('brh_companies')
-        .insert({
+      let company
+      try {
+        company = await createCompany({
           owner_id: data.user.id,
           name: form.companyName,
           siret: form.siret || null,
-          profession: form.profession || null,
+          profession: form.profession ? (form.profession as CompanyProfession) : null,
         })
-        .select()
-        .single()
-
-      if (companyError) {
+      } catch {
         setError('Erreur lors de la creation de l\'entreprise. Veuillez reessayer.')
         setLoading(false)
         return
       }
 
       // Si recrute via un lien de recrutement, lier le recruteur
-      if (company && recruiter) {
-        await supabase
-          .from('brh_companies')
-          .update({ recruited_by: recruiter })
-          .eq('id', company.id)
+      if (recruiter) {
+        await updateCompanyRecruiter(company.id, recruiter).catch(() => undefined)
       }
 
       // Ajouter comme owner dans company_members
-      if (company) {
-        await supabase.from('brh_company_members').insert({
-          company_id: company.id,
-          profile_id: data.user.id,
-          member_role: 'owner',
-        })
-      }
+      await addCompanyMember(company.id, data.user.id, 'owner').catch(() => undefined)
 
       // Charger profil et naviguer
       const { data: profile } = await supabase

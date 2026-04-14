@@ -1,0 +1,77 @@
+import { Link } from 'react-router-dom'
+import { CheckCircle2, Calendar, ArrowRight, Printer, Mail, RefreshCw } from 'lucide-react'
+
+interface DiagnosticCtaSectionProps {
+  onShowContact: () => void
+}
+
+export function DiagnosticCtaSection({ onShowContact }: DiagnosticCtaSectionProps) {
+  return (
+    <div className="rounded-2xl bg-gradient-to-br from-primary via-primary-green to-primary-light p-8 text-white text-center shadow-xl shadow-green-900/20 animate-fadeIn">
+      <p className="font-body text-green-200 text-xs uppercase tracking-widest mb-2">Prochaines etapes</p>
+      <h2 className="font-display text-2xl sm:text-3xl mb-3 leading-tight">
+        Un expert vous accompagne
+      </h2>
+      <p className="font-body text-green-100 mb-8 max-w-md mx-auto text-sm leading-relaxed">
+        Nos artisans certifies RGE en Bretagne analysent votre rapport et vous proposent
+        un devis personnalise, aides incluses.
+      </p>
+
+      {/* Etapes */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 max-w-lg mx-auto text-left">
+        {[
+          { icon: CheckCircle2, step: '1.', label: 'Validation expert', detail: 'Sous 24h' },
+          { icon: Calendar, step: '2.', label: 'Visite sur site', detail: 'Gratuite' },
+          { icon: ArrowRight, step: '3.', label: 'Devis personnalise', detail: 'Aides incluses' },
+        ].map(({ icon: Icon, step, label, detail }) => (
+          <div key={step} className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3">
+            <Icon size={18} className="text-green-200 shrink-0" />
+            <div>
+              <p className="font-display text-sm leading-tight">{step} {label}</p>
+              <p className="font-body text-xs text-green-300">{detail}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Boutons */}
+      <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
+        <button
+          type="button"
+          onClick={onShowContact}
+          className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white text-primary font-display text-sm rounded-xl hover:bg-green-50 transition-colors shadow-sm"
+        >
+          <Calendar size={16} />
+          Prendre rendez-vous
+        </button>
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border-2 border-white text-white font-display text-sm rounded-xl hover:bg-white/10 transition-colors"
+        >
+          <Printer size={16} />
+          Telecharger en PDF
+        </button>
+        <button
+          type="button"
+          onClick={onShowContact}
+          className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border-2 border-white/60 text-white/90 font-display text-sm rounded-xl hover:bg-white/10 transition-colors"
+        >
+          <Mail size={16} />
+          Etre recontacte par email
+        </button>
+        <Link
+          to="/diagnostic"
+          className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border-2 border-white/40 text-white/70 font-display text-sm rounded-xl hover:bg-white/10 transition-colors"
+        >
+          <RefreshCw size={16} />
+          Refaire un diagnostic
+        </Link>
+      </div>
+
+      <p className="mt-6 font-body text-xs text-green-200/70">
+        Diagnostic gratuit et sans engagement — Artisans certifies RGE Bretagne
+      </p>
+    </div>
+  )
+}

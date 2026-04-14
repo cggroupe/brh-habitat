@@ -2,20 +2,9 @@ import { supabase } from '@/lib/supabase'
 import { formatLocalDate } from '@/lib/utils'
 import type { BrhSocialPostRow } from '@/types/partner'
 import { PAGE_SIZE } from '@/data/constants'
+import { socialPostInsertSchema, type SocialPostInsert } from './schemas'
 
-export interface SocialPostInsert {
-  submitted_by: string
-  submitter_role: 'pro' | 'particulier'
-  company_id?: string | null
-  platform: string
-  post_type: string
-  post_url: string
-  screenshot_path: string
-  description?: string | null
-  reward_type: 'carte_cadeau' | 'points'
-  reward_amount_cents?: number | null
-  reward_points?: number | null
-}
+export type { SocialPostInsert } from './schemas'
 
 export interface PaginatedSocialPosts {
   data: BrhSocialPostRow[]
@@ -54,9 +43,11 @@ export async function fetchAllSocialPosts(page: number, status?: string): Promis
 }
 
 export async function createSocialPost(payload: SocialPostInsert): Promise<BrhSocialPostRow> {
+  const validated = socialPostInsertSchema.parse(payload)
+
   const { data, error } = await supabase
     .from('brh_social_posts')
-    .insert(payload)
+    .insert(validated)
     .select()
     .single()
 

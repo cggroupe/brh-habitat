@@ -51,14 +51,14 @@ export default function ProEquipe() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Organisation</p>
-          <h1 className="font-display text-3xl font-bold tracking-[0.05em] text-[#1b1c1c] uppercase">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Organisation</p>
+          <h1 className="font-display text-3xl font-bold tracking-[0.05em] text-text-primary uppercase">
             Mon equipe
           </h1>
         </div>
         <button
           onClick={() => { setShowModal(true); setInviteError(null) }}
-          className="inline-flex items-center gap-2 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-[#1c7b1d]/20 hover:-translate-y-0.5 transition-all"
+          className="inline-flex items-center gap-2 bg-gradient-to-br from-primary to-primary-dark text-white px-6 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all"
         >
           <UserPlus size={14} />
           Inviter
@@ -69,16 +69,16 @@ export default function ProEquipe() {
       <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] overflow-hidden">
         {isLoading && (
           <div className="p-12 text-center">
-            <div className="w-8 h-8 border-3 border-[#1c7b1d]/30 border-t-[#1c7b1d] rounded-full animate-spin mx-auto" />
+            <div className="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin mx-auto" />
           </div>
         )}
 
         {!isLoading && (!members || members.length === 0) && (
           <div className="p-12 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-[#f5f3f2] flex items-center justify-center mx-auto mb-4">
-              <Users size={28} className="text-[#707a6a]/30" />
+            <div className="w-16 h-16 rounded-2xl bg-background flex items-center justify-center mx-auto mb-4">
+              <Users size={28} className="text-text-light/30" />
             </div>
-            <p className="text-[#707a6a] text-sm font-medium">Aucun membre dans l'equipe.</p>
+            <p className="text-text-light text-sm font-medium">Aucun membre dans l'equipe.</p>
           </div>
         )}
 
@@ -92,31 +92,31 @@ export default function ProEquipe() {
               return (
                 <li
                   key={member.id}
-                  className={`flex items-center justify-between px-6 py-5 hover:bg-[#f5f3f2]/50 transition-colors ${idx > 0 ? 'border-t border-[#f5f3f2]' : ''}`}
+                  className={`flex items-center justify-between px-6 py-5 hover:bg-background/50 transition-colors ${idx > 0 ? 'border-t border-background' : ''}`}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#1c7b1d]/20 to-[#0a4a0b]/10 flex items-center justify-center shrink-0">
-                      <span className="font-display text-sm font-bold text-[#1c7b1d]">{initials}</span>
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary/20 to-primary-dark/10 flex items-center justify-center shrink-0">
+                      <span className="font-display text-sm font-bold text-primary">{initials}</span>
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-[#1b1c1c]">
+                        <p className="text-sm font-semibold text-text-primary">
                           {member.profile?.full_name ?? '—'}
                         </p>
                         <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
                           isOwner
-                            ? 'bg-[#1c7b1d]/10 text-[#1c7b1d]'
-                            : 'bg-[#f5f3f2] text-[#707a6a]'
+                            ? 'bg-primary/10 text-primary'
+                            : 'bg-background text-text-light'
                         }`}>
                           {isOwner ? 'Proprietaire' : 'Membre'}
                         </span>
                       </div>
-                      <p className="text-xs text-[#707a6a] mt-0.5">{member.profile?.email ?? ''}</p>
+                      <p className="text-xs text-text-light mt-0.5">{member.profile?.email ?? ''}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <p className="text-xs text-[#707a6a] hidden sm:block">
+                    <p className="text-xs text-text-light hidden sm:block">
                       Depuis le {new Date(member.joined_at).toLocaleDateString('fr-FR')}
                     </p>
                     {!isCurrentUser && !isOwner && (
@@ -131,7 +131,7 @@ export default function ProEquipe() {
                           </button>
                           <button
                             onClick={() => setConfirmRemoveId(null)}
-                            className="px-3 py-1.5 bg-[#f5f3f2] text-[#707a6a] text-xs font-bold rounded-xl hover:text-[#1b1c1c] transition-colors uppercase tracking-wide"
+                            className="px-3 py-1.5 bg-background text-text-light text-xs font-bold rounded-xl hover:text-text-primary transition-colors uppercase tracking-wide"
                           >
                             Annuler
                           </button>
@@ -139,7 +139,7 @@ export default function ProEquipe() {
                       ) : (
                         <button
                           onClick={() => setConfirmRemoveId(member.id)}
-                          className="p-2 text-[#707a6a]/40 hover:text-red-400 transition-colors rounded-xl hover:bg-red-50"
+                          className="p-2 text-text-light/40 hover:text-red-400 transition-colors rounded-xl hover:bg-red-50"
                           title="Retirer le membre"
                         >
                           <X size={15} />
@@ -156,18 +156,18 @@ export default function ProEquipe() {
 
       {/* Invite modal */}
       {showModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-[#1b1c1c]/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-text-primary/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-[0_20px_60px_rgba(27,28,28,0.15)] w-full max-w-md p-7">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Equipe</p>
-                <h2 className="font-display text-xl font-bold tracking-wide text-[#1b1c1c] uppercase">
+                <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Equipe</p>
+                <h2 className="font-display text-xl font-bold tracking-wide text-text-primary uppercase">
                   Inviter un membre
                 </h2>
               </div>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-2 text-[#707a6a] hover:text-[#1b1c1c] transition-colors rounded-xl hover:bg-[#f5f3f2]"
+                className="p-2 text-text-light hover:text-text-primary transition-colors rounded-xl hover:bg-background"
               >
                 <X size={17} />
               </button>
@@ -175,7 +175,7 @@ export default function ProEquipe() {
 
             <form onSubmit={handleInvite} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-[#404a3c] mb-2">
+                <label className="block text-xs font-bold text-text-secondary mb-2">
                   Adresse email du compte professionnel
                 </label>
                 <input
@@ -183,10 +183,10 @@ export default function ProEquipe() {
                   value={inviteEmail}
                   onChange={(e) => { setInviteEmail(e.target.value); setInviteError(null) }}
                   placeholder="collaborateur@entreprise.fr"
-                  className="w-full px-4 py-3 rounded-xl border border-[#f5f3f2] hover:border-[#707a6a]/30 text-sm text-[#1b1c1c] bg-white focus:outline-none focus:ring-2 focus:ring-[#1c7b1d]/20 focus:border-[#1c7b1d]/40 transition-colors"
+                  className="w-full px-4 py-3 rounded-xl border border-background hover:border-text-light/30 text-sm text-text-primary bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-colors"
                   required
                 />
-                <p className="mt-1.5 text-xs text-[#707a6a]">
+                <p className="mt-1.5 text-xs text-text-light">
                   L'utilisateur doit deja avoir un compte BRH de type professionnel.
                 </p>
               </div>
@@ -202,7 +202,7 @@ export default function ProEquipe() {
                 <button
                   type="submit"
                   disabled={inviteMember.isPending}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-br from-[#1c7b1d] to-[#0a4a0b] text-white font-bold text-xs rounded-xl uppercase tracking-widest shadow-lg shadow-[#1c7b1d]/20 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-br from-primary to-primary-dark text-white font-bold text-xs rounded-xl uppercase tracking-widest shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                 >
                   {inviteMember.isPending && <Loader2 size={14} className="animate-spin" />}
                   Envoyer l'invitation
@@ -210,7 +210,7 @@ export default function ProEquipe() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-5 py-3 bg-[#f5f3f2] text-[#707a6a] font-bold text-xs rounded-xl uppercase tracking-widest hover:text-[#1b1c1c] transition-colors"
+                  className="px-5 py-3 bg-background text-text-light font-bold text-xs rounded-xl uppercase tracking-widest hover:text-text-primary transition-colors"
                 >
                   Annuler
                 </button>

@@ -2,7 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.96.0'
 import { getCorsHeaders } from '../_shared/cors.ts'
 
 // Se connecte a BRHCRM Supabase pour chercher les prix Batichiffrage
-const BRHCRM_URL = 'https://woicuzcxfdknxqdjuamj.supabase.co'
+const BRHCRM_URL = Deno.env.get('BRHCRM_URL') ?? ''
 const BRHCRM_SERVICE_KEY = Deno.env.get('BRHCRM_SERVICE_KEY') ?? ''
 
 const CATEGORY_MAP: Record<string, string[]> = {

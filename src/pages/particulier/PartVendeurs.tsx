@@ -5,7 +5,7 @@ import { useMyRecruitTree, useNetworkStats, useMyRecruitmentCommissions } from '
 import { copyToClipboard, getWhatsAppShareUrl } from '@/lib/referral'
 
 const DEPTH_COLORS = [
-  'bg-[#1c7b1d]/10 text-[#1c7b1d]',
+  'bg-primary/10 text-primary',
   'bg-blue-100 text-blue-700',
   'bg-purple-100 text-purple-700',
   'bg-amber-100 text-amber-700',
@@ -38,11 +38,11 @@ export default function PartVendeurs() {
     <div className="p-8 lg:p-10">
       {/* Header */}
       <div className="mb-8">
-        <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Recrutement</p>
-        <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-[#1b1c1c]">
+        <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Recrutement</p>
+        <h1 className="font-display text-3xl font-bold tracking-[0.05em] uppercase text-text-primary">
           Mon reseau
         </h1>
-        <p className="text-sm text-[#707a6a] mt-1">
+        <p className="text-sm text-text-light mt-1">
           Recrutez des affilies et touchez 2,5% sur leurs gains a chaque niveau
         </p>
       </div>
@@ -51,15 +51,15 @@ export default function PartVendeurs() {
       {stats && (stats.total_recruits > 0) && (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
           {[
-            { value: stats.total_recruits, label: 'Recrues total', color: 'text-[#1c7b1d]' },
-            { value: stats.total_levels, label: 'Niveaux', color: 'text-[#1b1c1c]' },
-            { value: stats.total_prospects, label: 'Prospects reseau', color: 'text-[#1b1c1c]' },
+            { value: stats.total_recruits, label: 'Recrues total', color: 'text-primary' },
+            { value: stats.total_levels, label: 'Niveaux', color: 'text-text-primary' },
+            { value: stats.total_prospects, label: 'Prospects reseau', color: 'text-text-primary' },
             { value: stats.total_signed, label: 'Signes', color: 'text-green-600' },
             { value: `${stats.total_commission_earned} pts`, label: 'Commission gagnee', color: 'text-amber-600' },
           ].map((stat, i) => (
             <div key={i} className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgba(27,28,28,0.04)] text-center">
               <p className={`font-display text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mt-1">{stat.label}</p>
+              <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mt-1">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -68,29 +68,29 @@ export default function PartVendeurs() {
       {/* Lien de recrutement */}
       <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] mb-6">
         <div className="flex items-center gap-2.5 mb-2">
-          <div className="w-9 h-9 bg-[#1c7b1d]/10 rounded-xl flex items-center justify-center">
-            <UserPlus size={16} className="text-[#1c7b1d]" />
+          <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center">
+            <UserPlus size={16} className="text-primary" />
           </div>
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light">
             Lien de recrutement
           </p>
         </div>
-        <p className="text-sm text-[#707a6a] mb-4">
+        <p className="text-sm text-text-light mb-4">
           Partagez ce lien. Vos recrues recrutent a leur tour → vous touchez 2,5% a chaque niveau.
         </p>
         <div className="flex gap-2">
           <input
             readOnly
             value={recruitLink}
-            className="flex-1 px-4 py-3 bg-[#f5f3f2] rounded-xl text-xs text-[#404a3c] truncate focus:outline-none"
+            className="flex-1 px-4 py-3 bg-background rounded-xl text-xs text-text-secondary truncate focus:outline-none"
           />
           <button
             onClick={() => void handleCopy()}
-            className="px-3.5 py-3 rounded-xl bg-[#f5f3f2] hover:bg-[#e8e5e2] transition-colors"
+            className="px-3.5 py-3 rounded-xl bg-background hover:bg-neutral-light transition-colors"
           >
             {copied
               ? <Check size={16} className="text-green-500" />
-              : <Copy size={16} className="text-[#404a3c]" />
+              : <Copy size={16} className="text-text-secondary" />
             }
           </button>
           <a
@@ -106,28 +106,28 @@ export default function PartVendeurs() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-4 border-[#1c7b1d] border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
         <>
           {/* Arborescence */}
           <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] mb-6 overflow-hidden">
-            <div className="px-6 py-5 bg-[#f5f3f2] flex items-center gap-2.5">
-              <Network size={16} className="text-[#1c7b1d]" />
-              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">
+            <div className="px-6 py-5 bg-background flex items-center gap-2.5">
+              <Network size={16} className="text-primary" />
+              <p className="text-[10px] uppercase tracking-widest font-bold text-text-light">
                 Arborescence du reseau
               </p>
-              <span className="text-xs text-[#707a6a] ml-auto">
+              <span className="text-xs text-text-light ml-auto">
                 {tree.length} membre{tree.length > 1 ? 's' : ''}
               </span>
             </div>
 
             {tree.length === 0 ? (
               <div className="p-10 text-center">
-                <div className="w-16 h-16 bg-[#f5f3f2] rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Users size={28} className="text-[#707a6a]" />
+                <div className="w-16 h-16 bg-background rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Users size={28} className="text-text-light" />
                 </div>
-                <p className="text-sm text-[#707a6a] font-medium">Aucune recrue pour le moment.</p>
+                <p className="text-sm text-text-light font-medium">Aucune recrue pour le moment.</p>
               </div>
             ) : (
               <div>
@@ -137,18 +137,18 @@ export default function PartVendeurs() {
                   return (
                     <div
                       key={r.id}
-                      className="flex items-center gap-3 px-6 py-3.5 hover:bg-[#f5f3f2]/50 transition-colors border-b border-[#f5f3f2] last:border-0"
+                      className="flex items-center gap-3 px-6 py-3.5 hover:bg-background/50 transition-colors border-b border-background last:border-0"
                       style={{ paddingLeft: `${24 + indent}px` }}
                     >
-                      {r.depth > 1 && <ChevronRight size={12} className="text-[#707a6a]/40 shrink-0" />}
-                      <div className="w-9 h-9 rounded-xl bg-[#1c7b1d]/10 flex items-center justify-center shrink-0">
-                        <span className="font-display text-sm font-bold text-[#1c7b1d]">
+                      {r.depth > 1 && <ChevronRight size={12} className="text-text-light/40 shrink-0" />}
+                      <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                        <span className="font-display text-sm font-bold text-primary">
                           {r.full_name.charAt(0)}
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-[#1b1c1c] truncate">{r.full_name}</p>
-                        <p className="text-xs text-[#707a6a]">{r.email}</p>
+                        <p className="text-sm font-semibold text-text-primary truncate">{r.full_name}</p>
+                        <p className="text-xs text-text-light">{r.email}</p>
                       </div>
                       <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${depthColor}`}>
                         N{r.depth}
@@ -160,7 +160,7 @@ export default function PartVendeurs() {
                       }`}>
                         {r.role === 'pro' ? 'Pro' : 'Particulier'}
                       </span>
-                      <div className="hidden sm:flex items-center gap-3 text-xs text-[#707a6a]">
+                      <div className="hidden sm:flex items-center gap-3 text-xs text-text-light">
                         <span>{r.prospects_count} prospect{r.prospects_count > 1 ? 's' : ''}</span>
                         <span className="text-green-600 font-medium">
                           {r.signed_count} signe{r.signed_count > 1 ? 's' : ''}
@@ -176,33 +176,33 @@ export default function PartVendeurs() {
           {/* Commissions recrutement */}
           {commissions.length > 0 && (
             <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] overflow-hidden">
-              <div className="px-6 py-5 bg-[#f5f3f2] flex items-center gap-2.5">
-                <TrendingUp size={16} className="text-[#1c7b1d]" />
-                <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">
+              <div className="px-6 py-5 bg-background flex items-center gap-2.5">
+                <TrendingUp size={16} className="text-primary" />
+                <p className="text-[10px] uppercase tracking-widest font-bold text-text-light">
                   Commissions reseau
                 </p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-[#f5f3f2]">
-                      <th className="text-left px-5 py-3 text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Recrue</th>
-                      <th className="text-left px-5 py-3 text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Niveau</th>
-                      <th className="text-left px-5 py-3 text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Type</th>
-                      <th className="text-right px-5 py-3 text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">Commission</th>
-                      <th className="text-left px-5 py-3 text-[10px] uppercase tracking-widest font-bold text-[#707a6a] hidden sm:table-cell">Date</th>
+                    <tr className="bg-background">
+                      <th className="text-left px-5 py-3 text-[10px] uppercase tracking-widest font-bold text-text-light">Recrue</th>
+                      <th className="text-left px-5 py-3 text-[10px] uppercase tracking-widest font-bold text-text-light">Niveau</th>
+                      <th className="text-left px-5 py-3 text-[10px] uppercase tracking-widest font-bold text-text-light">Type</th>
+                      <th className="text-right px-5 py-3 text-[10px] uppercase tracking-widest font-bold text-text-light">Commission</th>
+                      <th className="text-left px-5 py-3 text-[10px] uppercase tracking-widest font-bold text-text-light hidden sm:table-cell">Date</th>
                     </tr>
                   </thead>
                   <tbody>
                     {commissions.map((c) => (
-                      <tr key={c.id} className="hover:bg-[#f5f3f2]/50 transition-colors">
-                        <td className="px-5 py-3.5 text-sm font-semibold text-[#1b1c1c]">{c.recruited_name}</td>
+                      <tr key={c.id} className="hover:bg-background/50 transition-colors">
+                        <td className="px-5 py-3.5 text-sm font-semibold text-text-primary">{c.recruited_name}</td>
                         <td className="px-5 py-3.5">
-                          <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-[#f5f3f2] text-[#404a3c]">
+                          <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-background text-text-secondary">
                             N{c.chain_level}
                           </span>
                         </td>
-                        <td className="px-5 py-3.5 text-xs text-[#707a6a]">
+                        <td className="px-5 py-3.5 text-xs text-text-light">
                           {c.source_type === 'points_particulier' ? 'Points' : 'Commission'}
                         </td>
                         <td className="px-5 py-3.5 font-display font-bold text-sm text-green-600 text-right">
@@ -210,7 +210,7 @@ export default function PartVendeurs() {
                             ? `${c.commission_amount} pts`
                             : `${(c.commission_amount / 100).toLocaleString('fr-FR')} EUR`}
                         </td>
-                        <td className="px-5 py-3.5 text-xs text-[#707a6a] hidden sm:table-cell">
+                        <td className="px-5 py-3.5 text-xs text-text-light hidden sm:table-cell">
                           {formatDate(c.created_at)}
                         </td>
                       </tr>

@@ -65,7 +65,7 @@ export default function PartDashboard() {
   if (loadingAffiliate) {
     return (
       <div className="p-8 lg:p-10 flex items-center justify-center min-h-64">
-        <div className="w-8 h-8 border-4 border-[#1c7b1d] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -76,10 +76,10 @@ export default function PartDashboard() {
       {/* ── Welcome header ──────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
         <div>
-          <h1 className="font-display text-2xl text-[#1b1c1c] tracking-[0.04em]">
-            Bonjour, <span className="text-[#1c7b1d]">{firstName}</span> !
+          <h1 className="font-display text-2xl text-text-primary tracking-[0.04em]">
+            Bonjour, <span className="text-primary">{firstName}</span> !
           </h1>
-          <p className="text-sm text-[#707a6a] mt-0.5">Votre espace affilie BRH Habitat</p>
+          <p className="text-sm text-text-light mt-0.5">Votre espace affilie BRH Habitat</p>
         </div>
         {affiliate && (
           <span
@@ -95,16 +95,16 @@ export default function PartDashboard() {
 
         {/* Points balance — hero card */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 col-span-2 md:col-span-1 flex flex-col justify-between">
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-3">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-3">
             Solde points
           </p>
           <p
-            className="font-display text-6xl text-[#1c7b1d] leading-none"
+            className="font-display text-6xl text-primary leading-none"
             style={{ textShadow: '0 0 40px rgba(28,123,29,0.18)' }}
           >
             {balance.toLocaleString('fr-FR')}
           </p>
-          <p className="text-[11px] text-[#707a6a] mt-3">
+          <p className="text-[11px] text-text-light mt-3">
             {(affiliate?.total_points_earned ?? 0).toLocaleString('fr-FR')} pts gagnes au total
           </p>
         </div>
@@ -112,25 +112,25 @@ export default function PartDashboard() {
         {/* Parrainages */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 bg-[#1c7b1d]/10 rounded-xl flex items-center justify-center">
-              <Users size={20} className="text-[#1c7b1d]" />
+            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+              <Users size={20} className="text-primary" />
             </div>
           </div>
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Parrainages</p>
-          <p className="font-display text-3xl text-[#1b1c1c]">{nbTotal}</p>
-          <p className="text-[11px] text-[#707a6a] mt-1">au total</p>
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Parrainages</p>
+          <p className="font-display text-3xl text-text-primary">{nbTotal}</p>
+          <p className="text-[11px] text-text-light mt-1">au total</p>
         </div>
 
         {/* Signes */}
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 bg-[#81c784]/20 rounded-xl flex items-center justify-center">
-              <CheckCircle size={20} className="text-[#1c7b1d]" />
+            <div className="w-10 h-10 bg-primary-light/20 rounded-xl flex items-center justify-center">
+              <CheckCircle size={20} className="text-primary" />
             </div>
           </div>
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">Signes</p>
-          <p className="font-display text-3xl text-[#1b1c1c]">{nbSigne}</p>
-          <p className="text-[11px] text-[#707a6a] mt-1">contrats signes</p>
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">Signes</p>
+          <p className="font-display text-3xl text-text-primary">{nbSigne}</p>
+          <p className="text-[11px] text-text-light mt-1">contrats signes</p>
         </div>
 
         {/* En cours */}
@@ -140,9 +140,9 @@ export default function PartDashboard() {
               <Clock size={20} className="text-orange-500" />
             </div>
           </div>
-          <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-1">En cours</p>
-          <p className="font-display text-3xl text-[#1b1c1c]">{nbEnCours}</p>
-          <p className="text-[11px] text-[#707a6a] mt-1">en traitement</p>
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">En cours</p>
+          <p className="font-display text-3xl text-text-primary">{nbEnCours}</p>
+          <p className="text-[11px] text-text-light mt-1">en traitement</p>
         </div>
       </div>
 
@@ -152,12 +152,12 @@ export default function PartDashboard() {
 
           {/* Code parrainage */}
           <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-4">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-4">
               Mon code parrainage
             </p>
             <div className="flex items-center gap-3">
-              <div className="flex-1 bg-[#f5f3f2] rounded-xl px-4 py-3 text-center">
-                <span className="font-display text-2xl tracking-[0.2em] text-[#1c7b1d]">
+              <div className="flex-1 bg-background rounded-xl px-4 py-3 text-center">
+                <span className="font-display text-2xl tracking-[0.2em] text-primary">
                   {affiliate.referral_code}
                 </span>
               </div>
@@ -166,14 +166,14 @@ export default function PartDashboard() {
                   setCopiedCode(true)
                   setTimeout(() => setCopiedCode(false), 2000)
                 })}
-                className="w-11 h-11 rounded-xl border border-[#e8e4e0] flex items-center justify-center hover:bg-[#f5f3f2] transition-colors shrink-0"
+                className="w-11 h-11 rounded-xl border border-neutral-light flex items-center justify-center hover:bg-background transition-colors shrink-0"
                 title="Copier le code"
               >
-                <Copy size={16} className={copiedCode ? 'text-[#1c7b1d]' : 'text-[#707a6a]'} />
+                <Copy size={16} className={copiedCode ? 'text-primary' : 'text-text-light'} />
               </button>
             </div>
             {copiedCode && (
-              <p className="text-[11px] text-[#1c7b1d] font-bold mt-2">Code copie !</p>
+              <p className="text-[11px] text-primary font-bold mt-2">Code copie !</p>
             )}
           </div>
 
@@ -182,7 +182,7 @@ export default function PartDashboard() {
             <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80">
               <div className="flex items-center gap-2 mb-4">
                 <Zap size={13} className="text-amber-500" />
-                <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">
+                <p className="text-[10px] uppercase tracking-widest font-bold text-text-light">
                   Mon code court
                 </p>
               </div>
@@ -197,39 +197,39 @@ export default function PartDashboard() {
                     setCopiedShort(true)
                     setTimeout(() => setCopiedShort(false), 2000)
                   })}
-                  className="w-11 h-11 rounded-xl border border-[#e8e4e0] flex items-center justify-center hover:bg-[#f5f3f2] transition-colors shrink-0"
+                  className="w-11 h-11 rounded-xl border border-neutral-light flex items-center justify-center hover:bg-background transition-colors shrink-0"
                   title="Copier le code court"
                 >
-                  <Copy size={16} className={copiedShort ? 'text-[#1c7b1d]' : 'text-[#707a6a]'} />
+                  <Copy size={16} className={copiedShort ? 'text-primary' : 'text-text-light'} />
                 </button>
               </div>
               {copiedShort && (
-                <p className="text-[11px] text-[#1c7b1d] font-bold mt-2">Code copie !</p>
+                <p className="text-[11px] text-primary font-bold mt-2">Code copie !</p>
               )}
-              <p className="text-[11px] text-[#707a6a] mt-2">Code memorisable pour partager oralement</p>
+              <p className="text-[11px] text-text-light mt-2">Code memorisable pour partager oralement</p>
             </div>
           )}
 
           {/* Lien de parrainage + WhatsApp */}
           <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 md:col-span-2 lg:col-span-1">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a] mb-4">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-4">
               Mon lien de parrainage
             </p>
             <div className="flex items-center gap-2">
               <input
                 readOnly
                 value={referralLink}
-                className="flex-1 text-[11px] text-[#404a3c] bg-[#f5f3f2] rounded-xl px-3 py-2.5 truncate border-0 outline-none"
+                className="flex-1 text-[11px] text-text-secondary bg-background rounded-xl px-3 py-2.5 truncate border-0 outline-none"
               />
               <button
                 onClick={() => copyToClipboard(referralLink, () => {
                   setCopiedLink(true)
                   setTimeout(() => setCopiedLink(false), 2000)
                 })}
-                className="w-10 h-10 rounded-xl border border-[#e8e4e0] flex items-center justify-center hover:bg-[#f5f3f2] transition-colors shrink-0"
+                className="w-10 h-10 rounded-xl border border-neutral-light flex items-center justify-center hover:bg-background transition-colors shrink-0"
                 title="Copier le lien"
               >
-                <Copy size={15} className={copiedLink ? 'text-[#1c7b1d]' : 'text-[#707a6a]'} />
+                <Copy size={15} className={copiedLink ? 'text-primary' : 'text-text-light'} />
               </button>
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(`Demandez un devis BRH Habitat avec mon code : ${referralLink}`)}`}
@@ -242,7 +242,7 @@ export default function PartDashboard() {
               </a>
             </div>
             {copiedLink && (
-              <p className="text-[11px] text-[#1c7b1d] font-bold mt-2">Lien copie !</p>
+              <p className="text-[11px] text-primary font-bold mt-2">Lien copie !</p>
             )}
           </div>
         </div>
@@ -252,37 +252,37 @@ export default function PartDashboard() {
       {nextReward ? (
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-[#1c7b1d]/10 rounded-xl flex items-center justify-center shrink-0">
-              <Gift size={20} className="text-[#1c7b1d]" />
+            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+              <Gift size={20} className="text-primary" />
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold text-[#707a6a]">
+              <p className="text-[10px] uppercase tracking-widest font-bold text-text-light">
                 Prochain cadeau accessible
               </p>
-              <p className="text-sm font-bold text-[#1b1c1c] mt-0.5">{nextReward.name}</p>
+              <p className="text-sm font-bold text-text-primary mt-0.5">{nextReward.name}</p>
             </div>
           </div>
 
-          <p className="text-sm text-[#707a6a] mb-4">
+          <p className="text-sm text-text-light mb-4">
             Il vous manque{' '}
-            <span className="font-bold text-[#1c7b1d]">
+            <span className="font-bold text-primary">
               {pointsNeeded.toLocaleString('fr-FR')} points
             </span>{' '}
             pour debloquer cette recompense.
           </p>
 
           {/* Animated gradient progress bar */}
-          <div className="h-3 bg-[#f5f3f2] rounded-full overflow-hidden">
+          <div className="h-3 bg-background rounded-full overflow-hidden">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-[#1c7b1d] to-[#81c784] transition-all duration-700 ease-out"
+              className="h-full rounded-full bg-gradient-to-r from-primary to-primary-light transition-all duration-700 ease-out"
               style={{ width: `${progressPct}%` }}
             />
           </div>
           <div className="flex items-center justify-between mt-2">
-            <span className="text-[11px] font-bold text-[#1c7b1d]">
+            <span className="text-[11px] font-bold text-primary">
               {balance.toLocaleString('fr-FR')} pts
             </span>
-            <span className="text-[11px] text-[#707a6a]">
+            <span className="text-[11px] text-text-light">
               {nextReward.points_required.toLocaleString('fr-FR')} pts
             </span>
           </div>
@@ -290,14 +290,14 @@ export default function PartDashboard() {
       ) : rewards.length > 0 ? (
         <div className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#81c784]/20 rounded-xl flex items-center justify-center shrink-0">
-              <Gift size={20} className="text-[#1c7b1d]" />
+            <div className="w-10 h-10 bg-primary-light/20 rounded-xl flex items-center justify-center shrink-0">
+              <Gift size={20} className="text-primary" />
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-widest font-bold text-[#1c7b1d] mb-0.5">
+              <p className="text-[10px] uppercase tracking-widest font-bold text-primary mb-0.5">
                 Tous les cadeaux sont accessibles !
               </p>
-              <p className="text-sm text-[#707a6a]">Visitez le catalogue pour echanger vos points.</p>
+              <p className="text-sm text-text-light">Visitez le catalogue pour echanger vos points.</p>
             </div>
           </div>
         </div>
