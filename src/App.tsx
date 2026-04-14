@@ -11,6 +11,7 @@ import AuthGuard from '@/components/auth/AuthGuard'
 import AdminGuard from '@/components/auth/AdminGuard'
 import ProGuard from '@/components/auth/ProGuard'
 import ParticulierGuard from '@/components/auth/ParticulierGuard'
+import { FeatureRoute } from '@/components/shared/FeatureGate'
 
 // Eagerly loaded (above the fold)
 import HomePage from '@/pages/public/HomePage'
@@ -93,7 +94,7 @@ const PartBadges = lazy(() => import('@/pages/particulier/PartBadges'))
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 min
+      staleTime: 60_000, // 1 min par defaut (donnees user)
       retry: 1,
       refetchOnWindowFocus: false,
     },
@@ -178,14 +179,14 @@ export default function App() {
                 <Route path="/pro/equipe" element={<ProEquipe />} />
                 <Route path="/pro/messages" element={<ProMessages />} />
                 <Route path="/pro/profil" element={<ProProfil />} />
-                <Route path="/pro/reseaux-sociaux" element={<ProSocial />} />
-                <Route path="/pro/qrcode" element={<ProQRCode />} />
-                <Route path="/pro/vendeurs" element={<ProVendeurs />} />
-                <Route path="/pro/assistant" element={<ProAssistant />} />
-                <Route path="/pro/chiffrage" element={<ProChiffrage />} />
-                <Route path="/pro/chiffrages" element={<ProChiffrages />} />
-                <Route path="/pro/stats-equipe" element={<ProTeamStats />} />
-                <Route path="/pro/rapport" element={<ProRapport />} />
+                <Route path="/pro/reseaux-sociaux" element={<FeatureRoute feature="socialMediaPosts"><ProSocial /></FeatureRoute>} />
+                <Route path="/pro/qrcode" element={<FeatureRoute feature="qrCodeGeneration"><ProQRCode /></FeatureRoute>} />
+                <Route path="/pro/vendeurs" element={<FeatureRoute feature="recruitmentPyramid"><ProVendeurs /></FeatureRoute>} />
+                <Route path="/pro/assistant" element={<FeatureRoute feature="aiAssistantTechnique"><ProAssistant /></FeatureRoute>} />
+                <Route path="/pro/chiffrage" element={<FeatureRoute feature="aiChiffrage"><ProChiffrage /></FeatureRoute>} />
+                <Route path="/pro/chiffrages" element={<FeatureRoute feature="aiChiffrage"><ProChiffrages /></FeatureRoute>} />
+                <Route path="/pro/stats-equipe" element={<FeatureRoute feature="teamStats"><ProTeamStats /></FeatureRoute>} />
+                <Route path="/pro/rapport" element={<FeatureRoute feature="monthlyPdfReport"><ProRapport /></FeatureRoute>} />
               </Route>
             </Route>
 
@@ -195,16 +196,16 @@ export default function App() {
                 <Route path="/particulier" element={<PartDashboard />} />
                 <Route path="/particulier/parrainages" element={<PartParrainages />} />
                 <Route path="/particulier/parrainages/nouveau" element={<PartParrainageNew />} />
-                <Route path="/particulier/catalogue" element={<PartCatalogue />} />
+                <Route path="/particulier/catalogue" element={<FeatureRoute feature="catalogueCadeaux"><PartCatalogue /></FeatureRoute>} />
                 <Route path="/particulier/points" element={<PartPoints />} />
                 <Route path="/particulier/messages" element={<PartMessages />} />
-                <Route path="/particulier/reseaux-sociaux" element={<PartSocial />} />
-                <Route path="/particulier/simulateur" element={<PartSimulation />} />
-                <Route path="/particulier/vendeurs" element={<PartVendeurs />} />
-                <Route path="/particulier/assistant" element={<PartAssistant />} />
-                <Route path="/particulier/chiffrage" element={<PartChiffrage />} />
-                <Route path="/particulier/chiffrages" element={<PartChiffrages />} />
-                <Route path="/particulier/badges" element={<PartBadges />} />
+                <Route path="/particulier/reseaux-sociaux" element={<FeatureRoute feature="socialMediaPosts"><PartSocial /></FeatureRoute>} />
+                <Route path="/particulier/simulateur" element={<FeatureRoute feature="simulationLinks"><PartSimulation /></FeatureRoute>} />
+                <Route path="/particulier/vendeurs" element={<FeatureRoute feature="recruitmentPyramid"><PartVendeurs /></FeatureRoute>} />
+                <Route path="/particulier/assistant" element={<FeatureRoute feature="aiAssistantTechnique"><PartAssistant /></FeatureRoute>} />
+                <Route path="/particulier/chiffrage" element={<FeatureRoute feature="aiChiffrage"><PartChiffrage /></FeatureRoute>} />
+                <Route path="/particulier/chiffrages" element={<FeatureRoute feature="aiChiffrage"><PartChiffrages /></FeatureRoute>} />
+                <Route path="/particulier/badges" element={<FeatureRoute feature="badgesGamification"><PartBadges /></FeatureRoute>} />
               </Route>
             </Route>
 

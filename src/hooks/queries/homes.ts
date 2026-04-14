@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { logError } from '@/lib/error'
 import {
   fetchUserHomes,
   fetchHomeById,
@@ -42,7 +43,9 @@ export function useCreateHome() {
     mutationFn: (payload: HomeInsert) => createHome(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['homes'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
     },
+    onError: (err) => logError('useCreateHome', err),
   })
 }
 
@@ -55,6 +58,7 @@ export function useUpdateHome() {
       queryClient.invalidateQueries({ queryKey: ['homes'] })
       queryClient.setQueryData(['homes', 'detail', data.id], data)
     },
+    onError: (err) => logError('useUpdateHome', err),
   })
 }
 
@@ -64,6 +68,8 @@ export function useDeleteHome() {
     mutationFn: (id: string) => deleteHome(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['homes'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
     },
+    onError: (err) => logError('useDeleteHome', err),
   })
 }

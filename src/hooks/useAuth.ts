@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/appStore'
+import { useDiagnosticStore } from '@/stores/diagnosticStore'
 import type { UserRole } from '@/types/database'
 
 interface ProfileData {
@@ -38,6 +40,7 @@ async function fetchProfile(userId: string): Promise<ProfileData | null> {
 
 export function useAuth() {
   const { user, setUser } = useAppStore()
+  const queryClient = useQueryClient()
   const initRef = useRef(false)
   const [isInitialized, setIsInitialized] = useState(() => !!useAppStore.getState().user)
 
@@ -104,11 +107,10 @@ export function useAuth() {
     initRef.current = false
     await supabase.auth.signOut()
     setUser(null)
-    // Nettoyer tous les stores persistants
-    try {
-      const { useDiagnosticStore } = await import('@/stores/diagnosticStore')
-      useDiagnosticStore.getState().reset()
-    } catch { /* ignore */ }
+    // Nettoyer tous les stores persistants et le cache React Query
+    queryClient.clear()
+    useDiagnosticStore.getState().reset()
+    useAppStore.getState().closeDrawer()
   }
 
   // loading = true seulement si pas de cache ET session pas encore validee

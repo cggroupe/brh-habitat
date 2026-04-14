@@ -1,5 +1,6 @@
 import { logError } from '@/lib/error'
 import { useState } from 'react'
+import { useScrollLock } from '@/hooks/useScrollLock'
 import { CalendarDays, CheckCircle2, Lock, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { CalendarWidget } from '@/components/shared/CalendarWidget'
@@ -70,6 +71,8 @@ export function ContactRdvModal({
   const [isLoading, setIsLoading] = useState(false)
   const [isConfirmed, setIsConfirmed] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+
+  useScrollLock()
 
   const prenom = form.nom.trim().split(' ')[0] ?? form.nom.trim()
 
@@ -266,7 +269,7 @@ export function ContactRdvModal({
                 <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 border border-red-100 font-body">{submitError}</p>
               )}
 
-              <button type="button" onClick={() => void handleSubmit()} disabled={isLoading || dispos.length === 0}
+              <button type="button" onClick={() => void handleSubmit()} disabled={isLoading || isConfirmed || dispos.length === 0}
                 className="w-full py-3.5 rounded-xl bg-primary text-white font-display text-base flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25 disabled:opacity-50 disabled:cursor-not-allowed">
                 {isLoading ? (
                   <>

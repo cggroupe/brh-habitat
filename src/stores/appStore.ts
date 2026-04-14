@@ -22,6 +22,7 @@ interface AppState {
 // Persistence localStorage — cle dynamique par tenant
 import { tenant } from '@/config/tenant'
 const STORAGE_KEY = `${tenant.tenantId}-user`
+const LOCALE_KEY = `${tenant.tenantId}-locale`
 
 function loadUser(): User | null {
   try {
@@ -31,6 +32,14 @@ function loadUser(): User | null {
   } catch {
     return null
   }
+}
+
+function loadLocale(): 'fr' | 'en' {
+  try {
+    const raw = localStorage.getItem(LOCALE_KEY)
+    if (raw === 'en') return 'en'
+  } catch { /* ignore */ }
+  return 'fr'
 }
 
 function saveUser(user: User | null) {
@@ -47,7 +56,7 @@ function saveUser(user: User | null) {
 
 export const useAppStore = create<AppState>((set) => ({
   user: loadUser(),
-  locale: 'fr',
+  locale: loadLocale(),
   drawerOpen: false,
 
   setUser: (user) => {
@@ -55,7 +64,10 @@ export const useAppStore = create<AppState>((set) => ({
     set({ user })
   },
 
-  setLocale: (locale) => set({ locale }),
+  setLocale: (locale) => {
+    try { localStorage.setItem(LOCALE_KEY, locale) } catch { /* ignore */ }
+    set({ locale })
+  },
 
   openDrawer: () => set({ drawerOpen: true }),
 

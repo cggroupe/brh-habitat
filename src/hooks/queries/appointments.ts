@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { logError } from '@/lib/error'
 import {
   fetchUserAppointments,
   fetchAppointments,
@@ -33,7 +34,9 @@ export function useCreateAppointment() {
     mutationFn: (payload: AppointmentInsert) => createAppointment(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
     },
+    onError: (err) => logError('useCreateAppointment', err),
   })
 }
 
@@ -44,7 +47,9 @@ export function useUpdateAppointment() {
       updateAppointment(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
     },
+    onError: (err) => logError('useUpdateAppointment', err),
   })
 }
 
@@ -54,6 +59,8 @@ export function useDeleteAppointment() {
     mutationFn: (id: string) => deleteAppointment(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
     },
+    onError: (err) => logError('useDeleteAppointment', err),
   })
 }

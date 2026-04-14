@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { logError } from '@/lib/error'
 
 // Companies
 import {
@@ -109,6 +110,7 @@ export function useUpdateCompany() {
       queryClient.invalidateQueries({ queryKey: ['companies'] })
       queryClient.setQueryData(['companies', 'detail', data.id], data)
     },
+    onError: (err) => logError('useUpdateCompany', err),
   })
 }
 
@@ -153,7 +155,10 @@ export function useCreateProspect() {
     mutationFn: (payload: ProspectInsert) => createProspect(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['prospects'] })
+      queryClient.invalidateQueries({ queryKey: ['companies', 'stats'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
     },
+    onError: (err) => logError('useCreateProspect', err),
   })
 }
 
@@ -164,8 +169,11 @@ export function useUpdateProspect() {
       updateProspect(id, payload),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['prospects'] })
+      queryClient.invalidateQueries({ queryKey: ['companies', 'stats'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
       queryClient.setQueryData(['prospects', 'detail', data.id], data)
     },
+    onError: (err) => logError('useUpdateProspect', err),
   })
 }
 
@@ -175,7 +183,10 @@ export function useDeleteProspect() {
     mutationFn: (id: string) => deleteProspect(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['prospects'] })
+      queryClient.invalidateQueries({ queryKey: ['companies', 'stats'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
     },
+    onError: (err) => logError('useDeleteProspect', err),
   })
 }
 
@@ -206,7 +217,9 @@ export function useInviteMember() {
       inviteMember(companyId, email),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['company-members'] })
+      queryClient.invalidateQueries({ queryKey: ['companies', 'stats'] })
     },
+    onError: (err) => logError('useInviteMember', err),
   })
 }
 
@@ -216,7 +229,9 @@ export function useRemoveMember() {
     mutationFn: (memberId: string) => removeMember(memberId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['company-members'] })
+      queryClient.invalidateQueries({ queryKey: ['companies', 'stats'] })
     },
+    onError: (err) => logError('useRemoveMember', err),
   })
 }
 
@@ -239,7 +254,12 @@ export function useCreateQuote() {
       queryClient.invalidateQueries({ queryKey: ['quotes'] })
       queryClient.invalidateQueries({ queryKey: ['prospects'] })
       queryClient.invalidateQueries({ queryKey: ['companies'] })
+      queryClient.invalidateQueries({ queryKey: ['affiliates'] })
+      queryClient.invalidateQueries({ queryKey: ['points'] })
+      queryClient.invalidateQueries({ queryKey: ['recruitment'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
     },
+    onError: (err) => logError('useCreateQuote', err),
   })
 }
 
@@ -251,7 +271,10 @@ export function useUpdateCommissionStatus() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] })
       queryClient.invalidateQueries({ queryKey: ['companies'] })
+      queryClient.invalidateQueries({ queryKey: ['recruitment'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
     },
+    onError: (err) => logError('useUpdateCommissionStatus', err),
   })
 }
 
@@ -308,6 +331,7 @@ export function useCreateReward() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rewards'] })
     },
+    onError: (err) => logError('useCreateReward', err),
   })
 }
 
@@ -319,6 +343,7 @@ export function useUpdateReward() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rewards'] })
     },
+    onError: (err) => logError('useUpdateReward', err),
   })
 }
 
@@ -347,7 +372,9 @@ export function useCreateRewardClaim() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rewards'] })
       queryClient.invalidateQueries({ queryKey: ['affiliates'] })
+      queryClient.invalidateQueries({ queryKey: ['points'] })
     },
+    onError: (err) => logError('useCreateRewardClaim', err),
   })
 }
 
@@ -365,7 +392,9 @@ export function useUpdateClaimStatus() {
       updateClaimStatus(id, status, adminNotes),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rewards'] })
+      queryClient.invalidateQueries({ queryKey: ['affiliates'] })
     },
+    onError: (err) => logError('useUpdateClaimStatus', err),
   })
 }
 
@@ -395,6 +424,7 @@ export function useCreateSocialPost() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['social-posts'] })
     },
+    onError: (err) => logError('useCreateSocialPost', err),
   })
 }
 
@@ -414,7 +444,10 @@ export function useUpdateSocialPostStatus() {
     }) => updateSocialPostStatus(id, status, rejectionReason, adminNotes),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['social-posts'] })
+      queryClient.invalidateQueries({ queryKey: ['affiliates'] })
+      queryClient.invalidateQueries({ queryKey: ['points'] })
     },
+    onError: (err) => logError('useUpdateSocialPostStatus', err),
   })
 }
 

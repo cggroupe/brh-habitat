@@ -41,6 +41,11 @@ export function useNotifications(userId: string | undefined) {
   useEffect(() => {
     if (!userId) return
 
+    const handler = () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications', userId] })
+      queryClient.invalidateQueries({ queryKey: ['notifications', 'unread', userId] })
+    }
+
     const channel = supabase
       .channel(`notifications:${userId}`)
       .on(
@@ -51,11 +56,17 @@ export function useNotifications(userId: string | undefined) {
           table: 'brh_notifications',
           filter: `recipient_id=eq.${userId}`,
         },
-        () => {
-          // Invalider les queries pour rafraichir
-          queryClient.invalidateQueries({ queryKey: ['notifications', userId] })
-          queryClient.invalidateQueries({ queryKey: ['notifications', 'unread', userId] })
+        handler,
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'brh_notifications',
+          filter: `recipient_id=eq.${userId}`,
         },
+        handler,
       )
       .subscribe()
 

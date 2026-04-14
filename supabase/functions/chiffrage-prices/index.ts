@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.96.0'
 import { getCorsHeaders } from '../_shared/cors.ts'
+import { checkRateLimit } from '../_shared/rate-limit.ts'
 
 // Se connecte a BRHCRM Supabase pour chercher les prix Batichiffrage
 const BRHCRM_URL = Deno.env.get('BRHCRM_URL') ?? ''
@@ -26,6 +27,15 @@ const CATEGORY_MAP: Record<string, string[]> = {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: getCorsHeaders(req) })
+  }
+
+  // Rate limiting : 40 req/min
+  const rl = checkRateLimit(req, 'chiffrage-prices', { maxRequests: 40, windowSeconds: 60 })
+  if (!rl.allowed) {
+    return new Response(
+      JSON.stringify({ error: 'Trop de requetes, reessayez dans un instant' }),
+      { status: 429, headers: { ...getCorsHeaders(req), ...rl.headers, 'Content-Type': 'application/json' } },
+    )
   }
 
   try {

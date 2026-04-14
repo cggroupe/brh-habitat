@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X, Loader2, AlertCircle, Calendar } from 'lucide-react'
 import { useCreateAppointment } from '@/hooks/queries'
+import { useScrollLock } from '@/hooks/useScrollLock'
 import type { AppointmentType } from '@/types/database'
 import type { Database } from '@/types/database'
 
@@ -18,11 +19,12 @@ export function RequestModal({ userId, onClose }: RequestModalProps) {
   const [formError, setFormError] = useState<string | null>(null)
 
   const createMutation = useCreateAppointment()
+  useScrollLock()
 
-  // Min date: tomorrow
+  // Min date: tomorrow (local timezone safe)
   const minDate = new Date()
   minDate.setDate(minDate.getDate() + 1)
-  const minDateStr = minDate.toISOString().split('T')[0]
+  const minDateStr = `${minDate.getFullYear()}-${String(minDate.getMonth() + 1).padStart(2, '0')}-${String(minDate.getDate()).padStart(2, '0')}`
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.96.0'
 import { getCorsHeaders } from '../_shared/cors.ts'
+import { checkRateLimit } from '../_shared/rate-limit.ts'
 
 const AI_BASE = Deno.env.get('AI_VPS_URL') ?? ''
 
@@ -93,6 +94,15 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: cors })
   }
 
+  // Rate limiting : 20 req/min pour visiteur, 40 req/min pour pro/chiffrage
+  const rl = checkRateLimit(req, 'ai-proxy', { maxRequests: 20, windowSeconds: 60 })
+  if (!rl.allowed) {
+    return new Response(
+      JSON.stringify({ error: 'Trop de requetes, reessayez dans un instant' }),
+      { status: 429, headers: { ...cors, ...rl.headers, 'Content-Type': 'application/json' } },
+    )
+  }
+
   try {
     const body = await req.json()
     const mode = (body.mode as string) ?? 'visiteur'
@@ -130,6 +140,7 @@ Deno.serve(async (req) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages: enrichedMessages }),
+      signal: AbortSignal.timeout(60_000),
     })
 
     const data = await response.text()

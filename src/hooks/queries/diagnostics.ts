@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { logError } from '@/lib/error'
 import {
   fetchUserDiagnostics,
   fetchDiagnostics,
@@ -45,7 +46,9 @@ export function useCreateDiagnostic() {
     mutationFn: (payload: DiagnosticInsert) => createDiagnostic(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['diagnostics'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
     },
+    onError: (err) => logError('useCreateDiagnostic', err),
   })
 }
 
@@ -79,8 +82,10 @@ export function useUpdateDiagnosticStatus() {
     }) => updateDiagnosticStatus(id, status, adminNotes),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['diagnostics'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
       queryClient.setQueryData(['diagnostics', 'detail', data.id], data)
     },
+    onError: (err) => logError('useUpdateDiagnosticStatus', err),
   })
 }
 
@@ -97,6 +102,7 @@ export function useUpsertDraftDiagnostic() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['diagnostics'] })
     },
+    onError: (err) => logError('useUpsertDraftDiagnostic', err),
   })
 }
 
@@ -106,6 +112,8 @@ export function useDeleteDiagnostic() {
     mutationFn: (id: string) => deleteDiagnostic(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['diagnostics'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
     },
+    onError: (err) => logError('useDeleteDiagnostic', err),
   })
 }

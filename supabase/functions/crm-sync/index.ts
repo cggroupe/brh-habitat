@@ -77,6 +77,7 @@ Deno.serve(async (req) => {
             Authorization: `Bearer ${CRM_API_KEY}`,
           },
           body: JSON.stringify(crmPayload),
+          signal: AbortSignal.timeout(30_000),
         })
 
         if (response.ok) {
