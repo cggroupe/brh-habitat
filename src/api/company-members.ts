@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type { BrhCompanyMemberRow } from '@/types/partner'
 import type { ProfileRow } from '@/types/database'
+import { companyMemberWithProfileSchema } from './schemas'
 
 export interface CompanyMemberWithProfile extends BrhCompanyMemberRow {
   profile: Pick<ProfileRow, 'id' | 'email' | 'full_name' | 'avatar_url'>
@@ -26,7 +27,7 @@ export async function fetchCompanyMembers(companyId: string): Promise<CompanyMem
     .order('joined_at', { ascending: true })
 
   if (error) throw error
-  return (data ?? []) as unknown as CompanyMemberWithProfile[]
+  return companyMemberWithProfileSchema.array().parse(data ?? []) as CompanyMemberWithProfile[]
 }
 
 export async function inviteMember(companyId: string, email: string): Promise<void> {

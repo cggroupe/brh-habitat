@@ -18,6 +18,7 @@ export function useUserAppointments(userId: string | undefined) {
     queryKey: ['appointments', 'user', userId],
     queryFn: () => fetchUserAppointments(userId!),
     enabled: !!userId,
+    staleTime: 5 * 60_000,
   })
 }
 

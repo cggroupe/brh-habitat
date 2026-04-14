@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import type { BrhMessageThreadRow, BrhMessageRow } from '@/types/partner'
-import { createThreadSchema, sendMessageSchema } from './schemas'
+import { createThreadSchema, sendMessageSchema, brhMessageRowSchema, brhMessageThreadRowSchema } from './schemas'
 
 export interface ThreadWithLastMessage extends BrhMessageThreadRow {
   last_message?: string
@@ -34,7 +34,7 @@ export async function fetchThreadMessages(threadId: string): Promise<BrhMessageR
     .order('created_at', { ascending: true })
 
   if (error) throw error
-  return (data ?? []) as unknown as BrhMessageRow[]
+  return brhMessageRowSchema.array().parse(data ?? []) as BrhMessageRow[]
 }
 
 export async function createThread(params: {
@@ -60,14 +60,14 @@ export async function createThread(params: {
   const { error: msgError } = await supabase
     .from('brh_messages')
     .insert({
-      thread_id: (thread as unknown as BrhMessageThreadRow).id,
+      thread_id: brhMessageThreadRowSchema.parse(thread).id,
       sender_id: validated.participantId,
       body: validated.firstMessage,
     })
 
   if (msgError) throw msgError
 
-  return thread as unknown as BrhMessageThreadRow
+  return brhMessageThreadRowSchema.parse(thread) as BrhMessageThreadRow
 }
 
 export async function sendMessage(
@@ -100,7 +100,7 @@ export async function sendMessage(
     .update({ last_message_at: new Date().toISOString() })
     .eq('id', validated.threadId)
 
-  return data as unknown as BrhMessageRow
+  return brhMessageRowSchema.parse(data) as BrhMessageRow
 }
 
 export async function uploadMessageAttachment(

@@ -22,6 +22,7 @@ export function useUserDiagnostics(userId: string | undefined) {
     queryKey: ['diagnostics', 'user', userId],
     queryFn: () => fetchUserDiagnostics(userId!),
     enabled: !!userId,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -30,6 +31,7 @@ export function useDiagnosticDetail(id: string | undefined) {
     queryKey: ['diagnostics', 'detail', id],
     queryFn: () => fetchDiagnosticById(id!),
     enabled: !!id,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -101,6 +103,7 @@ export function useUpsertDraftDiagnostic() {
     }) => upsertDraftDiagnostic(draftId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['diagnostics'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
     },
     onError: (err) => logError('useUpsertDraftDiagnostic', err),
   })

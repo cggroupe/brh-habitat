@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.96.0'
 import { getCorsHeaders } from '../_shared/cors.ts'
+import { checkRateLimit } from '../_shared/rate-limit.ts'
 
 const CRM_API_URL = Deno.env.get('CRM_API_URL') ?? ''
 const CRM_API_KEY = Deno.env.get('CRM_API_KEY') ?? ''
@@ -9,11 +10,52 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: getCorsHeaders(req) })
   }
 
+  // Rate limit : 5 req/min par IP
+  const rl = checkRateLimit(req, 'crm-sync', { maxRequests: 5, windowSeconds: 60 })
+  if (!rl.allowed) {
+    return new Response(
+      JSON.stringify({ error: 'Trop de requetes' }),
+      { status: 429, headers: { ...getCorsHeaders(req), ...rl.headers, 'Content-Type': 'application/json' } },
+    )
+  }
+
   try {
+    // Verifier le JWT et le role admin
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Authorization requise' }),
+        { status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
+      )
+    }
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
+
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Token invalide' }),
+        { status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
+      )
+    }
+
+    const { data: callerProfile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (callerProfile?.role !== 'admin') {
+      return new Response(
+        JSON.stringify({ error: 'Acces reserve aux admins' }),
+        { status: 403, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },
+      )
+    }
 
     const { prospect_id } = await req.json()
 

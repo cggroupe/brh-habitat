@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Send, Bot, User, Loader2, FileDown, Calculator, Sparkles, RotateCcw } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useMyCompany } from '@/hooks/queries'
+import { logError } from '@/lib/error'
 import type { ChiffrageData, ChiffrageLineItem } from '@/lib/chiffrage-pdf'
 import { formatLocalDate } from '@/lib/utils'
 import { sendToAI } from '@/lib/ai'
@@ -83,7 +84,7 @@ export default function ProChiffrage() {
 
         // Sauvegarder en base via API layer
         if (user?.id) {
-          saveChiffrage(chiffrageComplete, user.id, company?.id).catch(() => { /* non bloquant */ })
+          saveChiffrage(chiffrageComplete, user.id, company?.id).catch((err) => logError('ProChiffrage:saveChiffrage', err))
         }
       }
 

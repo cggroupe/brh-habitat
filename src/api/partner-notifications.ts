@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import type { BrhNotificationRow } from '@/types/partner'
+import { brhNotificationRowSchema } from './schemas'
 
 export async function fetchMyNotifications(userId: string): Promise<BrhNotificationRow[]> {
   const { data, error } = await supabase
@@ -10,7 +11,7 @@ export async function fetchMyNotifications(userId: string): Promise<BrhNotificat
     .limit(50)
 
   if (error) throw error
-  return (data ?? []) as unknown as BrhNotificationRow[]
+  return brhNotificationRowSchema.array().parse(data ?? []) as BrhNotificationRow[]
 }
 
 export async function fetchUnreadCount(userId: string): Promise<number> {
@@ -65,5 +66,5 @@ export async function createNotification(params: {
     .single()
 
   if (error) throw error
-  return data as unknown as BrhNotificationRow
+  return brhNotificationRowSchema.parse(data) as BrhNotificationRow
 }

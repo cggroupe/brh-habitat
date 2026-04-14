@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/appStore'
+import { logError } from '@/lib/error'
 import { Heart, ArrowRight } from 'lucide-react'
 import { createAffiliate, updateAffiliateRecruiter } from '@/api/affiliates'
 
@@ -81,7 +82,7 @@ export default function RegisterParticulierPage() {
 
       // Si recrute via un lien de recrutement, lier le recruteur
       if (!affiliateError && recruiter) {
-        await updateAffiliateRecruiter(data.user.id, recruiter).catch(() => undefined)
+        await updateAffiliateRecruiter(data.user.id, recruiter).catch((err) => logError('RegisterParticulier:recruiter', err))
       }
 
       // Charger profil et naviguer

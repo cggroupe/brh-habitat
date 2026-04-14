@@ -8,6 +8,124 @@ const optionalUuid = z.string().uuid().nullable().optional()
 const optionalString = z.string().nullable().optional()
 
 // ---------------------------------------------------------------------------
+// Row schemas — utilisés pour valider les retours Supabase avec JOINs
+// ---------------------------------------------------------------------------
+
+export const affiliateWithProfileSchema = z.object({
+  id: z.string(),
+  referral_code: z.string(),
+  short_code: z.string().nullable().optional(),
+  points_balance: z.number(),
+  total_points_earned: z.number(),
+  level: z.string(),
+  created_at: z.string(),
+  profile: z.object({
+    full_name: z.string(),
+    email: z.string(),
+    avatar_url: z.string().nullable(),
+  }),
+}).passthrough()
+
+export const brhProspectRowSchema = z.object({
+  id: z.string(),
+  source_type: z.string(),
+  company_id: z.string().nullable(),
+  submitted_by: z.string().nullable(),
+  affiliate_id: z.string().nullable(),
+  client_first_name: z.string(),
+  client_last_name: z.string(),
+  client_phone: z.string(),
+  client_email: z.string().nullable(),
+  client_address: z.string().nullable(),
+  client_city: z.string().nullable(),
+  client_postal_code: z.string().nullable(),
+  work_type: z.array(z.string()),
+  estimated_budget: z.string().nullable(),
+  urgency: z.string().nullable(),
+  status: z.string(),
+  status_updated_at: z.string(),
+  notes: z.string().nullable(),
+  admin_notes: z.string().nullable(),
+  lead_score: z.number(),
+  crm_id: z.string().nullable(),
+  crm_synced_at: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+}).passthrough()
+
+export const companyMemberWithProfileSchema = z.object({
+  id: z.string(),
+  company_id: z.string(),
+  profile_id: z.string(),
+  member_role: z.string(),
+  joined_at: z.string(),
+  profile: z.object({
+    id: z.string(),
+    email: z.string(),
+    full_name: z.string(),
+    avatar_url: z.string().nullable(),
+  }),
+}).passthrough()
+
+export const brhSocialPostRowSchema = z.object({
+  id: z.string(),
+  submitted_by: z.string(),
+  submitter_role: z.string(),
+  company_id: z.string().nullable(),
+  platform: z.string(),
+  post_type: z.string(),
+  post_url: z.string(),
+  screenshot_path: z.string(),
+  description: z.string().nullable(),
+  reward_amount_cents: z.number().nullable(),
+  reward_points: z.number().nullable(),
+  reward_type: z.string(),
+  status: z.string(),
+  rejection_reason: z.string().nullable(),
+  validated_at: z.string().nullable(),
+  expiry_check_date: z.string().nullable(),
+  expiry_confirmed: z.boolean(),
+  is_duplicate: z.boolean(),
+  admin_notes: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+}).passthrough()
+
+export const brhMessageRowSchema = z.object({
+  id: z.string(),
+  thread_id: z.string(),
+  sender_id: z.string().nullable(),
+  body: z.string(),
+  is_read: z.boolean(),
+  read_at: z.string().nullable(),
+  attachment_url: z.string().nullable(),
+  attachment_name: z.string().nullable(),
+  created_at: z.string(),
+}).passthrough()
+
+export const brhMessageThreadRowSchema = z.object({
+  id: z.string(),
+  subject: z.string(),
+  participant_id: z.string().nullable(),
+  participant_type: z.string(),
+  last_message_at: z.string(),
+  is_archived: z.boolean(),
+  created_at: z.string(),
+}).passthrough()
+
+export const brhNotificationRowSchema = z.object({
+  id: z.string(),
+  recipient_id: z.string(),
+  type: z.string(),
+  title: z.string(),
+  body: z.string().nullable(),
+  reference_type: z.string().nullable(),
+  reference_id: z.string().nullable(),
+  is_read: z.boolean(),
+  created_at: z.string(),
+}).passthrough()
+
+// ---------------------------------------------------------------------------
 // Chiffrage
 // ---------------------------------------------------------------------------
 export const chiffrageLineSchema = z.object({

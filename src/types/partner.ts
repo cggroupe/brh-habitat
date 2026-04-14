@@ -69,7 +69,7 @@ export interface BrhProspectRow {
   client_city: string | null
   client_postal_code: string | null
   work_type: string[]
-  estimated_budget: string | null
+  estimated_budget: number | null
   urgency: ProspectUrgency | null
   status: ProspectStatus
   status_updated_at: string

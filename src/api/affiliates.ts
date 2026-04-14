@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type { BrhAffiliateRow, BrhPointsTransactionRow, BrhProspectRow } from '@/types/partner'
 import { PAGE_SIZE } from '@/data/constants'
+import { affiliateWithProfileSchema, brhProspectRowSchema } from './schemas'
 
 export interface AffiliateWithProfile extends BrhAffiliateRow {
   profile: { full_name: string; email: string; avatar_url: string | null }
@@ -51,7 +52,7 @@ export async function fetchAllAffiliates(page: number): Promise<PaginatedAffilia
     .range(from, to)
 
   if (error) throw error
-  return { data: (data ?? []) as unknown as AffiliateWithProfile[], count: count ?? 0, page }
+  return { data: affiliateWithProfileSchema.array().parse(data ?? []) as AffiliateWithProfile[], count: count ?? 0, page }
 }
 
 export async function fetchAffiliateProspects(affiliateId: string): Promise<BrhProspectRow[]> {
@@ -62,7 +63,7 @@ export async function fetchAffiliateProspects(affiliateId: string): Promise<BrhP
     .order('created_at', { ascending: false })
 
   if (error) throw error
-  return (data ?? []) as unknown as BrhProspectRow[]
+  return brhProspectRowSchema.array().parse(data ?? []) as BrhProspectRow[]
 }
 
 export async function fetchPointsHistory(affiliateId: string): Promise<BrhPointsTransactionRow[]> {

@@ -2,6 +2,9 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { RevenueProfile } from '@/data/aides-renov'
 
+// Tenant ID pour scoper le localStorage (evite fuite inter-tenant/inter-user)
+const tenantId = import.meta.env.VITE_TENANT || 'brh'
+
 export type DiagnosticType =
   | 'humidite'
   | 'isolation'
@@ -176,7 +179,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
       reset: () => set({ ...initialState, symptoms: { ...initialSymptoms } }),
     }),
     {
-      name: 'brh-diagnostic-draft',
+      name: `${tenantId}-diagnostic-draft`,
       // Ne persister que les données du diagnostic, pas les fonctions
       partialize: (state) => ({
         draftId: state.draftId,

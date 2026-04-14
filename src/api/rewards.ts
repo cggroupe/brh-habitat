@@ -1,5 +1,10 @@
 import { supabase } from '@/lib/supabase'
 import type { BrhRewardsCatalogRow, BrhRewardClaimRow } from '@/types/partner'
+import { z } from 'zod'
+
+const affiliateWithNameSchema = z.object({
+  profile: z.object({ full_name: z.string() }).nullable(),
+}).nullable()
 
 export type RewardInsert = Omit<BrhRewardsCatalogRow, 'id' | 'created_at' | 'updated_at'>
 export type RewardUpdate = Partial<RewardInsert>
@@ -81,10 +86,11 @@ export async function fetchAllClaims(): Promise<(BrhRewardClaimRow & { affiliate
     .order('created_at', { ascending: false })
 
   if (error) throw error
-  return (data ?? []).map((c) => ({
-    ...c,
-    affiliate_name: (c.affiliate as unknown as { profile: { full_name: string } })?.profile?.full_name ?? '—',
-  }))
+  return (data ?? []).map((c) => {
+    const parsed = affiliateWithNameSchema.safeParse(c.affiliate)
+    const affiliate_name = parsed.success ? (parsed.data?.profile?.full_name ?? '—') : '—'
+    return { ...c, affiliate_name }
+  })
 }
 
 export async function updateClaimStatus(

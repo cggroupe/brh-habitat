@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.96.0'
 import { getCorsHeaders } from '../_shared/cors.ts'
+import { checkRateLimit } from '../_shared/rate-limit.ts'
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? ''
 const EMAIL_FROM = Deno.env.get('EMAIL_FROM') ?? 'noreply@brh-habitat.fr'
@@ -13,6 +14,15 @@ interface AutoEmailPayload {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: getCorsHeaders(req) })
+  }
+
+  // Rate limit : 30 req/min par IP
+  const rl = checkRateLimit(req, 'auto-email', { maxRequests: 30, windowSeconds: 60 })
+  if (!rl.allowed) {
+    return new Response(
+      JSON.stringify({ error: 'Trop de requetes' }),
+      { status: 429, headers: { ...getCorsHeaders(req), ...rl.headers, 'Content-Type': 'application/json' } },
+    )
   }
 
   try {

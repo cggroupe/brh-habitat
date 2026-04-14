@@ -19,6 +19,7 @@ export function useUserHomes(userId: string | undefined) {
     queryKey: ['homes', 'user', userId],
     queryFn: () => fetchUserHomes(userId!),
     enabled: !!userId,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -27,6 +28,7 @@ export function useHomeDetail(id: string | undefined) {
     queryKey: ['homes', 'detail', id],
     queryFn: () => fetchHomeById(id!),
     enabled: !!id,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -56,6 +58,7 @@ export function useUpdateHome() {
       updateHome(id, payload),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['homes'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
       queryClient.setQueryData(['homes', 'detail', data.id], data)
     },
     onError: (err) => logError('useUpdateHome', err),

@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { formatLocalDate } from '@/lib/utils'
 import type { BrhSocialPostRow } from '@/types/partner'
 import { PAGE_SIZE } from '@/data/constants'
-import { socialPostInsertSchema, type SocialPostInsert } from './schemas'
+import { socialPostInsertSchema, brhSocialPostRowSchema, type SocialPostInsert } from './schemas'
 
 export type { SocialPostInsert } from './schemas'
 
@@ -20,7 +20,7 @@ export async function fetchMySocialPosts(userId: string): Promise<BrhSocialPostR
     .order('created_at', { ascending: false })
 
   if (error) throw error
-  return (data ?? []) as unknown as BrhSocialPostRow[]
+  return brhSocialPostRowSchema.array().parse(data ?? []) as BrhSocialPostRow[]
 }
 
 export async function fetchAllSocialPosts(page: number, status?: string): Promise<PaginatedSocialPosts> {
@@ -39,7 +39,7 @@ export async function fetchAllSocialPosts(page: number, status?: string): Promis
 
   const { data, error, count } = await query
   if (error) throw error
-  return { data: (data ?? []) as unknown as BrhSocialPostRow[], count: count ?? 0, page }
+  return { data: brhSocialPostRowSchema.array().parse(data ?? []) as BrhSocialPostRow[], count: count ?? 0, page }
 }
 
 export async function createSocialPost(payload: SocialPostInsert): Promise<BrhSocialPostRow> {
@@ -52,7 +52,7 @@ export async function createSocialPost(payload: SocialPostInsert): Promise<BrhSo
     .single()
 
   if (error) throw error
-  return data as unknown as BrhSocialPostRow
+  return brhSocialPostRowSchema.parse(data) as BrhSocialPostRow
 }
 
 export async function updateSocialPostStatus(
@@ -79,7 +79,7 @@ export async function updateSocialPostStatus(
     .single()
 
   if (error) throw error
-  return data as unknown as BrhSocialPostRow
+  return brhSocialPostRowSchema.parse(data) as BrhSocialPostRow
 }
 
 export async function getMonthlyPostCount(userId: string): Promise<number> {

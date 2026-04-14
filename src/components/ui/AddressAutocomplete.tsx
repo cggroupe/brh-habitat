@@ -32,6 +32,8 @@ export function AddressAutocomplete({
   const containerRef = useRef<HTMLDivElement>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
+  const abortRef = useRef<AbortController | undefined>(undefined)
+
   const fetchSuggestions = useCallback(async (query: string) => {
     if (query.length < 3) {
       setSuggestions([])
@@ -39,10 +41,15 @@ export function AddressAutocomplete({
       return
     }
 
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
+
     setLoading(true)
     try {
       const res = await fetch(
-        `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5&type=housenumber&autocomplete=1`
+        `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5&type=housenumber&autocomplete=1`,
+        { signal: controller.signal },
       )
       if (!res.ok) throw new Error('API error')
       const data = await res.json()
@@ -59,7 +66,8 @@ export function AddressAutocomplete({
       setSuggestions(results)
       setIsOpen(results.length > 0)
       setHighlightedIndex(-1)
-    } catch {
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return
       setSuggestions([])
       setIsOpen(false)
     } finally {
@@ -121,10 +129,11 @@ export function AddressAutocomplete({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Cleanup
+  // Cleanup debounce + abort
   useEffect(() => {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
+      abortRef.current?.abort()
     }
   }, [])
 

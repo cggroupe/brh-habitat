@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send, Bot, User, Loader2, FileDown, Calculator, Sparkles, RotateCcw } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { logError } from '@/lib/error'
 import type { ChiffrageData, ChiffrageLineItem } from '@/lib/chiffrage-pdf'
 import { formatLocalDate } from '@/lib/utils'
 import { sendToAI } from '@/lib/ai'
@@ -53,7 +54,7 @@ export default function PartChiffrage() {
         }
         setChiffrageData(chiffrageComplete)
         if (user?.id) {
-          saveChiffrage(chiffrageComplete, user.id).catch(() => { /* non bloquant */ })
+          saveChiffrage(chiffrageComplete, user.id).catch((err) => logError('PartChiffrage:saveChiffrage', err))
         }
       }
       const cleanReply = reply.replace(/```(?:chiffrage|json)[\s\S]*?```/g, '').trim()

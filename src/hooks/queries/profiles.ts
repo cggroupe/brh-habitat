@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { logError } from '@/lib/error'
 import {
   fetchProfiles,
   fetchProfileById,
@@ -15,6 +16,7 @@ export function useAdminProfiles(page: number) {
   return useQuery({
     queryKey: ['profiles', 'admin', page],
     queryFn: () => fetchProfiles(page),
+    staleTime: 2 * 60_000,
   })
 }
 
@@ -23,6 +25,7 @@ export function useProfileDetail(id: string | undefined) {
     queryKey: ['profiles', 'detail', id],
     queryFn: () => fetchProfileById(id!),
     enabled: !!id,
+    staleTime: 10 * 60_000,
   })
 }
 
@@ -35,6 +38,7 @@ export function useUpdateProfile() {
       queryClient.invalidateQueries({ queryKey: ['profiles'] })
       queryClient.setQueryData(['profiles', 'detail', data.id], data)
     },
+    onError: (err) => logError('useUpdateProfile', err),
   })
 }
 
@@ -45,8 +49,10 @@ export function useUpdateProfileRole() {
       updateProfileRole(id, role),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['profiles'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
       queryClient.setQueryData(['profiles', 'detail', data.id], data)
     },
+    onError: (err) => logError('useUpdateProfileRole', err),
   })
 }
 
@@ -56,6 +62,8 @@ export function useDeleteProfile() {
     mutationFn: (id: string) => deleteProfile(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profiles'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
     },
+    onError: (err) => logError('useDeleteProfile', err),
   })
 }

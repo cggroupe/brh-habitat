@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { logError } from '@/lib/error'
 import {
   fetchUserCases,
   fetchCaseById,
@@ -18,6 +19,7 @@ export function useUserCases(userId: string | undefined) {
     queryKey: ['cases', 'user', userId],
     queryFn: () => fetchUserCases(userId!),
     enabled: !!userId,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -26,6 +28,7 @@ export function useCaseDetail(id: string | undefined) {
     queryKey: ['cases', 'detail', id],
     queryFn: () => fetchCaseById(id!),
     enabled: !!id,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -42,7 +45,9 @@ export function useCreateCase() {
     mutationFn: (payload: CaseInsert) => createCase(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cases'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
     },
+    onError: (err) => logError('useCreateCase', err),
   })
 }
 
@@ -53,8 +58,10 @@ export function useUpdateCase() {
       updateCase(id, payload),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['cases'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
       queryClient.setQueryData(['cases', 'detail', data.id], data)
     },
+    onError: (err) => logError('useUpdateCase', err),
   })
 }
 
@@ -64,6 +71,8 @@ export function useDeleteCase() {
     mutationFn: (id: string) => deleteCase(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cases'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
     },
+    onError: (err) => logError('useDeleteCase', err),
   })
 }

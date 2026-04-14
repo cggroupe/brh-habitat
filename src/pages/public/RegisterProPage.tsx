@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/appStore'
+import { logError } from '@/lib/error'
 import { Building2, ArrowRight } from 'lucide-react'
 import { createCompany, updateCompanyRecruiter } from '@/api/companies'
 import { addCompanyMember } from '@/api/company-members'
@@ -83,11 +84,11 @@ export default function RegisterProPage() {
 
       // Si recrute via un lien de recrutement, lier le recruteur
       if (recruiter) {
-        await updateCompanyRecruiter(company.id, recruiter).catch(() => undefined)
+        await updateCompanyRecruiter(company.id, recruiter).catch((err) => logError('RegisterPro:recruiter', err))
       }
 
       // Ajouter comme owner dans company_members
-      await addCompanyMember(company.id, data.user.id, 'owner').catch(() => undefined)
+      await addCompanyMember(company.id, data.user.id, 'owner').catch((err) => logError('RegisterPro:addMember', err))
 
       // Charger profil et naviguer
       const { data: profile } = await supabase

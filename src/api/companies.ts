@@ -115,7 +115,9 @@ export async function fetchCompanyDashboardStats(companyId: string): Promise<Com
     .single()
 
   // Requete unique via RPC (pas de .in() illimite)
-  const { data: stats } = await supabase.rpc('get_company_commission_stats', { p_company_id: companyId })
+  const { data: stats, error: statsError } = await supabase.rpc('get_company_commission_stats', { p_company_id: companyId })
+
+  if (statsError) throw statsError
 
   const row = Array.isArray(stats) ? stats[0] : stats
 
