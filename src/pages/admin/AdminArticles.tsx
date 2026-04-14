@@ -319,7 +319,7 @@ export default function AdminArticles() {
 
       {/* Article Form Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-8 bg-black/50 overflow-y-auto">
+        <div className="fixed inset-0 z-[60] flex items-start justify-center p-4 sm:p-8 bg-black/50 overflow-y-auto">
           <div className="bg-surface rounded-2xl border border-gray-light w-full max-w-2xl my-auto shadow-xl">
             {/* Modal header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-light">
@@ -540,7 +540,7 @@ export default function AdminArticles() {
 
       {/* Delete confirmation modal */}
       {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50">
           <div className="bg-surface rounded-2xl border border-gray-light p-6 w-full max-w-sm shadow-xl">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">

@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import { Building2, Heart, TrendingUp, Gift, Users, Euro, ArrowRight } from 'lucide-react'
+import { SEOHead } from '@/components/shared/SEOHead'
 
 export default function PartenairesPage() {
   return (
     <div className="min-h-screen">
+      <SEOHead title="Devenir Partenaire | BRH Habitat" description="Rejoignez le reseau BRH Habitat en Bretagne. Programme partenaire avec commissions, outils pro et accompagnement." />
       {/* Hero */}
       <section className="bg-primary-dark py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">

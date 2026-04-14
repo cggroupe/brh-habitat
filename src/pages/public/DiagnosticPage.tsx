@@ -1,5 +1,6 @@
 import { logError } from '@/lib/error'
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { SEOHead } from '@/components/shared/SEOHead'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { useDiagnosticStore } from '@/stores/diagnosticStore'
@@ -208,6 +209,7 @@ export default function DiagnosticPage() {
 
   return (
     <div className="min-h-screen bg-slate-50/50">
+      <SEOHead title="Diagnostic Habitat Gratuit | BRH" description="Realisez un diagnostic gratuit de votre habitat en quelques minutes. Identifiez les travaux prioritaires et les aides disponibles." />
       <div className="max-w-[1200px] mx-auto p-8 flex gap-8 items-start">
 
         {/* Colonne gauche : Stepper + Carte centrale */}

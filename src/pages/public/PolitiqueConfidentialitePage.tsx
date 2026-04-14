@@ -1,6 +1,9 @@
+import { SEOHead } from '@/components/shared/SEOHead'
+
 export default function PolitiqueConfidentialitePage() {
   return (
     <div className="min-h-screen bg-background py-16">
+      <SEOHead title="Politique de Confidentialite | BRH Habitat" description="Politique de confidentialite et protection des donnees personnelles de BRH Habitat." />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="font-display text-3xl text-text-primary mb-8">Politique de confidentialite</h1>
         <div className="bg-surface rounded-2xl border border-gray-light p-8 space-y-6 font-body text-sm text-text-secondary leading-relaxed">
@@ -62,6 +65,15 @@ export default function PolitiqueConfidentialitePage() {
               35 rue de Kervao, 29490 Guipavas<br />
               Email : relationsclients@contact-brh.fr<br />
               Telephone : 02 19 00 53 05
+            </p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-lg text-text-primary mb-3">Droit de reclamation</h2>
+            <p>
+              Conformement au RGPD, vous disposez du droit d'introduire une reclamation
+              aupres de la CNIL (Commission Nationale de l'Informatique et des Libertes),
+              3 Place de Fontenoy, TSA 80715, 75334 Paris Cedex 07, ou sur le site cnil.fr.
             </p>
           </section>
         </div>

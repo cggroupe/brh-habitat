@@ -65,6 +65,16 @@ export default function RegisterProPage() {
     }
 
     if (data.user) {
+      // Si email confirmation active, data.session sera null
+      if (!data.session) {
+        setError(null)
+        setLoading(false)
+        // Afficher un message de confirmation
+        setForm({ fullName: '', email: '', phone: '', password: '', companyName: '', siret: '', profession: '' })
+        setError('Un email de confirmation vous a ete envoye. Veuillez verifier votre boite mail pour activer votre compte.')
+        return
+      }
+
       // Le trigger handle_new_user() cree le profil avec role='pro' automatiquement
 
       // Creer l'entreprise

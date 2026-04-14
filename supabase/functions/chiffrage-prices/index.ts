@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
       ? rawSearch.slice(0, 100).replace(/[%_\\]/g, '\\$&')
       : undefined
 
-    if (!BRHCRM_SERVICE_KEY) {
+    if (!BRHCRM_URL || !BRHCRM_SERVICE_KEY) {
       return new Response(
         JSON.stringify({ error: 'BRHCRM non configure' }),
         { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },

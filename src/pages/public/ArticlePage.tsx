@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { SEOHead } from '@/components/shared/SEOHead'
 import { useParams, Link } from 'react-router-dom'
 import { FileText } from 'lucide-react'
 import { getArticleBySlug } from '@/data/articles'
@@ -55,17 +56,6 @@ export default function ArticlePage() {
     window.scrollTo(0, 0)
   }, [slug])
 
-  // Set document title for SEO
-  useEffect(() => {
-    if (article) {
-      document.title = article.seoTitle
-      const metaDesc = document.querySelector('meta[name="description"]')
-      if (metaDesc) metaDesc.setAttribute('content', article.seoDescription)
-    }
-    return () => { document.title = 'BRH - Bretagne Renovation Habitat' }
-  }, [article])
-
-   
   const toc = useMemo(() => (markdown ? extractH2s(markdown) : []), [markdown])
   // eslint-disable-next-line react-hooks/exhaustive-deps -- rebuild when markdown changes
   const markdownComponents = useMemo(() => buildMarkdownComponents(), [markdown])
@@ -103,6 +93,12 @@ export default function ArticlePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={article.seoTitle}
+        description={article.seoDescription}
+        ogImage={seoData?.coverImage}
+        ogUrl={`https://renovation-brh.fr/articles/${article.slug}`}
+      />
 
       <ArticleHero
         article={article}

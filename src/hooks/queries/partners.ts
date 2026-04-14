@@ -83,6 +83,7 @@ export function useMyCompany(userId: string | undefined) {
     queryKey: ['companies', 'my', userId],
     queryFn: () => fetchMyCompany(userId!),
     enabled: !!userId,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -91,6 +92,7 @@ export function useCompanyDetail(id: string | undefined) {
     queryKey: ['companies', 'detail', id],
     queryFn: () => fetchCompanyById(id!),
     enabled: !!id,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -120,6 +122,7 @@ export function useCompanyDashboardStats(companyId: string | undefined) {
     queryKey: ['companies', 'stats', companyId],
     queryFn: () => fetchCompanyDashboardStats(companyId!),
     enabled: !!companyId,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -132,6 +135,7 @@ export function useCompanyProspects(companyId: string | undefined, page: number,
     queryKey: ['prospects', 'company', companyId, page, status],
     queryFn: () => fetchCompanyProspects(companyId!, page, status),
     enabled: !!companyId,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -148,6 +152,7 @@ export function useProspectDetail(id: string | undefined) {
     queryKey: ['prospects', 'detail', id],
     queryFn: () => fetchProspectById(id!),
     enabled: !!id,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -197,6 +202,7 @@ export function useCompanyProspectStats(companyId: string | undefined) {
     queryKey: ['prospects', 'stats', companyId],
     queryFn: () => fetchCompanyProspectStats(companyId!),
     enabled: !!companyId,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -209,6 +215,7 @@ export function useCompanyMembers(companyId: string | undefined) {
     queryKey: ['company-members', companyId],
     queryFn: () => fetchCompanyMembers(companyId!),
     enabled: !!companyId,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -290,6 +297,7 @@ export function useMyAffiliate(userId: string | undefined) {
     queryKey: ['affiliates', 'my', userId],
     queryFn: () => fetchMyAffiliate(userId!),
     enabled: !!userId,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -306,6 +314,7 @@ export function useAffiliateProspects(affiliateId: string | undefined) {
     queryKey: ['prospects', 'affiliate', affiliateId],
     queryFn: () => fetchAffiliateProspects(affiliateId!),
     enabled: !!affiliateId,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -314,6 +323,7 @@ export function usePointsHistory(affiliateId: string | undefined) {
     queryKey: ['points', 'history', affiliateId],
     queryFn: () => fetchPointsHistory(affiliateId!),
     enabled: !!affiliateId,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -325,6 +335,7 @@ export function useRewardsCatalog(activeOnly = true) {
   return useQuery({
     queryKey: ['rewards', 'catalog', activeOnly],
     queryFn: () => fetchRewardsCatalog(activeOnly),
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -356,6 +367,7 @@ export function useMyClaims(affiliateId: string | undefined) {
     queryKey: ['rewards', 'claims', affiliateId],
     queryFn: () => fetchMyClaims(affiliateId!),
     enabled: !!affiliateId,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -412,6 +424,7 @@ export function useMySocialPosts(userId: string | undefined) {
     queryKey: ['social-posts', 'my', userId],
     queryFn: () => fetchMySocialPosts(userId!),
     enabled: !!userId,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -462,6 +475,7 @@ export function useMonthlyPostCount(userId: string | undefined) {
     queryKey: ['social-posts', 'monthly-count', userId],
     queryFn: () => getMonthlyPostCount(userId!),
     enabled: !!userId,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -474,6 +488,7 @@ export function useMyRecruitTree(recruiterId: string | undefined) {
     queryKey: ['recruitment', 'tree', recruiterId],
     queryFn: () => fetchMyRecruitTree(recruiterId!),
     enabled: !!recruiterId,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -482,6 +497,7 @@ export function useNetworkStats(recruiterId: string | undefined) {
     queryKey: ['recruitment', 'stats', recruiterId],
     queryFn: () => fetchNetworkStats(recruiterId!),
     enabled: !!recruiterId,
+    staleTime: 5 * 60_000,
   })
 }
 
@@ -490,5 +506,6 @@ export function useMyRecruitmentCommissions(recruiterId: string | undefined) {
     queryKey: ['recruitment', 'commissions', recruiterId],
     queryFn: () => fetchMyRecruitmentCommissions(recruiterId!),
     enabled: !!recruiterId,
+    staleTime: 5 * 60_000,
   })
 }

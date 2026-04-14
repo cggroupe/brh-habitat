@@ -70,6 +70,14 @@ export default function RegisterParticulierPage() {
     }
 
     if (data.user) {
+      // Si email confirmation active, data.session sera null
+      if (!data.session) {
+        setForm({ fullName: '', email: '', phone: '', password: '' })
+        setLoading(false)
+        setError('Un email de confirmation vous a ete envoye. Veuillez verifier votre boite mail pour activer votre compte.')
+        return
+      }
+
       // Le trigger handle_new_user() cree le profil avec role='particulier' automatiquement
 
       // Creer l'affilie avec code de parrainage unique

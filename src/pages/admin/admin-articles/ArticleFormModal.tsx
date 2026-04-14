@@ -25,7 +25,7 @@ export function ArticleFormModal({
   onSubmit,
 }: ArticleFormModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-8 bg-black/50 overflow-y-auto">
+    <div className="fixed inset-0 z-[60] flex items-start justify-center p-4 sm:p-8 bg-black/50 overflow-y-auto">
       <div className="bg-surface rounded-2xl border border-gray-light w-full max-w-2xl my-auto shadow-xl">
         {/* Modal header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-light">

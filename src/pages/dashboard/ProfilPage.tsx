@@ -65,7 +65,7 @@ function DeleteAccountModal({
   const canDelete = confirmText === 'SUPPRIMER'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
       <div className="bg-surface rounded-2xl shadow-xl w-full max-w-sm p-6">
         <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-danger mb-4">
           <Trash2 size={20} />

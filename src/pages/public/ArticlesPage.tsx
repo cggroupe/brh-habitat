@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Clock, ArrowRight, FileText, BookOpen } from 'lucide-react'
 import { articlesSEO, type ArticleSEO } from '@/data/seo-strategy'
+import { SEOHead } from '@/components/shared/SEOHead'
 
 // ─── Category configuration ──────────────────────────────────────────────────
 
@@ -163,6 +164,7 @@ export default function ArticlesPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead title="Conseils Renovation | BRH Habitat" description="Articles et guides pratiques sur la renovation de l'habitat : isolation, toiture, DPE, aides financieres, ventilation en Bretagne." />
 
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <section className="relative bg-primary-dark overflow-hidden">

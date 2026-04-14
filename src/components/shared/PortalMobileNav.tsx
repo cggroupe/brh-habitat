@@ -39,7 +39,7 @@ export default function PortalMobileNav({ portalLabel, navItems, rootPath }: Por
     <>
       {/* Top bar mobile */}
       <div className="md:hidden flex items-center justify-between px-4 py-3 bg-primary-dark border-b border-white/10">
-        <button onClick={() => setOpen(true)} className="p-2 text-white rounded-lg hover:bg-white/10">
+        <button onClick={() => setOpen(true)} aria-label="Ouvrir le menu" className="p-2 text-white rounded-lg hover:bg-white/10">
           <Menu size={20} />
         </button>
         <div className="flex items-center gap-2">
@@ -64,7 +64,7 @@ export default function PortalMobileNav({ portalLabel, navItems, rootPath }: Por
             <span className="font-accent text-xl tracking-wider text-white">{branding.companyShortName}</span>
             <span className="font-display text-xs text-primary-light uppercase tracking-widest">{portalLabel}</span>
           </div>
-          <button onClick={() => setOpen(false)} className="p-1.5 text-green-200 hover:text-white">
+          <button onClick={() => setOpen(false)} aria-label="Fermer le menu" className="p-1.5 text-green-200 hover:text-white">
             <X size={18} />
           </button>
         </div>

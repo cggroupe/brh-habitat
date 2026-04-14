@@ -158,8 +158,8 @@ BEGIN
   END IF;
 
   IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'brh_contacts_phone_length'
+    SELECT 1 FROM pg_constraint WHERE conname = 'brh_contacts_telephone_length'
   ) THEN
-    ALTER TABLE public.brh_contacts ADD CONSTRAINT brh_contacts_phone_length CHECK (char_length(phone) <= 30);
+    ALTER TABLE public.brh_contacts ADD CONSTRAINT brh_contacts_telephone_length CHECK (char_length(telephone) <= 30);
   END IF;
 END $$;

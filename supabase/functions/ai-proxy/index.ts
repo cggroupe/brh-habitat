@@ -94,18 +94,21 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: cors })
   }
 
-  // Rate limiting : 20 req/min pour visiteur, 40 req/min pour pro/chiffrage
-  const rl = checkRateLimit(req, 'ai-proxy', { maxRequests: 20, windowSeconds: 60 })
-  if (!rl.allowed) {
-    return new Response(
-      JSON.stringify({ error: 'Trop de requetes, reessayez dans un instant' }),
-      { status: 429, headers: { ...cors, ...rl.headers, 'Content-Type': 'application/json' } },
-    )
-  }
-
   try {
     const body = await req.json()
     const mode = (body.mode as string) ?? 'visiteur'
+
+    // Rate limiting : 20 req/min pour visiteur, 40 req/min pour pro/chiffrage
+    const maxRequests = (mode === 'pro' || mode === 'chiffrage') ? 40 : 20
+    const rl = checkRateLimit(req, 'ai-proxy', { maxRequests, windowSeconds: 60 })
+    if (!rl.allowed) {
+      return new Response(
+        JSON.stringify({ error: 'Trop de requetes, reessayez dans un instant' }),
+        { status: 429, headers: { ...cors, ...rl.headers, 'Content-Type': 'application/json' } },
+      )
+    }
+
+
     const validModes = ['visiteur', 'pro', 'chiffrage']
     const safeMode = validModes.includes(mode) ? mode : 'visiteur'
     const url = ENDPOINTS[safeMode] ?? ENDPOINTS.visiteur

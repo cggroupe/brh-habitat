@@ -9,7 +9,7 @@ import {
   markThreadMessagesRead,
   uploadMessageAttachment,
 } from '@/api/partner-messages'
-import { ThreadList } from '../pro/pro-messages/ThreadList'
+import { ThreadList } from '@/components/shared/ThreadList'
 import type { BrhMessageRow } from '@/types/partner'
 import type { ThreadWithLastMessage } from '@/api/partner-messages'
 

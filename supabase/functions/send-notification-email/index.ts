@@ -74,13 +74,13 @@ Deno.serve(async (req) => {
     }
 
     // Recuperer l'email du destinataire
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: recipientError } = await supabase
       .from('profiles')
       .select('email, full_name')
       .eq('id', recipient_id)
       .single()
 
-    if (profileError || !profile?.email) {
+    if (recipientError || !profile?.email) {
       return new Response(
         JSON.stringify({ error: 'Destinataire introuvable' }),
         { status: 404, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } },

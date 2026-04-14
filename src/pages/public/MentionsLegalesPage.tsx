@@ -1,6 +1,9 @@
+import { SEOHead } from '@/components/shared/SEOHead'
+
 export default function MentionsLegalesPage() {
   return (
     <div className="min-h-screen bg-background py-16">
+      <SEOHead title="Mentions Legales | BRH Habitat" description="Mentions legales du site renovation-brh.fr - Bretagne Renovation Habitat." />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="font-display text-3xl text-text-primary mb-8">Mentions legales</h1>
         <div className="bg-surface rounded-2xl border border-gray-light p-8 space-y-6 font-body text-sm text-text-secondary leading-relaxed">
@@ -11,7 +14,12 @@ export default function MentionsLegalesPage() {
               35 rue de Kervao<br />
               29490 Guipavas<br />
               Telephone : 02 19 00 53 05<br />
-              Email : relationsclients@contact-brh.fr
+              Email : relationsclients@contact-brh.fr<br />
+              Directeur de la publication : Philippe Gagnon<br />
+              Forme juridique : SAS (Societe par actions simplifiee a associe unique)<br />
+              SIRET : 949 845 630<br />
+              RCS : Brest<br />
+              Capital social : 30 000 euros
             </p>
           </section>
 

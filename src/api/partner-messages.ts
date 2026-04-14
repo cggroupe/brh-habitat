@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import type { BrhMessageThreadRow, BrhMessageRow } from '@/types/partner'
 import { createThreadSchema, sendMessageSchema, brhMessageRowSchema, brhMessageThreadRowSchema } from './schemas'
+import { logError } from '@/lib/error'
 
 export interface ThreadWithLastMessage extends BrhMessageThreadRow {
   last_message?: string
@@ -100,7 +101,7 @@ export async function sendMessage(
     .update({ last_message_at: new Date().toISOString() })
     .eq('id', validated.threadId)
 
-  if (threadError) console.error('Failed to update thread last_message_at:', threadError)
+  if (threadError) logError(threadError)
 
   return brhMessageRowSchema.parse(data) as BrhMessageRow
 }

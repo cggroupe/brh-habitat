@@ -33,6 +33,7 @@ export interface BrhCompanyRow {
   level: CompanyLevel
   total_ca_apporte: number
   is_active: boolean
+  recruited_by: string | null
   created_at: string
   updated_at: string
 }
@@ -52,6 +53,7 @@ export interface BrhAffiliateRow {
   points_balance: number
   total_points_earned: number
   level: AffiliateLevel
+  recruited_by: string | null
   created_at: string
 }
 
@@ -145,6 +147,10 @@ export interface BrhRewardClaimRow {
   status: RewardClaimStatus
   shipping_address: string | null
   admin_notes: string | null
+  discount_code: string | null
+  discount_expires_at: string | null
+  discount_used: boolean
+  discount_used_at: string | null
   created_at: string
   updated_at: string
 }
@@ -227,12 +233,13 @@ export type RecruitmentCommissionStatus = 'en_attente' | 'validee' | 'versee'
 
 export interface BrhRecruitmentCommissionRow {
   id: string
-  recruiter_id: string
-  recruited_id: string
+  recruiter_id: string | null
+  recruited_id: string | null
   source_type: RecruitmentCommissionSourceType
   source_amount: number
   commission_rate_percent: number
   commission_amount: number
+  chain_level: number
   reference_id: string | null
   status: RecruitmentCommissionStatus
   paid_at: string | null
@@ -249,6 +256,7 @@ export interface BrhBadgeRow {
   name: string
   description: string
   icon: string
+  color: string | null
   condition_type: BadgeConditionType
   condition_value: number
   sort_order: number
@@ -260,6 +268,37 @@ export interface BrhUserBadgeRow {
   user_id: string
   badge_id: string
   unlocked_at: string
+}
+
+// === Chiffrages ===
+export interface BrhChiffrageRow {
+  id: string
+  user_id: string | null
+  company_id: string | null
+  reference: string
+  client_name: string
+  client_address: string | null
+  client_phone: string | null
+  projet_titre: string
+  projet_description: string | null
+  lignes: unknown[]
+  total_ht: number
+  tva_rate: number
+  total_tva: number
+  total_ttc: number
+  notes: string | null
+  created_at: string
+}
+
+// === Simulation Leads ===
+export interface BrhSimulationLeadRow {
+  id: string
+  simulation_share_id: string | null
+  visitor_name: string | null
+  visitor_email: string | null
+  visitor_phone: string | null
+  converted_to_prospect: boolean
+  created_at: string
 }
 
 // === Platform Settings ===

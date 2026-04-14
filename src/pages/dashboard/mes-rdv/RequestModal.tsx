@@ -38,7 +38,7 @@ export function RequestModal({ userId, onClose }: RequestModalProps) {
     const payload: AppointmentInsert = {
       user_id: userId,
       type,
-      requested_date: new Date(requestedDate).toISOString(),
+      requested_date: (() => { const [y, m, d] = requestedDate.split('-').map(Number); return new Date(y, m - 1, d, 12, 0, 0).toISOString() })(),
       status: 'demande',
       notes: notes.trim() || null,
       confirmed_date: null,

@@ -72,6 +72,11 @@ export function ContactForm() {
       return
     }
 
+    if (!form.sujet) {
+      setSubmitError('Veuillez selectionner un sujet.')
+      return
+    }
+
     try {
       await createContact.mutateAsync({
         nom: form.nom.trim(),

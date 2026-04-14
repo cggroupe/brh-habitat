@@ -62,6 +62,10 @@ export async function fetchUserCounts(userIds: string[]): Promise<UserCounts> {
     supabase.from('brh_diagnostics').select('user_id').in('user_id', userIds),
   ])
 
+  if (homesResult.error) throw homesResult.error
+  if (casesResult.error) throw casesResult.error
+  if (diagnosticsResult.error) throw diagnosticsResult.error
+
   const homes: Record<string, number> = {}
   const cases: Record<string, number> = {}
   const diagnostics: Record<string, number> = {}

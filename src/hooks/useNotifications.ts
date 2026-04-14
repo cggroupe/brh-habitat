@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
+import { logError } from '@/lib/error'
 import {
   fetchMyNotifications,
   fetchUnreadCount,
@@ -28,6 +29,7 @@ export function useNotifications(userId: string | undefined) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
     },
+    onError: (err: Error) => logError(err),
   })
 
   const markAllRead = useMutation({
@@ -35,6 +37,7 @@ export function useNotifications(userId: string | undefined) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
     },
+    onError: (err: Error) => logError(err),
   })
 
   // Supabase Realtime — ecouter les nouvelles notifications

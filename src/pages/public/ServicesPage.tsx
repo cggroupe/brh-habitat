@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { SEOHead } from '@/components/shared/SEOHead'
 import {
   Home,
   Thermometer,
@@ -174,6 +175,7 @@ const trustBadges = [
 export default function ServicesPage() {
   return (
     <div className="min-h-screen">
+      <SEOHead title="Nos Services de Renovation | BRH Habitat" description="Decouvrez nos services de renovation : toiture, isolation thermique, electricite, menuiserie, plomberie, traitement de l'eau en Bretagne." />
 
       {/* ── 1. HERO ──────────────────────────────────────────────────────────── */}
       <section className="relative bg-primary-dark overflow-hidden">
