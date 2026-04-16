@@ -56,7 +56,7 @@ const ALERT_RULES: AlertRule[] = [
     title: 'Absence de ventilation mecanique',
     message: 'Sans VMC, la condensation est inevitable en Bretagne (ecart temperature interieur/exterieur + humidite ambiante). Une VMC simple ou double flux est fortement recommandee.',
     relatedDomain: 'ventilation',
-    condition: (home, records) => {
+    condition: (_home, records) => {
       const rec = records.find((r) => r.domain === 'ventilation')
       // Verifier si un enregistrement de ventilation existe avec un score eleve
       // Note: pas de champ ventilation_type dans brh_homes, on se base sur les health records
