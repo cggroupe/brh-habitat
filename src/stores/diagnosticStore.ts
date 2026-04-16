@@ -5,6 +5,9 @@ import type { RevenueProfile } from '@/data/aides-renov'
 // Tenant ID pour scoper le localStorage (evite fuite inter-tenant/inter-user)
 const tenantId = import.meta.env.VITE_TENANT || 'brh'
 
+/** Nombre total d'etapes dans le wizard diagnostic */
+export const TOTAL_STEPS = 5
+
 export type DiagnosticType =
   | 'humidite'
   | 'isolation'
@@ -115,7 +118,7 @@ export const useDiagnosticStore = create<DiagnosticState>()(
       setStep: (step) => set({ step }),
 
       nextStep: () =>
-        set((state) => ({ step: Math.min(state.step + 1, 5) })),
+        set((state) => ({ step: Math.min(state.step + 1, TOTAL_STEPS) })),
 
       prevStep: () =>
         set((state) => ({ step: Math.max(state.step - 1, 1) })),

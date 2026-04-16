@@ -51,7 +51,10 @@ export default function AdminProspects() {
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   function handleStatusChange(id: string, status: ProspectStatus) {
-    updateProspect.mutate({ id, payload: { status } })
+    updateProspect.mutate(
+      { id, payload: { status } },
+      { onError: () => alert('Erreur lors de la mise a jour du statut') },
+    )
   }
 
   function handleFilterChange(status: ProspectStatus | undefined) {

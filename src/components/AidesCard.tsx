@@ -8,7 +8,7 @@ interface AidesCardProps {
   resteAChargeMin: number
   resteAChargeMax: number
   revenueProfile: string | null
-  ecoPtr: boolean
+  ecoPtz: boolean
   tvaReduite: boolean
 }
 
@@ -24,7 +24,7 @@ export function AidesCard({
   resteAChargeMin,
   resteAChargeMax,
   revenueProfile,
-  ecoPtr,
+  ecoPtz,
   tvaReduite,
 }: AidesCardProps) {
   const totalAides = mprAmount + ceeAmount
@@ -85,9 +85,9 @@ export function AidesCard({
         </p>
 
         {/* Badges */}
-        {(ecoPtr || tvaReduite) && (
+        {(ecoPtz || tvaReduite) && (
           <div className="flex flex-wrap gap-2 mt-3">
-            {ecoPtr && (
+            {ecoPtz && (
               <span className="inline-flex items-center gap-1 text-xs font-bold bg-blue-50 text-blue-600 border border-blue-100 rounded-full px-2.5 py-1">
                 Eligible eco-PTZ
               </span>

@@ -28,7 +28,7 @@ export function DiagnosticAidesSection({ results, aides, revenueProfile }: Diagn
           resteAChargeMin={aides.resteAChargeMin}
           resteAChargeMax={aides.resteAChargeMax}
           revenueProfile={revenueProfile ?? null}
-          ecoPtr={aides.ecoPtr}
+          ecoPtz={aides.ecoPtz}
           tvaReduite={aides.tvaReduite}
         />
 

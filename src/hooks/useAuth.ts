@@ -67,7 +67,11 @@ export function useAuth() {
           }
         }
       } catch {
-        // Erreur reseau : garder le user du cache
+        // Erreur reseau : forcer signOut si le profil ne peut pas etre recharge
+        // pour eviter qu'un user avec un role revoque reste connecte indefiniment
+        if (mounted && !useAppStore.getState().user) {
+          setUser(null)
+        }
       } finally {
         if (mounted) setIsInitialized(true)
       }

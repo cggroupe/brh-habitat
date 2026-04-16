@@ -104,7 +104,6 @@ export function useUpsertDraftDiagnostic() {
     }) => upsertDraftDiagnostic(draftId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['diagnostics'] })
-      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats'] })
     },
     onError: (err) => logError('useUpsertDraftDiagnostic', err),
   })

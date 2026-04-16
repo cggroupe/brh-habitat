@@ -31,7 +31,7 @@ interface NavItemDef {
 const partNavPrincipal: NavItemDef[] = [
   { to: '/particulier', label: 'Tableau de bord', icon: LayoutDashboard },
   { to: '/particulier/parrainages', label: 'Parrainages', icon: Users },
-  { to: '/particulier/catalogue', label: 'Catalogue', icon: Gift },
+  { to: '/particulier/catalogue', label: 'Catalogue', icon: Gift, feature: 'catalogueCadeaux' },
   { to: '/particulier/points', label: 'Points', icon: History },
   { to: '/particulier/messages', label: 'Messages', icon: MessageSquare },
 ]

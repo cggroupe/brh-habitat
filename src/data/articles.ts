@@ -144,5 +144,6 @@ export const categories = [
   { id: 'electricite', label: 'Electricite' },
   { id: 'renovation', label: 'Renovation' },
   { id: 'menuiseries', label: 'Menuiseries' },
+  { id: 'plomberie', label: 'Plomberie' },
   { id: 'aides', label: 'Aides' },
 ]

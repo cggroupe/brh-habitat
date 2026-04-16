@@ -1,20 +1,15 @@
-import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
+import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 
 import { tenant } from '../config/tenant'
+import { registerPdfFonts } from './pdf-fonts'
+
+registerPdfFonts()
 
 // Couleurs depuis le tenant
 const BRH_GREEN = tenant.branding.colors.primary
 const BRH_GREEN_LIGHT = tenant.branding.colors.secondary
 const BRH_GRAY = '#3d3d3d'
 const BRH_GRAY_LIGHT = '#e8e8e8'
-
-Font.register({
-  family: 'Montserrat',
-  fonts: [
-    { src: 'https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Ew-.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCuM70w-.ttf', fontWeight: 700 },
-  ],
-})
 
 const s = StyleSheet.create({
   page: { fontFamily: 'Montserrat', fontSize: 10, color: BRH_GRAY, padding: 40 },
@@ -202,7 +197,7 @@ export function ChiffragePDF({ data }: { data: ChiffrageData }) {
         {/* Footer */}
         <View style={s.footer} fixed>
           <Text style={s.footerText}>
-            Bretagne Renovation Habitat — 35 rue de Kervao, 29490 Guipavas — 02 19 00 53 05
+            {tenant.branding.companyName} — {tenant.branding.address}, {tenant.branding.postalCode} {tenant.branding.city} — {tenant.branding.phone}
           </Text>
           <Text style={s.footerBrh}>renovation-brh.fr</Text>
         </View>

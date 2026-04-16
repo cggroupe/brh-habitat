@@ -44,6 +44,7 @@ export async function markAllNotificationsRead(userId: string): Promise<void> {
   if (error) throw error
 }
 
+/** Utilisee par les Edge Functions / admin — pas encore appelee cote client */
 export async function createNotification(params: {
   recipientId: string
   type: string

@@ -11,7 +11,7 @@ export interface AideResult {
   ceeTotal: number
   mprDetails: AideDetail[]
   ceeDetails: AideDetail[]
-  ecoPtr: boolean
+  ecoPtz: boolean
   tvaReduite: boolean
   resteAChargeMin: number
   resteAChargeMax: number
@@ -106,7 +106,7 @@ export function calculateAides(
   }
 
   // Eco-PTZ : eligible si au moins 1 geste finance par MPR
-  const ecoPtr = mprDetails.length > 0
+  const ecoPtz = mprDetails.length > 0
 
   // TVA 5.5% toujours applicable sur travaux renovation energetique
   const tvaReduite = true
@@ -121,7 +121,7 @@ export function calculateAides(
     ceeTotal,
     mprDetails,
     ceeDetails,
-    ecoPtr,
+    ecoPtz,
     tvaReduite,
     resteAChargeMin,
     resteAChargeMax,

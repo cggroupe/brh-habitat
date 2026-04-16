@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Send, Bot, User, Loader2, AlertCircle, Sparkles } from 'lucide-react'
 import { sendToAI, type AIMode } from '@/lib/ai'
 
-export type ChatMode = 'visiteur' | 'pro'
+export type ChatMode = 'visiteur' | 'pro' | 'particulier'
 
 interface Message {
   id: string
@@ -20,11 +20,13 @@ interface ChatAIProps {
 const MODE_MAP: Record<ChatMode, AIMode> = {
   visiteur: 'visiteur',
   pro: 'pro',
+  particulier: 'visiteur',
 }
 
 const WELCOME_MESSAGES: Record<ChatMode, string> = {
   visiteur: 'Bonjour ! Je suis l\'assistant BRH Habitat. Posez-moi vos questions sur la renovation : prix, conseils, alertes securite... Je peux aussi vous estimer le cout de vos travaux.',
   pro: 'Bonjour ! Je suis votre assistant IA batiment. DTU, normes, estimations de prix, reglementations — posez vos questions techniques.',
+  particulier: 'Bonjour ! Je suis l\'assistant BRH Habitat. Posez-moi vos questions sur la renovation, les aides financieres, les prix ou le parrainage.',
 }
 
 export default function ChatAI({ mode, userName }: ChatAIProps) {

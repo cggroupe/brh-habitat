@@ -8,6 +8,7 @@ import {
   LogOut,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { tenant } from '@/config/tenant'
 
 interface NavItem {
   to: string
@@ -33,8 +34,8 @@ export default function DashboardNav() {
         {/* Logo */}
         <div className="p-5 border-b border-gray-light">
           <NavLink to="/" className="flex items-center gap-2">
-            <span className="font-accent text-2xl tracking-wider text-primary-dark">BRH</span>
-            <span className="font-display text-xs text-primary uppercase tracking-widest">Habitat</span>
+            <span className="font-accent text-2xl tracking-wider text-primary-dark">{tenant.branding.companyShortName}</span>
+            <span className="font-display text-xs text-primary uppercase tracking-widest">{tenant.branding.companyName.replace(tenant.branding.companyShortName, '').trim()}</span>
           </NavLink>
         </div>
 
@@ -87,7 +88,7 @@ export default function DashboardNav() {
       </aside>
 
       {/* Mobile bottom nav */}
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-surface border-t border-gray-light z-20 flex items-stretch">
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 bg-surface border-t border-gray-light z-50 flex items-stretch">
         {navItems.slice(0, 4).map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}

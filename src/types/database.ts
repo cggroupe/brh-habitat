@@ -25,9 +25,11 @@ export interface BrhDiagnosticRow {
   contact_name: string | null
   contact_phone: string | null
   contact_email: string | null
+  /** Cast to DiagnosticResult from lib/diagnostic-engine at usage site */
   results: Record<string, unknown> | null
   status: DiagnosticStatus
   current_step: number
+  /** Cast to DiagnosticEquipment from stores/diagnosticStore at usage site */
   equipment: Record<string, unknown> | null
   admin_notes: string | null
   referral_code: string | null

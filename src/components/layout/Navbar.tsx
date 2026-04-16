@@ -38,27 +38,28 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-20">
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 shrink-0">
+          <Link to="/" className="flex items-center gap-2.5 shrink-0 mr-6">
             <div className="text-primary">
-              <Home size={28} strokeWidth={1.5} />
+              <Home size={26} strokeWidth={1.5} />
             </div>
-            <h1 className="font-display font-bold text-xl leading-tight tracking-tight text-slate-900">
-              {branding.companyName}
-            </h1>
+            <div className="leading-none">
+              <span className="font-display font-bold text-base tracking-tight text-primary-dark">{branding.companyShortName}</span>
+              <span className="hidden lg:inline font-display font-bold text-base tracking-tight text-slate-900"> Habitat</span>
+            </div>
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex gap-8">
+          <nav className="hidden md:flex items-center gap-1 lg:gap-5">
             {navLinks.map(({ to, label, end }) => (
               <NavLink
                 key={to}
                 to={to}
                 end={end}
                 className={({ isActive }) =>
-                  `text-sm font-semibold transition-colors ${
+                  `text-[13px] font-semibold transition-colors whitespace-nowrap px-2 py-1 rounded-lg ${
                     isActive
-                      ? 'text-primary'
-                      : 'text-slate-700 hover:text-primary'
+                      ? 'text-primary bg-primary/5'
+                      : 'text-slate-600 hover:text-primary hover:bg-primary/5'
                   }`
                 }
               >
@@ -150,7 +151,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   to="/diagnostic"
-                  className="flex items-center justify-center h-10 px-6 rounded-full bg-primary hover:bg-primary-dark text-white text-sm font-bold transition-colors shadow-lg shadow-primary/20"
+                  className="flex items-center justify-center h-10 px-5 rounded-full bg-primary hover:bg-primary-dark text-white text-[13px] font-bold transition-colors shadow-lg shadow-primary/20 whitespace-nowrap"
                 >
                   Diagnostic gratuit
                 </Link>

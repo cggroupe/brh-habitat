@@ -13,19 +13,31 @@ export type AIMode = 'visiteur' | 'pro' | 'chiffrage'
 export async function sendToAI(messages: { role: string; content: string }[], mode: AIMode = 'visiteur'): Promise<string> {
   // Filtrer les system prompts — le serveur gere le system prompt selon l'endpoint
   const filteredMessages = messages.filter((m) => m.role !== 'system')
+  if (filteredMessages.length === 0) {
+    throw new Error('Aucun message a envoyer')
+  }
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 30_000)
 
-  const response = await fetch(AI_PROXY_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-    },
-    body: JSON.stringify({ mode, messages: filteredMessages }),
-    signal: controller.signal,
-  })
+  let response: Response
+  try {
+    response = await fetch(AI_PROXY_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ mode, messages: filteredMessages }),
+      signal: controller.signal,
+    })
+  } catch (err) {
+    clearTimeout(timeout)
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error('Delai depasse (30s). Veuillez reessayer.')
+    }
+    throw new Error('Erreur reseau. Verifiez votre connexion.')
+  }
 
   clearTimeout(timeout)
 

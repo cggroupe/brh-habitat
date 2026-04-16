@@ -30,8 +30,10 @@ function loadUser(): User | null {
     if (!raw) return null
     const parsed = JSON.parse(raw)
     // Le role n'est pas persiste en localStorage — il sera charge depuis Supabase via validateSession
-    // On retourne un user partiel pour l'affichage initial (nom, avatar) sans role
-    return { ...parsed, role: parsed.role ?? 'particulier' } as User
+    // On retourne un user partiel pour l'affichage initial (nom, avatar)
+    // 'user' est le role le plus restrictif (pas d'acces admin/pro/particulier)
+    // ce qui evite un flash d'UI vers un portail incorrect avant que validateSession charge le vrai role
+    return { ...parsed, role: parsed.role ?? 'user' } as User
   } catch {
     return null
   }

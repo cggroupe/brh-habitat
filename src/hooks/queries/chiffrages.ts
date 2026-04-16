@@ -1,6 +1,15 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { logError } from '@/lib/error'
-import { saveChiffrage } from '@/api/chiffrages'
+import { fetchMyChiffrages, saveChiffrage } from '@/api/chiffrages'
+
+export function useMyChiffrages(userId: string | undefined) {
+  return useQuery({
+    queryKey: ['chiffrages', userId],
+    queryFn: () => fetchMyChiffrages(userId!),
+    enabled: !!userId,
+    staleTime: 2 * 60_000,
+  })
+}
 
 export function useSaveChiffrage() {
   const qc = useQueryClient()

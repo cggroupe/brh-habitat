@@ -58,8 +58,9 @@ const ALERT_RULES: AlertRule[] = [
     relatedDomain: 'ventilation',
     condition: (home, records) => {
       const rec = records.find((r) => r.domain === 'ventilation')
-      const noVmc = !home.heating_type?.toLowerCase().includes('vmc')
-      return noVmc && !!rec && (rec.score ?? 0) >= 40
+      // Verifier si un enregistrement de ventilation existe avec un score eleve
+      // Note: pas de champ ventilation_type dans brh_homes, on se base sur les health records
+      return !!rec && (rec.score ?? 0) >= 40
     },
   },
   {

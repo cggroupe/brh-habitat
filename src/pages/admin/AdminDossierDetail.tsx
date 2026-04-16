@@ -51,6 +51,8 @@ export default function AdminDossierDetail() {
     setAssignedTo(caseData.assigned_to ?? '')
     setAdminNotes(caseData.admin_notes ?? '')
     setEstimatedBudget(caseData.estimated_budget != null ? String(caseData.estimated_budget) : '')
+    // start_date/end_date sont des colonnes `date` en DB (format YYYY-MM-DD sans heure)
+    // slice(0,10) est defensif au cas ou Supabase ajoute un suffixe horaire
     setStartDate(caseData.start_date ? caseData.start_date.slice(0, 10) : '')
     setEndDate(caseData.end_date ? caseData.end_date.slice(0, 10) : '')
   }, [caseData])

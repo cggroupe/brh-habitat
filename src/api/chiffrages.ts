@@ -1,8 +1,19 @@
 import { supabase } from '@/lib/supabase'
 import type { ChiffrageData } from '@/lib/chiffrage-pdf'
 import { chiffrageInsertSchema } from './schemas'
+import type { BrhChiffrageRow } from '@/types/partner'
 
 export type { ChiffrageInsert, ChiffrageLine } from './schemas'
+
+export async function fetchMyChiffrages(userId: string): Promise<BrhChiffrageRow[]> {
+  const { data, error } = await supabase
+    .from('brh_chiffrages')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return (data ?? []) as BrhChiffrageRow[]
+}
 
 export async function saveChiffrage(chiffrage: ChiffrageData, userId: string, companyId?: string | null): Promise<void> {
   const validated = chiffrageInsertSchema.parse({

@@ -206,11 +206,14 @@ export default function App() {
                 <Route path="/particulier/chiffrage" element={<FeatureRoute feature="aiChiffrage"><PartChiffrage /></FeatureRoute>} />
                 <Route path="/particulier/chiffrages" element={<FeatureRoute feature="aiChiffrage"><PartChiffrages /></FeatureRoute>} />
                 <Route path="/particulier/badges" element={<FeatureRoute feature="badgesGamification"><PartBadges /></FeatureRoute>} />
+                <Route path="/particulier/profil" element={<ProfilPage />} />
               </Route>
             </Route>
 
-            {/* Catch-all 404 */}
-            <Route path="*" element={<NotFoundPage />} />
+            {/* Catch-all 404 — wrapped in PublicShell for consistent Navbar/Footer */}
+            <Route element={<PublicShell />}>
+              <Route path="*" element={<NotFoundPage />} />
+            </Route>
           </Routes>
         </Suspense>
       </BrowserRouter>

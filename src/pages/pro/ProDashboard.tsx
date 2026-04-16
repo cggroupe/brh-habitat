@@ -106,7 +106,7 @@ export default function ProDashboard() {
   )
 
   const { data: rawQuotes, isLoading: loadingQuotes } = useQuery({
-    queryKey: ['company-monthly-ca', company?.id, allProspectIds.length],
+    queryKey: ['company-monthly-ca', company?.id, allProspectIds],
     queryFn: () => fetchMonthlyCA(allProspectIds),
     enabled: allProspectIds.length > 0,
   })
@@ -321,7 +321,7 @@ export default function ProDashboard() {
                   className="flex items-center justify-between px-6 py-3.5 hover:bg-background/60 transition-colors group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-primary/08 rounded-xl flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
                       <span className="text-[10px] font-bold text-primary">
                         {p.client_first_name.charAt(0)}{p.client_last_name.charAt(0)}
                       </span>

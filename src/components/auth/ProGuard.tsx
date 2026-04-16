@@ -4,6 +4,9 @@ import { useAuth } from '@/hooks/useAuth'
 export default function ProGuard() {
   const { isAuthenticated, user, loading } = useAuth()
 
+  // Fast path: user already in cache — skip spinner
+  if (isAuthenticated && (user?.role === 'pro' || user?.role === 'admin')) return <Outlet />
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
