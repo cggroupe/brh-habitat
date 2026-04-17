@@ -5,9 +5,9 @@ import { checkRateLimit } from '../_shared/rate-limit.ts'
 const AI_BASE = Deno.env.get('AI_VPS_URL') ?? ''
 
 const ENDPOINTS: Record<string, string> = {
-  visiteur: `${AI_BASE}/visiteur`,
-  pro: `${AI_BASE}/pro`,
-  chiffrage: `${AI_BASE}/chiffrage`,
+  visiteur: `${AI_BASE}/api/chat/visiteur`,
+  pro: `${AI_BASE}/api/chat/pro`,
+  chiffrage: `${AI_BASE}/api/chat/chiffrage`,
 }
 
 const BRHCRM_URL = Deno.env.get('BRHCRM_URL') ?? ''
