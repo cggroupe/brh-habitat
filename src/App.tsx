@@ -90,6 +90,7 @@ const PartAssistant = lazy(() => import('@/pages/particulier/PartAssistant'))
 const PartChiffrage = lazy(() => import('@/pages/particulier/PartChiffrage'))
 const PartChiffrages = lazy(() => import('@/pages/particulier/PartChiffrages'))
 const PartBadges = lazy(() => import('@/pages/particulier/PartBadges'))
+const PartStatutFiscal = lazy(() => import('@/pages/particulier/PartStatutFiscal'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -199,6 +200,7 @@ export default function App() {
                 <Route path="/particulier/catalogue" element={<FeatureRoute feature="catalogueCadeaux"><PartCatalogue /></FeatureRoute>} />
                 <Route path="/particulier/points" element={<PartPoints />} />
                 <Route path="/particulier/messages" element={<PartMessages />} />
+                <Route path="/particulier/statut" element={<PartStatutFiscal />} />
                 <Route path="/particulier/reseaux-sociaux" element={<FeatureRoute feature="socialMediaPosts"><PartSocial /></FeatureRoute>} />
                 <Route path="/particulier/simulateur" element={<FeatureRoute feature="simulationLinks"><PartSimulation /></FeatureRoute>} />
                 <Route path="/particulier/vendeurs" element={<FeatureRoute feature="recruitmentPyramid"><PartVendeurs /></FeatureRoute>} />

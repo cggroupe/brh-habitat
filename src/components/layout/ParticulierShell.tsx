@@ -14,6 +14,7 @@ import {
   FileText,
   Award,
   HelpCircle,
+  Scale,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -34,6 +35,7 @@ const partNavPrincipal: NavItemDef[] = [
   { to: '/particulier/catalogue', label: 'Catalogue', icon: Gift, feature: 'catalogueCadeaux' },
   { to: '/particulier/points', label: 'Points', icon: History },
   { to: '/particulier/messages', label: 'Messages', icon: MessageSquare },
+  { to: '/particulier/statut', label: 'Paiements & Statut', icon: Scale },
 ]
 
 const partNavOutils: NavItemDef[] = [
