@@ -41,6 +41,7 @@ export function useNotifications(userId: string | undefined) {
   })
 
   // Supabase Realtime — ecouter les nouvelles notifications
+  // Wrappe dans try/catch : une erreur realtime ne doit JAMAIS crasher l'espace affilie
   useEffect(() => {
     if (!userId) return
 
@@ -49,32 +50,39 @@ export function useNotifications(userId: string | undefined) {
       queryClient.invalidateQueries({ queryKey: ['notifications', 'unread', userId] })
     }
 
-    const channel = supabase
-      .channel(`notifications:${userId}:${crypto.randomUUID()}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'brh_notifications',
-          filter: `recipient_id=eq.${userId}`,
-        },
-        handler,
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'brh_notifications',
-          filter: `recipient_id=eq.${userId}`,
-        },
-        handler,
-      )
-      .subscribe()
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    try {
+      channel = supabase
+        .channel(`notifications:${userId}:${crypto.randomUUID()}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'brh_notifications',
+            filter: `recipient_id=eq.${userId}`,
+          },
+          handler,
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'brh_notifications',
+            filter: `recipient_id=eq.${userId}`,
+          },
+          handler,
+        )
+        .subscribe()
+    } catch (err) {
+      logError('useNotifications realtime setup failed', err instanceof Error ? err : new Error(String(err)))
+    }
 
     return () => {
-      supabase.removeChannel(channel)
+      if (channel) {
+        try { supabase.removeChannel(channel) } catch { /* ignore */ }
+      }
     }
   }, [userId, queryClient])
 
