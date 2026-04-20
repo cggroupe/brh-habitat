@@ -86,8 +86,15 @@ export default function RegisterProPage() {
           siret: form.siret || null,
           profession: form.profession ? (form.profession as CompanyProfession) : null,
         })
-      } catch {
-        setError('Erreur lors de la creation de l\'entreprise. Veuillez reessayer.')
+      } catch (err) {
+        logError('RegisterPro:createCompany', err)
+        const raw = err instanceof Error ? err.message : String(err)
+        const msg = raw.toLowerCase().includes('duplicate')
+          ? 'Une entreprise avec ce SIRET existe deja.'
+          : raw.toLowerCase().includes('row-level security') || raw.toLowerCase().includes('permission')
+            ? 'Votre compte n\'est pas encore autorise a creer une entreprise. Confirmez d\'abord votre email.'
+            : `Erreur lors de la creation de l'entreprise : ${raw}`
+        setError(msg)
         setLoading(false)
         return
       }
