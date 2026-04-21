@@ -23,7 +23,6 @@ interface SiretData {
   date_creation: string | null
   dirigeants: Array<{ nom: string; qualite: string | null }>
   already_registered?: boolean
-  existing_owner_hint?: string | null
 }
 
 // Cle de sessionStorage utilisee par ProFinalisation pour retrouver les infos SIRET
@@ -136,17 +135,15 @@ export default function RegisterProPage() {
 
               {siretData && siretData.already_registered && (
                 <div className="mt-6 p-5 bg-amber-50 border border-amber-200 rounded-xl">
-                  <div className="flex items-start gap-3 mb-3">
+                  <div className="flex items-start gap-3">
                     <AlertCircle size={22} className="text-amber-600 shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-display font-bold text-base text-slate-900">{siretData.nom}</p>
-                      <p className="text-sm text-amber-700 mt-1">
-                        Cette entreprise est <strong>deja enregistree chez BRH</strong>
-                        {siretData.existing_owner_hint ? ` par ${siretData.existing_owner_hint}` : ''}.
+                      <p className="text-sm text-amber-800">
+                        Cette entreprise est <strong>deja enregistree</strong>.
                       </p>
                       <p className="text-xs text-amber-700/80 mt-2">
-                        Si vous etes le proprietaire : <Link to="/connexion" className="underline font-semibold">connectez-vous</Link>.
-                        Sinon, contactez relationsclients@contact-brh.fr pour rejoindre l'equipe.
+                        <Link to="/connexion" className="underline font-semibold">Connectez-vous</Link> ou contactez
+                        relationsclients@contact-brh.fr.
                       </p>
                     </div>
                   </div>

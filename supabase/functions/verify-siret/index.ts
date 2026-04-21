@@ -154,25 +154,16 @@ Deno.serve(async (req) => {
       }), { status: 410, headers: { ...cors, 'Content-Type': 'application/json' } })
     }
 
-    // Check si deja enregistree dans BRH (pour UX : eviter un signup qui va echouer sur le duplicate)
+    // Check si deja enregistree dans BRH. Privacy : aucun detail exfiltre.
     let alreadyRegistered = false
-    let existingOwnerEmail: string | null = null
     if (SERVICE_KEY && SUPABASE_URL) {
       const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { autoRefreshToken: false, persistSession: false } })
       const { data: existing } = await admin
         .from('brh_companies')
-        .select('id, name, owner_id')
+        .select('id')
         .eq('siret', siege.siret ?? siret)
         .maybeSingle()
-      if (existing) {
-        alreadyRegistered = true
-        // On ne revele pas l'email complet pour privacy, juste un hint
-        const { data: ownerProfile } = await admin.from('profiles').select('email').eq('id', existing.owner_id).maybeSingle()
-        if (ownerProfile?.email) {
-          const [local, domain] = ownerProfile.email.split('@')
-          existingOwnerEmail = local.slice(0, 2) + '***@' + domain
-        }
-      }
+      alreadyRegistered = !!existing
     }
 
     const naf = siege.activite_principale ?? null
@@ -198,7 +189,6 @@ Deno.serve(async (req) => {
       etat: 'actif',
       dirigeants,
       already_registered: alreadyRegistered,
-      existing_owner_hint: existingOwnerEmail,
     }), { status: 200, headers: { ...cors, 'Content-Type': 'application/json' } })
   } catch (err) {
     const msg = err instanceof Error && err.name === 'TimeoutError' ? 'API SIRENE : timeout' : 'Erreur lors de la verification'
