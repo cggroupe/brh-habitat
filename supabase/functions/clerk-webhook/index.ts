@@ -16,8 +16,31 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.96.0'
-import { Webhook } from 'https://esm.sh/svix@1.38.0'
 import { getCorsHeaders } from '../_shared/cors.ts'
+
+// Verification manuelle des signatures Svix (evite de charger le SDK npm)
+// Format Svix : signature = base64(hmac_sha256(secret, `${svix-id}.${svix-timestamp}.${body}`))
+async function verifySvixSignature(
+  secret: string,
+  svixId: string,
+  svixTimestamp: string,
+  svixSignature: string,
+  body: string,
+): Promise<boolean> {
+  // Le secret est au format "whsec_xxx" — on decode la partie base64
+  const secretB64 = secret.replace(/^whsec_/, '')
+  const keyBytes = Uint8Array.from(atob(secretB64), (c) => c.charCodeAt(0))
+  const key = await crypto.subtle.importKey(
+    'raw', keyBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
+  )
+  const payload = `${svixId}.${svixTimestamp}.${body}`
+  const sigBytes = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload))
+  const computed = btoa(String.fromCharCode(...new Uint8Array(sigBytes)))
+
+  // Svix envoie plusieurs signatures possibles, format "v1,<b64>" separe par espace
+  const receivedSigs = svixSignature.split(' ').map((s) => s.split(',')[1]).filter(Boolean)
+  return receivedSigs.includes(computed)
+}
 
 const WEBHOOK_SECRET = Deno.env.get('CLERK_WEBHOOK_SECRET') ?? ''
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
@@ -137,13 +160,26 @@ Deno.serve(async (req) => {
   }
 
   const body = await req.text()
+
+  // Verifier la fenetre timestamp (max 5 min) pour empecher le replay
+  const ts = parseInt(svixTimestamp, 10)
+  if (!ts || Math.abs(Date.now() / 1000 - ts) > 300) {
+    return new Response(JSON.stringify({ error: 'Timestamp hors fenetre' }),
+      { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } })
+  }
+
+  const sigOk = await verifySvixSignature(WEBHOOK_SECRET, svixId, svixTimestamp, svixSignature, body).catch(() => false)
+  if (!sigOk) {
+    return new Response(JSON.stringify({ error: 'Signature invalide' }),
+      { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } })
+  }
+
   let evt: ClerkEvent
   try {
-    const wh = new Webhook(WEBHOOK_SECRET)
-    evt = wh.verify(body, { 'svix-id': svixId, 'svix-timestamp': svixTimestamp, 'svix-signature': svixSignature }) as ClerkEvent
-  } catch (err) {
-    return new Response(JSON.stringify({ error: 'Signature invalide', details: String(err).slice(0, 100) }),
-      { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } })
+    evt = JSON.parse(body) as ClerkEvent
+  } catch {
+    return new Response(JSON.stringify({ error: 'JSON invalide' }),
+      { status: 400, headers: { ...cors, 'Content-Type': 'application/json' } })
   }
 
   const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { autoRefreshToken: false, persistSession: false } })

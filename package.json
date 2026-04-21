@@ -16,7 +16,8 @@
     "generate-pptx": "tsx scripts/generate-pptx.ts",
     "seed": "tsx scripts/seed-realistic.ts",
     "stress": "tsx scripts/stress-concurrent.ts",
-    "stress-actions": "tsx scripts/stress-actions.ts"
+    "stress-actions": "tsx scripts/stress-actions.ts",
+    "configure-clerk": "tsx scripts/configure-clerk.ts"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.61.5",
