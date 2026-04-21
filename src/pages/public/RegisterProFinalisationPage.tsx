@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import { createCompany, updateCompanyRecruiter } from '@/api/companies'
 import { addCompanyMember } from '@/api/company-members'
-import { useClerkSupabaseBridge } from '@/hooks/useClerkSupabaseBridge'
+// Bridge monte globalement dans App.tsx
 import { useAppStore } from '@/stores/appStore'
 import { logError } from '@/lib/error'
 import { Building2, CheckCircle2, AlertCircle } from 'lucide-react'
@@ -39,11 +39,22 @@ interface PendingSiret {
 export default function RegisterProFinalisationPage() {
   const navigate = useNavigate()
   const { isLoaded, isSignedIn } = useUser()
-  useClerkSupabaseBridge()
   const user = useAppStore((s) => s.user)
 
   const [status, setStatus] = useState<'bridge' | 'creating' | 'done' | 'error'>('bridge')
   const [error, setError] = useState<string | null>(null)
+
+  // Timeout : si le bridge ne finit pas en 15s, on affiche une erreur plutot que de bloquer l'user
+  useEffect(() => {
+    if (user || status !== 'bridge') return
+    const timer = setTimeout(() => {
+      if (!useAppStore.getState().user) {
+        setError('La synchronisation de votre compte a echoue. Reessayez dans quelques instants ou contactez support.')
+        setStatus('error')
+      }
+    }, 15_000)
+    return () => clearTimeout(timer)
+  }, [user, status])
 
   useEffect(() => {
     if (!isLoaded) return

@@ -1,11 +1,9 @@
 import { Link } from 'react-router-dom'
 import { SignUp } from '@clerk/clerk-react'
 import { UserPlus } from 'lucide-react'
-import { useClerkSupabaseBridge } from '@/hooks/useClerkSupabaseBridge'
+// Bridge monte globalement dans App.tsx
 
 export default function RegisterPage() {
-  useClerkSupabaseBridge()
-
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
@@ -25,7 +23,7 @@ export default function RegisterPage() {
           <SignUp
             signInUrl="/connexion"
             unsafeMetadata={{ role: 'particulier' }}
-            fallbackRedirectUrl="/particulier"
+            fallbackRedirectUrl="/redirect"
             appearance={{
               elements: {
                 rootBox: 'w-full',

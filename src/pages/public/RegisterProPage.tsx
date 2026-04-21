@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { SignUp } from '@clerk/clerk-react'
 import { Building2, ArrowRight, Search, CheckCircle2, AlertCircle, MapPin } from 'lucide-react'
-import { useClerkSupabaseBridge } from '@/hooks/useClerkSupabaseBridge'
+// Bridge monte globalement dans App.tsx
 import { logError } from '@/lib/error'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
@@ -31,7 +31,6 @@ const SIRET_SS_KEY = 'brh_pending_siret_data'
 export default function RegisterProPage() {
   const [searchParams] = useSearchParams()
   const recruiter = searchParams.get('recruiter')
-  useClerkSupabaseBridge()
 
   const [step, setStep] = useState<'siret' | 'account'>('siret')
   const [siretInput, setSiretInput] = useState('')

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import PublicShell from '@/components/layout/PublicShell'
@@ -11,6 +11,7 @@ import AuthGuard from '@/components/auth/AuthGuard'
 import AdminGuard from '@/components/auth/AdminGuard'
 import ProGuard from '@/components/auth/ProGuard'
 import ParticulierGuard from '@/components/auth/ParticulierGuard'
+import ProSignupGuard from '@/components/auth/ProSignupGuard'
 import { FeatureRoute } from '@/components/shared/FeatureGate'
 
 // Eagerly loaded (above the fold)
@@ -26,7 +27,7 @@ const LoginPage = lazy(() => import('@/pages/public/LoginPage'))
 const RegisterPage = lazy(() => import('@/pages/public/RegisterPage'))
 const RegisterProPage = lazy(() => import('@/pages/public/RegisterProPage'))
 const RegisterProFinalisationPage = lazy(() => import('@/pages/public/RegisterProFinalisationPage'))
-const RegisterParticulierPage = lazy(() => import('@/pages/public/RegisterParticulierPage'))
+// RegisterParticulierPage supprimee - tout passe par /inscription (Clerk)
 const ServicesPage = lazy(() => import('@/pages/public/ServicesPage'))
 const MentionsLegalesPage = lazy(() => import('@/pages/public/MentionsLegalesPage'))
 const PolitiqueConfidentialitePage = lazy(() => import('@/pages/public/PolitiqueConfidentialitePage'))
@@ -92,6 +93,8 @@ const PartChiffrage = lazy(() => import('@/pages/particulier/PartChiffrage'))
 const PartChiffrages = lazy(() => import('@/pages/particulier/PartChiffrages'))
 const PartBadges = lazy(() => import('@/pages/particulier/PartBadges'))
 const PartStatutFiscal = lazy(() => import('@/pages/particulier/PartStatutFiscal'))
+const PostLoginRedirect = lazy(() => import('@/pages/public/PostLoginRedirect'))
+const JoinCompanyPage = lazy(() => import('@/pages/public/JoinCompanyPage'))
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -136,10 +139,17 @@ export default function App() {
               <Route path="/articles/:slug" element={<ArticlePage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/connexion" element={<LoginPage />} />
+              <Route path="/redirect" element={<PostLoginRedirect />} />
               <Route path="/inscription" element={<RegisterPage />} />
               <Route path="/inscription/pro" element={<RegisterProPage />} />
-              <Route path="/inscription/pro/finalisation" element={<RegisterProFinalisationPage />} />
-              <Route path="/inscription/particulier" element={<RegisterParticulierPage />} />
+              <Route path="/inscription/pro/rejoindre" element={<JoinCompanyPage />} />
+              {/* /inscription/pro/finalisation doit etre derriere un guard :
+                  user Clerk logge ET sessionStorage contenant SIRET data */}
+              <Route element={<ProSignupGuard />}>
+                <Route path="/inscription/pro/finalisation" element={<RegisterProFinalisationPage />} />
+              </Route>
+              {/* Legacy redirect : /inscription/particulier -> /inscription (conserve les liens partages) */}
+              <Route path="/inscription/particulier" element={<Navigate to="/inscription" replace />} />
               <Route path="/partenaires" element={<PartenairesPage />} />
               <Route path="/assistant" element={<AssistantPage />} />
               <Route path="/mentions-legales" element={<MentionsLegalesPage />} />

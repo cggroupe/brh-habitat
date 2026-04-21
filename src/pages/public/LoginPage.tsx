@@ -1,12 +1,9 @@
 import { Link } from 'react-router-dom'
 import { SignIn } from '@clerk/clerk-react'
 import { Shield } from 'lucide-react'
-import { useClerkSupabaseBridge } from '@/hooks/useClerkSupabaseBridge'
+// Bridge est monte globalement dans App.tsx via ClerkBridge, pas besoin de l'appeler ici
 
 export default function LoginPage() {
-  // Bridge en background : des que l'user Clerk est logge, on sync la session Supabase
-  useClerkSupabaseBridge()
-
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
@@ -24,7 +21,7 @@ export default function LoginPage() {
           {/* Widget Clerk — gere email, password, OAuth (Google/Apple/LinkedIn selon config Clerk) */}
           <SignIn
             signUpUrl="/inscription"
-            fallbackRedirectUrl="/"
+            fallbackRedirectUrl="/redirect"
             appearance={{
               elements: {
                 rootBox: 'w-full',

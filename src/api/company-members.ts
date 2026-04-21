@@ -30,29 +30,15 @@ export async function fetchCompanyMembers(companyId: string): Promise<CompanyMem
   return companyMemberWithProfileSchema.array().parse(data ?? []) as CompanyMemberWithProfile[]
 }
 
-export async function inviteMember(companyId: string, email: string): Promise<void> {
-  // Trouver le profil par email via RPC SECURITY DEFINER (contourne RLS profiles)
-  const { data: results, error: rpcError } = await supabase
-    .rpc('find_profile_by_email', { search_email: email })
-
-  const profile = Array.isArray(results) ? results[0] : results
-
-  if (rpcError || !profile) {
-    throw new Error('Aucun compte trouve avec cet email. L\'utilisateur doit d\'abord creer un compte.')
-  }
-
-  if (profile.role !== 'pro') {
-    throw new Error('Cet utilisateur n\'a pas un compte professionnel.')
-  }
-
-  const { error } = await supabase
-    .from('brh_company_members')
-    .insert({ company_id: companyId, profile_id: profile.id, member_role: 'member' })
-
-  if (error) {
-    if (error.code === '23505') throw new Error('Ce membre fait deja partie de l\'equipe.')
-    throw error
-  }
+export async function inviteMember(_companyId: string, email: string): Promise<void> {
+  // Delegation a l'Edge Function company-invite qui :
+  // 1. Verifie que le user connecte est owner de sa company
+  // 2. Genere un token + INSERT brh_company_invitations
+  // 3. Envoie un email via Resend avec lien /inscription/pro/rejoindre?token=xxx
+  // (companyId deduit cote backend depuis la session, on ignore le param)
+  const { createInvitation } = await import('./invitations')
+  const result = await createInvitation(email, 'member')
+  if (!result.ok) throw new Error('Erreur lors de l\'envoi de l\'invitation.')
 }
 
 export async function removeMember(memberId: string): Promise<void> {

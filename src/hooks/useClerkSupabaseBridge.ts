@@ -47,31 +47,47 @@ export function useClerkSupabaseBridge() {
     // Skip si deja bridged pour ce user
     if (bridgedRef.current === clerkUser.id) return
 
+    async function callBridgeSignin(token: string): Promise<{ access_token: string; refresh_token: string } | null> {
+      // Retry exponential backoff : 0s, 1s, 3s (max 3 tentatives)
+      const delays = [0, 1000, 3000]
+      let lastErr: string | null = null
+      for (let attempt = 0; attempt < delays.length; attempt++) {
+        if (delays[attempt]) await new Promise((r) => setTimeout(r, delays[attempt]))
+        try {
+          const resp = await fetch(`${SUPABASE_URL}/functions/v1/bridge-signin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            signal: AbortSignal.timeout(12_000),
+          })
+          if (resp.ok) {
+            return await resp.json() as { access_token: string; refresh_token: string }
+          }
+          lastErr = `HTTP ${resp.status}`
+          // On ne retry que sur 5xx / network errors, pas sur 4xx (client error definitif)
+          if (resp.status >= 400 && resp.status < 500) break
+        } catch (err) {
+          lastErr = err instanceof Error ? err.message : String(err)
+        }
+      }
+      logError('bridge-signin failed after retries', new Error(lastErr ?? 'unknown'))
+      return null
+    }
+
     async function bridge(): Promise<void> {
       try {
-        // 1. Recuperer un JWT Clerk avec le template "supabase" (configure dans Clerk Dashboard)
+        // 1. Recuperer un JWT Clerk avec le template "supabase"
         const token = await getToken({ template: 'supabase' }).catch(() => null)
         if (!token) {
           logError('bridge', new Error('Impossible d\'obtenir un JWT Clerk template=supabase'))
           return
         }
 
-        // 2. Echanger ce JWT contre une session Supabase via Edge Function bridge-signin
-        const resp = await fetch(`${SUPABASE_URL}/functions/v1/bridge-signin`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        })
-        if (!resp.ok) {
-          const body = await resp.text().catch(() => '')
-          logError('bridge', new Error(`bridge-signin HTTP ${resp.status}: ${body.slice(0, 200)}`))
-          return
-        }
-        const { access_token, refresh_token } = await resp.json() as {
-          access_token: string; refresh_token: string
-        }
+        // 2. Echanger ce JWT contre une session Supabase (avec retry)
+        const sessionTokens = await callBridgeSignin(token)
+        if (!sessionTokens) return
 
-        // 3. Set la session Supabase cote client (injecte le token dans les futures requetes)
-        const { data, error } = await supabase.auth.setSession({ access_token, refresh_token })
+        // 3. Set la session Supabase cote client
+        const { data, error } = await supabase.auth.setSession(sessionTokens)
         if (error || !data.user) {
           logError('bridge', error ?? new Error('setSession failed'))
           return

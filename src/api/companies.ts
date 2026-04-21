@@ -52,6 +52,13 @@ export async function createCompany(payload: CreateCompanyPayload): Promise<BrhC
 }
 
 export async function updateCompanyRecruiter(companyId: string, recruitedBy: string): Promise<void> {
+  // Validation serveur : le recruiter doit exister, etre actif et avoir role='pro'
+  const { data: isValid, error: valErr } = await supabase
+    .rpc('validate_recruiter', { p_recruiter_id: recruitedBy, p_expected_role: 'pro' })
+
+  if (valErr) throw new Error(`Validation recruiter: ${valErr.message}`)
+  if (!isValid) throw new Error('Lien de recrutement invalide ou expire.')
+
   const { error } = await supabase
     .from('brh_companies')
     .update({ recruited_by: recruitedBy })

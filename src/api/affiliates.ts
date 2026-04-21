@@ -22,6 +22,13 @@ export async function createAffiliate(userId: string, referralCode: string): Pro
 }
 
 export async function updateAffiliateRecruiter(userId: string, recruitedBy: string): Promise<void> {
+  // Validation serveur : recruiter doit exister + role='particulier' actif
+  const { data: isValid, error: valErr } = await supabase
+    .rpc('validate_recruiter', { p_recruiter_id: recruitedBy, p_expected_role: 'particulier' })
+
+  if (valErr) throw new Error(`Validation recruiter: ${valErr.message}`)
+  if (!isValid) throw new Error('Lien de parrainage invalide ou expire.')
+
   const { error } = await supabase
     .from('brh_affiliates')
     .update({ recruited_by: recruitedBy })
