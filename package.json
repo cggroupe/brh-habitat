@@ -20,7 +20,6 @@
     "configure-clerk": "tsx scripts/configure-clerk.ts"
   },
   "dependencies": {
-    "@clerk/clerk-react": "^5.61.5",
     "@react-pdf/renderer": "^4.4.0",
     "@sentry/react": "^10.48.0",
     "@supabase/supabase-js": "^2.103.0",

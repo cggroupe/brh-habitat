@@ -11,7 +11,6 @@ import AuthGuard from '@/components/auth/AuthGuard'
 import AdminGuard from '@/components/auth/AdminGuard'
 import ProGuard from '@/components/auth/ProGuard'
 import ParticulierGuard from '@/components/auth/ParticulierGuard'
-import ProSignupGuard from '@/components/auth/ProSignupGuard'
 import { FeatureRoute } from '@/components/shared/FeatureGate'
 
 // Eagerly loaded (above the fold)
@@ -26,7 +25,7 @@ const ContactPage = lazy(() => import('@/pages/public/ContactPage'))
 const LoginPage = lazy(() => import('@/pages/public/LoginPage'))
 const RegisterPage = lazy(() => import('@/pages/public/RegisterPage'))
 const RegisterProPage = lazy(() => import('@/pages/public/RegisterProPage'))
-const RegisterProFinalisationPage = lazy(() => import('@/pages/public/RegisterProFinalisationPage'))
+// RegisterProFinalisationPage supprimee - la creation de company se fait dans RegisterProPage directement
 // RegisterParticulierPage supprimee - tout passe par /inscription (Clerk)
 const ServicesPage = lazy(() => import('@/pages/public/ServicesPage'))
 const MentionsLegalesPage = lazy(() => import('@/pages/public/MentionsLegalesPage'))
@@ -93,7 +92,7 @@ const PartChiffrage = lazy(() => import('@/pages/particulier/PartChiffrage'))
 const PartChiffrages = lazy(() => import('@/pages/particulier/PartChiffrages'))
 const PartBadges = lazy(() => import('@/pages/particulier/PartBadges'))
 const PartStatutFiscal = lazy(() => import('@/pages/particulier/PartStatutFiscal'))
-const PostLoginRedirect = lazy(() => import('@/pages/public/PostLoginRedirect'))
+// PostLoginRedirect supprimee - les pages Login/Register naviguent directement selon le role
 const JoinCompanyPage = lazy(() => import('@/pages/public/JoinCompanyPage'))
 
 const queryClient = new QueryClient({
@@ -114,18 +113,10 @@ function PageLoader() {
   )
 }
 
-// Le bridge Clerk->Supabase tourne en arriere-plan sur toutes les pages
-import { useClerkSupabaseBridge } from '@/hooks/useClerkSupabaseBridge'
-function ClerkBridge() {
-  useClerkSupabaseBridge()
-  return null
-}
-
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <ClerkBridge />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Public routes */}
@@ -139,15 +130,9 @@ export default function App() {
               <Route path="/articles/:slug" element={<ArticlePage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/connexion" element={<LoginPage />} />
-              <Route path="/redirect" element={<PostLoginRedirect />} />
               <Route path="/inscription" element={<RegisterPage />} />
               <Route path="/inscription/pro" element={<RegisterProPage />} />
               <Route path="/inscription/pro/rejoindre" element={<JoinCompanyPage />} />
-              {/* /inscription/pro/finalisation doit etre derriere un guard :
-                  user Clerk logge ET sessionStorage contenant SIRET data */}
-              <Route element={<ProSignupGuard />}>
-                <Route path="/inscription/pro/finalisation" element={<RegisterProFinalisationPage />} />
-              </Route>
               {/* Legacy redirect : /inscription/particulier -> /inscription (conserve les liens partages) */}
               <Route path="/inscription/particulier" element={<Navigate to="/inscription" replace />} />
               <Route path="/partenaires" element={<PartenairesPage />} />

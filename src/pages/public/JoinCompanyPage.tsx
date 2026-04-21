@@ -1,25 +1,12 @@
-/**
- * Page d'acceptation d'invitation a rejoindre une entreprise pro.
- *
- * URL : /inscription/pro/rejoindre?token=xxx
- *
- * Flow :
- *  1. Verifie le token cote serveur (company-invite-verify)
- *  2. Si valide et user non connecte : affiche Clerk SignUp avec email pre-rempli
- *  3. Si user connecte : bouton "Accepter l'invitation" qui appelle company-invite-accept
- *  4. Apres acceptation : redirect /pro
- */
-
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { SignUp, useUser, useAuth } from '@clerk/clerk-react'
-import { Users, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { useAppStore } from '@/stores/appStore'
+import { Users, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react'
 import { logError } from '@/lib/error'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string
-const INVITE_SS_KEY = 'brh_pending_invitation_token'
 
 interface InvitationData {
   invitation_id: string
@@ -30,18 +17,27 @@ interface InvitationData {
   member_role: 'owner' | 'member'
 }
 
+const AUTH_ERROR_MAP: Record<string, string> = {
+  'User already registered': 'Cet email est deja utilise. Connectez-vous.',
+  'Password should be at least 6 characters': 'Mot de passe trop court (8 caracteres minimum).',
+}
+function mapAuthError(msg: string): string {
+  for (const [k, v] of Object.entries(AUTH_ERROR_MAP)) if (msg.includes(k)) return v
+  return msg
+}
+
 export default function JoinCompanyPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const token = searchParams.get('token') ?? ''
-  const { isLoaded, isSignedIn } = useUser()
-  const { getToken } = useAuth()
+  const setUser = useAppStore((s) => s.setUser)
 
-  const [state, setState] = useState<'loading' | 'invalid' | 'valid' | 'accepting' | 'done'>('loading')
+  const [state, setState] = useState<'loading' | 'invalid' | 'valid' | 'signing-up' | 'accepting' | 'done'>('loading')
   const [invitation, setInvitation] = useState<InvitationData | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // 1. Verifier le token
+  const [form, setForm] = useState({ fullName: '', phone: '', password: '' })
+
   useEffect(() => {
     if (!token) { setState('invalid'); setError('Lien d\'invitation manquant.'); return }
     void (async () => {
@@ -52,59 +48,71 @@ export default function JoinCompanyPage() {
           body: JSON.stringify({ token }),
         })
         const data = await resp.json()
-        if (!resp.ok || !data.valid) {
-          setError(data.error ?? 'Lien d\'invitation invalide.')
-          setState('invalid')
-          return
-        }
-        setInvitation(data as InvitationData)
-        setState('valid')
-        // Stocker le token pour que le webhook post-signup sache quoi faire
-        sessionStorage.setItem(INVITE_SS_KEY, token)
-      } catch (err) {
-        logError('JoinCompany:verify', err)
-        setError('Erreur reseau, reessayez.')
-        setState('invalid')
-      }
+        if (!resp.ok || !data.valid) { setError(data.error ?? 'Lien invalide.'); setState('invalid'); return }
+        setInvitation(data as InvitationData); setState('valid')
+      } catch (err) { logError('JoinCompany:verify', err); setError('Erreur reseau.'); setState('invalid') }
     })()
   }, [token])
 
-  // 2. Si user deja connecte, accepter automatiquement l'invitation
-  async function acceptInvitation() {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+  }
+
+  async function acceptToken(accessToken: string): Promise<void> {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/company-invite-accept`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify({ token }),
+    })
+    const data = await resp.json()
+    if (!resp.ok) throw new Error(data.error ?? `HTTP ${resp.status}`)
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
     if (!invitation) return
-    setState('accepting')
+    setState('signing-up'); setError(null)
+
+    if (!form.fullName || !form.password) { setError('Nom et mot de passe requis.'); setState('valid'); return }
+    if (form.password.length < 8) { setError('Mot de passe trop court.'); setState('valid'); return }
+
     try {
-      // Recuperer le JWT Supabase (via bridge deja fait)
-      const { data: { session } } = await supabase.auth.getSession()
-      let accessToken = session?.access_token
-      // Fallback : demander un token Clerk
-      if (!accessToken) {
-        accessToken = await getToken({ template: 'supabase' }) ?? undefined
-      }
-      if (!accessToken) {
-        setError('Session non trouvee. Deconnectez-vous et reconnectez-vous.')
+      const { data, error: authError } = await supabase.auth.signUp({
+        email: invitation.email, password: form.password,
+        options: { data: { full_name: form.fullName, role: 'pro', phone: form.phone || null } },
+      })
+      if (authError) { setError(mapAuthError(authError.message)); setState('valid'); return }
+      if (!data.user) { setError('Inscription impossible.'); setState('valid'); return }
+
+      if (!data.session) {
+        setError(`Un email de confirmation a ete envoye a ${invitation.email}. Cliquez le lien puis revenez ici pour accepter l'invitation.`)
         setState('invalid')
         return
       }
 
-      const resp = await fetch(`${SUPABASE_URL}/functions/v1/company-invite-accept`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-        body: JSON.stringify({ token }),
-      })
-      const data = await resp.json()
-      if (!resp.ok) {
-        setError(data.error ?? 'Impossible d\'accepter l\'invitation.')
-        setState('invalid')
-        return
+      setState('accepting')
+      try {
+        await acceptToken(data.session.access_token)
+      } catch (err) {
+        logError('JoinCompany:accept', err)
+        setError(err instanceof Error ? err.message : 'Erreur acceptation.')
+        setState('valid'); return
       }
-      sessionStorage.removeItem(INVITE_SS_KEY)
+
+      const { data: profile } = await supabase
+        .from('profiles').select('id, email, full_name, role, avatar_url').eq('id', data.user.id).single()
+      if (profile) {
+        setUser({
+          id: profile.id, email: profile.email, full_name: profile.full_name ?? '',
+          role: profile.role, avatar_url: profile.avatar_url ?? undefined,
+        })
+      }
       setState('done')
       setTimeout(() => navigate('/pro', { replace: true }), 1500)
     } catch (err) {
-      logError('JoinCompany:accept', err)
-      setError('Erreur lors de l\'acceptation.')
-      setState('invalid')
+      logError('JoinCompany:signup', err)
+      setError('Une erreur inattendue s\'est produite.')
+      setState('valid')
     }
   }
 
@@ -116,9 +124,7 @@ export default function JoinCompanyPage() {
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-primary/10 mb-5">
               <Users size={26} className="text-primary" strokeWidth={2} />
             </div>
-            <h1 className="font-display text-2xl text-slate-900 uppercase tracking-wide">
-              Invitation a rejoindre une equipe
-            </h1>
+            <h1 className="font-display text-2xl text-slate-900 uppercase tracking-wide">Invitation a rejoindre une equipe</h1>
           </div>
 
           {state === 'loading' && (
@@ -134,15 +140,14 @@ export default function JoinCompanyPage() {
                 <div>
                   <p className="text-sm text-red-700 font-semibold">{error ?? 'Lien invalide'}</p>
                   <p className="text-xs text-red-600/80 mt-2">
-                    Contactez la personne qui vous a invite pour obtenir un nouveau lien,
-                    ou <Link to="/inscription/pro" className="underline">inscrivez votre propre entreprise</Link>.
+                    Contactez votre invitant ou <Link to="/inscription/pro" className="underline">inscrivez votre propre entreprise</Link>.
                   </p>
                 </div>
               </div>
             </div>
           )}
 
-          {state === 'valid' && invitation && (
+          {(state === 'valid' || state === 'signing-up' || state === 'accepting') && invitation && (
             <>
               <div className="p-5 bg-green-50 border border-green-200 rounded-xl mb-6">
                 <div className="flex items-start gap-3">
@@ -153,65 +158,46 @@ export default function JoinCompanyPage() {
                       a rejoindre <strong className="text-slate-900">{invitation.company_name}</strong>
                     </p>
                     <p className="text-xs text-slate-600 mt-1.5">
-                      Invitation envoyee a <strong>{invitation.email}</strong> · Valable jusqu'au{' '}
-                      {new Date(invitation.expires_at).toLocaleDateString('fr-FR')}
+                      Email : <strong>{invitation.email}</strong>
                     </p>
                   </div>
                 </div>
               </div>
 
-              {!isLoaded && <div className="w-8 h-8 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin" />}
-
-              {isLoaded && isSignedIn && (
-                <>
-                  <p className="text-sm text-slate-600 mb-4 text-center">
-                    Vous etes deja connecte. Cliquez pour rejoindre l'equipe.
-                  </p>
-                  <button
-                    onClick={() => void acceptInvitation()}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-primary text-white font-display text-base font-bold rounded-xl hover:bg-primary-dark transition-colors uppercase tracking-wide"
-                  >
-                    Rejoindre l'equipe <ArrowRight size={16} />
-                  </button>
-                </>
+              {error && (
+                <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 font-body">{error}</div>
               )}
 
-              {isLoaded && !isSignedIn && (
-                <>
-                  <p className="text-sm text-slate-600 mb-4 text-center">
-                    Creez votre compte avec l'email <strong>{invitation.email}</strong> pour accepter.
-                  </p>
-                  <SignUp
-                    signInUrl="/connexion"
-                    unsafeMetadata={{ role: 'pro', pending_invitation_token: token }}
-                    forceRedirectUrl={`/inscription/pro/rejoindre?token=${token}`}
-                    initialValues={{ emailAddress: invitation.email }}
-                    appearance={{
-                      elements: {
-                        rootBox: 'w-full',
-                        card: 'shadow-none border-0 p-0 bg-transparent',
-                        headerTitle: 'hidden',
-                        headerSubtitle: 'hidden',
-                        socialButtonsRoot: 'hidden',
-                        socialButtonsBlockButton: 'hidden',
-                        socialButtonsIconButton: 'hidden',
-                        socialButtons: 'hidden',
-                        dividerRow: 'hidden',
-                        formButtonPrimary: 'bg-primary hover:bg-primary-dark normal-case font-bold',
-                        footer: 'hidden',
-                      },
-                    }}
-                  />
-                </>
-              )}
+              <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5 font-body">Nom complet *</label>
+                  <input name="fullName" value={form.fullName} onChange={handleChange} required autoComplete="name"
+                    className="w-full px-3.5 py-3 border border-slate-200 rounded-xl font-body text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    placeholder="Jean Dupont" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5 font-body">Telephone</label>
+                  <input name="phone" value={form.phone} onChange={handleChange} autoComplete="tel"
+                    className="w-full px-3.5 py-3 border border-slate-200 rounded-xl font-body text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    placeholder="06 12 34 56 78" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1.5 font-body">Mot de passe *</label>
+                  <input name="password" type="password" value={form.password} onChange={handleChange} required autoComplete="new-password"
+                    className="w-full px-3.5 py-3 border border-slate-200 rounded-xl font-body text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    placeholder="8 caracteres minimum" />
+                </div>
+
+                <button type="submit" disabled={state !== 'valid'}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-primary text-white font-display text-base font-bold rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-60 uppercase tracking-wide mt-6">
+                  {state === 'signing-up' || state === 'accepting' ? (
+                    <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>Rejoindre l'equipe <ArrowRight size={16} /></>
+                  )}
+                </button>
+              </form>
             </>
-          )}
-
-          {state === 'accepting' && (
-            <div className="text-center py-8">
-              <div className="w-10 h-10 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-              <p className="text-sm text-slate-600">Ajout a l'equipe en cours...</p>
-            </div>
           )}
 
           {state === 'done' && (

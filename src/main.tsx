@@ -2,17 +2,10 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import * as Sentry from '@sentry/react'
-import { ClerkProvider } from '@clerk/clerk-react'
 import './index.css'
 import App from './App'
 import { TenantProvider } from '@/config/TenantContext'
 import { tenant } from '@/config/tenant'
-
-const CLERK_PK = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined
-if (!CLERK_PK) {
-  // eslint-disable-next-line no-console
-  console.warn('[Clerk] VITE_CLERK_PUBLISHABLE_KEY manquante — auth desactivee')
-}
 
 // ---------------------------------------------------------------------------
 // Sentry — Monitoring & Error Tracking
@@ -68,21 +61,9 @@ root.style.setProperty('--color-background', colors.background)
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <SentryErrorBoundary fallback={({ error }) => <FallbackUI error={error as Error} />}>
-      <ClerkProvider
-        publishableKey={CLERK_PK ?? ''}
-        appearance={{
-          variables: {
-            colorPrimary: colors.primary,
-            fontFamily: '"DM Sans", sans-serif',
-            borderRadius: '0.75rem',
-          },
-        }}
-        localization={{ locale: 'fr-FR' } as never}
-      >
-        <TenantProvider>
-          <App />
-        </TenantProvider>
-      </ClerkProvider>
+      <TenantProvider>
+        <App />
+      </TenantProvider>
     </SentryErrorBoundary>
   </StrictMode>,
 )
