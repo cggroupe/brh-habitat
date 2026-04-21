@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/appStore'
 import { ArrowRight, Shield } from 'lucide-react'
+import { OAuthButtons } from '@/components/auth/OAuthButtons'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -162,7 +163,15 @@ export default function LoginPage() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-100" />
             </div>
+            <div className="relative flex justify-center">
+              <span className="bg-white px-3 text-xs text-slate-400 uppercase tracking-widest font-semibold">ou</span>
+            </div>
           </div>
+
+          {/* OAuth social */}
+          <OAuthButtons />
+
+          <div className="my-8 border-t border-slate-100" />
 
           {/* Register link */}
           <p className="text-center text-sm font-body text-slate-500">

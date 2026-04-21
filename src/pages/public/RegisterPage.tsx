@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/appStore'
 import { ArrowRight, UserPlus, CheckCircle, Mail } from 'lucide-react'
+import { OAuthButtons } from '@/components/auth/OAuthButtons'
 
 // Map des messages Supabase bruts vers des messages user-friendly
 const AUTH_ERROR_MAP: Record<string, string> = {
@@ -289,6 +290,17 @@ export default function RegisterPage() {
               )}
             </button>
           </form>
+
+          {/* Divider + OAuth */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-100" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-white px-3 text-xs text-slate-400 uppercase tracking-widest font-semibold">ou</span>
+            </div>
+          </div>
+          <OAuthButtons />
 
           {/* Login link */}
           <p className="text-center mt-8 text-sm font-body text-slate-500">

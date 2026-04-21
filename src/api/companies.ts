@@ -9,9 +9,23 @@ export interface CreateCompanyPayload {
   name: string
   siret?: string | null
   profession?: CompanyProfession | null
+  /** Donnees officielles SIRENE en provenance de verify-siret */
+  extra?: {
+    legal_name?: string | null
+    siren?: string | null
+    naf_code?: string | null
+    naf_label?: string | null
+    entreprise_category?: string | null
+    date_creation?: string | null
+    address?: string | null
+    city?: string | null
+    postal_code?: string | null
+    siret_verified_at?: string | null
+  }
 }
 
 export async function createCompany(payload: CreateCompanyPayload): Promise<BrhCompanyRow> {
+  const extra = payload.extra ?? {}
   const { data, error } = await supabase
     .from('brh_companies')
     .insert({
@@ -19,6 +33,16 @@ export async function createCompany(payload: CreateCompanyPayload): Promise<BrhC
       name: payload.name,
       siret: payload.siret ?? null,
       profession: payload.profession ?? null,
+      ...(extra.legal_name ? { legal_name: extra.legal_name } : {}),
+      ...(extra.siren ? { siren: extra.siren } : {}),
+      ...(extra.naf_code ? { naf_code: extra.naf_code } : {}),
+      ...(extra.naf_label ? { naf_label: extra.naf_label } : {}),
+      ...(extra.entreprise_category ? { entreprise_category: extra.entreprise_category } : {}),
+      ...(extra.date_creation ? { date_creation: extra.date_creation } : {}),
+      ...(extra.address ? { address: extra.address } : {}),
+      ...(extra.city ? { city: extra.city } : {}),
+      ...(extra.postal_code ? { postal_code: extra.postal_code } : {}),
+      ...(extra.siret_verified_at ? { siret_verified_at: extra.siret_verified_at } : {}),
     })
     .select()
     .single()
