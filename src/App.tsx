@@ -25,6 +25,7 @@ const ContactPage = lazy(() => import('@/pages/public/ContactPage'))
 const LoginPage = lazy(() => import('@/pages/public/LoginPage'))
 const RegisterPage = lazy(() => import('@/pages/public/RegisterPage'))
 const RegisterProPage = lazy(() => import('@/pages/public/RegisterProPage'))
+const RegisterProFinalisationPage = lazy(() => import('@/pages/public/RegisterProFinalisationPage'))
 const RegisterParticulierPage = lazy(() => import('@/pages/public/RegisterParticulierPage'))
 const ServicesPage = lazy(() => import('@/pages/public/ServicesPage'))
 const MentionsLegalesPage = lazy(() => import('@/pages/public/MentionsLegalesPage'))
@@ -110,10 +111,18 @@ function PageLoader() {
   )
 }
 
+// Le bridge Clerk->Supabase tourne en arriere-plan sur toutes les pages
+import { useClerkSupabaseBridge } from '@/hooks/useClerkSupabaseBridge'
+function ClerkBridge() {
+  useClerkSupabaseBridge()
+  return null
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <ClerkBridge />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Public routes */}
@@ -129,6 +138,7 @@ export default function App() {
               <Route path="/connexion" element={<LoginPage />} />
               <Route path="/inscription" element={<RegisterPage />} />
               <Route path="/inscription/pro" element={<RegisterProPage />} />
+              <Route path="/inscription/pro/finalisation" element={<RegisterProFinalisationPage />} />
               <Route path="/inscription/particulier" element={<RegisterParticulierPage />} />
               <Route path="/partenaires" element={<PartenairesPage />} />
               <Route path="/assistant" element={<AssistantPage />} />

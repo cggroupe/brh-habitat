@@ -1,12 +1,9 @@
 import { useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { supabase } from '@/lib/supabase'
-import { useAppStore } from '@/stores/appStore'
-import { logError } from '@/lib/error'
+import { Link, useSearchParams } from 'react-router-dom'
+import { SignUp } from '@clerk/clerk-react'
 import { Building2, ArrowRight, Search, CheckCircle2, AlertCircle, MapPin } from 'lucide-react'
-import { createCompany, updateCompanyRecruiter } from '@/api/companies'
-import { addCompanyMember } from '@/api/company-members'
-import { OAuthButtons } from '@/components/auth/OAuthButtons'
+import { useClerkSupabaseBridge } from '@/hooks/useClerkSupabaseBridge'
+import { logError } from '@/lib/error'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string
@@ -27,37 +24,19 @@ interface SiretData {
   dirigeants: Array<{ nom: string; qualite: string | null }>
 }
 
-const AUTH_ERROR_MAP: Record<string, string> = {
-  'User already registered': 'Cet email est deja utilise. Connectez-vous.',
-  'Password should be at least 6 characters': 'Mot de passe trop court (8 caracteres min)',
-  'Invalid email': 'Adresse email invalide',
-  'Email rate limit exceeded': 'Trop d\'inscriptions, patientez 1 min.',
-  'For security purposes, you can only request this after': 'Trop de tentatives, patientez 60 sec.',
-}
-
-function mapAuthError(msg: string): string {
-  for (const [k, v] of Object.entries(AUTH_ERROR_MAP)) {
-    if (msg.includes(k)) return v
-  }
-  return msg
-}
+// Cle de sessionStorage utilisee par ProFinalisation pour retrouver les infos SIRET
+const SIRET_SS_KEY = 'brh_pending_siret_data'
 
 export default function RegisterProPage() {
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const recruiter = searchParams.get('recruiter')
-  const setUser = useAppStore((s) => s.setUser)
+  useClerkSupabaseBridge()
 
-  // Flow en 2 etapes : 1) verifier SIRET, 2) creer compte
   const [step, setStep] = useState<'siret' | 'account'>('siret')
   const [siretInput, setSiretInput] = useState('')
   const [siretData, setSiretData] = useState<SiretData | null>(null)
   const [verifying, setVerifying] = useState(false)
   const [siretError, setSiretError] = useState<string | null>(null)
-
-  const [form, setForm] = useState({ fullName: '', email: '', phone: '', password: '' })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   async function verifySiret() {
     setSiretError(null)
@@ -76,7 +55,7 @@ export default function RegisterProPage() {
       })
       const data = await resp.json()
       if (!resp.ok || !data.ok) {
-        setSiretError(data.error ?? 'Impossible de verifier le SIRET pour le moment.')
+        setSiretError(data.error ?? 'Impossible de verifier le SIRET.')
         return
       }
       setSiretData(data as SiretData)
@@ -88,100 +67,11 @@ export default function RegisterProPage() {
     }
   }
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!siretData) { setError('SIRET non verifie'); return }
-    setLoading(true)
-    setError(null)
-
-    if (!form.fullName || !form.email || !form.password) {
-      setError('Tous les champs marques * sont obligatoires.')
-      setLoading(false)
-      return
-    }
-    if (form.password.length < 8) {
-      setError('Mot de passe trop court (8 caracteres minimum).')
-      setLoading(false)
-      return
-    }
-
-    try {
-      const { data, error: authError } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-        options: { data: { full_name: form.fullName, role: 'pro', phone: form.phone || null } },
-      })
-
-      if (authError) { setError(mapAuthError(authError.message)); setLoading(false); return }
-      if (!data.user) { setError('Inscription impossible, reessayez.'); setLoading(false); return }
-
-      // Si email confirmation active, data.session est null
-      if (!data.session) {
-        setError(null)
-        setLoading(false)
-        setError(`Un email de confirmation a ete envoye a ${form.email}. Cliquez le lien pour activer votre compte.`)
-        return
-      }
-
-      // Creer l'entreprise avec les donnees OFFICIELLES de l'API SIRENE
-      let company
-      try {
-        company = await createCompany({
-          owner_id: data.user.id,
-          name: siretData.nom,
-          siret: siretData.siret,
-          profession: null, // on deduit du NAF cote admin si besoin
-          extra: {
-            legal_name: siretData.nom_raison_sociale,
-            siren: siretData.siren,
-            naf_code: siretData.naf,
-            naf_label: siretData.naf_libelle,
-            entreprise_category: siretData.categorie,
-            date_creation: siretData.date_creation,
-            address: siretData.adresse,
-            city: siretData.ville,
-            postal_code: siretData.code_postal,
-            siret_verified_at: new Date().toISOString(),
-          },
-        })
-      } catch (err) {
-        logError('RegisterPro:createCompany', err)
-        const raw = err instanceof Error ? err.message : String(err)
-        const msg = raw.toLowerCase().includes('duplicate')
-          ? 'Une entreprise avec ce SIRET est deja enregistree. Connectez-vous ou contactez le support.'
-          : raw.toLowerCase().includes('row-level security') || raw.toLowerCase().includes('permission')
-            ? 'Votre compte n\'est pas encore autorise. Confirmez d\'abord votre email.'
-            : `Erreur lors de la creation de l'entreprise : ${raw}`
-        setError(msg)
-        setLoading(false)
-        return
-      }
-
-      if (recruiter) {
-        await updateCompanyRecruiter(company.id, recruiter).catch((err) => logError('RegisterPro:recruiter', err))
-      }
-      await addCompanyMember(company.id, data.user.id, 'owner').catch((err) => logError('RegisterPro:addMember', err))
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id, email, full_name, role, avatar_url')
-        .eq('id', data.user.id)
-        .single()
-
-      if (profile) {
-        setUser({ id: profile.id, email: profile.email, full_name: profile.full_name ?? '', role: profile.role, avatar_url: profile.avatar_url ?? undefined })
-        navigate('/pro')
-      }
-    } catch (err) {
-      logError('RegisterPro:submit', err)
-      setError('Une erreur inattendue s\'est produite. Reessayez dans quelques secondes.')
-    } finally {
-      setLoading(false)
-    }
+  function proceedToSignup() {
+    if (!siretData) return
+    // Stocker les donnees pour ProFinalisation (apres signup Clerk)
+    sessionStorage.setItem(SIRET_SS_KEY, JSON.stringify({ ...siretData, recruiter }))
+    setStep('account')
   }
 
   return (
@@ -200,13 +90,11 @@ export default function RegisterProPage() {
             </p>
           </div>
 
-          {/* Stepper */}
           <div className="flex items-center gap-3 mb-8">
             <div className={`flex-1 h-1.5 rounded-full ${step === 'siret' ? 'bg-primary' : 'bg-primary/40'}`} />
             <div className={`flex-1 h-1.5 rounded-full ${step === 'account' ? 'bg-primary' : 'bg-slate-200'}`} />
           </div>
 
-          {/* ─── ETAPE 1 : SIRET ─── */}
           {step === 'siret' && (
             <>
               <div>
@@ -271,7 +159,7 @@ export default function RegisterProPage() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => setStep('account')}
+                    onClick={proceedToSignup}
                     className="mt-5 w-full flex items-center justify-center gap-2 py-3 bg-primary text-white font-display text-sm font-bold rounded-xl hover:bg-primary-dark transition-colors uppercase tracking-wide"
                   >
                     Continuer avec {siretData.nom_raison_sociale || siretData.nom}
@@ -279,17 +167,9 @@ export default function RegisterProPage() {
                   </button>
                 </div>
               )}
-
-              <div className="mt-8 pt-8 border-t border-slate-100">
-                <p className="text-center text-xs text-slate-400 mb-4 uppercase tracking-widest font-semibold">
-                  ou connectez-vous avec
-                </p>
-                <OAuthButtons redirectTo="/pro" />
-              </div>
             </>
           )}
 
-          {/* ─── ETAPE 2 : COMPTE ─── */}
           {step === 'account' && siretData && (
             <>
               <button
@@ -304,51 +184,29 @@ export default function RegisterProPage() {
                 <div className="flex items-center gap-2 text-slate-700">
                   <CheckCircle2 size={14} className="text-green-600" />
                   <span className="font-semibold">{siretData.nom}</span>
-                  <span className="text-slate-400">- SIRET verifie</span>
+                  <span className="text-slate-400">· SIRET verifie</span>
                 </div>
               </div>
 
-              {error && (
-                <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 font-body">
-                  {error}
-                </div>
-              )}
-
-              <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4" noValidate>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 font-body">Nom complet *</label>
-                    <input name="fullName" value={form.fullName} onChange={handleChange} required autoComplete="name"
-                      className="w-full px-3.5 py-3 border border-slate-200 rounded-xl font-body text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="Jean Dupont" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5 font-body">Telephone</label>
-                    <input name="phone" value={form.phone} onChange={handleChange} autoComplete="tel"
-                      className="w-full px-3.5 py-3 border border-slate-200 rounded-xl font-body text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="06 12 34 56 78" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5 font-body">Email professionnel *</label>
-                  <input name="email" type="email" value={form.email} onChange={handleChange} required autoComplete="email"
-                    className="w-full px-3.5 py-3 border border-slate-200 rounded-xl font-body text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="contact@entreprise.fr" />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1.5 font-body">Mot de passe *</label>
-                  <input name="password" type="password" value={form.password} onChange={handleChange} required autoComplete="new-password"
-                    className="w-full px-3.5 py-3 border border-slate-200 rounded-xl font-body text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="8 caracteres minimum" />
-                </div>
-
-                <button type="submit" disabled={loading}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-primary text-white font-display text-base font-bold rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-60 uppercase tracking-wide mt-6">
-                  {loading ? (
-                    <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>Creer mon compte partenaire <ArrowRight size={16} /></>
-                  )}
-                </button>
-              </form>
+              {/* Clerk SignUp : apres signup, redirige vers /inscription/pro/finalisation
+                  qui va creer la company a partir des donnees SIRET du sessionStorage */}
+              <SignUp
+                routing="virtual"
+                signInUrl="/connexion"
+                unsafeMetadata={{ role: 'pro', pending_siret: siretData.siret }}
+                redirectUrl="/inscription/pro/finalisation"
+                appearance={{
+                  elements: {
+                    rootBox: 'w-full',
+                    card: 'shadow-none border-0 p-0 bg-transparent',
+                    headerTitle: 'hidden',
+                    headerSubtitle: 'hidden',
+                    socialButtonsBlockButton: 'border border-slate-200 hover:bg-slate-50',
+                    formButtonPrimary: 'bg-primary hover:bg-primary-dark normal-case font-bold',
+                    footer: 'hidden',
+                  },
+                }}
+              />
             </>
           )}
 

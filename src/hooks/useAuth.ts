@@ -109,9 +109,15 @@ export function useAuth() {
 
   async function signOut() {
     initRef.current = false
+    // Deconnecter Clerk (source de verite) — le bridge va detecter le changement
+    // et appeler supabase.auth.signOut() automatiquement. On appelle quand meme
+    // Supabase ici en fallback si Clerk n'est pas charge (ex: admin user hors Clerk).
+    try {
+      const clerk = (window as unknown as { Clerk?: { signOut: () => Promise<void> } }).Clerk
+      if (clerk?.signOut) await clerk.signOut()
+    } catch { /* ignore */ }
     await supabase.auth.signOut()
     setUser(null)
-    // Nettoyer tous les stores persistants et le cache React Query
     queryClient.clear()
     useDiagnosticStore.getState().reset()
     useAppStore.getState().closeDrawer()
