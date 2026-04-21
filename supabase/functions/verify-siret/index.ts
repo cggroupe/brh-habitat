@@ -11,21 +11,19 @@
  *   410 -> { ok: false, error: "Entreprise fermee", date_fermeture }
  */
 
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.96.0'
 import { getCorsHeaders } from '../_shared/cors.ts'
 import { checkRateLimit } from '../_shared/rate-limit.ts'
 
 const API_BASE = 'https://recherche-entreprises.api.gouv.fr/search'
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
+const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 
-function validSiretLuhn(siret: string): boolean {
-  if (!/^\d{14}$/.test(siret)) return false
-  // Algorithme de Luhn adapte SIRET (chaque 2eme chiffre double)
-  let sum = 0
-  for (let i = 0; i < 14; i++) {
-    let d = parseInt(siret[i], 10)
-    if (i % 2 === 1) { d *= 2; if (d > 9) d -= 9 }
-    sum += d
-  }
-  return sum % 10 === 0
+function validSiretFormat(siret: string): boolean {
+  // Verifie juste que c'est 14 chiffres. L'API INSEE decide de la validite reelle.
+  // (le Luhn echoue sur des cas legitimes : La Poste, certains SIRET etrangers,
+  // etablissements recents non encore syncs...)
+  return /^\d{14}$/.test(siret)
 }
 
 interface SireneResult {
@@ -103,19 +101,37 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ ok: false, error: 'Body JSON invalide' }), { status: 400, headers: { ...cors, 'Content-Type': 'application/json' } })
   }
 
-  if (!validSiretLuhn(siret)) {
-    return new Response(JSON.stringify({ ok: false, error: 'SIRET invalide (14 chiffres, cle Luhn invalide)' }), {
+  if (!validSiretFormat(siret)) {
+    return new Response(JSON.stringify({ ok: false, error: 'Le SIRET doit contenir exactement 14 chiffres' }), {
       status: 400, headers: { ...cors, 'Content-Type': 'application/json' },
     })
   }
 
+  // Retry avec backoff expo sur 429 (rate limit public de l'API gouv)
+  async function fetchWithRetry(): Promise<Response> {
+    const MAX = 3
+    const delays = [0, 600, 1800] // ms
+    let lastResp: Response | null = null
+    for (let attempt = 0; attempt < MAX; attempt++) {
+      if (delays[attempt]) await new Promise((r) => setTimeout(r, delays[attempt]))
+      lastResp = await fetch(`${API_BASE}?q=${siret}&per_page=1`, {
+        signal: AbortSignal.timeout(10_000),
+        headers: { 'User-Agent': 'BRH-Habitat/1.0 (+https://brh-habitat.vercel.app)' },
+      })
+      if (lastResp.status !== 429) return lastResp
+    }
+    return lastResp!
+  }
+
   try {
-    const resp = await fetch(`${API_BASE}?q=${siret}&per_page=1`, {
-      signal: AbortSignal.timeout(10_000),
-      headers: { 'User-Agent': 'BRH-Habitat-Verify-SIRET' },
-    })
+    const resp = await fetchWithRetry()
+    if (resp.status === 429) {
+      return new Response(JSON.stringify({ ok: false, error: 'L\'annuaire des entreprises est temporairement sature. Reessayez dans 30 secondes.' }), {
+        status: 429, headers: { ...cors, 'Retry-After': '30', 'Content-Type': 'application/json' },
+      })
+    }
     if (!resp.ok) {
-      return new Response(JSON.stringify({ ok: false, error: 'API SIRENE indisponible, reessayez' }), {
+      return new Response(JSON.stringify({ ok: false, error: `L'annuaire a renvoye HTTP ${resp.status}. Reessayez.` }), {
         status: 502, headers: { ...cors, 'Content-Type': 'application/json' },
       })
     }
@@ -136,6 +152,27 @@ Deno.serve(async (req) => {
         ok: false, error: 'Cette entreprise est fermee selon les registres officiels',
         date_fermeture: ent.date_fermeture,
       }), { status: 410, headers: { ...cors, 'Content-Type': 'application/json' } })
+    }
+
+    // Check si deja enregistree dans BRH (pour UX : eviter un signup qui va echouer sur le duplicate)
+    let alreadyRegistered = false
+    let existingOwnerEmail: string | null = null
+    if (SERVICE_KEY && SUPABASE_URL) {
+      const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { autoRefreshToken: false, persistSession: false } })
+      const { data: existing } = await admin
+        .from('brh_companies')
+        .select('id, name, owner_id')
+        .eq('siret', siege.siret ?? siret)
+        .maybeSingle()
+      if (existing) {
+        alreadyRegistered = true
+        // On ne revele pas l'email complet pour privacy, juste un hint
+        const { data: ownerProfile } = await admin.from('profiles').select('email').eq('id', existing.owner_id).maybeSingle()
+        if (ownerProfile?.email) {
+          const [local, domain] = ownerProfile.email.split('@')
+          existingOwnerEmail = local.slice(0, 2) + '***@' + domain
+        }
+      }
     }
 
     const naf = siege.activite_principale ?? null
@@ -160,6 +197,8 @@ Deno.serve(async (req) => {
       date_creation: ent.date_creation ?? null,
       etat: 'actif',
       dirigeants,
+      already_registered: alreadyRegistered,
+      existing_owner_hint: existingOwnerEmail,
     }), { status: 200, headers: { ...cors, 'Content-Type': 'application/json' } })
   } catch (err) {
     const msg = err instanceof Error && err.name === 'TimeoutError' ? 'API SIRENE : timeout' : 'Erreur lors de la verification'
