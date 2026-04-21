@@ -212,10 +212,12 @@ export default function RegisterProPage() {
               {/* Clerk SignUp : apres signup, redirige vers /inscription/pro/finalisation
                   qui va creer la company a partir des donnees SIRET du sessionStorage */}
               <SignUp
-                routing="virtual"
+                routing="path"
+                path="/inscription/pro"
                 signInUrl="/connexion"
                 unsafeMetadata={{ role: 'pro', pending_siret: siretData.siret }}
-                redirectUrl="/inscription/pro/finalisation"
+                forceRedirectUrl="/inscription/pro/finalisation"
+                fallbackRedirectUrl="/inscription/pro/finalisation"
                 appearance={{
                   elements: {
                     rootBox: 'w-full',

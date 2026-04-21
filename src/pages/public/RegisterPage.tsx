@@ -23,9 +23,11 @@ export default function RegisterPage() {
           </div>
 
           <SignUp
-            routing="virtual"
+            routing="path"
+            path="/inscription"
             signInUrl="/connexion"
             unsafeMetadata={{ role: 'particulier' }}
+            fallbackRedirectUrl="/particulier"
             appearance={{
               elements: {
                 rootBox: 'w-full',

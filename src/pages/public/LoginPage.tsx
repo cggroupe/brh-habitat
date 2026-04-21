@@ -23,8 +23,10 @@ export default function LoginPage() {
 
           {/* Widget Clerk — gere email, password, OAuth (Google/Apple/LinkedIn selon config Clerk) */}
           <SignIn
-            routing="virtual"
+            routing="path"
+            path="/connexion"
             signUpUrl="/inscription"
+            fallbackRedirectUrl="/"
             appearance={{
               elements: {
                 rootBox: 'w-full',
