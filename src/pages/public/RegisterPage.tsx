@@ -23,8 +23,6 @@ export default function RegisterPage() {
           </div>
 
           <SignUp
-            routing="path"
-            path="/inscription"
             signInUrl="/connexion"
             unsafeMetadata={{ role: 'particulier' }}
             fallbackRedirectUrl="/particulier"

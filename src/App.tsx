@@ -135,12 +135,9 @@ export default function App() {
               <Route path="/articles" element={<ArticlesPage />} />
               <Route path="/articles/:slug" element={<ArticlePage />} />
               <Route path="/contact" element={<ContactPage />} />
-              {/* Wildcard requis par Clerk pour ses sous-etapes (verify-email, SSO callback, etc.) */}
-              <Route path="/connexion/*" element={<LoginPage />} />
-              <Route path="/inscription/*" element={<RegisterPage />} />
+              <Route path="/connexion" element={<LoginPage />} />
+              <Route path="/inscription" element={<RegisterPage />} />
               <Route path="/inscription/pro" element={<RegisterProPage />} />
-              <Route path="/inscription/pro/sso-callback/*" element={<RegisterProPage />} />
-              <Route path="/inscription/pro/verify-email-address/*" element={<RegisterProPage />} />
               <Route path="/inscription/pro/finalisation" element={<RegisterProFinalisationPage />} />
               <Route path="/inscription/particulier" element={<RegisterParticulierPage />} />
               <Route path="/partenaires" element={<PartenairesPage />} />
