@@ -5,6 +5,65 @@
 
 ---
 
+## 2026-05-01 — Phase 11.1 : Tier 1 socle scoring (sources externes prospection)
+
+- **Contexte** : Implémentation du Tier 1 du plan `external-data-sources.md` (Phase 11.0). Livrable : moteur de score composite v2 (0-100) sur 9 règles + bonus précarité, segmentation actionnable (`ultra_chaud` / `mpr_bleu_prio` / `premium` / `standard` / `cold`), enrichissement IRIS (Filosofi décile MPR auto + Recensement + Enedis thermosens + GRDF gaz) et risques commune (Géorisques RGA/radon/inondation/cavités). Pré-requis pour batch scoring des 59 306 prospects DPE F/G Bretagne.
+- **Fichiers modifiés** :
+  - `supabase/migrations/20260507100000_brh_ext_tier1.sql` (NEW — 3 tables + ALTER `brh_dpe_prospects` + RLS + helper SQL)
+  - `src/lib/dpe-engine/external/types.ts` (NEW)
+  - `src/lib/dpe-engine/external/score-v2.ts` (NEW — orchestrateur 9 règles + bonus)
+  - `src/lib/dpe-engine/external/filosofi.ts` (NEW — décile MPR auto)
+  - `src/lib/dpe-engine/external/enedis.ts` (NEW — conso adresse + thermosens IRIS)
+  - `src/lib/dpe-engine/external/grdf.ts` (NEW — conso gaz IRIS)
+  - `src/lib/dpe-engine/external/georisques.ts` (NEW — RGA/radon/inondation/cavités)
+  - `src/lib/dpe-engine/external/index.ts` (NEW — public exports)
+  - `src/lib/dpe-engine/external/tests/fixtures.ts` (NEW — fixtures Bretagne)
+  - `src/lib/dpe-engine/external/tests/score-v2.test.ts` (NEW — 18 tests)
+  - `src/lib/dpe-engine/external/tests/filosofi.test.ts` (NEW — 18 tests)
+  - `src/lib/dpe-engine/external/tests/enedis-grdf.test.ts` (NEW — 11 tests)
+  - `src/lib/dpe-engine/external/tests/georisques.test.ts` (NEW — 6 tests)
+  - `src/api/external-data.ts` (NEW — wrappers EF)
+  - `src/hooks/queries/external-data.ts` (NEW — useEnrichProspect + useGeorisquesLookup)
+  - `supabase/functions/enrich-prospect/index.ts` (NEW — EF Deno + score-v2 réimplémenté côté serveur)
+  - `supabase/functions/georisques-lookup/index.ts` (NEW — EF Deno + cache 90j)
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations créées** :
+  - `20260507100000_brh_ext_tier1.sql` ✅ APPLIQUÉE sur Supabase prod (`lygmmvxnmvlgynmrcpny`)
+- **Tables créées** : `brh_ext_cache`, `brh_ext_iris`, `brh_ext_commune`. **ALTER** `brh_dpe_prospects` (+8 colonnes : `iris_code`, `score_v2`, `score_v2_segment`, `score_v2_detail` JSONB, `score_v2_calculated_at`, `enedis_kwh_logt`, `dvf_mutation_24m`, `has_pv_36kw`, `abf_required`).
+- **Edge Functions déployées** :
+  - `enrich-prospect` ✅ déployée (rate limit 20/min/IP, body `{ prospectId }`)
+  - `georisques-lookup` ✅ déployée (rate limit 30/min/IP, cache 90j Supabase)
+- **Pages wiki impactées** :
+  - `external-data-sources.md` (statut : Phase 11.0 ✅ → 11.1 ✅, 11.2-11.5 ❌)
+  - `data-model.md` (à mettre à jour : 79 → 82 tables avec brh_ext_*)
+  - `edge-functions-reference.md` (à mettre à jour : 14 → 16 EF)
+- **API publique exposée (front)** :
+  - Modules : `computeScoreV2`, `estimateDecile`, `decileToCouleurMpr`, `medianeToCouleurMpr`, `parseEnedisAddrSignal`, `buildEnedisAddrUrl`, `buildEnedisIrisUrl`, `parseGrdfIrisSignal`, `buildGrdfIrisUrl`, `isGazDominantIris`, `aggregateGeorisques`, `extractRadonCategorie`, `buildGeorisquesUrls`
+  - Hooks : `useEnrichProspect()`, `useGeorisquesLookup({ codeInsee })`
+- **Conformité 14 règles BRH** :
+  - Règle 4 ✅ — pas de `as unknown as` (types déclarés explicitement dans `external/types.ts`)
+  - Règle 5 ✅ — `if (error) throw error` partout dans `external-data.ts`
+  - Règle 9 ✅ — rate-limit sur les 2 EF (pattern `_shared/rate-limit.ts` existant)
+  - Règle 11 ✅ — TIMESTAMPTZ partout (cache, IRIS, commune)
+  - Règle 12 ✅ — fonction SQL `brh_ext_decile_to_couleur_mpr` avec `SET search_path = ''`
+  - Règle 8 ✅ — RLS strict (pas de `USING (true)`, lecture pro+admin uniquement, écriture admin uniquement, cache `service_role`)
+- **Risque** : Low. EF `enrich-prospect` réimplémente score-v2 côté Deno (le module front ne peut pas être importé par Deno). Test critique : la logique doit rester strictement identique au module TS. Action Phase 11.1.1+ : extraire score-v2 dans un module `_shared/score-v2.ts` partagé front+EF (refactor).
+- **Tests** : ✅ **53 nouveaux tests** (4 fichiers) → **212/212 globaux** verts (était 159). Tsc clean. Lint clean.
+- **Status** : ✅ DONE V1 (Tier 1 livré, scoring fonctionnel sur les 59 306 prospects existants dès que les seeds IRIS/commune Bretagne sont chargés).
+- **Décisions de cadrage** :
+  - **Score-v2 réimplémenté côté Deno** : choix V1 pour découplage (le module front exige `import.meta`/Vite). Refactor possible Phase 11.1.1 via `_shared/`.
+  - **DVF + Enedis adresse stubés Phase 11.1** : les modules existent (parsers, URLs) mais pas de scrape réel — la règle #1 (mutation_24m + F/G) ne déclenchera pas tant que Phase 11.2 ne livre pas le module DVF complet.
+  - **Cache `brh_ext_cache` `service_role` only** : aucune route front, manipulé exclusivement par EF (cohérent avec règle 9).
+  - **Helper SQL `brh_ext_decile_to_couleur_mpr(decile)`** : réplique côté DB pour seeds batch (script `seed-iris-bretagne.ts` Phase 11.1.1+). Source unique : barème INSEE 2024-2026.
+  - **Pas de seed Bretagne dans cette phase** : les 3 tables sont vides, à remplir par scripts Phase 11.1.1 (`seed-iris-bretagne.ts` + `seed-commune-bretagne.ts`).
+- **Phases suivantes** :
+  - Phase 11.1.1 (J+1-2) : scripts seed `seed-iris-bretagne.ts` (≈2800 IRIS) + `seed-commune-bretagne.ts` (≈1208 communes) + `batch-score-v2-all.ts` (59k prospects)
+  - Phase 11.2 (J+15) : Tier 2 (DVF complet, INSEE Recensement, Sit@del2, ANIL aides)
+  - Phase 11.3 (J+30) : Régional Bretagne (DPE Rennes Métropole, cadastres solaires)
+  - Phase 11.4 (J+60) : Tier 4 USP vs Kelvin (LiDAR + DJU réel Météo-France)
+
+---
+
 ## 2026-05-01 — Phase 12 : Export XML ADEME (audit opposable, schéma 5.3.1)
 
 - **Contexte** : L'audit BRH devient un document **opposable** (vente/location, transactions immobilières). Génération XML conforme au schéma Observatoire DPE-Audit version `5.3.1` (équivalent fonctionnel des 33 modules `XML_*` de CapRénov+ 26.0.2 — `services/audit/xml/sortie/`). V1 : XML bien formé en UTF-8, conventions `enum_*_id` mappées vers les codes ADEME officiels, booléens `0/1` strict, jamais de notation scientifique.
