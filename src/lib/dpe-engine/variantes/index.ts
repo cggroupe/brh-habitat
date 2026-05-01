@@ -24,6 +24,29 @@ import {
   type GesteMprMonoId,
 } from '../aides'
 
+/**
+ * Convertit une période de construction en année moyenne (pour MPR Ampleur ≥15 ans).
+ */
+function periodeToAnnee(periode: string): number {
+  const map: Record<string, number> = {
+    avant_1948: 1900,
+    '1948-1974': 1960,
+    '1975-1977': 1976,
+    '1978-1982': 1980,
+    '1983-1988': 1985,
+    '1989-2000': 1995,
+    '2001-2005': 2003,
+    '2006-2012': 2009,
+    apres_2013: 2018,
+  }
+  return map[periode] ?? 1990
+}
+
+/** Compte les gestes d'isolation (≥ 2 nécessaires pour MPR Ampleur). */
+function countGestesIsolation(gestes: GesteDelta[]): number {
+  return gestes.filter((g) => g.geste.startsWith('isolation_')).length
+}
+
 // ============================================================================
 // Deep merge inputs + delta
 // ============================================================================
@@ -487,10 +510,20 @@ export interface AidesContext {
 
 /**
  * Calcul aides détaillé pour une liste de gestes (avec mapping interne).
+ *
+ * Phase 9 : si baseDpe + varianteDpe + base inputs sont fournis, calcule
+ * aussi MPR Ampleur (parcours accompagné) et choisit MAX(mono, ampleur).
  */
 export function calcAidesDetaillees(
   gestes: GesteDelta[],
-  ctx: AidesContext,
+  ctx: AidesContext & {
+    /** Inputs base (pour année logement). */
+    baseInputs?: AuditInputs
+    /** DPE base (pour étiquette avant). */
+    baseDpe?: DpeResult
+    /** DPE variante (pour étiquette après). */
+    varianteDpe?: DpeResult
+  },
 ): AidesScenarioResult {
   // Convertir les gestes vers le format attendu par le moteur aides
   const aidesGestes = gestes
@@ -512,12 +545,28 @@ export function calcAidesDetaillees(
     })
     .filter((g): g is NonNullable<typeof g> => g !== null)
 
+  // Construit le contexte MPR Ampleur si on a baseDpe + varianteDpe + inputs
+  let ampleurContext: import('../aides').AidesScenarioInput['ampleurContext'] = undefined
+  if (ctx.baseDpe && ctx.varianteDpe && ctx.baseInputs) {
+    const nbGestesIso = countGestesIsolation(gestes)
+    const anneeLogement = periodeToAnnee(ctx.baseInputs.bati.periodeConstruction)
+    ampleurContext = {
+      classeAvant: ctx.baseDpe.etiquetteDpe,
+      classeApres: ctx.varianteDpe.etiquetteDpe,
+      gesAvant: ctx.baseDpe.gesKgCo2M2An,
+      gesApres: ctx.varianteDpe.gesKgCo2M2An,
+      nbGestesIso,
+      anneeLogement,
+    }
+  }
+
   return calcAidesScenario({
     couleur: ctx.couleur,
     zoneClimat: zoneClimatToCEE(ctx.zoneClimat),
     gestes: aidesGestes,
     sautClassesDpe: ctx.sautClassesDpe,
     isGlobalAmpleur: ctx.isGlobalAmpleur,
+    ampleurContext,
   })
 }
 
@@ -564,17 +613,20 @@ export function computeScenario(
     return 'electricite'
   })()
 
-  // Aides détaillées Phase 8 si context fourni (avec couleur + zone)
+  // Aides détaillées Phase 8+9 si context fourni (avec couleur + zone)
   let aidesDetaillees: AidesScenarioResult | undefined
   let aidesTotalEffective = aidesEuros.total
   if (aidesCtx?.couleur) {
-    const ctx: AidesContext = {
+    aidesDetaillees = calcAidesDetaillees(gestes, {
       couleur: aidesCtx.couleur,
       zoneClimat: aidesCtx.zoneClimat ?? baseDpe.hypotheses.zoneClimatique,
       sautClassesDpe: aidesCtx.sautClassesDpe,
       isGlobalAmpleur: aidesCtx.isGlobalAmpleur,
-    }
-    aidesDetaillees = calcAidesDetaillees(gestes, ctx)
+      // Phase 9 : context MPR Ampleur (avant/après + inputs)
+      baseInputs: base,
+      baseDpe,
+      varianteDpe: result,
+    })
     aidesTotalEffective = aidesDetaillees.aidesTotalSubventionsEuros
   }
 

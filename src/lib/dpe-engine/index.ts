@@ -146,7 +146,7 @@ export type {
   AidesContext,
 } from './variantes'
 
-// Moteur Aides détaillé — Phase 8
+// Moteur Aides détaillé — Phase 8 + 9
 export {
   calcCouleurMpr,
   calcCouleurFromAudit,
@@ -162,6 +162,12 @@ export {
   PLAFOND_GLOBAL_HT_PCT,
   calcAidesScenario,
   zoneClimatToCEE,
+  // Phase 9 : MPR Ampleur + bonus
+  calcMprAmpleur,
+  eligibleMprAmpleur,
+  isSortiePassoire,
+  isBbcAtteint,
+  TABLE_MPR_AMPLEUR,
 } from './aides'
 export type {
   CouleurMPR,
@@ -183,6 +189,10 @@ export type {
   AidesGesteInput,
   AidesScenarioInput,
   AidesScenarioResult,
+  // Phase 9
+  ParamMprAmpleur,
+  MprAmpleurInput,
+  MprAmpleurResult,
 } from './aides'
 
 import type { AuditInputs, DpeResult } from './types'

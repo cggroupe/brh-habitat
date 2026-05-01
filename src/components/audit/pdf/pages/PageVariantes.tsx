@@ -191,6 +191,25 @@ export function PageVariantes({ audit, result }: Props) {
                     ? s.template.description.slice(0, 87) + '…'
                     : s.template.description}
                 </Text>
+                {/* Badges Phase 9 : MPR Ampleur + bonus */}
+                {aides?.ampleurChosen && (
+                  <Text style={{ fontSize: 6, color: '#6b21a8', fontWeight: 'bold', marginTop: 2 }}>
+                    ★ MPR Ampleur
+                    {aides.mprAmpleur?.nbSautsCalcules
+                      ? ` (${aides.mprAmpleur.nbSautsCalcules}+ classes)`
+                      : ''}
+                  </Text>
+                )}
+                {aides?.mprAmpleur?.bonusSortiePassoire && (
+                  <Text style={{ fontSize: 6, color: '#9a3412', marginTop: 1 }}>
+                    + Sortie de passoire (+10%)
+                  </Text>
+                )}
+                {aides?.mprAmpleur?.bonusBbc && (
+                  <Text style={{ fontSize: 6, color: '#065f46', marginTop: 1 }}>
+                    + BBC atteint (+10%)
+                  </Text>
+                )}
                 {aides?.cumul.ratioEcretement && aides.cumul.ratioEcretement < 1 && (
                   <Text style={{ fontSize: 6, color: '#c2410c', marginTop: 1 }}>
                     ⚠ Aides écrêtées (plafond)

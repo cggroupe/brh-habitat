@@ -11,7 +11,16 @@
  */
 
 import { useMemo, useState } from 'react'
-import { TrendingDown, ArrowRight, AlertCircle, CheckCircle, Wrench, Calculator } from 'lucide-react'
+import {
+  TrendingDown,
+  ArrowRight,
+  AlertCircle,
+  CheckCircle,
+  Wrench,
+  Calculator,
+  Award,
+  Sparkles,
+} from 'lucide-react'
 import {
   calcCouleurFromAudit,
   calcCouleurMpr,
@@ -254,6 +263,29 @@ export function VariantesCompare({ baseInputs, baseDpe }: Props) {
                     </div>
                     <div className="mt-1 max-w-md text-xs text-gray-500">
                       {s.template.description}
+                    </div>
+                    {/* Badges Phase 9 : MPR Ampleur + bonus */}
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {aides?.ampleurChosen && (
+                        <span className="inline-flex items-center gap-0.5 rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-bold text-purple-800">
+                          <Award className="h-3 w-3" />
+                          MPR Ampleur
+                          {aides.mprAmpleur?.nbSautsCalcules &&
+                            ` (${aides.mprAmpleur.nbSautsCalcules}+ classes)`}
+                        </span>
+                      )}
+                      {aides?.mprAmpleur?.bonusSortiePassoire && (
+                        <span className="inline-flex items-center gap-0.5 rounded bg-orange-100 px-1.5 py-0.5 text-[10px] font-bold text-orange-800">
+                          <Sparkles className="h-3 w-3" />
+                          +10% Sortie passoire
+                        </span>
+                      )}
+                      {aides?.mprAmpleur?.bonusBbc && (
+                        <span className="inline-flex items-center gap-0.5 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">
+                          <Sparkles className="h-3 w-3" />
+                          +10% BBC
+                        </span>
+                      )}
                     </div>
                     {aides?.cumul.ratioEcretement && aides.cumul.ratioEcretement < 1 && (
                       <div className="mt-1 inline-flex items-center gap-0.5 text-xs text-orange-600">

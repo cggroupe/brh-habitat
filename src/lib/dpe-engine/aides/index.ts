@@ -14,6 +14,7 @@ export * from './mpr-detaille'
 export * from './cee-detaille'
 export * from './eco-ptz'
 export * from './cumul-plafonds'
+export * from './mpr-ampleur'
 
 import type { CouleurMPR } from './decile'
 import type { ZoneClimaCEE } from './cee-detaille'
@@ -21,6 +22,8 @@ import { calcMprTotal, type MprGesteInput, type GesteMprMonoId } from './mpr-det
 import { calcCeeTotal, type CeeGesteInput } from './cee-detaille'
 import { calcEcoPtz, type CategorieTravaux, type EcoPtzResult } from './eco-ptz'
 import { calcCumulPlafond, type CumulResult } from './cumul-plafonds'
+import { calcMprAmpleur, type MprAmpleurResult } from './mpr-ampleur'
+import type { EtiquetteDpe } from '../constants'
 
 export interface AidesGesteInput {
   /** ID du geste pour MPR (matche aussi CEE V1). */
@@ -40,10 +43,24 @@ export interface AidesScenarioInput {
   /** Saut DPE classes pour mode 5/6 ÉcoPTZ. */
   sautClassesDpe?: number
   isGlobalAmpleur?: boolean
+  /** Inputs pour MPR Ampleur — si fournis, le moteur calculera MAX(mono, ampleur). */
+  ampleurContext?: {
+    classeAvant: EtiquetteDpe
+    classeApres: EtiquetteDpe
+    gesAvant?: number
+    gesApres?: number
+    nbGestesIso: number
+    ratioSurfIsolee?: number
+    anneeLogement?: number
+  }
 }
 
 export interface AidesScenarioResult {
   mpr: { detail: ReturnType<typeof calcMprTotal>['detail']; totalEuros: number }
+  /** MPR Ampleur si éligible. */
+  mprAmpleur?: MprAmpleurResult
+  /** True si l'ampleur est plus avantageuse que mono-geste (le moteur a choisi MAX). */
+  ampleurChosen?: boolean
   cee: { detail: ReturnType<typeof calcCeeTotal>['detail']; totalEuros: number; totalCumacKwh: number }
   ecoPtz: EcoPtzResult
   cumul: CumulResult
@@ -68,7 +85,28 @@ export function calcAidesScenario(input: AidesScenarioInput): AidesScenarioResul
   }))
   const mpr = calcMprTotal(mprInputs)
 
-  // CEE
+  // MPR Ampleur (si contexte fourni)
+  let mprAmpleur: MprAmpleurResult | undefined
+  if (input.ampleurContext) {
+    mprAmpleur = calcMprAmpleur({
+      couleur: input.couleur,
+      classeAvant: input.ampleurContext.classeAvant,
+      classeApres: input.ampleurContext.classeApres,
+      gesAvant: input.ampleurContext.gesAvant,
+      gesApres: input.ampleurContext.gesApres,
+      travauxHt: coutHtTotal,
+      nbGestesIso: input.ampleurContext.nbGestesIso,
+      ratioSurfIsolee: input.ampleurContext.ratioSurfIsolee,
+      anneeLogement: input.ampleurContext.anneeLogement,
+    })
+  }
+
+  // Choix MAX(mono, ampleur) — non cumulables
+  const ampleurChosen = !!(mprAmpleur?.eligible && mprAmpleur.montantEuros > mpr.totalEuros)
+  const mprEffectiveEuros = ampleurChosen ? mprAmpleur!.montantEuros : mpr.totalEuros
+
+  // CEE (cumulable avec MPR mono OU MPR Ampleur, mais pas avec CDP coup de pouce qui est exclusif Ampleur)
+  // V1 : on garde le CEE classique dans tous les cas
   const ceeInputs: CeeGesteInput[] = input.gestes.map((g) => ({
     geste: g.geste,
     couleur: input.couleur,
@@ -77,25 +115,27 @@ export function calcAidesScenario(input: AidesScenarioInput): AidesScenarioResul
   }))
   const cee = calcCeeTotal(ceeInputs)
 
-  // ÉcoPTZ
+  // ÉcoPTZ — si MPR Ampleur éligible, mode 6 automatique (50k €)
   const ecoPtz = calcEcoPtz({
     categories: input.gestes.map((g) => g.categorieEcoPtz),
     sautClassesDpe: input.sautClassesDpe,
     coutHtEuros: coutHtTotal,
-    isGlobalAmpleur: input.isGlobalAmpleur,
+    isGlobalAmpleur: input.isGlobalAmpleur ?? ampleurChosen,
   })
 
-  // Cumul + plafond global
+  // Cumul + plafond global (utilise mprEffectiveEuros, pas mpr.totalEuros)
   const cumul = calcCumulPlafond({
     couleur: input.couleur,
     coutHtEuros: coutHtTotal,
-    mprEuros: mpr.totalEuros,
+    mprEuros: mprEffectiveEuros,
     ceeEuros: cee.totalEuros,
-    autresAidesEuros: 0, // ÉcoPTZ = prêt, pas subvention
+    autresAidesEuros: 0,
   })
 
   return {
     mpr,
+    mprAmpleur,
+    ampleurChosen,
     cee,
     ecoPtz,
     cumul,

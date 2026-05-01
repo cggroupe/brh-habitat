@@ -340,6 +340,52 @@ Pro RGE charge audit → Saisit foyer (Bleu/Jaune/Violet/Rose détecté auto)
 ### Status
 ✅ DONE — Phase 8.1 UI livrée. Le pro RGE et le client voient maintenant les aides précises selon le décile MaPrimeRénov' du foyer (auto-détecté depuis RFR + nb personnes).
 
+### Phase 9 — MPR Ampleur (parcours accompagné) + bonus
+
+**Module `aides/mpr-ampleur.ts`** :
+- 7 conditions d'éligibilité (logement ≥15 ans, RP, étiquette E/F/G, GES diminue,
+  saut ≥2 ou ≥3 si départ G, ≥2 gestes iso 25% surface, baisse carbone)
+- Table 12 paliers officiels : couleur × nbSauts (2/3/4+) → forfait/plafond/taux
+- Forfait Bleu × 4+ classes = 70 000 €, plafond 70k HT, taux 80%
+- Bonus Sortie de Passoire +10% (avant F/G → après ≤ D)
+- Bonus BBC +10% (après A ou B) cumulable
+
+**Orchestrateur `calcAidesScenario`** :
+- Calcule MPR mono-geste **ET** MPR Ampleur si contexte fourni
+- Choisit `MAX(mono, ampleur)` (non cumulables réglementairement)
+- Si Ampleur active : ÉcoPTZ basculé en mode 6 (50k €)
+- Champ `ampleurChosen` exposé pour UI
+
+**Refactor `variantes/calcAidesDetaillees`** :
+- Construit auto le contexte Ampleur depuis baseInputs + baseDpe + varianteDpe
+- Convertit `periodeConstruction` → année moyenne pour critère ≥15 ans
+- Compte gestes iso pour critère ≥2
+
+**UI `VariantesCompare`** :
+- Badge violet "★ MPR Ampleur (3+ classes)" si éligible
+- Badge orange "+10% Sortie passoire"
+- Badge émeraude "+10% BBC"
+
+**PDF `PageVariantes`** :
+- Mentions sous le nom du scénario (★ MPR Ampleur, + Sortie passoire, + BBC)
+- Calcul automatique côté PDF (pas besoin de paramètre supplémentaire)
+
+**Tests** : 18 nouveaux tests (éligibilité, bonus Sortie passoire, bonus BBC,
+montants Bleu/Rose × 2/3/4+ sauts, orchestrateur MAX(mono, ampleur)).
+**Total tests : 128 → 146** (+18).
+
+**Impact business** :
+- Foyer Bleu rénovation globale F→A : MPR Ampleur **67 200 €**
+  (vs mono-geste ~25-30k €), reste à charge proche de 0 % avec ÉcoPTZ.
+- Foyer Rose passoire F→C : MPR Ampleur **15 125 €** (vs Rose mono = 0 €).
+
+**Tests** : tsc 0, lint 0, build 12.09s, vitest 146/146.
+
+### Status
+✅ DONE — Phase 9 livrée. Le moteur identifie automatiquement la meilleure aide MPR
+selon les caractéristiques du chantier, et applique les bonus Sortie de Passoire + BBC
+quand applicables.
+
 ---
 
 ## 2026-04-30 — Phase 1 DPE Engine : fondation (portage CapRénov+)
