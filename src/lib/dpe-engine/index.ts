@@ -63,24 +63,52 @@ export {
 export { calcGV } from './bati/calc-gv-ubat'
 export type { GvDecomposition } from './bati/calc-gv-ubat'
 
+// Climat — DH, Nref, ECh
+export {
+  getDHCh,
+  getNrefCh,
+  getECh,
+  getDHRa,
+  getNrefRa,
+  getERa,
+  getDHChAnnuel,
+  getNrefChAnnuel,
+  getEChAnnuel,
+  getTbase,
+} from './equipements/climat'
+export type { ClimatLookupOpts } from './equipements/climat'
+
+// Chauffage — Phase 2.2
+export {
+  calcChauffage,
+  calcBchAnnuel,
+  calcBchMensuel,
+  calcFj,
+  calcRe,
+  calcRd,
+  calcRr,
+  calcRg,
+  calcIch,
+  calcSCOP,
+  calcSCOPFromInput,
+  isPAC,
+  calcI0,
+} from './equipements/chauffage'
+export type { ChauffageResult, BchResult, PacInputs } from './equipements/chauffage'
+
 import type { AuditInputs, DpeResult } from './types'
-import { MOTEUR_VERSION } from './constants'
+import { MOTEUR_VERSION, COEF_EP, CO2_KG_PER_KWH } from './constants'
 import { departementFromInsee, getZoneClimatique, altitudeBucket } from './geo/zones-climatiques'
 import { resetCache } from './helpers/memoization'
 import { calcGV } from './bati/calc-gv-ubat'
 import { calcNadeq } from './bati/apports'
+import { calcChauffage } from './equipements/chauffage'
 
 /**
  * Calcul DPE 3CL principal.
  *
- * ⚠️ Phase 2.1 partielle — bâti calculé, équipements en stub.
- *
- * Phase 2.2-2.5 ajoutera :
- * - Besoins chauffage Bch = GV × DH /1000 - apports
- * - Rendements générateurs (chaudière, PAC SCOP/COP)
- * - Conso ECS, éclairage, auxiliaires, climatisation
- * - Conversion EF → EP avec coef élec 2.3
- * - Étiquettes DPE (interpolation surface + double seuil)
+ * ⚠️ Phase 2.1+2.2 — bâti + chauffage calculés. ECS, éclairage, aux, clim,
+ * étiquettes DPE en Phase 2.3-2.4.
  */
 export function computeDpe(inputs: AuditInputs): DpeResult {
   resetCache()
@@ -89,19 +117,44 @@ export function computeDpe(inputs: AuditInputs): DpeResult {
   const altitude = altitudeBucket(inputs.geo.altitude ?? 0)
   void departementFromInsee(inputs.geo.codeInsee)
 
-  // Bâti — Phase 2.1 implémentée
+  // Bâti — Phase 2.1
   const gv = calcGV(inputs.bati, inputs.equipements.ventilation)
   const nadeq = calcNadeq(inputs.bati)
 
-  // TODO Phase 2.2-2.5 : besoins, rendements, conso, étiquettes
+  // Chauffage — Phase 2.2
+  const ch = calcChauffage(inputs)
+
+  // Estimations forfaitaires V1 pour ECS, éclairage, auxiliaires (Phase 2.3 implémentation détaillée)
+  // ECS : ~25-35 kWh EP/m²/an pour ECS électrique, ~20 kWh pour ECS gaz
+  const ecsEcEfKwh = 25 * inputs.bati.surfaceHabitable
+  const ecsEcEpKwh = ecsEcEfKwh * COEF_EP[inputs.equipements.ecs.energie ?? 'electricite']
+  const ecsGesKg = ecsEcEfKwh * CO2_KG_PER_KWH[inputs.equipements.ecs.energie ?? 'electricite']
+
+  // Éclairage forfaitaire : ~1.4 kWh/m²/an EP
+  const eclEpKwh = 1.4 * inputs.bati.surfaceHabitable
+  // Auxiliaires (pompes, ventilateurs) : ~3 kWh/m²/an EP
+  const auxEpKwh = 3 * inputs.bati.surfaceHabitable
+
+  // Total
+  const cepKwhEpAn = ch.cchEpKwhAn + ecsEcEpKwh + eclEpKwh + auxEpKwh
+  const cepKwhEpM2An = cepKwhEpAn / inputs.bati.surfaceHabitable
+  const gesKgAn = ch.cchGesKgAn + ecsGesKg
+  const gesKgCo2M2An = gesKgAn / inputs.bati.surfaceHabitable
+
   return {
-    cepKwhEpM2An: 0,
-    gesKgCo2M2An: 0,
-    etiquetteEnergie: 'G',
+    cepKwhEpM2An,
+    gesKgCo2M2An,
+    etiquetteEnergie: 'G', // Phase 2.4 (lookup brh_dpe_seuils + interpolation surface)
     etiquetteClimat: 'G',
     etiquetteDpe: 'G',
-    consoEfTotaleKwhAn: 0,
-    parPoste: { chauffage: 0, ecs: 0, eclairage: 0, auxiliaires: 0, refroidissement: 0 },
+    consoEfTotaleKwhAn: ch.cchEfKwhAn + ecsEcEfKwh,
+    parPoste: {
+      chauffage: ch.cchEpKwhAn,
+      ecs: ecsEcEpKwh,
+      eclairage: eclEpKwh,
+      auxiliaires: auxEpKwh,
+      refroidissement: 0,
+    },
     deperditions: {
       parois: gv.parois,
       ouvertures: gv.ouvertures,
