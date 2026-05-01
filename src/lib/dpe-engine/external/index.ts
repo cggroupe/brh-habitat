@@ -41,3 +41,14 @@ export {
   aggregateGeorisques,
   extractRadonCategorie,
 } from './georisques'
+
+// Phase 11.2 — DVF
+export {
+  buildDvfUrl,
+  parseDvfRow,
+  isMutationRecent,
+  haversineMeters,
+  aggregatePriceMedian3y,
+  findRecentMutationAtCoords,
+} from './dvf'
+export type { DvfMutation } from './dvf'

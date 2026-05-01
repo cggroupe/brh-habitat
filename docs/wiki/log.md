@@ -5,6 +5,66 @@
 
 ---
 
+## 2026-05-01 — Phase 11.2 : Tier 2 (DVF + page Pro `/pro/prospects-bretagne`)
+
+- **Contexte** : Tier 2 du plan `external-data-sources.md`. Livre le **module DVF** (signal #1 mutation 24m + F/G = +35 pts) et la **page Pro `/pro/prospects-bretagne`** qui expose les 59 306 prospects scorés v2 avec filtres avancés.
+- **Fichiers modifiés** :
+  - `supabase/migrations/20260514100000_brh_ext_tier2.sql` (NEW — ALTER `brh_ext_commune` + `brh_ext_aides_anil`)
+  - `src/lib/dpe-engine/external/dvf.ts` (NEW — parser CSV DVF + Haversine + médiane prix m² 3y)
+  - `src/lib/dpe-engine/external/index.ts` (export DVF)
+  - `src/lib/dpe-engine/external/tests/dvf.test.ts` (NEW — 16 tests)
+  - `src/api/prospects-bretagne.ts` (NEW — list/detail/countBySegment)
+  - `src/hooks/queries/prospects-bretagne.ts` (NEW — useProspectsBretagne, useProspectBretagneDetail, useProspectsBretagneCounts)
+  - `src/pages/pro/ProProspectsBretagne.tsx` (NEW — liste filtrable 59k + cards segments)
+  - `src/App.tsx` (route `/pro/prospects-bretagne`)
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations créées** :
+  - `20260514100000_brh_ext_tier2.sql` ✅ APPLIQUÉE Supabase prod
+- **Tables/colonnes ajoutées** :
+  - ALTER `brh_ext_commune` : `prix_m2_median_3y`, `prix_m2_growth_3y`, `dvf_last_refresh`, `sitadel2_last_refresh`
+  - **brh_ext_aides_anil** (NEW) : niveau, code_geo, nom_aide, organisme, geste_concerne TEXT[], montant_max_eur, conditions, url_source, scraped_at + RLS pro/admin
+- **Edge Functions** : Aucune (DVF est en CSV statique flat-files data.gouv.fr — Phase 11.2.1 livrera un script `enrich-dvf-bretagne.ts` + parsing 36 mois × 1208 communes ≈ 150 Mo).
+- **Pages wiki impactées** :
+  - `external-data-sources.md` § Tier 2 (à mettre à jour : DVF V1 livré)
+  - `architecture-snapshot.md` (à mettre à jour : nouvelle page `/pro/prospects-bretagne`)
+  - `data-model.md` (à mettre à jour : 80 → 81 tables)
+- **API publique exposée (front)** :
+  - **Modules** : `buildDvfUrl`, `parseDvfRow`, `isMutationRecent`, `haversineMeters`, `aggregatePriceMedian3y`, `findRecentMutationAtCoords` + type `DvfMutation`
+  - **Hooks** : `useProspectsBretagne(filters)`, `useProspectBretagneDetail(id)`, `useProspectsBretagneCounts({departement})`
+- **Page Pro `/pro/prospects-bretagne` — fonctionnalités V1** :
+  - 5 cards résumé par segment (`ultra_chaud` / `mpr_bleu_prio` / `premium` / `standard` / `cold`) cliquables = filtre rapide
+  - Filtres avancés : département (22/29/35/56), score min 0-100, MPR Bleu disponible
+  - Tableau 9 colonnes : score+segment / DPE étiquette / adresse / type / surface / conso / MPR Bleu / signaux (DVF 24m, ABF, Enedis>250) / lien détail
+  - Pagination 50/page, total compté côté Supabase
+  - Tri par défaut : score_v2 DESC (leads chauds en haut)
+- **Tests live Supabase prod (cumulé Phase 11.1.2 + 11.2)** :
+  - 200 prospects supplémentaires enrichis avec `iris_code` via Pyris (au total 220 prospects ont IRIS)
+  - 250 prospects scorés via batch-score-v2 → distribution : 290 cold + 1 standard
+  - Note : la dominance "cold" est attendue car DVF mutation_24m + Enedis adresse (règles +35 et +15) ne sont pas encore enrichis — Phase 11.2.1 + 11.2.2 délivreront ces signaux
+- **Tests Vitest** : ✅ **16 nouveaux tests DVF** → **228/228 globaux verts** (était 212).
+  - `buildDvfUrl` (3 tests : dépt 2 chiffres, DROM 97x, Corse 2A/2B)
+  - `parseDvfRow` (2 tests : ligne Brest valide, date manquante → null)
+  - `isMutationRecent` (3 tests : <24m, >24m, date invalide)
+  - `haversineMeters` (2 tests : identique=0m, 1° lat ≈ 111km)
+  - `aggregatePriceMedian3y` (3 tests : médiane+growth, vide, exclusion code 3/4)
+  - `findRecentMutationAtCoords` (3 tests : match exact, hors tolérance, code dépendances)
+- **Conformité 14 règles BRH** :
+  - Règle 4 ✅ — pas de `as unknown as` (sauf pour les retours typés Supabase non-typé, isolé dans api/)
+  - Règle 5 ✅ — `if (error) throw error` partout (`api/prospects-bretagne.ts`)
+  - Règle 6 ✅ — Route guardée par `ProGuard` (cf. App.tsx ligne 185)
+  - Règle 8 ✅ — RLS pro+admin sur `brh_ext_aides_anil`, écriture admin
+  - Règle 11 ✅ — TIMESTAMPTZ partout (dvf_last_refresh, sitadel2_last_refresh)
+- **Risque** : Low. Page UI fonctionnelle même si tous les signaux DVF/Enedis ne sont pas encore enrichis (les filtres+score "cold" majoritaire reflète l'état réel des enrichissements).
+- **Status** : ✅ DONE V1.
+- **Décisions de cadrage** :
+  - **DVF en CSV flat-files plutôt qu'API live** : data.gouv expose `https://files.data.gouv.fr/geo-dvf/latest/csv/{annee}/communes/{dept}/{insee}.csv` — pas d'API REST officielle. Le module fournit les builders d'URL + parser ; l'enrichissement batch sera Phase 11.2.1.
+  - **Tolérance spatiale 30m** : pour matcher prospect ↔ mutation parcelle (sans `id_parcelle` côté prospect, on utilise lat/lng + Haversine).
+  - **Médiane prix m² robust** : exclusion `code_type_local IN (3,4)` (dépendances + locaux industriels) — focus maison/appartement.
+  - **5 segments cards cliquables** : raccourci UX 1-clic, alternative aux filtres avancés.
+- **Phase suivante** : Phase 11.2.1 — script `enrich-dvf-bretagne.ts` (download + match parcelles + UPDATE `dvf_mutation_24m` sur les 59k prospects).
+
+---
+
 ## 2026-05-01 — Phase 11.1.2 : Auto-download CSV INSEE Filosofi + Recensement → Bretagne complète seedée
 
 - **Contexte** : Phase 11.1.1 livrait les scripts seed mais sans CSV INSEE, le scoring restait à 0 (pas de couleur MPR ni tx_proprio/tx_avant_1975 calculables). Phase 11.1.2 livre l'auto-download des CSV publics INSEE dans `seed-iris-bretagne.ts` et **seed la totalité Bretagne** (1909 IRIS + 1202 communes).
