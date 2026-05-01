@@ -8,12 +8,16 @@
 
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Loader, ArrowRight, MapPin, Home, Zap, TrendingDown, Euro, MessageCircle } from 'lucide-react'
+import { Search, Loader, ArrowRight, MapPin, Home, Zap, TrendingDown, Euro, MessageCircle, CheckCircle, Phone } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
 import { DpeLabelGauge } from '@/components/audit/DpeLabelGauge'
 import type { EtiquetteDpe } from '@/lib/dpe-engine/constants'
 import { useAuth } from '@/hooks/useAuth'
+
+interface DiagnosticGeste {
+  geste: string
+}
 
 interface DiagnosticResult {
   found: boolean
@@ -38,6 +42,7 @@ interface DiagnosticResult {
   travaux?: {
     total_ttc: number
     total_ht: number
+    gestes?: DiagnosticGeste[]
   }
   aides?: {
     decile: string
@@ -48,6 +53,22 @@ interface DiagnosticResult {
   }
 }
 
+interface LeadFormState {
+  firstName: string
+  lastName: string
+  phone: string
+  email: string
+  urgency: 'immediate' | '3mois' | '6mois' | 'plus'
+}
+
+const INITIAL_LEAD: LeadFormState = {
+  firstName: '',
+  lastName: '',
+  phone: '',
+  email: '',
+  urgency: '3mois',
+}
+
 export default function DiagnosticExpressPage() {
   const { user } = useAuth()
   const [address, setAddress] = useState('')
@@ -56,6 +77,11 @@ export default function DiagnosticExpressPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<DiagnosticResult | null>(null)
+  // Lead form
+  const [lead, setLead] = useState<LeadFormState>(INITIAL_LEAD)
+  const [submittingLead, setSubmittingLead] = useState(false)
+  const [leadSubmitted, setLeadSubmitted] = useState(false)
+  const [leadError, setLeadError] = useState<string | null>(null)
 
   const handleLookup = async () => {
     if (!address || address.length < 5) {
@@ -88,6 +114,53 @@ export default function DiagnosticExpressPage() {
     if (!result?.dpe?.projete_s2) return null
     return result.dpe.projete_s2 as EtiquetteDpe
   }, [result])
+
+  const handleSubmitLead = async () => {
+    if (!result || !result.found) return
+    setLeadError(null)
+    if (!lead.firstName || !lead.lastName || !lead.phone) {
+      setLeadError('Nom, prénom et téléphone obligatoires')
+      return
+    }
+    setSubmittingLead(true)
+    try {
+      const workType = (result.travaux?.gestes ?? [])
+        .map((g) => g.geste)
+        .filter(Boolean)
+      const { data, error: efErr } = await supabase.functions.invoke<{
+        ok: boolean
+        prospectId: string
+      }>('dpe-express-create-lead', {
+        body: {
+          firstName: lead.firstName,
+          lastName: lead.lastName,
+          phone: lead.phone,
+          email: lead.email || undefined,
+          address: result.adresse,
+          workType: workType.length > 0 ? workType : ['renovation_globale'],
+          estimatedBudgetEuros: result.travaux?.total_ttc,
+          urgency: lead.urgency,
+          diagnosticContext: {
+            etiquetteActuelle: result.dpe?.actuel,
+            etiquetteProjetee: result.dpe?.projete_s2 ?? undefined,
+            cepActuel: result.dpe?.conso_ep_actuelle,
+            cepProjete: result.dpe?.projete_s2_cep ?? undefined,
+            coutTravauxTtc: result.travaux?.total_ttc,
+            aidesTotal: result.aides ? result.aides.mpr + result.aides.cee : undefined,
+            resteACharge: result.aides?.reste_a_charge,
+          },
+        },
+      })
+      if (efErr) throw efErr
+      if (!data?.ok) throw new Error('Réponse invalide')
+      setLeadSubmitted(true)
+    } catch (e) {
+      console.error(e)
+      setLeadError('Échec envoi. Veuillez réessayer.')
+    } finally {
+      setSubmittingLead(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
@@ -280,37 +353,134 @@ export default function DiagnosticExpressPage() {
               </div>
             )}
 
-            {/* CTA */}
+            {/* Lead form / CTA */}
             <div className="rounded-lg bg-gradient-to-br from-green-700 to-green-800 p-6 text-white">
-              <h3 className="text-xl font-bold">Prêt à passer à l'action ?</h3>
-              <p className="mt-2 text-sm opacity-90">
-                Discutez avec un artisan RGE de BRH Habitat pour un audit complet et un devis détaillé.
-              </p>
-              <div className="mt-4 flex flex-wrap gap-3">
-                {user ? (
+              {leadSubmitted ? (
+                <div className="flex flex-col items-center gap-3 py-6 text-center">
+                  <CheckCircle className="h-16 w-16 text-white" />
+                  <h3 className="text-2xl font-bold">Demande envoyée !</h3>
+                  <p className="text-sm opacity-90">
+                    Un artisan RGE de BRH Habitat vous contactera dans les 48 h.
+                  </p>
                   <Link
-                    to="/messages"
-                    className="inline-flex items-center gap-2 rounded-md bg-white px-5 py-2.5 text-sm font-medium text-green-700 hover:bg-gray-50"
+                    to="/diagnostic"
+                    className="mt-2 inline-flex items-center gap-2 rounded-md border border-white/40 px-4 py-2 text-sm font-medium text-white hover:bg-white/10"
                   >
-                    <MessageCircle className="h-4 w-4" />
-                    Contacter un artisan
+                    Faire un diagnostic complet
                   </Link>
-                ) : (
-                  <Link
-                    to="/inscription"
-                    className="inline-flex items-center gap-2 rounded-md bg-white px-5 py-2.5 text-sm font-medium text-green-700 hover:bg-gray-50"
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                    Créer un compte gratuit
-                  </Link>
-                )}
-                <Link
-                  to="/diagnostic"
-                  className="inline-flex items-center gap-2 rounded-md border border-white/30 px-5 py-2.5 text-sm font-medium text-white hover:bg-white/10"
-                >
-                  Faire un diagnostic complet
-                </Link>
-              </div>
+                </div>
+              ) : (
+                <>
+                  <h3 className="text-xl font-bold">Recevoir un devis personnalisé</h3>
+                  <p className="mt-2 text-sm opacity-90">
+                    Un artisan RGE de BRH Habitat vous contactera pour un audit complet et un devis détaillé adapté à votre situation.
+                  </p>
+                  <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                    <input
+                      type="text"
+                      placeholder="Prénom *"
+                      value={lead.firstName}
+                      onChange={(e) => setLead({ ...lead, firstName: e.target.value })}
+                      className="rounded-md border-0 px-3 py-2 text-sm text-gray-900 placeholder-gray-400"
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Nom *"
+                      value={lead.lastName}
+                      onChange={(e) => setLead({ ...lead, lastName: e.target.value })}
+                      className="rounded-md border-0 px-3 py-2 text-sm text-gray-900 placeholder-gray-400"
+                      required
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Téléphone * (06 12 34 56 78)"
+                      value={lead.phone}
+                      onChange={(e) => setLead({ ...lead, phone: e.target.value })}
+                      className="rounded-md border-0 px-3 py-2 text-sm text-gray-900 placeholder-gray-400"
+                      required
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email (optionnel)"
+                      value={lead.email}
+                      onChange={(e) => setLead({ ...lead, email: e.target.value })}
+                      className="rounded-md border-0 px-3 py-2 text-sm text-gray-900 placeholder-gray-400"
+                    />
+                  </div>
+
+                  <div className="mt-3">
+                    <label className="text-xs uppercase tracking-wide opacity-80">
+                      Quand souhaitez-vous lancer les travaux ?
+                    </label>
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      {(['immediate', '3mois', '6mois', 'plus'] as const).map((u) => (
+                        <button
+                          key={u}
+                          type="button"
+                          onClick={() => setLead({ ...lead, urgency: u })}
+                          className={`rounded-full px-3 py-1 text-xs ${
+                            lead.urgency === u
+                              ? 'bg-white text-green-700 font-semibold'
+                              : 'bg-white/20 text-white hover:bg-white/30'
+                          }`}
+                        >
+                          {u === 'immediate'
+                            ? 'Immédiat'
+                            : u === '3mois'
+                              ? 'Sous 3 mois'
+                              : u === '6mois'
+                                ? 'Sous 6 mois'
+                                : 'Plus tard'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {leadError && (
+                    <div className="mt-3 rounded-md bg-red-100 p-2 text-sm text-red-800">
+                      {leadError}
+                    </div>
+                  )}
+
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={handleSubmitLead}
+                      disabled={submittingLead || !lead.firstName || !lead.lastName || !lead.phone}
+                      className="inline-flex items-center gap-2 rounded-md bg-white px-5 py-2.5 text-sm font-bold text-green-700 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      {submittingLead ? (
+                        <Loader className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Phone className="h-4 w-4" />
+                      )}
+                      Être rappelé gratuitement
+                    </button>
+                    {user ? (
+                      <Link
+                        to="/messages"
+                        className="inline-flex items-center gap-2 rounded-md border border-white/40 px-5 py-2.5 text-sm font-medium text-white hover:bg-white/10"
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        Contacter via mon espace
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/inscription"
+                        className="inline-flex items-center gap-2 rounded-md border border-white/40 px-5 py-2.5 text-sm font-medium text-white hover:bg-white/10"
+                      >
+                        <ArrowRight className="h-4 w-4" />
+                        Créer un compte
+                      </Link>
+                    )}
+                  </div>
+                  <p className="mt-3 text-[11px] opacity-70">
+                    En soumettant, vous acceptez d'être contacté par BRH Habitat. Vos données ne sont
+                    pas revendues. Conformité RGPD.
+                  </p>
+                </>
+              )}
             </div>
           </div>
         )}

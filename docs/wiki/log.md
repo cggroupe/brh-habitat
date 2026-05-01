@@ -173,6 +173,33 @@
 ### Status
 ✅ DONE — Phase 6.0 cohabitation. Page `/diagnostic-express` opérationnelle (BDNB CSTB).
 
+### Phase 6.1 — Funnel lead → brh_prospects
+
+**EF `dpe-express-create-lead`** (déployée, no-verify-jwt) :
+- Crée `brh_prospects` (`source_type='particulier'`) depuis diagnostic-express
+- Mode anonyme (service role bypass RLS) ou authentifié (`submitted_by`)
+- Validations : firstName/lastName/phone obligatoires, regex tel FR
+- Rate limit anti-spam : 3 req/min/IP
+- Lead score auto (30-100) selon qualité contact + urgency
+- Notes auto-remplies : DPE actuel/projeté + coût travaux + aides + reste à charge
+
+**Formulaire dans `/diagnostic-express`** (post-résultat) :
+- Inputs Prénom*, Nom*, Tél*, Email (optionnel)
+- Pills urgency : Immédiat / 3 mois / 6 mois / Plus tard
+- Validation client + serveur
+- Succès : "Un artisan RGE vous contactera dans les 48 h"
+- Mention RGPD
+
+**Workflow d'acquisition complet** :
+- Visiteur → diagnostic + formulaire 1 clic → lead qualifié dans CRM Pro
+- Pro RGE voit le lead dans `/pro/prospects` existant
+- Lead score guide la priorité de rappel
+
+**Tests** : tsc 0, lint 0, vitest 98/98.
+
+### Status
+✅ DONE — Phase 6.1 funnel bouclé. Visiteur anonyme → lead CRM en 1 clic.
+
 ---
 
 ## 2026-04-30 — Phase 1 DPE Engine : fondation (portage CapRénov+)
