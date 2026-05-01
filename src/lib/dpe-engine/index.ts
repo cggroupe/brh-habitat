@@ -96,19 +96,57 @@ export {
 } from './equipements/chauffage'
 export type { ChauffageResult, BchResult, PacInputs } from './equipements/chauffage'
 
+// ECS + usages mineurs — Phase 2.3
+export { calcEcs, calcBecsKwhAn } from './equipements/ecs'
+export type { EcsResult } from './equipements/ecs'
+export {
+  calcEclairageKwhEpAn,
+  calcAuxiliairesKwhEpAn,
+  calcClimatisationKwhEpAn,
+  calcPhotovoltaiqueKwhEpAn,
+  calcGesAnnexesKgAn,
+} from './equipements/usages-mineurs'
+
+// Étiquettes DPE — Phase 2.4
+export {
+  classifyDpe,
+  classifyValue,
+  getSeuils,
+  dpeFinal,
+  ORDER_DPE,
+  calcSautClasses,
+  isPassoireThermique,
+} from './dpe/etiquettes'
+export type { DpeClassification, SeuilsClassifies } from './dpe/etiquettes'
+
 import type { AuditInputs, DpeResult } from './types'
-import { MOTEUR_VERSION, COEF_EP, CO2_KG_PER_KWH } from './constants'
+import { MOTEUR_VERSION } from './constants'
 import { departementFromInsee, getZoneClimatique, altitudeBucket } from './geo/zones-climatiques'
 import { resetCache } from './helpers/memoization'
 import { calcGV } from './bati/calc-gv-ubat'
 import { calcNadeq } from './bati/apports'
 import { calcChauffage } from './equipements/chauffage'
+import { calcEcs } from './equipements/ecs'
+import {
+  calcEclairageKwhEpAn,
+  calcAuxiliairesKwhEpAn,
+  calcClimatisationKwhEpAn,
+  calcPhotovoltaiqueKwhEpAn,
+  calcGesAnnexesKgAn,
+} from './equipements/usages-mineurs'
+import { classifyDpe } from './dpe/etiquettes'
 
 /**
- * Calcul DPE 3CL principal.
+ * Calcul DPE 3CL principal — Phase 2.1+2.2+2.3+2.4 implémentées.
  *
- * ⚠️ Phase 2.1+2.2 — bâti + chauffage calculés. ECS, éclairage, aux, clim,
- * étiquettes DPE en Phase 2.3-2.4.
+ * Calcule complet :
+ * - Bâti : déperditions parois + ouvertures + ponts + ventilation (GV, Ubat)
+ * - Chauffage : Bch + rendements + PAC SCOP + intermittence → Cch
+ * - ECS : Becs + pertes + rendement → Cecs
+ * - Usages mineurs : éclairage forfait, auxiliaires (VMC + circulateur), clim, PV
+ * - Étiquettes : classification CEP + GES + double seuil → DPE final
+ *
+ * Phase 2.5 : tests Open Data ADEME (tolérance ±5 % cible).
  */
 export function computeDpe(inputs: AuditInputs): DpeResult {
   resetCache()
@@ -124,36 +162,49 @@ export function computeDpe(inputs: AuditInputs): DpeResult {
   // Chauffage — Phase 2.2
   const ch = calcChauffage(inputs)
 
-  // Estimations forfaitaires V1 pour ECS, éclairage, auxiliaires (Phase 2.3 implémentation détaillée)
-  // ECS : ~25-35 kWh EP/m²/an pour ECS électrique, ~20 kWh pour ECS gaz
-  const ecsEcEfKwh = 25 * inputs.bati.surfaceHabitable
-  const ecsEcEpKwh = ecsEcEfKwh * COEF_EP[inputs.equipements.ecs.energie ?? 'electricite']
-  const ecsGesKg = ecsEcEfKwh * CO2_KG_PER_KWH[inputs.equipements.ecs.energie ?? 'electricite']
+  // ECS — Phase 2.3
+  const ecs = calcEcs(inputs)
 
-  // Éclairage forfaitaire : ~1.4 kWh/m²/an EP
-  const eclEpKwh = 1.4 * inputs.bati.surfaceHabitable
-  // Auxiliaires (pompes, ventilateurs) : ~3 kWh/m²/an EP
-  const auxEpKwh = 3 * inputs.bati.surfaceHabitable
+  // Usages mineurs — Phase 2.3
+  const eclEpKwh = calcEclairageKwhEpAn(inputs)
+  const auxEpKwh = calcAuxiliairesKwhEpAn(inputs)
+  const climEpKwh = calcClimatisationKwhEpAn(inputs)
+  const pvEpKwh = calcPhotovoltaiqueKwhEpAn(inputs)
+  const gesAnnexesKg = calcGesAnnexesKgAn(inputs)
 
-  // Total
-  const cepKwhEpAn = ch.cchEpKwhAn + ecsEcEpKwh + eclEpKwh + auxEpKwh
+  // Total CEP (kWh EP/m²/an) — PV soustrait de la conso
+  const cepKwhEpAn = Math.max(
+    0,
+    ch.cchEpKwhAn + ecs.cecsEpKwhAn + eclEpKwh + auxEpKwh + climEpKwh - pvEpKwh,
+  )
   const cepKwhEpM2An = cepKwhEpAn / inputs.bati.surfaceHabitable
-  const gesKgAn = ch.cchGesKgAn + ecsGesKg
+
+  // Total GES (kg CO₂/m²/an)
+  const gesKgAn = ch.cchGesKgAn + ecs.cecsGesKgAn + gesAnnexesKg
   const gesKgCo2M2An = gesKgAn / inputs.bati.surfaceHabitable
+
+  // Étiquettes DPE — Phase 2.4
+  const dpe = classifyDpe(
+    cepKwhEpM2An,
+    gesKgCo2M2An,
+    inputs.bati.surfaceHabitable,
+    inputs.geo.altitude ?? 0,
+    zone,
+  )
 
   return {
     cepKwhEpM2An,
     gesKgCo2M2An,
-    etiquetteEnergie: 'G', // Phase 2.4 (lookup brh_dpe_seuils + interpolation surface)
-    etiquetteClimat: 'G',
-    etiquetteDpe: 'G',
-    consoEfTotaleKwhAn: ch.cchEfKwhAn + ecsEcEfKwh,
+    etiquetteEnergie: dpe.etiquetteEnergie,
+    etiquetteClimat: dpe.etiquetteClimat,
+    etiquetteDpe: dpe.etiquetteDpe,
+    consoEfTotaleKwhAn: ch.cchEfKwhAn + ecs.cecsEfKwhAn,
     parPoste: {
       chauffage: ch.cchEpKwhAn,
-      ecs: ecsEcEpKwh,
+      ecs: ecs.cecsEpKwhAn,
       eclairage: eclEpKwh,
       auxiliaires: auxEpKwh,
-      refroidissement: 0,
+      refroidissement: climEpKwh,
     },
     deperditions: {
       parois: gv.parois,
