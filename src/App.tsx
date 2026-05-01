@@ -18,6 +18,7 @@ import HomePage from '@/pages/public/HomePage'
 
 // Lazy loaded pages — Public
 const DiagnosticPage = lazy(() => import('@/pages/public/DiagnosticPage'))
+const DiagnosticExpressPage = lazy(() => import('@/pages/public/DiagnosticExpressPage'))
 const DiagnosticResultsPage = lazy(() => import('@/pages/public/DiagnosticResultsPage'))
 const ArticlesPage = lazy(() => import('@/pages/public/ArticlesPage'))
 const ArticlePage = lazy(() => import('@/pages/public/ArticlePage'))
@@ -128,6 +129,7 @@ export default function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/diagnostic" element={<DiagnosticPage />} />
+              <Route path="/diagnostic-express" element={<DiagnosticExpressPage />} />
               <Route path="/diagnostic/resultats/local" element={<DiagnosticResultsPage />} />
               <Route path="/diagnostic/resultats/:id" element={<DiagnosticResultsPage />} />
               <Route path="/articles" element={<ArticlesPage />} />

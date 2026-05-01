@@ -145,6 +145,34 @@
 ### Status
 ✅ DONE — Phase 4.1 livrée. Le pro RGE peut envoyer le PDF d'audit au client par email avec un seul clic.
 
+### Phase 6.0 — Absorption simulateur 8915 (ADR-010)
+
+**Edge Function `dpe-express-lookup`** (déployée, no-verify-jwt — public) :
+- Proxy thin vers `http://147.93.52.70:8915/api/dpe-virtuel`
+- Rate limit 30 req/min par IP
+- Body `{ q, lat?, lng?, foyer?, rfr?, cp? }`
+- Override `SIMULATEUR_BRH_URL` env var
+
+**Page `/diagnostic-express`** (publique, sans Shell) :
+- AddressAutocomplete BAN + foyer + RFR
+- Affichage : DPE actuel + DPE projeté après rénovation (DpeLabelGauge ×2)
+- Gain énergie en % + coût travaux + MPR + CEE + reste à charge
+- Aides par décile (bleu/jaune/violet/rose) avec décile détecté highlight
+- CTA "Contacter artisan" (si auth) ou "Créer compte" (si anonyme)
+- CTA "Faire un diagnostic complet" → `/diagnostic` existant
+- Mention BDNB CSTB millésime 2025-07.a
+
+**Stratégie sunset progressive** :
+- ✅ 6.0 : Page React en parallèle du simulateur (cohabitation)
+- ⏳ 6.1 : Push lead dans `brh_prospects` après diagnostic
+- ⏳ 6.2 : Migration `dpe_prospects` PostgreSQL local → Supabase
+- ⏳ 6.3 : Sunset port 8915 + redirection 301 `simulateur.renovation-brh.fr`
+
+**Tests** : tsc 0, lint 0, build 12.31s, vitest 98/98.
+
+### Status
+✅ DONE — Phase 6.0 cohabitation. Page `/diagnostic-express` opérationnelle (BDNB CSTB).
+
 ---
 
 ## 2026-04-30 — Phase 1 DPE Engine : fondation (portage CapRénov+)
