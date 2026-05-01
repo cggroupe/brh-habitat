@@ -97,6 +97,12 @@ export interface BrhExtCommuneRow {
   // DRIAS
   delta_dju_2050: number | null
 
+  // Phase 11.2 — DVF (médiane prix m² 3 ans + croissance)
+  prix_m2_median_3y?: number | null
+  prix_m2_growth_3y?: number | null
+  dvf_last_refresh?: string | null
+  sitadel2_last_refresh?: string | null
+
   fetched_at: string
 }
 

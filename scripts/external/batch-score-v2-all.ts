@@ -105,7 +105,7 @@ async function main() {
     const pageSize = Math.min(PAGE, total - processed)
     const { data: prospects, error } = await supabase
       .from('brh_dpe_prospects')
-      .select('id, etiquette_dpe, has_pv_36kw, iris_code')
+      .select('id, etiquette_dpe, has_pv_36kw, iris_code, dvf_mutation_24m, enedis_kwh_logt')
       .order('id', { ascending: true })
       .range(from, from + pageSize - 1)
     if (error) throw error
@@ -126,6 +126,9 @@ async function main() {
       const iris = irisCode ? irisCache.get(irisCode) ?? null : null
       const commune = inseeFromIris ? communeCache.get(inseeFromIris) ?? null : null
 
+      const dvfMut = (p.dvf_mutation_24m as boolean | null) ?? false
+      const enedisKwh = (p.enedis_kwh_logt as number | null) ?? null
+
       const breakdown = computeScoreV2({
         prospect: {
           id: String(p.id),
@@ -135,8 +138,14 @@ async function main() {
         iris,
         commune,
         risques: commune?.rga_alea ? { rga_local: commune.rga_alea } : null,
-        dvf: null,
-        enedisAddr: null,
+        // DVF : `prix_m2_growth_3y` est sur la commune, pas le prospect
+        dvf: dvfMut || (commune?.prix_m2_growth_3y != null)
+          ? {
+              mutation_24m: dvfMut,
+              prix_m2_growth_3y: commune?.prix_m2_growth_3y ?? null,
+            }
+          : null,
+        enedisAddr: enedisKwh != null ? { kwh_par_logt: enedisKwh } : null,
       })
 
       updates.push({

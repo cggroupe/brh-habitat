@@ -5,6 +5,60 @@
 
 ---
 
+## 2026-05-01 — Phase 11.2.1 : Script enrich-dvf-bretagne.ts + fix batch-score-v2
+
+- **Contexte** : Activer la règle #1 du score-v2 (mutation 24m + F/G = +35 pts) en enrichissant les prospects avec les données DVF data.gouv.fr.
+- **Fichiers modifiés** :
+  - `scripts/external/enrich-dvf-bretagne.ts` (NEW — download CSV DVF + match parcelles + UPDATE)
+  - `scripts/external/batch-score-v2-all.ts` (lit `dvf_mutation_24m` + `enedis_kwh_logt` du prospect)
+  - `src/lib/dpe-engine/external/types.ts` (BrhExtCommuneRow + Phase 11.2 cols `prix_m2_median_3y`, `prix_m2_growth_3y`)
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations créées** : Aucune (Phase 11.2 a créé les colonnes).
+- **Edge Functions** : Aucune (script Node ops).
+- **Pages wiki impactées** : `external-data-sources.md` § Tier 2 (DVF batch livré).
+- **Algorithme `enrich-dvf-bretagne.ts`** :
+  1. Charge la liste communes BZH (~1208) depuis `brh_ext_commune` (paginated 1000)
+  2. Pour chaque commune : download les 3 CSV DVF (2024+2025+2026) data.gouv flat-files
+  3. Cache local `data/dvf-cache/{annee}/{insee}.csv` (idempotent, 0 octet pour 404)
+  4. Parse + agg médiane prix m² 3y + growth 3y → UPDATE `brh_ext_commune`
+  5. Charge prospects de la commune (via `iris_code LIKE 'INSEE%'`)
+  6. Pour chaque prospect : Haversine 30m sur lat/lng des mutations < 24m, codes 1/2 (maison/appart)
+  7. Si match → UPDATE `dvf_mutation_24m=true` + `dvf_date`
+- **Test live Supabase prod** :
+  - 10 communes Finistère traitées (Audierne 29001 → Pont-l'Abbé 29232 environ)
+  - 30 CSV téléchargés et cachés (2024+2025+2026 × 10)
+  - **1 prospect ultra-chaud détecté** : id=4364 (Audierne, F, mutation 2024-07-04)
+  - Re-batch-score-v2 → **score 45** (mutation_24m_FG +35 + radon_z3 +10) → segment `standard`
+- **Distribution finale (sur 1000 prospects scorés v2)** :
+  - cold : 998 (en attente d'enrichissement Enedis adresse)
+  - standard : 2 (matches DVF + radon Z3)
+  - score min 0 / max 45 / **4 prospects ≥35 pts**
+- **Bug détecté + résolu** :
+  - `batch-score-v2-all.ts` ne lisait PAS `dvf_mutation_24m` ni `enedis_kwh_logt` du prospect → règle #1 jamais déclenchée
+  - Fix : ajouté ces 2 colonnes au SELECT + passe les valeurs à `computeScoreV2`
+- **Conformité 14 règles BRH** :
+  - Règle 4 ✅ (typage strict, casts isolés)
+  - Règle 5 ✅ (throw error)
+  - Règle 13 ✅ (formatDateOnly helper)
+  - Règle 11 ✅ (TIMESTAMPTZ `dvf_last_refresh`)
+- **Risque** : Low. Cache CSV idempotent. Throttle download 100ms (10 req/s).
+- **Tests** : 228/228 verts. Tsc clean. Lint clean.
+- **Status** : ✅ DONE V1 (script fonctionnel, 1 match validé sur échantillon 10 communes).
+- **Décisions de cadrage** :
+  - **Cache local CSV** plutôt que Supabase Storage : 1208 communes × 3 années × ~30 Ko moyen = 110 Mo → on garde dans `data/dvf-cache/` gitignoré.
+  - **Tolérance 30m** maintenue : couvre la même parcelle ou parcelle adjacente.
+  - **Pas d'EF DVF** : flat-files data.gouv pas adaptés à un usage live (csv volumineux). Script ops batch suffit.
+  - **Croissance prix m² par commune** (pas par IRIS) : les volumes DVF par IRIS sont trop faibles pour calcul stable.
+- **À exécuter par Philippe quand timing convient** :
+  ```bash
+  # ~30 min total : download + match + UPDATE + recalc score
+  npx tsx scripts/external/enrich-dvf-bretagne.ts             # 1208 communes × 3 années (~110 Mo cache)
+  npx tsx scripts/external/batch-score-v2-all.ts              # 59k prospects rescoring
+  ```
+- **Phase suivante** : Phase 11.3 — ANIL aides locales scrape (84 aides) + module `insee-recensement.ts` (tx_proprio par IRIS détaillé) + module `sitadel2.ts` (effet voisinage chantiers).
+
+---
+
 ## 2026-05-01 — Phase 11.2 : Tier 2 (DVF + page Pro `/pro/prospects-bretagne`)
 
 - **Contexte** : Tier 2 du plan `external-data-sources.md`. Livre le **module DVF** (signal #1 mutation 24m + F/G = +35 pts) et la **page Pro `/pro/prospects-bretagne`** qui expose les 59 306 prospects scorés v2 avec filtres avancés.
