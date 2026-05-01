@@ -79,6 +79,7 @@ const ProRapport = lazy(() => import('@/pages/pro/ProRapport'))
 const ProAuditsList = lazy(() => import('@/pages/pro/ProAuditsList'))
 const ProAuditEditor = lazy(() => import('@/pages/pro/ProAuditEditor'))
 const ProAuditResults = lazy(() => import('@/pages/pro/ProAuditResults'))
+const AuditView = lazy(() => import('@/pages/AuditView'))
 
 // Lazy loaded pages — Particulier
 const PartDashboard = lazy(() => import('@/pages/particulier/PartDashboard'))
@@ -154,6 +155,7 @@ export default function App() {
                 <Route path="/mes-dossiers/:id" element={<DossierDetail />} />
                 <Route path="/mes-rdv" element={<MesRdv />} />
                 <Route path="/profil" element={<ProfilPage />} />
+                <Route path="/audit-energetique/:id" element={<AuditView />} />
               </Route>
             </Route>
 

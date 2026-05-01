@@ -80,6 +80,33 @@
 ### Status
 ✅ DONE — Phase 4.0 PDF V1 livrée. Phase 4.1 (EF + Storage + email Resend) à venir.
 
+### Phase 5.0 — UI Particulier read-only
+
+**Page** : `/audit-energetique/:id`
+- Behind `AuthGuard` (RLS Supabase filtre `user_id = auth.uid()`)
+- Lecture seule : aucune édition possible
+- Affichage :
+  - 3 étiquettes DPE (énergie, climat, finale) via `DpeLabelGauge`
+  - Explications grand public ("Que signifient ces étiquettes ?")
+  - Détail consommation par poste (chauffage, ECS, éclairage, aux, clim)
+  - "Où s'échappe la chaleur" (parois, ouvertures, ponts, ventilation)
+  - CTA "Discuter avec mon artisan" → `/messages`
+  - Bouton téléchargement PDF (même template `AuditPdf` que côté pro)
+- État brouillon (`status=draft`) : message "Audit en cours de réalisation par l'artisan"
+- État inexistant (RLS) : message "Audit introuvable"
+
+**Routes ajoutées dans App.tsx (sous `<AuthGuard>` + `<AppShell>`)**.
+
+**Conformité workflow** (cf. ADR-006) :
+- Pro RGE : seul autorisé à saisir (`/pro/audits/*`)
+- Particulier : read-only sur ses audits (`/audit-energetique/:id`)
+- Admin : accès complet via RLS policy `admin_all_audits`
+
+**Tests** : tsc 0, lint 0, vitest 98/98.
+
+### Status
+✅ DONE — Phase 5.0 UI Particulier livrée. **Workflow utilisateur complet** : Pro crée → calcule → finalise → Particulier consulte → discute.
+
 ---
 
 ## 2026-04-30 — Phase 1 DPE Engine : fondation (portage CapRénov+)
