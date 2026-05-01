@@ -142,6 +142,45 @@ export type {
   ScenarioComputed,
 } from './variantes'
 
+// Moteur Aides détaillé — Phase 8
+export {
+  calcCouleurMpr,
+  calcCouleurFromAudit,
+  isIdf,
+  calcMprGeste,
+  calcMprTotal,
+  MPR_MONO_GESTE,
+  calcCeeGeste,
+  calcCeeTotal,
+  categorieFromCouleur,
+  calcEcoPtz,
+  calcCumulPlafond,
+  PLAFOND_GLOBAL_HT_PCT,
+  calcAidesScenario,
+  zoneClimatToCEE,
+} from './aides'
+export type {
+  CouleurMPR,
+  ZoneGeo,
+  DecileResult,
+  GesteMprMonoId,
+  MprGesteInput,
+  MprGesteResult,
+  ZoneClimaCEE,
+  CategorieCEE,
+  CeeGesteInput,
+  CeeGesteResult,
+  EcoPtzMode,
+  CategorieTravaux,
+  EcoPtzInput,
+  EcoPtzResult,
+  CumulInput,
+  CumulResult,
+  AidesGesteInput,
+  AidesScenarioInput,
+  AidesScenarioResult,
+} from './aides'
+
 import type { AuditInputs, DpeResult } from './types'
 import { MOTEUR_VERSION } from './constants'
 import { departementFromInsee, getZoneClimatique, altitudeBucket } from './geo/zones-climatiques'

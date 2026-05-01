@@ -247,6 +247,61 @@
 ### Status
 ✅ DONE — Phase 7.0 livraison commerciale prête. Pro RGE présente 5 scénarios chiffrés au client en 1 page.
 
+### Phase 8.0 — Moteur aides détaillé (MPR + CEE + ÉcoPTZ + plafonds)
+
+**5 modules `src/lib/dpe-engine/aides/`** (~700 LOC) :
+
+1. `decile.ts` — Catégorisation revenus → couleur MPR (Bleu/Jaune/Violet/Rose)
+   - Plafonds officiels 2024-2026 IDF + Régions
+   - Extrapolation linéaire > 5 personnes
+   - Détection IDF par code INSEE (75/77/78/91/92/93/94/95)
+
+2. `mpr-detaille.ts` — Forfaits MPR mono-geste détaillés par couleur
+   - 14 gestes × 3 couleurs (Rose exclu mono-geste)
+   - PAC eau/eau Bleu = 11k €, Jaune = 9k €, Violet = 6k €
+   - ITE Bleu = 75 €/m², Jaune = 60 €/m², Violet = 40 €/m²
+   - Plafond coût HT par geste
+
+3. `cee-detaille.ts` — CEE classique avec bonus précaire
+   - Cumac kWh par geste × zone climat (H1/H2/H3)
+   - Prix moyen 7.86 € standard / 8.21 € précaire
+   - Bonus précaire +20% (Coup de Pouce)
+   - 12 gestes éligibles (parois + équipements)
+
+4. `eco-ptz.ts` — Prêt à Taux Zéro 6 modes
+   - Mode 1 : 1 action vitrage (7k €)
+   - Mode 2 : 1 action hors vitrage (15k €)
+   - Mode 3 : 2 actions (25k €)
+   - Mode 4 : 3+ actions (30k €)
+   - Mode 5 : Performance globale saut DPE ≥ 2 (30k €)
+   - Mode 6 : Rénovation Ampleur (50k €)
+
+5. `cumul-plafonds.ts` — Plafond global d'écrêtement
+   - Bleu 90% HT max
+   - Jaune 75% HT max
+   - Violet 60% HT max
+   - Rose 40% HT max
+   - Écrêtement proportionnel si dépassement
+
+**Orchestrateur `aides/index.ts`** — `calcAidesScenario(input)` :
+- Calcule MPR + CEE + ÉcoPTZ + applique plafond global
+- Returns : aides totales, reste à charge final, détail par geste
+
+**Tests** : 30 nouveaux tests dans `tests/aides.test.ts`
+- Décile : foyers Bretagne 4p RFR 25k/40k/60k/80k → bleu/jaune/violet/rose
+- MPR : forfaits par couleur, exclusion Rose
+- CEE : bonus précaire +20%, prix Mwh standard/précaire
+- ÉcoPTZ : 6 modes selon configuration
+- Cumul : écrêtement 90/75/60/40% HT
+- Scénario complet : Renovation globale Bleu Bretagne
+
+**Total tests Vitest** : 98 → **128** (+30).
+
+**Tests** : tsc 0, lint 0, build 12.68s.
+
+### Status
+✅ DONE — Phase 8.0 moteur aides précis livré. Le pro RGE peut afficher au client le montant exact des aides selon son décile MPR (plus de forfait moyenne).
+
 ---
 
 ## 2026-04-30 — Phase 1 DPE Engine : fondation (portage CapRénov+)
