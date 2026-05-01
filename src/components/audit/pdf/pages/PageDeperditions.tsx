@@ -116,7 +116,7 @@ export function PageDeperditions({ audit, result }: Props) {
         </View>
       </View>
 
-      <FooterPdf pageNumber={3} totalPages={4} />
+      <FooterPdf pageNumber={3} totalPages={5} />
     </Page>
   )
 }

@@ -225,6 +225,28 @@
 ### Status
 ✅ DONE — Phase 6.2 migration complète.
 
+### Phase 7.0 — Variantes / scénarios de rénovation (livrable commercial)
+
+**Lib `src/lib/dpe-engine/variantes/index.ts`** (~430 LOC) :
+- `deepMerge` + `applyDeltaToInputs` + `recomputeVariante`
+- 16 gestes chiffrés forfaitaires (€ TTC Bretagne 2026)
+- `calcAidesGeste` MPR + CEE forfaitaires V1
+- `calcPayback` (USP BRH, ADR-005) avec PRIX_KWH_EF par énergie
+- 5 templates : `isolation_combles`, `enveloppe_iti`, `isolation_pac`, `renovation_globale`, `autonomie_pv`
+- `computeAllScenarios` : calcule les 5 en ~100ms
+
+**Composant `<VariantesCompare>`** : tableau côte-à-côte avec DPE avant→après, gain %, coût, aides, reste à charge, payback (couleurs selon rentabilité).
+
+**Intégrations** :
+- UI : `ProAuditResults` (pro) + `AuditView` (particulier) — même composant
+- PDF audit : 5e page `PageVariantes` (tableau récap + économies annuelles)
+- Total pages PDF : 4 → **5**
+
+**Tests** : tsc 0, lint 0, build 15.30s, vitest 98/98.
+
+### Status
+✅ DONE — Phase 7.0 livraison commerciale prête. Pro RGE présente 5 scénarios chiffrés au client en 1 page.
+
 ---
 
 ## 2026-04-30 — Phase 1 DPE Engine : fondation (portage CapRénov+)

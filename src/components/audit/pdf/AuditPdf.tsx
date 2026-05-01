@@ -12,6 +12,7 @@ import type { DpeResult } from '@/lib/dpe-engine/types'
 import { PageSynthese } from './pages/PageSynthese'
 import { PageBatiEquip } from './pages/PageBatiEquip'
 import { PageDeperditions } from './pages/PageDeperditions'
+import { PageVariantes } from './pages/PageVariantes'
 import { PageMentions } from './pages/PageMentions'
 
 interface Props {
@@ -30,6 +31,7 @@ export function AuditPdf({ audit, result }: Props) {
       <PageSynthese audit={audit} result={result} />
       <PageBatiEquip audit={audit} />
       <PageDeperditions audit={audit} result={result} />
+      <PageVariantes audit={audit} result={result} />
       <PageMentions audit={audit} result={result} />
     </Document>
   )

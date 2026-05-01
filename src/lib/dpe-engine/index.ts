@@ -119,6 +119,29 @@ export {
 } from './dpe/etiquettes'
 export type { DpeClassification, SeuilsClassifies } from './dpe/etiquettes'
 
+// Variantes / scénarios — Phase 7
+export {
+  applyDeltaToInputs,
+  recomputeVariante,
+  calcCoutGeste,
+  calcCoutTotal,
+  calcAidesGeste,
+  calcAidesTotal,
+  calcPayback,
+  computeScenario,
+  computeAllScenarios,
+  SCENARIOS_TEMPLATES,
+  PRIX_GESTES,
+} from './variantes'
+export type {
+  GesteDelta,
+  GesteId,
+  PaybackInput,
+  PaybackResult as VariantePaybackResult,
+  ScenarioTemplate,
+  ScenarioComputed,
+} from './variantes'
+
 import type { AuditInputs, DpeResult } from './types'
 import { MOTEUR_VERSION } from './constants'
 import { departementFromInsee, getZoneClimatique, altitudeBucket } from './geo/zones-climatiques'

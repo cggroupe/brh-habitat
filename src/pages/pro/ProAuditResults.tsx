@@ -8,8 +8,9 @@ import { ArrowLeft, FileText, Edit, Loader, Mail, X, CheckCircle } from 'lucide-
 import { pdf } from '@react-pdf/renderer'
 import { useAudit, useUploadAuditPdf, useSendAuditByEmail } from '@/hooks/queries/audits'
 import { DpeLabelGauge } from '@/components/audit/DpeLabelGauge'
+import { VariantesCompare } from '@/components/audit/VariantesCompare'
 import { AuditPdf } from '@/components/audit/pdf/AuditPdf'
-import type { DpeResult } from '@/lib/dpe-engine/types'
+import type { AuditInputs, DpeResult } from '@/lib/dpe-engine/types'
 
 export default function ProAuditResults() {
   const { id } = useParams<{ id: string }>()
@@ -212,6 +213,11 @@ export default function ProAuditResults() {
             Ubat : <span className="font-bold tabular-nums">{r.deperditions.ubat.toFixed(2)} W/m²·K</span>
           </div>
         </div>
+      </div>
+
+      {/* Variantes / Scénarios de rénovation */}
+      <div className="mt-6">
+        <VariantesCompare baseInputs={audit.inputs as AuditInputs} baseDpe={r} />
       </div>
 
       {/* Hypothèses */}

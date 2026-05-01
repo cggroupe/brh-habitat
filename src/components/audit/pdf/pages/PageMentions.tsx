@@ -111,7 +111,7 @@ export function PageMentions({ audit, result }: Props) {
         </Text>
       </View>
 
-      <FooterPdf pageNumber={4} totalPages={4} />
+      <FooterPdf pageNumber={5} totalPages={5} />
     </Page>
   )
 }

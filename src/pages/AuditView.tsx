@@ -14,8 +14,9 @@ import { ArrowLeft, FileText, MessageCircle, Loader, Calendar } from 'lucide-rea
 import { pdf } from '@react-pdf/renderer'
 import { useAudit } from '@/hooks/queries/audits'
 import { DpeLabelGauge } from '@/components/audit/DpeLabelGauge'
+import { VariantesCompare } from '@/components/audit/VariantesCompare'
 import { AuditPdf } from '@/components/audit/pdf/AuditPdf'
-import type { DpeResult } from '@/lib/dpe-engine/types'
+import type { AuditInputs, DpeResult } from '@/lib/dpe-engine/types'
 
 export default function AuditView() {
   const { id } = useParams<{ id: string }>()
@@ -257,6 +258,11 @@ export default function AuditView() {
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Scénarios de rénovation */}
+        <div className="mt-6">
+          <VariantesCompare baseInputs={audit.inputs as AuditInputs} baseDpe={r} />
         </div>
 
         {/* CTA finale */}

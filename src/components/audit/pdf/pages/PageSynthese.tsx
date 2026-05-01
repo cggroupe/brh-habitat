@@ -105,7 +105,7 @@ export function PageSynthese({ audit, result }: Props) {
         </View>
       </View>
 
-      <FooterPdf pageNumber={1} totalPages={4} />
+      <FooterPdf pageNumber={1} totalPages={5} />
     </Page>
   )
 }

@@ -112,7 +112,7 @@ export function PageBatiEquip({ audit }: Props) {
       <Text style={styles.h2}>Ventilation</Text>
       <Text style={styles.paragraph}>{inputs.equipements.ventilation}</Text>
 
-      <FooterPdf pageNumber={2} totalPages={4} />
+      <FooterPdf pageNumber={2} totalPages={5} />
     </Page>
   )
 }
