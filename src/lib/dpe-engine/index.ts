@@ -130,6 +130,9 @@ export {
   calcPayback,
   computeScenario,
   computeAllScenarios,
+  calcAidesDetaillees,
+  gesteToMprId,
+  gesteToEcoPtzCategory,
   SCENARIOS_TEMPLATES,
   PRIX_GESTES,
 } from './variantes'
@@ -140,6 +143,7 @@ export type {
   PaybackResult as VariantePaybackResult,
   ScenarioTemplate,
   ScenarioComputed,
+  AidesContext,
 } from './variantes'
 
 // Moteur Aides détaillé — Phase 8

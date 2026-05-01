@@ -302,6 +302,44 @@
 ### Status
 ✅ DONE — Phase 8.0 moteur aides précis livré. Le pro RGE peut afficher au client le montant exact des aides selon son décile MPR (plus de forfait moyenne).
 
+### Phase 8.1 — UI moteur aides intégré (sélecteur décile + PDF)
+
+**Mapping interne `variantes/index.ts`** :
+- `gesteToMprId` : Phase 7 GesteId (16 IDs) → Phase 8 GesteMprMonoId (14 IDs)
+- `gesteToEcoPtzCategory` : geste → catégorie ÉcoPTZ (6 catégories)
+- `calcAidesDetaillees(gestes, ctx)` : utilise `calcAidesScenario` avec mapping auto
+- `computeScenario(template, base, baseDpe, aidesCtx?)` : signature étendue
+- TVA 5.5% appliquée pour passer du TTC au HT (rénovation énergétique)
+
+**Composant `<VariantesCompare>` enrichi** :
+- 🆕 Saisie foyer (RFR + nb personnes) + sélecteur Auto/Manuel décile
+- 🆕 Détection auto couleur MPR depuis foyer + zone (IDF/Régions)
+- 🆕 Affichage couleur détectée + plafond global (90/75/60/40% HT)
+- 🆕 Plafonds par seuil affichés (Bleu/Jaune/Violet)
+- 🆕 Tableau enrichi : MPR + CEE + ÉcoPTZ + reste à charge + payback
+- 🆕 Badge "Aides écrêtées" si dépassement plafond global
+- 🆕 Sub-line "ou Xk € cash" sous reste à charge (avec ÉcoPTZ déduit)
+
+**PDF `PageVariantes` enrichi** :
+- 🆕 Bandeau profil MaPrimeRénov' coloré en haut (couleur foyer)
+- 🆕 Plafond global d'écrêtement explicité
+- 🆕 Tableau 8 colonnes : Scénario, DPE, Coût, MPR, CEE, ÉcoPTZ, Reste, Payback
+- 🆕 Mention écrêtement si applicable
+- 🆕 Mode ÉcoPTZ (1-6) affiché sous le montant
+
+**Workflow client** :
+```
+Pro RGE charge audit → Saisit foyer (Bleu/Jaune/Violet/Rose détecté auto)
+                    → Voit aides détaillées par scénario (MPR + CEE + ÉcoPTZ)
+                    → PDF reflète exactement le profil détecté du client
+                    → Email envoyé avec aides personnalisées
+```
+
+**Tests** : tsc 0, lint 0, build 12.26s, vitest 128/128.
+
+### Status
+✅ DONE — Phase 8.1 UI livrée. Le pro RGE et le client voient maintenant les aides précises selon le décile MaPrimeRénov' du foyer (auto-détecté depuis RFR + nb personnes).
+
 ---
 
 ## 2026-04-30 — Phase 1 DPE Engine : fondation (portage CapRénov+)

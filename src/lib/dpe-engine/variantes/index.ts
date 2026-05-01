@@ -15,6 +15,14 @@
 
 import { computeDpe } from '../index'
 import type { AuditInputs, DpeResult, ParoiInput, OuvertureInput } from '../types'
+import {
+  calcAidesScenario,
+  zoneClimatToCEE,
+  type AidesScenarioResult,
+  type CategorieTravaux,
+  type CouleurMPR,
+  type GesteMprMonoId,
+} from '../aides'
 
 // ============================================================================
 // Deep merge inputs + delta
@@ -405,6 +413,115 @@ export const SCENARIOS_TEMPLATES: ScenarioTemplate[] = [
 ]
 
 // ============================================================================
+// Mapping gestes Phase 7 → MPR (Phase 8) + ÉcoPTZ
+// ============================================================================
+
+/**
+ * Mappe un GesteId interne (variantes) vers le GesteMprMonoId du moteur aides.
+ * `null` si le geste n'est pas éligible MPR mono-geste (ex: plancher chauffant, PV).
+ */
+const GESTE_TO_MPR: Record<GesteId, GesteMprMonoId | null> = {
+  isolation_murs_iti_120: 'isolation_murs_iti',
+  isolation_murs_iti_200: 'isolation_murs_iti',
+  isolation_murs_ite_140: 'isolation_murs_ite',
+  isolation_murs_ite_200: 'isolation_murs_ite',
+  isolation_combles_perdus_300: 'isolation_combles_perdus',
+  isolation_toiture_200: 'isolation_toiture',
+  isolation_plancher_bas_120: 'isolation_plancher_bas',
+  fenetres_pvc_double_vir: 'fenetres_pvc_double_vir',
+  fenetres_pvc_triple: 'fenetres_pvc_triple',
+  pac_air_eau_basse_temp: 'pac_air_eau',
+  pac_eau_eau_geothermie: 'pac_eau_eau',
+  chaudiere_granules_bois: 'chaudiere_granules_bois',
+  cet_thermodynamique: 'cet_thermodynamique',
+  vmc_double_flux_recup: 'vmc_double_flux_recup',
+  plancher_chauffant_eau: null, // intégré au PCBT-PAC, pas une aide séparée
+  pv_3kwc: null, // prime autoconso ailleurs (V1)
+  pv_6kwc: null,
+}
+
+/**
+ * Mappe un GesteId vers la catégorie ÉcoPTZ.
+ */
+const GESTE_TO_ECOPTZ: Record<GesteId, CategorieTravaux | null> = {
+  isolation_murs_iti_120: 'isolation_murs',
+  isolation_murs_iti_200: 'isolation_murs',
+  isolation_murs_ite_140: 'isolation_murs',
+  isolation_murs_ite_200: 'isolation_murs',
+  isolation_combles_perdus_300: 'isolation_toiture',
+  isolation_toiture_200: 'isolation_toiture',
+  isolation_plancher_bas_120: 'isolation_plancher_bas',
+  fenetres_pvc_double_vir: 'menuiseries',
+  fenetres_pvc_triple: 'menuiseries',
+  pac_air_eau_basse_temp: 'chauffage_ecs',
+  pac_eau_eau_geothermie: 'chauffage_ecs',
+  chaudiere_granules_bois: 'chauffage_ecs',
+  cet_thermodynamique: 'chauffage_ecs',
+  vmc_double_flux_recup: 'ventilation',
+  plancher_chauffant_eau: 'chauffage_ecs',
+  pv_3kwc: null,
+  pv_6kwc: null,
+}
+
+export function gesteToMprId(g: GesteId): GesteMprMonoId | null {
+  return GESTE_TO_MPR[g]
+}
+
+export function gesteToEcoPtzCategory(g: GesteId): CategorieTravaux | null {
+  return GESTE_TO_ECOPTZ[g]
+}
+
+// ============================================================================
+// Calcul aides détaillé (Phase 8 : MPR + CEE + ÉcoPTZ + plafonds)
+// ============================================================================
+
+export interface AidesContext {
+  couleur: CouleurMPR
+  /** Zone climatique de l'audit (H1A, H2A, H3, ...). */
+  zoneClimat: string
+  /** Saut de classes DPE pour mode ÉcoPTZ. */
+  sautClassesDpe?: number
+  /** True si rénovation Ampleur (≥2 gestes + saut ≥ 2 classes). */
+  isGlobalAmpleur?: boolean
+}
+
+/**
+ * Calcul aides détaillé pour une liste de gestes (avec mapping interne).
+ */
+export function calcAidesDetaillees(
+  gestes: GesteDelta[],
+  ctx: AidesContext,
+): AidesScenarioResult {
+  // Convertir les gestes vers le format attendu par le moteur aides
+  const aidesGestes = gestes
+    .map((g) => {
+      const mprId = gesteToMprId(g.geste)
+      const ecoPtzCat = gesteToEcoPtzCategory(g.geste)
+      if (!mprId || !ecoPtzCat) return null
+      const tarif = PRIX_GESTES[g.geste]
+      const surface = g.surface
+      const coutTtc = g.forfait ?? (tarif.unit === 'forfait' ? tarif.prixTtc : (surface ?? 0) * tarif.prixTtc)
+      // HT depuis TTC en TVA 5.5% (rénovation énergétique)
+      const coutHtEuros = coutTtc / 1.055
+      return {
+        geste: mprId,
+        surface,
+        coutHtEuros,
+        categorieEcoPtz: ecoPtzCat,
+      }
+    })
+    .filter((g): g is NonNullable<typeof g> => g !== null)
+
+  return calcAidesScenario({
+    couleur: ctx.couleur,
+    zoneClimat: zoneClimatToCEE(ctx.zoneClimat),
+    gestes: aidesGestes,
+    sautClassesDpe: ctx.sautClassesDpe,
+    isGlobalAmpleur: ctx.isGlobalAmpleur,
+  })
+}
+
+// ============================================================================
 // Compute scenario complet (un seul appel)
 // ============================================================================
 
@@ -415,7 +532,10 @@ export interface ScenarioComputed {
   result: DpeResult
   gestes: GesteDelta[]
   coutTtcEuros: number
+  /** Aides forfaitaires V1 (gardé pour rétrocompat). */
   aidesEuros: { mpr: number; cee: number; total: number }
+  /** Aides détaillées Phase 8 : présent uniquement si AidesContext fourni. */
+  aidesDetaillees?: AidesScenarioResult
   payback: PaybackResult
 }
 
@@ -423,6 +543,7 @@ export function computeScenario(
   template: ScenarioTemplate,
   base: AuditInputs,
   baseDpe: DpeResult,
+  aidesCtx?: Partial<AidesContext>,
 ): ScenarioComputed {
   const delta = template.applyDelta(base)
   const inputs = applyDeltaToInputs(base, delta)
@@ -430,6 +551,7 @@ export function computeScenario(
 
   const gestes = template.gestes(base)
   const coutTtcEuros = calcCoutTotal(gestes)
+  // Forfaits Phase 7 (gardés pour fallback / rétrocompat UI ancienne)
   const aidesEuros = calcAidesTotal(gestes)
 
   // Énergie dominante avant rénovation (pour calcul économies)
@@ -442,17 +564,45 @@ export function computeScenario(
     return 'electricite'
   })()
 
+  // Aides détaillées Phase 8 si context fourni (avec couleur + zone)
+  let aidesDetaillees: AidesScenarioResult | undefined
+  let aidesTotalEffective = aidesEuros.total
+  if (aidesCtx?.couleur) {
+    const ctx: AidesContext = {
+      couleur: aidesCtx.couleur,
+      zoneClimat: aidesCtx.zoneClimat ?? baseDpe.hypotheses.zoneClimatique,
+      sautClassesDpe: aidesCtx.sautClassesDpe,
+      isGlobalAmpleur: aidesCtx.isGlobalAmpleur,
+    }
+    aidesDetaillees = calcAidesDetaillees(gestes, ctx)
+    aidesTotalEffective = aidesDetaillees.aidesTotalSubventionsEuros
+  }
+
   const payback = calcPayback({
     baseDpe,
     varianteDpe: result,
     coutTtcEuros,
-    aidesTotalEuros: aidesEuros.total,
+    aidesTotalEuros: aidesTotalEffective,
     energieDominante,
   })
 
-  return { template, delta, inputs, result, gestes, coutTtcEuros, aidesEuros, payback }
+  return {
+    template,
+    delta,
+    inputs,
+    result,
+    gestes,
+    coutTtcEuros,
+    aidesEuros,
+    aidesDetaillees,
+    payback,
+  }
 }
 
-export function computeAllScenarios(base: AuditInputs, baseDpe: DpeResult): ScenarioComputed[] {
-  return SCENARIOS_TEMPLATES.map((tpl) => computeScenario(tpl, base, baseDpe))
+export function computeAllScenarios(
+  base: AuditInputs,
+  baseDpe: DpeResult,
+  aidesCtx?: Partial<AidesContext>,
+): ScenarioComputed[] {
+  return SCENARIOS_TEMPLATES.map((tpl) => computeScenario(tpl, base, baseDpe, aidesCtx))
 }
