@@ -48,6 +48,7 @@
 | [tenant-multitenancy.md](tenant-multitenancy.md) | TenantContext, feature flags par tier, config multi-tenant |
 | [health-carnet.md](health-carnet.md) | Carnet santé habitat : health_records, work_history, home_documents |
 | [diagnostic-engine.md](diagnostic-engine.md) | Moteur de diagnostic multi-étapes + renovation-plan-engine + aides-engine |
+| [external-data-sources.md](external-data-sources.md) | ⭐ **Phase 11** — 27 sources publiques gratuites (Enedis, GRDF, Géorisques, Filosofi, DVF, RGE, ANIL...) pour scoring composite v2 sur 59 306 prospects DPE F/G Bretagne |
 
 ### Partie 3 — Qualité & opérations
 

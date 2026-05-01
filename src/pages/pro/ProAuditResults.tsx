@@ -4,13 +4,14 @@
 
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, FileText, Edit, Loader, Mail, X, CheckCircle } from 'lucide-react'
+import { ArrowLeft, FileText, FileCode, Edit, Loader, Mail, X, CheckCircle } from 'lucide-react'
 import { pdf } from '@react-pdf/renderer'
 import { useAudit, useUploadAuditPdf, useSendAuditByEmail } from '@/hooks/queries/audits'
 import { DpeLabelGauge } from '@/components/audit/DpeLabelGauge'
 import { VariantesCompare } from '@/components/audit/VariantesCompare'
 import { AuditPdf } from '@/components/audit/pdf/AuditPdf'
 import type { AuditInputs, DpeResult } from '@/lib/dpe-engine/types'
+import { buildAuditXml, suggestXmlFilename } from '@/lib/dpe-engine/exports/xml-ademe'
 
 export default function ProAuditResults() {
   const { id } = useParams<{ id: string }>()
@@ -46,6 +47,34 @@ export default function ProAuditResults() {
       alert('Erreur lors de la génération du PDF : ' + String(e))
     } finally {
       setGeneratingPdf(false)
+    }
+  }
+
+  const handleDownloadXml = () => {
+    if (!audit) return
+    try {
+      const xml = buildAuditXml({
+        audit: {
+          id: audit.id,
+          created_at: audit.created_at,
+          finalized_at: audit.finalized_at,
+        },
+        inputs: audit.inputs as AuditInputs,
+        result: audit.results as DpeResult,
+      })
+      const blob = new Blob([xml], { type: 'application/xml;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = suggestXmlFilename({
+        id: audit.id,
+        finalized_at: audit.finalized_at,
+      })
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      console.error(e)
+      alert('Erreur lors de la génération du XML : ' + String(e))
     }
   }
 
@@ -135,6 +164,14 @@ export default function ProAuditResults() {
               <FileText className="h-4 w-4" />
             )}
             Télécharger PDF
+          </button>
+          <button
+            type="button"
+            onClick={handleDownloadXml}
+            className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            title="Export XML conforme schéma ADEME 5.3.1 (audit opposable)"
+          >
+            <FileCode className="h-4 w-4" /> XML ADEME
           </button>
           <button
             type="button"

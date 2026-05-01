@@ -5,6 +5,79 @@
 
 ---
 
+## 2026-05-01 — Phase 12 : Export XML ADEME (audit opposable, schéma 5.3.1)
+
+- **Contexte** : L'audit BRH devient un document **opposable** (vente/location, transactions immobilières). Génération XML conforme au schéma Observatoire DPE-Audit version `5.3.1` (équivalent fonctionnel des 33 modules `XML_*` de CapRénov+ 26.0.2 — `services/audit/xml/sortie/`). V1 : XML bien formé en UTF-8, conventions `enum_*_id` mappées vers les codes ADEME officiels, booléens `0/1` strict, jamais de notation scientifique.
+- **Fichiers modifiés** :
+  - `src/lib/dpe-engine/exports/xml-ademe.ts` (NEW — ~365 LOC, générateur conforme)
+  - `src/lib/dpe-engine/index.ts` (export `buildAuditXml`, `suggestXmlFilename` — implicite via `exports/`)
+  - `src/lib/dpe-engine/tests/xml-ademe.test.ts` (NEW — 13 tests)
+  - `src/pages/pro/ProAuditResults.tsx` (bouton « XML ADEME » entre PDF et email)
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations créées** : Aucune.
+- **Edge Functions** : Aucune (génération 100 % côté front, blob téléchargement direct).
+- **Pages wiki impactées** :
+  - `log.md` (cette entrée)
+  - `feature-audit.md` (à mettre à jour Phase 12.1 : ajouter section « Export XML ADEME »)
+  - `data-model.md` (aucun impact — pas de nouvelle table)
+- **API publique exposée** :
+  - `buildAuditXml(input: BuildAuditXmlInput): string`
+  - `suggestXmlFilename(audit): string`
+  - `extractEtiquetteFromXml(xml): EtiquetteDpe | null`
+  - 6 helpers : `escapeXml`, `formatNumber`, `bool01`, `periodeToEnumId`, `zoneToEnumId`, `altitudeToEnumId`, `inertieToEnumId`, `typeBatimentToEnumId`, `methodeApplicationToEnumId`
+- **Conventions ADEME respectées** :
+  - Encoding `UTF-8` strict
+  - Booléens `0/1` (jamais `true/false`)
+  - Pas de notation scientifique (`toFixed(decimals)`, fallback `'0'`)
+  - `enum_*_id` mappés vers codes ADEME (`H1A=1`, `maison=1`, période 1948-1974=2, etc.)
+  - Structure `<audit version="5.3.1">` → `<administratif>` + `<logement_collection>` (existant + variantes) + `<vue_ensemble_logement>` + `<expertise_auditeur>` + `<fiche_technique_collection/>` + `<justificatif_audit_collection/>`
+- **Conformité 14 règles BRH** :
+  - Règle 13 ✅ — pas de `toISOString().slice(0,10)` (helper `formatDateOnly` avec `getFullYear/getMonth/getDate`)
+  - Règle 4 ✅ — pas de `as unknown as` (typage Zod implicite via interfaces)
+  - Règles 1-3, 5-12, 14 — non applicables (pas de mutation, pas de Supabase, pas de RLS, pas de SW)
+- **Risque** : Low. V1 = XML bien formé mais validation XSD ADEME non encore exécutée. À faire Phase 12.1 : `xmllint --schema observatoire-dpe-audit.xsd` sur 10 audits réels.
+- **Tests** : ✅ 13 nouveaux tests (`xml-ademe.test.ts`) → **159/159 globaux** verts (était 146). Tsc clean. Lint clean.
+- **Status** : ✅ DONE (V1 — bouton fonctionnel, XML généré, tests verts). Phase 12.1+ : validation XSD réelle ADEME.
+- **Décisions de cadrage** :
+  - Renommage Phase 11 → **Phase 12** pour éviter collision avec Phase 11 (sources externes prospection) cadrée 2026-05-01.
+  - Pas de XSD-validation à la volée côté front (lourde, non bloquant V1) — déléguée à xmllint hors-ligne.
+  - Pas d'envoi automatique vers Observatoire DPE-Audit V1 — bouton manuel téléchargement uniquement.
+
+---
+
+## 2026-05-01 — Phase 11.0 : Plan Sources Données Externes (prospection Bretagne)
+
+- **Contexte** : Recherche ultra-approfondie de 89 bases publiques gratuites identifiées (Enedis, GRDF, Géorisques, Filosofi INSEE, DVF, RGE, Sit@del2, ANIL, LiDAR HD, etc.). Objectif : enrichir les 59 306 prospects DPE F/G Bretagne avec scoring composite v2 (sur 100) + décile MaPrimeRénov auto-détecté par IRIS + USP technique vs Kelvin° (LiDAR toiture, DJU réel Météo-France).
+- **Fichiers modifiés** :
+  - `docs/wiki/external-data-sources.md` (NEW — plan complet 4 phases, ~600 lignes)
+  - `docs/wiki/index.md` (référencement nouvelle page Partie 2)
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations créées** : Aucune (plan uniquement). 4 migrations à créer en Phase 11.1 → 11.4 :
+  - `20260507100000_brh_ext_tier1.sql` — `brh_ext_cache`, `brh_ext_iris`, `brh_ext_commune`, ALTER `brh_dpe_prospects` (+8 colonnes dont `score_v2`, `iris_code`, `enedis_kwh_logt`)
+  - `20260514100000_brh_ext_tier2.sql` — `brh_ext_aides_anil`, ALTER `brh_ext_commune` (Sit@del2, OPAH)
+  - `20260521100000_brh_ext_regional.sql` — `brh_ext_residences_secondaires`
+  - `20260605100000_brh_ext_tech.sql` — `brh_ext_toiture` (LiDAR), `brh_ext_meteo_dju`
+- **Edge Functions à créer** : 4 EF (`enrich-prospect`, `batch-enrich-iris`, `georisques-lookup`, `anil-aides-scrape`) — pattern rate-limit existant `_shared/rate-limit.ts`
+- **Modules TS à créer** : nouveau sous-dossier `src/lib/dpe-engine/external/` (cohérent avec `aides/`, `bati/`, `equipements/`) — 11 modules + tests Vitest
+- **Pages wiki impactées** :
+  - `external-data-sources.md` (créée)
+  - `index.md` (référencement)
+  - `data-model.md` (à mettre à jour Phase 11.1 quand tables réellement créées : 79 tables → 84 tables)
+  - `edge-functions-reference.md` (à mettre à jour Phase 11.1 : 11 EF → 15 EF)
+  - `architecture-snapshot.md` (à mettre à jour Phase 11.2 quand `/pro/prospects-bretagne` livrée)
+- **Risque** : None (plan uniquement, aucun code modifié)
+- **Tests** : N/A (à exécuter Phase 11.1+)
+- **Status** : 🟡 PARTIEL (Phase 11.0 plan livré, Phases 11.1-11.5 à démarrer)
+- **Décisions de cadrage** :
+  - Préfixe `brh_ext_*` choisi pour distinguer données externes des référentiels métier `brh_dpe_*` (figés CapRénov+) et business `brh_*`
+  - Cache générique `brh_ext_cache` avec TTL 30j (90j Géorisques) — refresh transparent via EF
+  - RLS pro+admin uniquement sur `brh_ext_*` (anon continue d'utiliser `dpe-express-lookup` côté simulateur)
+  - Score v2 calculé côté EF (pas côté front) car nécessite jointures Supabase + appels APIs externes parallèles
+  - Modules TS dans `src/lib/dpe-engine/external/` pour réutilisation moteur DPE (pas dans `src/api/` qui est CRUD wrappers Supabase pure)
+  - **Hors périmètre** : Fichiers Fonciers Cerema (MAJIC) et LOVAC détaillé adresse — convention DGALN obligatoire, BRH non éligible. Phase 11.5 = explorer partenariat collectivité bretonne / EPF Bretagne
+
+---
+
 ## 2026-05-01 — Phase 2 + Phase 3 DPE Engine : moteur complet + UI Pro
 
 ### Phase 2 (5 sprints, 98 tests Vitest)
