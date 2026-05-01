@@ -5,6 +5,52 @@
 
 ---
 
+## 2026-05-01 — Phase 11.1.2 : Auto-download CSV INSEE Filosofi + Recensement → Bretagne complète seedée
+
+- **Contexte** : Phase 11.1.1 livrait les scripts seed mais sans CSV INSEE, le scoring restait à 0 (pas de couleur MPR ni tx_proprio/tx_avant_1975 calculables). Phase 11.1.2 livre l'auto-download des CSV publics INSEE dans `seed-iris-bretagne.ts` et **seed la totalité Bretagne** (1909 IRIS + 1202 communes).
+- **Fichiers modifiés** :
+  - `scripts/external/seed-iris-bretagne.ts` (auto-download CSV INSEE + parser Filosofi 2020 + Recensement Logement 2020)
+  - `docs/wiki/log.md` (cette entrée)
+  - `data/BASE_TD_FILO_DEC_IRIS_2020.csv` (téléchargé auto, ignoré par git)
+  - `data/base-ic-logement-2020.CSV` (téléchargé auto, ignoré par git)
+- **Migrations créées** : Aucune (Phase 11.1 a déjà créé les tables).
+- **Edge Functions** : Aucune.
+- **Pages wiki impactées** : `external-data-sources.md` (à mettre à jour : Phase 11.1.2 livrée).
+- **Sources INSEE auto-téléchargées** :
+  - Filosofi 2020 IRIS : `https://www.insee.fr/.../BASE_TD_FILO_DEC_IRIS_2020_CSV.zip` (~870 Ko zip → ~2 Mo CSV, 14 706 IRIS national)
+    - Champs utilisés : `IRIS`, `DEC_MED20` (médiane revenu UC), `DEC_D120` (1er décile), `DEC_D920` (9e décile)
+    - Encoding : décimales avec virgule (`24110,5` → parseFloat avec replace `,`→`.`)
+  - Recensement Logement 2020 IRIS : `https://www.insee.fr/.../base-ic-logement-2020_csv.zip` (~25 Mo zip → ~56 Mo CSV, 49 104 IRIS)
+    - Champs utilisés : `P20_RP` (résid. principales), `P20_RP_PROP` (propriétaires occupants), `P20_RP_ACH19/45/70` (avant 1971)
+    - Calcul : `tx_proprio = P20_RP_PROP / P20_RP`, `tx_avant_1975 ≈ (ACH19+ACH45+ACH70) / RP`
+- **Résultats live Supabase prod** :
+  - **brh_ext_iris** : **1909 IRIS Bretagne seedés** (439 dépt 22 + 499 dépt 29 + 566 dépt 35 + 405 dépt 56)
+  - Filosofi joint : ~80% des IRIS BZH ont décile + couleur MPR (ex: Brest IRIS 290190103 = D6 Violet, MED 24 110 €)
+  - Recensement joint : ~95% des IRIS BZH ont tx_proprio + tx_avant_1975 (ex: tx_proprio 63%, tx_avant_1975 36%)
+  - Enedis joint : ~90% des IRIS résidentiels (thermosens kWh/DJU + conso totale)
+  - GRDF joint : ~50% des IRIS (gaz dominant urbain — rural BZH peu raccordé)
+  - **brh_ext_commune** : 1202 communes Bretagne seedées (radon catégorie 3 généralisé BZH attendu, sismique zone 2)
+- **Bugs résolus** :
+  - URL INSEE Filosofi : pas 2021 mais 2020 (lag publication INSEE) → URL stable trouvée
+  - Filosofi parsing : décimales avec `,` (français) → `replace(',', '.')`
+  - Filosofi : index colonnes `IRIS=0, DEC_MED20=4, DEC_D120=7, DEC_D920=14` (vs supposition initiale)
+  - Recensement : usage du header pour trouver colonnes par nom (robustesse aux changements ordre)
+  - Recensement : `tx_avant_1975` approximé avec seuil 1971 (ACH70 = 1946-1970, pas de breakpoint 1975 dans CSV INSEE)
+- **Conformité 14 règles BRH** :
+  - Règle 4 ✅ — pas de `as unknown as` (parsing CSV typé)
+  - Règle 13 ✅ — pas de `toISOString().slice(0,10)`
+  - Règle 5 ✅ — gestion d'erreurs gracieuses (download, parsing, upsert)
+- **Risque** : Low. Auto-download depuis URLs INSEE stables (Licence Ouverte 2.0). Les CSV sont gitignorés (gros volumes). Le seed est idempotent (UPSERT par PK).
+- **Tests** : 212/212 globaux verts. Tsc + lint clean.
+- **Status** : ✅ DONE — moteur scoring v2 désormais fonctionnel sur Bretagne complète. Le batch-score-v2 sur 59k prospects activé peut désormais déclencher les règles MPR Bleu/Jaune/Violet/Rose, IRIS proprio_ancien, sur-conso Enedis, RGA, Radon Z3, low_concurrence, précarité_max.
+- **Décisions de cadrage** :
+  - **Filosofi 2020 (pas 2021)** : INSEE publie avec 2 ans de lag, 2020 est la dernière disponible.
+  - **CSV gitignorés** : trop volumineux (~58 Mo total décompressé) — auto-download au runtime.
+  - **`tx_avant_1975 ≈ avant 1971`** : ACH70 INSEE = 1946-1970 (pas de breakpoint 1975 standard). Approximation acceptable pour règle "IRIS proprio ancien" car le seuil 1975 capture surtout RT1974/avant.
+  - **Pas de cache Filosofi sur Supabase** : c'est de la data statique annuelle, on garde le mapping IRIS dans `brh_ext_iris` (UPSERT annuel suffit).
+
+---
+
 ## 2026-05-01 — Phase 11.1.1 : Scripts seed Bretagne + enrichissement IRIS prospects
 
 - **Contexte** : Activer le scoring v2 sur les ~59 306 prospects DPE F/G Bretagne. La Phase 11.1 a livré le moteur (tables + EF + modules). Phase 11.1.1 livre les **4 scripts d'orchestration** pour remplir les tables externes et associer chaque prospect à son IRIS.

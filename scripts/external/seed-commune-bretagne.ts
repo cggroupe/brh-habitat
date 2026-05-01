@@ -154,25 +154,35 @@ async function fetchGeorisquesCommune(
 // ============================================================================
 // Annuaire RGE ADEME (Opendatasoft)
 // ============================================================================
-async function fetchRgeCommune(insee: string): Promise<{ nb_rge_isolation: number; nb_rge_pac: number }> {
+async function fetchRgeCommune(insee: string): Promise<{ nb_rge_isolation: number | null; nb_rge_pac: number | null }> {
   // API ADEME : /datasets/liste-des-entreprises-rge-2/records
   // Filtre par code INSEE commune (champ `code_insee_commune`)
+  // Renvoie null si l'API échoue → distingue "RGE non enrichi" de "RGE = 0"
   try {
+    const today = formatDateOnly(new Date())
     const params = new URLSearchParams({
-      where: `code_insee_commune="${insee}" AND date_fin_validite >= "${new Date().toISOString().slice(0, 10)}"`,
+      where: `code_insee_commune="${insee}" AND date_fin_validite >= "${today}"`,
       limit: '100',
     })
     const url = `https://data.ademe.fr/data-fair/api/v1/datasets/liste-des-entreprises-rge-2/lines?${params}`
     const res = await fetch(url)
-    if (!res.ok) return { nb_rge_isolation: 0, nb_rge_pac: 0 }
-    const json = await res.json() as { results?: Array<{ nom_certificat?: string }> }
+    if (!res.ok) return { nb_rge_isolation: null, nb_rge_pac: null }
+    const json = (await res.json()) as { results?: Array<{ nom_certificat?: string }> }
     const rows = json.results ?? []
     const nb_iso = rows.filter((r) => /isolation|ITE|combles|murs/i.test(r.nom_certificat ?? '')).length
     const nb_pac = rows.filter((r) => /pompe|PAC|chaleur/i.test(r.nom_certificat ?? '')).length
     return { nb_rge_isolation: nb_iso, nb_rge_pac: nb_pac }
   } catch {
-    return { nb_rge_isolation: 0, nb_rge_pac: 0 }
+    return { nb_rge_isolation: null, nb_rge_pac: null }
   }
+}
+
+// Helper date sans toISOString().slice(0,10) (règle BRH 13)
+function formatDateOnly(d: Date): string {
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
 }
 
 // ============================================================================

@@ -131,9 +131,11 @@ export function computeScoreV2(input: ScoreV2Input): ScoreBreakdown {
     })
   }
 
-  // Règle #7 — Faible concurrence locale (<5 RGE isolation commune)
+  // Règle #7 — Faible concurrence locale (1 ≤ RGE isolation < 5 commune)
+  // Note : 0 RGE traité comme "donnée non enrichie" (l'API ADEME RGE peut échouer
+  // silencieusement). Le seuil minimum 1 évite les faux positifs.
   const nbRgeIso = input.commune?.nb_rge_isolation
-  if (nbRgeIso !== null && nbRgeIso !== undefined && nbRgeIso < 5) {
+  if (nbRgeIso !== null && nbRgeIso !== undefined && nbRgeIso >= 1 && nbRgeIso < 5) {
     total += 5
     rules.push({
       rule: 'low_concurrence',

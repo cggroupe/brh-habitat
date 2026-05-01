@@ -29,6 +29,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 
 const PYRIS_URL = 'https://pyris.datajazz.io/api/coords'
 const THROTTLE_MS = 200
+// Conservé pour compat ; les UPDATEs sont en réalité flushés tous les 50 résolus.
 const UPDATE_CHUNK = 200
 
 const LIMIT = Number(process.argv.find((a) => a.startsWith('--limit='))?.split('=')[1] ?? 0)
@@ -90,8 +91,28 @@ async function main() {
   }
   console.log(`📊 ${prospects.length} prospects à enrichir`)
 
-  const updates: Array<{ id: number; iris_code: string }> = []
-  let resolved = 0
+  const FLUSH_EVERY = 50
+  let pending: Array<{ id: number; iris_code: string }> = []
+  let totalResolved = 0
+  const totalAttempts = prospects.length
+
+  async function flushPending() {
+    if (pending.length === 0 || DRY_RUN) return
+    const slice = pending
+    pending = []
+    // Updates individuels parallèles (préserve les colonnes non touchées)
+    await Promise.all(
+      slice.map((u) =>
+        supabase
+          .from('brh_dpe_prospects')
+          .update({ iris_code: u.iris_code })
+          .eq('id', u.id)
+          .then(({ error: uErr }) => {
+            if (uErr) console.error(`❌ id=${u.id} :`, uErr.message)
+          }),
+      ),
+    )
+  }
 
   for (let i = 0; i < prospects.length; i++) {
     const p = prospects[i]
@@ -101,32 +122,27 @@ async function main() {
 
     const iris = await pyrisLookup(lat, lon)
     if (iris && iris.length === 9) {
-      updates.push({ id: p.id as number, iris_code: iris })
-      resolved++
+      pending.push({ id: p.id as number, iris_code: iris })
+      totalResolved++
     }
 
-    if ((i + 1) % 50 === 0) {
-      console.log(`  ${i + 1}/${prospects.length} (résolus: ${resolved})`)
+    if ((i + 1) % FLUSH_EVERY === 0) {
+      await flushPending()
+      console.log(`  ${i + 1}/${totalAttempts} (résolus: ${totalResolved})`)
     }
     await sleep(THROTTLE_MS)
   }
 
-  console.log(`\n📦 ${updates.length} prospects résolus / ${prospects.length} tentatives`)
+  await flushPending()
 
   if (DRY_RUN) {
-    console.log('[DRY-RUN] Sample :', updates.slice(0, 3))
+    console.log(`[DRY-RUN] ${totalResolved}/${totalAttempts} prospects résolus (non persistés)`)
     return
   }
 
-  for (let i = 0; i < updates.length; i += UPDATE_CHUNK) {
-    const batch = updates.slice(i, i + UPDATE_CHUNK)
-    // upsert préserve les autres colonnes
-    const { error: uErr } = await supabase.from('brh_dpe_prospects').upsert(batch, { onConflict: 'id' })
-    if (uErr) console.error(`❌ Chunk ${i} :`, uErr.message)
-    else console.log(`✅ ${i + batch.length}/${updates.length}`)
-  }
-
-  console.log(`🎉 Terminé. ${updates.length} prospects enrichis avec iris_code.`)
+  console.log(`🎉 Terminé. ${totalResolved}/${totalAttempts} prospects enrichis avec iris_code.`)
+  // UPDATE_CHUNK n'est plus utilisé : updates sont flushés au fil de l'eau
+  void UPDATE_CHUNK
 }
 
 main().catch((err) => {

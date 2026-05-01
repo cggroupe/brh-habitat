@@ -17,8 +17,9 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
-import { readFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { execSync } from 'node:child_process'
 import {
   estimateDecile,
   decileToCouleurMpr,
@@ -61,23 +62,67 @@ interface IrisRecord {
 }
 
 // ============================================================================
-// Filosofi — CSV manuel (best-effort, optionnel V1)
+// Auto-download Filosofi 2020 + Recensement Logement 2020 INSEE
 // ============================================================================
-function loadFilosofi(): Map<string, { med21: number; d121: number; d921: number }> {
-  const path = resolve(process.cwd(), 'data/filosofi-iris-2021.csv')
-  if (!existsSync(path)) {
-    console.log(`⚠️  Filosofi CSV absent (${path}) — skip décile MPR auto`)
+const DATA_DIR = resolve(process.cwd(), 'data')
+
+const FILOSOFI_URL =
+  'https://www.insee.fr/fr/statistiques/fichier/7233950/BASE_TD_FILO_DEC_IRIS_2020_CSV.zip'
+const FILOSOFI_CSV = 'BASE_TD_FILO_DEC_IRIS_2020.csv'
+
+const RECENS_URL =
+  'https://www.insee.fr/fr/statistiques/fichier/7704078/base-ic-logement-2020_csv.zip'
+const RECENS_CSV = 'base-ic-logement-2020.CSV'
+
+async function ensureDataFile(url: string, csvName: string, label: string): Promise<string | null> {
+  if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true })
+  const csvPath = resolve(DATA_DIR, csvName)
+  if (existsSync(csvPath)) return csvPath
+
+  const zipPath = resolve(DATA_DIR, `${csvName}.zip`)
+  console.log(`📥 ${label} : téléchargement INSEE…`)
+  try {
+    const res = await fetch(url)
+    if (!res.ok) {
+      console.log(`⚠️  ${label} HTTP ${res.status} — skip`)
+      return null
+    }
+    const buf = Buffer.from(await res.arrayBuffer())
+    writeFileSync(zipPath, buf)
+    execSync(`unzip -o "${zipPath}" -d "${DATA_DIR}"`, { stdio: 'pipe' })
+    if (!existsSync(csvPath)) {
+      console.log(`⚠️  ${label} : ${csvName} absent après unzip`)
+      return null
+    }
+    console.log(`✅ ${label} téléchargé (${(buf.length / 1024 / 1024).toFixed(1)} Mo zip)`)
+    return csvPath
+  } catch (err) {
+    console.log(`⚠️  ${label} download erreur :`, err)
+    return null
+  }
+}
+
+// ============================================================================
+// Filosofi 2020 IRIS — médiane revenu UC + déciles
+// Format : IRIS;DEC_PIMP20;DEC_TP6020;DEC_Q120;DEC_MED20;DEC_Q320;DEC_EQ20;DEC_D120;...;DEC_D920;...
+// Col 1 (idx 0) = IRIS, col 5 (idx 4) = DEC_MED20, col 8 (idx 7) = DEC_D120, col 15 (idx 14) = DEC_D920
+// Décimales : virgule
+// ============================================================================
+async function loadFilosofi(): Promise<Map<string, { med21: number; d121: number; d921: number }>> {
+  const path = await ensureDataFile(FILOSOFI_URL, FILOSOFI_CSV, 'Filosofi 2020')
+  if (!path) {
+    console.log('⚠️  Filosofi indisponible — skip décile MPR auto')
     return new Map()
   }
-  const raw = readFileSync(path, 'utf-8').split('\n').slice(1)
+  const raw = readFileSync(path, 'utf-8').split('\n')
   const map = new Map<string, { med21: number; d121: number; d921: number }>()
-  for (const line of raw) {
-    const cols = line.split(/[;,]/)
-    if (cols.length < 5) continue
+  for (let i = 1; i < raw.length; i++) {
+    const cols = raw[i].split(';')
+    if (cols.length < 16) continue
     const iris = cols[0]?.trim()
-    const med = parseFloat(cols[2])
-    const d1 = parseFloat(cols[1])
-    const d9 = parseFloat(cols[3])
+    const med = parseFloat(cols[4]?.replace(',', '.'))
+    const d1 = parseFloat(cols[7]?.replace(',', '.'))
+    const d9 = parseFloat(cols[14]?.replace(',', '.'))
     if (iris && Number.isFinite(med)) {
       map.set(iris, { med21: med, d121: d1 || 0, d921: d9 || 0 })
     }
@@ -87,26 +132,50 @@ function loadFilosofi(): Map<string, { med21: number; d121: number; d921: number
 }
 
 // ============================================================================
-// Recensement Logement — CSV manuel
+// Recensement Logement 2020 IRIS — propriétaires, ancienneté
+// Format : IRIS;COM;TYP_IRIS;LAB_IRIS;P20_LOG;P20_RP;...;P20_RP_PROP;...
+// Col 1 = IRIS, col 6 = P20_RP, col 28-34 = P20_RP_ACH19/45/70/90/05/17, col 63 = P20_RP_PROP
 // ============================================================================
-function loadRecensement(): Map<string, { tx_proprio: number; tx_avant_1975: number }> {
-  const path = resolve(process.cwd(), 'data/recensement-logement-iris-2022.csv')
-  if (!existsSync(path)) {
-    console.log(`⚠️  Recensement CSV absent (${path}) — skip tx_proprio/tx_avant_1975`)
+async function loadRecensement(): Promise<Map<string, { tx_proprio: number; tx_avant_1975: number }>> {
+  const path = await ensureDataFile(RECENS_URL, RECENS_CSV, 'Recensement Logement 2020')
+  if (!path) {
+    console.log('⚠️  Recensement indisponible — skip tx_proprio/tx_avant_1975')
     return new Map()
   }
-  const raw = readFileSync(path, 'utf-8').split('\n').slice(1)
+  const raw = readFileSync(path, 'utf-8').split('\n')
   const map = new Map<string, { tx_proprio: number; tx_avant_1975: number }>()
-  for (const line of raw) {
-    const cols = line.split(/[;,]/)
-    if (cols.length < 3) continue
-    const iris = cols[0]?.trim()
-    const tp = parseFloat(cols[1])
-    const ta = parseFloat(cols[2])
-    if (iris) {
+  // Header pour trouver index colonnes (robuste si ordre change)
+  const header = raw[0].split(';')
+  const idx = (name: string) => header.indexOf(name)
+  const iIris = idx('IRIS')
+  const iRp = idx('P20_RP')
+  const iProp = idx('P20_RP_PROP')
+  const iAch19 = idx('P20_RP_ACH19')
+  const iAch45 = idx('P20_RP_ACH45')
+  const iAch70 = idx('P20_RP_ACH70')
+
+  if (iIris < 0 || iRp < 0 || iProp < 0) {
+    console.log('⚠️  Recensement format inattendu, colonnes IRIS/P20_RP/P20_RP_PROP introuvables')
+    return new Map()
+  }
+
+  for (let i = 1; i < raw.length; i++) {
+    const cols = raw[i].split(';')
+    if (cols.length < Math.max(iProp, iAch70) + 1) continue
+    const iris = cols[iIris]?.trim()
+    if (!iris) continue
+    const rp = parseFloat(cols[iRp])
+    const prop = parseFloat(cols[iProp])
+    const a19 = parseFloat(cols[iAch19] ?? '0') || 0
+    const a45 = parseFloat(cols[iAch45] ?? '0') || 0
+    const a70 = parseFloat(cols[iAch70] ?? '0') || 0
+    if (rp > 0) {
+      // tx_avant_1975 = approximation via 'avant 1971' (P20_RP_ACH70 = 1946-1970)
+      const avant1975 = (a19 + a45 + a70) / rp
+      const txProp = prop / rp
       map.set(iris, {
-        tx_proprio: Number.isFinite(tp) ? tp : 0,
-        tx_avant_1975: Number.isFinite(ta) ? ta : 0,
+        tx_proprio: Number.isFinite(txProp) ? Math.min(1, Math.max(0, txProp)) : 0,
+        tx_avant_1975: Number.isFinite(avant1975) ? Math.min(1, Math.max(0, avant1975)) : 0,
       })
     }
   }
@@ -229,8 +298,8 @@ async function fetchGrdfIris(dept: string): Promise<
 async function main() {
   console.log(`🚀 Phase 11.1.1 — Seed brh_ext_iris (depts: ${DEPTS.join(',')})${DRY_RUN ? ' [DRY-RUN]' : ''}`)
 
-  const filosofi = loadFilosofi()
-  const recensement = loadRecensement()
+  const filosofi = await loadFilosofi()
+  const recensement = await loadRecensement()
 
   let totalUpsert = 0
   for (const dept of DEPTS) {
