@@ -1,0 +1,40 @@
+{
+  "_meta": {
+    "source": "fra/datas/dataOuvertures/DataOuvertures.as:1515-1613",
+    "description": "Facteur Fe1 — masques solaires (auvent/balcon, parois latérales)",
+    "function": "get_Fe1(orientation, avancee, typeMasque, obstacleSud, masquesLateraux)",
+    "branches": [
+      "AUVENT_OU_BALCON + masquesLateraux=true → table par avancee × orientation",
+      "AUVENT_OU_BALCON + masquesLateraux=false → table par avancee uniquement",
+      "PAROIS_LATERALES → 0.5 si obstacleSud sinon 0.7",
+      "AUCUN → 1"
+    ],
+    "avancee_brackets_m": [
+      {"key": "<1", "max_m": 1},
+      {"key": "1-2", "min_m": 1, "max_m": 2},
+      {"key": "2-3", "min_m": 2, "max_m": 3},
+      {"key": ">=3"}
+    ]
+  },
+  "Fe1": {
+    "AUVENT_OU_BALCON": {
+      "with_masques_lateraux": {
+        "<1": {"NORD": 0.4, "NORD_EST": 0.4, "NORD_OUEST": 0.4, "SUD": 0.5, "SUD_EST": 0.5, "SUD_OUEST": 0.5, "EST": 0.45, "OUEST": 0.45},
+        "1-2": {"NORD": 0.3, "NORD_EST": 0.3, "NORD_OUEST": 0.3, "SUD": 0.4, "SUD_EST": 0.4, "SUD_OUEST": 0.4, "EST": 0.35, "OUEST": 0.35},
+        "2-3": {"NORD": 0.2, "NORD_EST": 0.2, "NORD_OUEST": 0.2, "SUD": 0.3, "SUD_EST": 0.3, "SUD_OUEST": 0.3, "EST": 0.25, "OUEST": 0.25},
+        ">=3": {"NORD": 0.1, "NORD_EST": 0.1, "NORD_OUEST": 0.1, "SUD": 0.2, "SUD_EST": 0.2, "SUD_OUEST": 0.2, "EST": 0.15, "OUEST": 0.15}
+      },
+      "without_masques_lateraux": {
+        "<1": 0.8,
+        "1-2": 0.6,
+        "2-3": 0.5,
+        ">=3": 0.4
+      }
+    },
+    "PAROIS_LATERALES": {
+      "obstacleSud_true": 0.5,
+      "obstacleSud_false": 0.7
+    },
+    "AUCUN": 1
+  }
+}

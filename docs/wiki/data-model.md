@@ -1,18 +1,25 @@
 # BRH Habitat — Modèle de données
 
 > Source : migrations `supabase/migrations/*.sql` vérifiées ligne par ligne.
-> **Dernière mesure** : 2026-04-23 (audit croisé) · **30 tables** (30 `brh_*` + 1 `profiles`).
+> **Dernière mesure** : 2026-04-30 (Phase 1 DPE Engine) · **79 tables** (78 `brh_*` + 1 `profiles`).
 
 ## Chiffres vérifiés (`grep CREATE ... migrations/*.sql`)
 
 | Objet | Compte |
 |-------|--------|
-| Tables `brh_*` | **30** |
+| Tables `brh_*` | **78** (30 métier + 45 `brh_dpe_*` réf + 3 audits) |
 | `profiles` (extend auth.users) | 1 |
-| Policies RLS | **142** |
+| Policies RLS | **~160** (142 historiques + nouvelles DPE) |
 | Fonctions SQL | **20** |
-| Triggers | **23** (6 métier + 15 `updated_at` + 2 autres) |
+| Triggers | **25** (6 métier + 17 `updated_at` + 2 autres) |
 | Storage buckets | **6** |
+
+## Familles de tables
+
+- **30 tables métier** `brh_*` (homes, cases, diagnostics, prospects, companies, ...)
+- **45 tables référentiels** `brh_dpe_*` (3CL-DPE 2021, ajoutées Phase 1 DPE Engine)
+- **3 tables audit** `brh_audits`, `brh_audit_variantes`, `brh_audit_factures`
+- **1 table catalogue** `brh_dpe_solutions`
 
 ## Conventions
 

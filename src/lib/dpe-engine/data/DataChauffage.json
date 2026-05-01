@@ -1,0 +1,26 @@
+{
+  "_meta": {
+    "source": "fra/datas/dataChauffage/DataChauffage.as",
+    "description": "Coefficients chauffage : facteur Fch par zone climatique, coefK (correction K) par énergie générateur",
+    "functions": ["getFch(zoneClim)", "getCoefK(energie)"]
+  },
+  "Fch_byZone": {
+    "H1A": 0.25,
+    "H1B": 0.22,
+    "H1C": 0.28,
+    "H2A": 0.34,
+    "H2B": 0.33,
+    "H2C": 0.38,
+    "H2D": 0.39,
+    "H3": 0.52
+  },
+  "coefK_byEnergie": {
+    "BUCHES": 1.08,
+    "GRANULE": 1.08,
+    "FIOUL": 1.07,
+    "GAZ_NAT": 1.11,
+    "PROPANE": 1.09,
+    "ELECTRICITE": 1,
+    "RESEAU_CHALEUR": 1
+  }
+}

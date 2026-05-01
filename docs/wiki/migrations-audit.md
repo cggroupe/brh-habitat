@@ -1,7 +1,17 @@
 # BRH Habitat — Migrations Audit
 
 > Source : `supabase/migrations/`.
-> **Dernière mesure** : 2026-04-23 · **Total** : 37 migrations.
+> **Dernière mesure** : 2026-04-30 · **Total** : 40 migrations (37 historiques + 3 DPE Engine Phase 1).
+
+## Phase DPE Engine — 2026-04-30 (portage CapRénov+)
+
+| Migration | Rôle |
+|-----------|------|
+| `20260430120000_brh_dpe_referentiels` | 45 tables référentiels 3CL-DPE 2021 (`brh_dpe_*`) — coefs U, ponts thermiques, intermittence (54k rows), SCOP, seuils, zones climatiques. Source : `tv.db` CapRénov+. |
+| `20260430120100_brh_audits` | 3 tables : `brh_audits` + `brh_audit_variantes` (delta JSONB ADR-004) + `brh_audit_factures`. Status workflow draft→submitted→archived. INTEGER cents partout. |
+| `20260430120200_brh_dpe_solutions` | Catalogue solutions/travaux types avec prix HT + MO HT en cents. Source : `solutions.db` CapRénov+. |
+
+Voir log d'application : [log.md](log.md) entrée 2026-04-30.
 
 ## Convention
 

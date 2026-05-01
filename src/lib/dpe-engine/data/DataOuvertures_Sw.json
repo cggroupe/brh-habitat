@@ -1,0 +1,1041 @@
+{
+  "_meta": {
+    "source": "fra/datas/dataOuvertures/DataOuvertures.as:397-1107",
+    "description": "Coefficient Sw (facteur solaire fenêtre) par huisserie × ouverture × mode × pose × vitrage [× émissivité pour DV/TV]",
+    "structure": "Sw[typeHuisserie][typeOuverture][typeModeOuverture][typePose][typeVitrage] = number, OU [...][typeVitrage][emissivite] = number",
+    "function": "get_Sw(typeVitrage, typeHuisserie, typeOuverture, emissivite, modeOuverture, typePose) ligne 1477",
+    "valeurs_null": "Représentent NaN dans la source AS3 (combinaisons impossibles, ex: PORTE_FENETRE COULISSANTE simple vitrage)",
+    "alias_huisserie": {
+      "BOIS_ALU": "BOIS (référence partagée)"
+    },
+    "vitrages_avec_emissivite": [
+      "double vitrage",
+      "triple vitrage"
+    ],
+    "vitrages_sans_emissivite": [
+      "simple vitrage"
+    ]
+  },
+  "Sw": {
+    "bois": {
+      "FENETRE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.58,
+            "double vitrage": {
+              "true": 0.52,
+              "false": 0.45
+            },
+            "triple vitrage": {
+              "true": 0.46,
+              "false": 0.41
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.52,
+            "double vitrage": {
+              "true": 0.47,
+              "false": 0.4
+            },
+            "triple vitrage": {
+              "true": 0.41,
+              "false": 0.37
+            }
+          }
+        },
+        "COULISSANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.58,
+            "double vitrage": {
+              "true": 0.52,
+              "false": 0.45
+            },
+            "triple vitrage": {
+              "true": 0.46,
+              "false": 0.41
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.52,
+            "double vitrage": {
+              "true": 0.47,
+              "false": 0.4
+            },
+            "triple vitrage": {
+              "true": 0.41,
+              "false": 0.37
+            }
+          }
+        }
+      },
+      "PORTE_FENETRE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.53,
+            "double vitrage": {
+              "true": 0.48,
+              "false": 0.41
+            },
+            "triple vitrage": {
+              "true": 0.42,
+              "false": 0.38
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.48,
+            "double vitrage": {
+              "true": 0.43,
+              "false": 0.37
+            },
+            "triple vitrage": {
+              "true": 0.38,
+              "false": 0.34
+            }
+          }
+        },
+        "COULISSANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": null,
+            "double vitrage": {
+              "true": null,
+              "false": null
+            },
+            "triple vitrage": {
+              "true": null,
+              "false": null
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": null,
+            "double vitrage": {
+              "true": null,
+              "false": null
+            },
+            "triple vitrage": {
+              "true": null,
+              "false": null
+            }
+          }
+        }
+      },
+      "BAIE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.62,
+            "double vitrage": {
+              "true": 0.55,
+              "false": 0.48
+            },
+            "triple vitrage": {
+              "true": 0.49,
+              "false": 0.44
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.56,
+            "double vitrage": {
+              "true": 0.5,
+              "false": 0.43
+            },
+            "triple vitrage": {
+              "true": 0.44,
+              "false": 0.4
+            }
+          }
+        },
+        "COULISSANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.62,
+            "double vitrage": {
+              "true": 0.55,
+              "false": 0.48
+            },
+            "triple vitrage": {
+              "true": 0.49,
+              "false": 0.44
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.56,
+            "double vitrage": {
+              "true": 0.5,
+              "false": 0.43
+            },
+            "triple vitrage": {
+              "true": 0.44,
+              "false": 0.4
+            }
+          }
+        }
+      },
+      "CHASSIS_FIXE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.58,
+            "double vitrage": {
+              "true": 0.52,
+              "false": 0.45
+            },
+            "triple vitrage": {
+              "true": 0.46,
+              "false": 0.41
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.52,
+            "double vitrage": {
+              "true": 0.47,
+              "false": 0.4
+            },
+            "triple vitrage": {
+              "true": 0.41,
+              "false": 0.37
+            }
+          }
+        }
+      },
+      "FENETRE_TOIT": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.58,
+            "double vitrage": {
+              "true": 0.52,
+              "false": 0.45
+            },
+            "triple vitrage": {
+              "true": 0.46,
+              "false": 0.41
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.52,
+            "double vitrage": {
+              "true": 0.47,
+              "false": 0.4
+            },
+            "triple vitrage": {
+              "true": 0.41,
+              "false": 0.37
+            }
+          }
+        }
+      }
+    },
+    "bois alu": {
+      "FENETRE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.58,
+            "double vitrage": {
+              "true": 0.52,
+              "false": 0.45
+            },
+            "triple vitrage": {
+              "true": 0.46,
+              "false": 0.41
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.52,
+            "double vitrage": {
+              "true": 0.47,
+              "false": 0.4
+            },
+            "triple vitrage": {
+              "true": 0.41,
+              "false": 0.37
+            }
+          }
+        },
+        "COULISSANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.58,
+            "double vitrage": {
+              "true": 0.52,
+              "false": 0.45
+            },
+            "triple vitrage": {
+              "true": 0.46,
+              "false": 0.41
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.52,
+            "double vitrage": {
+              "true": 0.47,
+              "false": 0.4
+            },
+            "triple vitrage": {
+              "true": 0.41,
+              "false": 0.37
+            }
+          }
+        }
+      },
+      "PORTE_FENETRE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.53,
+            "double vitrage": {
+              "true": 0.48,
+              "false": 0.41
+            },
+            "triple vitrage": {
+              "true": 0.42,
+              "false": 0.38
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.48,
+            "double vitrage": {
+              "true": 0.43,
+              "false": 0.37
+            },
+            "triple vitrage": {
+              "true": 0.38,
+              "false": 0.34
+            }
+          }
+        },
+        "COULISSANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": null,
+            "double vitrage": {
+              "true": null,
+              "false": null
+            },
+            "triple vitrage": {
+              "true": null,
+              "false": null
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": null,
+            "double vitrage": {
+              "true": null,
+              "false": null
+            },
+            "triple vitrage": {
+              "true": null,
+              "false": null
+            }
+          }
+        }
+      },
+      "BAIE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.62,
+            "double vitrage": {
+              "true": 0.55,
+              "false": 0.48
+            },
+            "triple vitrage": {
+              "true": 0.49,
+              "false": 0.44
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.56,
+            "double vitrage": {
+              "true": 0.5,
+              "false": 0.43
+            },
+            "triple vitrage": {
+              "true": 0.44,
+              "false": 0.4
+            }
+          }
+        },
+        "COULISSANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.62,
+            "double vitrage": {
+              "true": 0.55,
+              "false": 0.48
+            },
+            "triple vitrage": {
+              "true": 0.49,
+              "false": 0.44
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.56,
+            "double vitrage": {
+              "true": 0.5,
+              "false": 0.43
+            },
+            "triple vitrage": {
+              "true": 0.44,
+              "false": 0.4
+            }
+          }
+        }
+      },
+      "CHASSIS_FIXE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.58,
+            "double vitrage": {
+              "true": 0.52,
+              "false": 0.45
+            },
+            "triple vitrage": {
+              "true": 0.46,
+              "false": 0.41
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.52,
+            "double vitrage": {
+              "true": 0.47,
+              "false": 0.4
+            },
+            "triple vitrage": {
+              "true": 0.41,
+              "false": 0.37
+            }
+          }
+        }
+      },
+      "FENETRE_TOIT": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.58,
+            "double vitrage": {
+              "true": 0.52,
+              "false": 0.45
+            },
+            "triple vitrage": {
+              "true": 0.46,
+              "false": 0.41
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.52,
+            "double vitrage": {
+              "true": 0.47,
+              "false": 0.4
+            },
+            "triple vitrage": {
+              "true": 0.41,
+              "false": 0.37
+            }
+          }
+        }
+      }
+    },
+    "pvc": {
+      "FENETRE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.54,
+            "double vitrage": {
+              "true": 0.48,
+              "false": 0.42
+            },
+            "triple vitrage": {
+              "true": 0.43,
+              "false": 0.39
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.49,
+            "double vitrage": {
+              "true": 0.44,
+              "false": 0.38
+            },
+            "triple vitrage": {
+              "true": 0.39,
+              "false": 0.35
+            }
+          }
+        },
+        "COULISSANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.6,
+            "double vitrage": {
+              "true": 0.54,
+              "false": 0.46
+            },
+            "triple vitrage": {
+              "true": 0.47,
+              "false": 0.43
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.54,
+            "double vitrage": {
+              "true": 0.48,
+              "false": 0.41
+            },
+            "triple vitrage": {
+              "true": 0.43,
+              "false": 0.38
+            }
+          }
+        }
+      },
+      "PORTE_FENETRE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.5,
+            "double vitrage": {
+              "true": 0.45,
+              "false": 0.39
+            },
+            "triple vitrage": {
+              "true": 0.4,
+              "false": 0.36
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.45,
+            "double vitrage": {
+              "true": 0.4,
+              "false": 0.35
+            },
+            "triple vitrage": {
+              "true": 0.36,
+              "false": 0.32
+            }
+          }
+        },
+        "COULISSANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": null,
+            "double vitrage": {
+              "true": null,
+              "false": null
+            },
+            "triple vitrage": {
+              "true": null,
+              "false": null
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": null,
+            "double vitrage": {
+              "true": null,
+              "false": null
+            },
+            "triple vitrage": {
+              "true": null,
+              "false": null
+            }
+          }
+        }
+      },
+      "BAIE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.57,
+            "double vitrage": {
+              "true": 0.51,
+              "false": 0.44
+            },
+            "triple vitrage": {
+              "true": 0.45,
+              "false": 0.4
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.51,
+            "double vitrage": {
+              "true": 0.46,
+              "false": 0.39
+            },
+            "triple vitrage": {
+              "true": 0.4,
+              "false": 0.36
+            }
+          }
+        },
+        "COULISSANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.64,
+            "double vitrage": {
+              "true": 0.57,
+              "false": 0.49
+            },
+            "triple vitrage": {
+              "true": 0.51,
+              "false": 0.45
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.57,
+            "double vitrage": {
+              "true": 0.51,
+              "false": 0.44
+            },
+            "triple vitrage": {
+              "true": 0.45,
+              "false": 0.41
+            }
+          }
+        }
+      },
+      "CHASSIS_FIXE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.54,
+            "double vitrage": {
+              "true": 0.48,
+              "false": 0.42
+            },
+            "triple vitrage": {
+              "true": 0.43,
+              "false": 0.39
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.49,
+            "double vitrage": {
+              "true": 0.44,
+              "false": 0.38
+            },
+            "triple vitrage": {
+              "true": 0.39,
+              "false": 0.35
+            }
+          }
+        }
+      },
+      "FENETRE_TOIT": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.54,
+            "double vitrage": {
+              "true": 0.48,
+              "false": 0.42
+            },
+            "triple vitrage": {
+              "true": 0.43,
+              "false": 0.39
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.49,
+            "double vitrage": {
+              "true": 0.44,
+              "false": 0.38
+            },
+            "triple vitrage": {
+              "true": 0.39,
+              "false": 0.35
+            }
+          }
+        }
+      }
+    },
+    "alu RPT": {
+      "FENETRE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.59,
+            "double vitrage": {
+              "true": 0.53,
+              "false": 0.46
+            },
+            "triple vitrage": {
+              "true": 0.47,
+              "false": 0.42
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.53,
+            "double vitrage": {
+              "true": 0.48,
+              "false": 0.41
+            },
+            "triple vitrage": {
+              "true": 0.42,
+              "false": 0.38
+            }
+          }
+        },
+        "COULISSANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.65,
+            "double vitrage": {
+              "true": 0.58,
+              "false": 0.5
+            },
+            "triple vitrage": {
+              "true": 0.52,
+              "false": 0.46
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.58,
+            "double vitrage": {
+              "true": 0.52,
+              "false": 0.45
+            },
+            "triple vitrage": {
+              "true": 0.46,
+              "false": 0.42
+            }
+          }
+        }
+      },
+      "PORTE_FENETRE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.63,
+            "double vitrage": {
+              "true": 0.56,
+              "false": 0.48
+            },
+            "triple vitrage": {
+              "true": 0.5,
+              "false": 0.45
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.56,
+            "double vitrage": {
+              "true": 0.51,
+              "false": 0.44
+            },
+            "triple vitrage": {
+              "true": 0.45,
+              "false": 0.4
+            }
+          }
+        },
+        "COULISSANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": null,
+            "double vitrage": {
+              "true": null,
+              "false": null
+            },
+            "triple vitrage": {
+              "true": null,
+              "false": null
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": null,
+            "double vitrage": {
+              "true": null,
+              "false": null
+            },
+            "triple vitrage": {
+              "true": null,
+              "false": null
+            }
+          }
+        }
+      },
+      "BAIE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.63,
+            "double vitrage": {
+              "true": 0.56,
+              "false": 0.48
+            },
+            "triple vitrage": {
+              "true": 0.5,
+              "false": 0.45
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.56,
+            "double vitrage": {
+              "true": 0.51,
+              "false": 0.44
+            },
+            "triple vitrage": {
+              "true": 0.45,
+              "false": 0.4
+            }
+          }
+        },
+        "COULISSANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.7,
+            "double vitrage": {
+              "true": 0.62,
+              "false": 0.54
+            },
+            "triple vitrage": {
+              "true": 0.55,
+              "false": 0.5
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.63,
+            "double vitrage": {
+              "true": 0.56,
+              "false": 0.48
+            },
+            "triple vitrage": {
+              "true": 0.5,
+              "false": 0.45
+            }
+          }
+        }
+      },
+      "CHASSIS_FIXE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.59,
+            "double vitrage": {
+              "true": 0.53,
+              "false": 0.46
+            },
+            "triple vitrage": {
+              "true": 0.47,
+              "false": 0.42
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.53,
+            "double vitrage": {
+              "true": 0.48,
+              "false": 0.41
+            },
+            "triple vitrage": {
+              "true": 0.42,
+              "false": 0.38
+            }
+          }
+        }
+      },
+      "FENETRE_TOIT": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.59,
+            "double vitrage": {
+              "true": 0.53,
+              "false": 0.46
+            },
+            "triple vitrage": {
+              "true": 0.47,
+              "false": 0.42
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.53,
+            "double vitrage": {
+              "true": 0.48,
+              "false": 0.41
+            },
+            "triple vitrage": {
+              "true": 0.42,
+              "false": 0.38
+            }
+          }
+        }
+      }
+    },
+    "alu": {
+      "FENETRE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.61,
+            "double vitrage": {
+              "true": 0.55,
+              "false": 0.48
+            },
+            "triple vitrage": {
+              "true": 0.49,
+              "false": 0.44
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.55,
+            "double vitrage": {
+              "true": 0.49,
+              "false": 0.43
+            },
+            "triple vitrage": {
+              "true": 0.44,
+              "false": 0.4
+            }
+          }
+        },
+        "COULISSANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.67,
+            "double vitrage": {
+              "true": 0.6,
+              "false": 0.52
+            },
+            "triple vitrage": {
+              "true": 0.53,
+              "false": 0.48
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.6,
+            "double vitrage": {
+              "true": 0.54,
+              "false": 0.47
+            },
+            "triple vitrage": {
+              "true": 0.48,
+              "false": 0.43
+            }
+          }
+        }
+      },
+      "PORTE_FENETRE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.64,
+            "double vitrage": {
+              "true": 0.58,
+              "false": 0.5
+            },
+            "triple vitrage": {
+              "true": 0.52,
+              "false": 0.47
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.58,
+            "double vitrage": {
+              "true": 0.52,
+              "false": 0.45
+            },
+            "triple vitrage": {
+              "true": 0.46,
+              "false": 0.42
+            }
+          }
+        },
+        "COULISSANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": null,
+            "double vitrage": {
+              "true": null,
+              "false": null
+            },
+            "triple vitrage": {
+              "true": null,
+              "false": null
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": null,
+            "double vitrage": {
+              "true": null,
+              "false": null
+            },
+            "triple vitrage": {
+              "true": null,
+              "false": null
+            }
+          }
+        }
+      },
+      "BAIE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.64,
+            "double vitrage": {
+              "true": 0.58,
+              "false": 0.5
+            },
+            "triple vitrage": {
+              "true": 0.52,
+              "false": 0.47
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.58,
+            "double vitrage": {
+              "true": 0.52,
+              "false": 0.45
+            },
+            "triple vitrage": {
+              "true": 0.46,
+              "false": 0.42
+            }
+          }
+        },
+        "COULISSANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.71,
+            "double vitrage": {
+              "true": 0.64,
+              "false": 0.55
+            },
+            "triple vitrage": {
+              "true": 0.56,
+              "false": 0.51
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.64,
+            "double vitrage": {
+              "true": 0.57,
+              "false": 0.49
+            },
+            "triple vitrage": {
+              "true": 0.51,
+              "false": 0.46
+            }
+          }
+        }
+      },
+      "CHASSIS_FIXE": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.61,
+            "double vitrage": {
+              "true": 0.55,
+              "false": 0.48
+            },
+            "triple vitrage": {
+              "true": 0.49,
+              "false": 0.44
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.55,
+            "double vitrage": {
+              "true": 0.49,
+              "false": 0.43
+            },
+            "triple vitrage": {
+              "true": 0.44,
+              "false": 0.4
+            }
+          }
+        }
+      },
+      "FENETRE_TOIT": {
+        "BATTANTE": {
+          "AU_NU_EXTERIEUR": {
+            "simple vitrage": 0.61,
+            "double vitrage": {
+              "true": 0.55,
+              "false": 0.48
+            },
+            "triple vitrage": {
+              "true": 0.49,
+              "false": 0.44
+            }
+          },
+          "AU_NU_INTERIEUR": {
+            "simple vitrage": 0.55,
+            "double vitrage": {
+              "true": 0.49,
+              "false": 0.43
+            },
+            "triple vitrage": {
+              "true": 0.44,
+              "false": 0.4
+            }
+          }
+        }
+      }
+    }
+  }
+}

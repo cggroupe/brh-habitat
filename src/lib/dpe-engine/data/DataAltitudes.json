@@ -1,0 +1,781 @@
+{
+  "_meta": {
+    "source": "fra/datas/dataClimat/DataAltitudes.as",
+    "description": "Tranches d'altitude (18 paliers de 0 à 2000m) et association département → range de tranches valides",
+    "tranches_format": "{min, max, mediane} en mètres",
+    "departement_format": "{trancheMin, trancheMax, terres, littoral, ile} — index dans listeTranchesAltitudes"
+  },
+  "listeTranchesAltitudes": [
+    {
+      "min": 0,
+      "max": 200,
+      "mediane": 100
+    },
+    {
+      "min": 201,
+      "max": 400,
+      "mediane": 300
+    },
+    {
+      "min": 401,
+      "max": 500,
+      "mediane": 450
+    },
+    {
+      "min": 501,
+      "max": 600,
+      "mediane": 550
+    },
+    {
+      "min": 601,
+      "max": 700,
+      "mediane": 650
+    },
+    {
+      "min": 701,
+      "max": 800,
+      "mediane": 750
+    },
+    {
+      "min": 801,
+      "max": 900,
+      "mediane": 850
+    },
+    {
+      "min": 901,
+      "max": 1000,
+      "mediane": 950
+    },
+    {
+      "min": 1001,
+      "max": 1100,
+      "mediane": 1050
+    },
+    {
+      "min": 1101,
+      "max": 1200,
+      "mediane": 1150
+    },
+    {
+      "min": 1201,
+      "max": 1300,
+      "mediane": 1250
+    },
+    {
+      "min": 1301,
+      "max": 1400,
+      "mediane": 1350
+    },
+    {
+      "min": 1401,
+      "max": 1500,
+      "mediane": 1450
+    },
+    {
+      "min": 1501,
+      "max": 1600,
+      "mediane": 1550
+    },
+    {
+      "min": 1601,
+      "max": 1700,
+      "mediane": 1650
+    },
+    {
+      "min": 1701,
+      "max": 1800,
+      "mediane": 1750
+    },
+    {
+      "min": 1801,
+      "max": 1900,
+      "mediane": 1850
+    },
+    {
+      "min": 1901,
+      "max": 2000,
+      "mediane": 1950
+    }
+  ],
+  "listeAltitudes_byDepartement": {
+    "01": {
+      "trancheMin": 0,
+      "trancheMax": 16,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "02": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "03": {
+      "trancheMin": 0,
+      "trancheMax": 10,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "04": {
+      "trancheMin": 1,
+      "trancheMax": 17,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "05": {
+      "trancheMin": 2,
+      "trancheMax": 17,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "06": {
+      "trancheMin": 0,
+      "trancheMax": 17,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "07": {
+      "trancheMin": 0,
+      "trancheMax": 15,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "08": {
+      "trancheMin": 0,
+      "trancheMax": 3,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "09": {
+      "trancheMin": 0,
+      "trancheMax": 17,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "10": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "11": {
+      "trancheMin": 0,
+      "trancheMax": 17,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "12": {
+      "trancheMin": 0,
+      "trancheMax": 12,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "13": {
+      "trancheMin": 0,
+      "trancheMax": 8,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "14": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "15": {
+      "trancheMin": 0,
+      "trancheMax": 16,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "16": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "17": {
+      "trancheMin": 0,
+      "trancheMax": 0,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "18": {
+      "trancheMin": 0,
+      "trancheMax": 3,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "19": {
+      "trancheMin": 0,
+      "trancheMax": 7,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "2A": {
+      "trancheMin": 0,
+      "trancheMax": 17,
+      "terres": true,
+      "littoral": true,
+      "ile": false
+    },
+    "2B": {
+      "trancheMin": 0,
+      "trancheMax": 17,
+      "terres": true,
+      "littoral": true,
+      "ile": false
+    },
+    "21": {
+      "trancheMin": 0,
+      "trancheMax": 5,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "22": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "23": {
+      "trancheMin": 0,
+      "trancheMax": 7,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "24": {
+      "trancheMin": 0,
+      "trancheMax": 2,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "25": {
+      "trancheMin": 0,
+      "trancheMax": 12,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "26": {
+      "trancheMin": 0,
+      "trancheMax": 17,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "27": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "28": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "29": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "30": {
+      "trancheMin": 0,
+      "trancheMax": 13,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "31": {
+      "trancheMin": 0,
+      "trancheMax": 17,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "32": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "33": {
+      "trancheMin": 0,
+      "trancheMax": 0,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "34": {
+      "trancheMin": 0,
+      "trancheMax": 9,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "35": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "36": {
+      "trancheMin": 0,
+      "trancheMax": 2,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "37": {
+      "trancheMin": 0,
+      "trancheMax": 0,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "38": {
+      "trancheMin": 0,
+      "trancheMax": 17,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "39": {
+      "trancheMin": 0,
+      "trancheMax": 12,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "40": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "41": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "42": {
+      "trancheMin": 0,
+      "trancheMax": 14,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "43": {
+      "trancheMin": 1,
+      "trancheMax": 15,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "44": {
+      "trancheMin": 0,
+      "trancheMax": 0,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "45": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "46": {
+      "trancheMin": 0,
+      "trancheMax": 5,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "47": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "48": {
+      "trancheMin": 0,
+      "trancheMax": 14,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "49": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "50": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "51": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "52": {
+      "trancheMin": 0,
+      "trancheMax": 3,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "53": {
+      "trancheMin": 0,
+      "trancheMax": 2,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "54": {
+      "trancheMin": 0,
+      "trancheMax": 5,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "55": {
+      "trancheMin": 0,
+      "trancheMax": 2,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "56": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "57": {
+      "trancheMin": 0,
+      "trancheMax": 7,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "58": {
+      "trancheMin": 0,
+      "trancheMax": 6,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "59": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "60": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "61": {
+      "trancheMin": 0,
+      "trancheMax": 2,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "62": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "63": {
+      "trancheMin": 1,
+      "trancheMax": 16,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "64": {
+      "trancheMin": 0,
+      "trancheMax": 17,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "65": {
+      "trancheMin": 0,
+      "trancheMax": 17,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "66": {
+      "trancheMin": 0,
+      "trancheMax": 17,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "67": {
+      "trancheMin": 0,
+      "trancheMax": 9,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "68": {
+      "trancheMin": 0,
+      "trancheMax": 12,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "69": {
+      "trancheMin": 0,
+      "trancheMax": 8,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "70": {
+      "trancheMin": 0,
+      "trancheMax": 10,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "71": {
+      "trancheMin": 0,
+      "trancheMax": 7,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "72": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "73": {
+      "trancheMin": 1,
+      "trancheMax": 17,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "74": {
+      "trancheMin": 1,
+      "trancheMax": 17,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "75": {
+      "trancheMin": 0,
+      "trancheMax": 0,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "76": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "77": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "78": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "79": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "80": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "81": {
+      "trancheMin": 0,
+      "trancheMax": 10,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "82": {
+      "trancheMin": 0,
+      "trancheMax": 3,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "83": {
+      "trancheMin": 0,
+      "trancheMax": 15,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "84": {
+      "trancheMin": 0,
+      "trancheMax": 17,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "85": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": true,
+      "ile": true
+    },
+    "86": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "87": {
+      "trancheMin": 0,
+      "trancheMax": 5,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "88": {
+      "trancheMin": 1,
+      "trancheMax": 11,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "89": {
+      "trancheMin": 0,
+      "trancheMax": 4,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "90": {
+      "trancheMin": 1,
+      "trancheMax": 10,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "91": {
+      "trancheMin": 0,
+      "trancheMax": 0,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "92": {
+      "trancheMin": 0,
+      "trancheMax": 0,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "93": {
+      "trancheMin": 0,
+      "trancheMax": 0,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "94": {
+      "trancheMin": 0,
+      "trancheMax": 0,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "95": {
+      "trancheMin": 0,
+      "trancheMax": 1,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    },
+    "RP": {
+      "trancheMin": 0,
+      "trancheMax": 0,
+      "terres": true,
+      "littoral": false,
+      "ile": false
+    }
+  }
+}

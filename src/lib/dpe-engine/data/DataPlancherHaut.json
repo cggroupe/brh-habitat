@@ -1,0 +1,53 @@
+{
+  "_meta": {
+    "source": "fra/datas/dataParois/DataPlancherHaut.as",
+    "description": "Coefficients U des planchers hauts/toitures par composant et par période réglementaire×zone (combles vs autre)",
+    "Uph_index_periodes": [
+      {"index": 0, "max_year": 1974},
+      {"index": 1, "max_year": 1977},
+      {"index": 2, "max_year": 1982, "if_joule": true},
+      {"index": 3, "max_year": 1982, "if_joule": false},
+      {"index": 4, "max_year": 1988, "if_joule": true},
+      {"index": 5, "max_year": 1988, "if_joule": false},
+      {"index": 6, "max_year": 2000, "if_joule": true},
+      {"index": 7, "max_year": 2000, "if_joule": false},
+      {"index": 8, "max_year": 2005},
+      {"index": 9, "max_year": 2012},
+      {"index": 10, "comment": "> 2012"}
+    ],
+    "typeCombles": ["COMBLES_PERDUS_ACCESSIBLES", "COMBLES_PERDUS_NON_ACCESSIBLES", "TOITURE_RAMPANTS"]
+  },
+  "Uph0_byComposant": {
+    "PLANCHER_SUR_SOLIVE_BOIS": 2,
+    "PLANCHER_SOUS_SOLIVE_BOIS": 2.3,
+    "PLANCHER_ENTRE_SOLIVE_BOIS": 1.2,
+    "PLANCHER_SUR_SOLIVE_METALLIQUE": 2.5,
+    "PLANCHER_SOUS_SOLIVE_METALLIQUE": 2.5,
+    "PLANCHER_ENTRE_SOLIVE_METALLIQUE": 1.45,
+    "PLAFOND_PLAQUE_PLATRE": 2.5,
+    "DALLE_BETON": 2.5,
+    "PLANCHER_LOURD": 2.5,
+    "PLANCHER_BARDEAUX_REMPLISSAGE": 1.2,
+    "PLAFOND_AVEC_SANS_REMPLISSAGE": 1.45,
+    "COMBLES_AMENAGES": 2.5,
+    "BAC_ACIER": 2.5,
+    "TOITURE_CHAUME": 0.24
+  },
+  "Uph0_constants": {
+    "JSP": 2.5,
+    "lambdaIsolantDefault": 0.04,
+    "UphNu_max": 2.5
+  },
+  "Uph_reglementaire": {
+    "combles": {
+      "H1": [2.5, 0.5, 0.4, 0.5, 0.3, 0.3, 0.25, 0.25, 0.23, 0.2, 0.14],
+      "H2": [2.5, 0.53, 0.42, 0.53, 0.32, 0.32, 0.26, 0.26, 0.23, 0.2, 0.14],
+      "H3": [2.5, 0.56, 0.44, 0.56, 0.33, 0.33, 0.3, 0.3, 0.3, 0.25, 0.14]
+    },
+    "autre": {
+      "H1": [2.5, 0.75, 0.7, 0.75, 0.4, 0.55, 0.35, 0.4, 0.3, 0.27, 0.14],
+      "H2": [2.5, 0.79, 0.74, 0.79, 0.42, 0.58, 0.37, 0.42, 0.3, 0.27, 0.14],
+      "H3": [2.5, 0.83, 0.78, 0.83, 0.44, 0.61, 0.39, 0.44, 0.3, 0.27, 0.14]
+    }
+  }
+}

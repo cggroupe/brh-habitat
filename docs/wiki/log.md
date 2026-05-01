@@ -5,6 +5,75 @@
 
 ---
 
+## 2026-04-30 — Phase 1 DPE Engine : fondation (portage CapRénov+)
+
+**Contexte** : démarrage du portage CapRénov+ 26.0.2 (reverse-engineered) dans BRH Habitat. Phase 1 = fondation (migrations + scaffold moteur TS + cas test fumée). 10 ADR cadrés au préalable dans `caprenov-reverse/decisions/`.
+
+### Vision
+"Kelvin° s'arrête au lead. CapRénov+ s'arrête à l'audit. BRH va du DPE au carnet santé post-travaux." — bout-en-bout vertical unique.
+
+### Migrations livrées
+- `20260430120000_brh_dpe_referentiels.sql` — 45 tables `brh_dpe_*` (référentiels 3CL-DPE 2021)
+- `20260430120100_brh_audits.sql` — 3 tables `brh_audits` + `brh_audit_variantes` + `brh_audit_factures`
+- `20260430120200_brh_dpe_solutions.sql` — catalogue solutions (prix HT + MO HT)
+- **49 nouvelles tables** appliquées en prod Supabase (`lygmmvxnmvlgynmrcpny`).
+
+### Seed
+- Script `scripts/seed-brh-dpe.ts` — import depuis `caprenov-reverse/db_dumps/tv/*.csv`
+- **40/43 tables seedées** — **66 033 rows** (intermittence dominante : 54 536)
+- 3 échecs documentés (CSV dirty CapRénov, à fixer Phase 2) :
+  - `brh_dpe_uvue` (colonne `Correspondance CR+` extra)
+  - `brh_dpe_ue` (colonne `2s_p` extra)
+  - `brh_dpe_coef_reduction_deperdition_lnc` (valeurs textuelles `≤ 0,25` dans colonnes numériques)
+
+### Scaffold moteur TS (`src/lib/dpe-engine/`)
+- `index.ts` — export public + stub `computeDpe` (Phase 2)
+- `types.ts` — interfaces (AuditInputs, DpeResult, Variante, Aide, etc.)
+- `constants.ts` — coef EP élec **= 2.3** (ADR-002, corrige bug CapRénov+ 1.9), CO2 par énergie, ΔT ECS, zones climatiques
+- `geo/zones-climatiques.ts` — mapping département → H1A..H3 (96 dépts + DROM + Corse)
+- `helpers/memoization.ts` — pattern CalcMemo CapRénov+
+- `helpers/supabase-lookup.ts` — cache mémoire pour intermittence + scop_ch + seuils
+- `data/` — 29 JSON statiques bundlés (~250 KB raw, ~50 KB gzip)
+- `tests/fixtures/brest-100m2.ts` — cas test fumée
+- `tests/smoke.test.ts` — **8 tests passants** (Vitest installé)
+
+### Fix B01 partiel
+- `supabase gen types typescript` → `src/types/database-generated.ts` (3642 lignes, 49 nouvelles tables incluses)
+- Nouveau client `supabaseTyped` (typé `<Database>`) — à utiliser par le moteur DPE et les nouvelles APIs
+- Client `supabase` (non typé) conservé pour rétrocompat avec le code existant
+- Migration progressive prévue Phase 2-3
+
+### Tests + qualité
+- `npm run test` → ✅ 8/8 passants
+- `npx tsc -b` → ✅ 0 erreur
+- `npm run lint` → ✅ 0 erreur
+- Score santé BRH : 9.8/10 préservé
+
+### Pages wiki impactées
+- `data-model.md` (ajout 49 tables `brh_dpe_*` + `brh_audits*`)
+- `migrations-audit.md` (ajout 3 migrations)
+- `architecture-snapshot.md` (count tables 30 → 79)
+- Cette page (`log.md`)
+
+### Risque
+**Low** — toutes nouvelles tables avec préfixe `brh_dpe_*` / `brh_audit*`, aucune modif des tables existantes. Backup schema fait avant migration (`/root/backups/brh-habitat/backup-pre-dpe-engine-20260501-062448.sql`).
+
+### Tests
+- ✅ Lint
+- ✅ Build
+- ✅ Vitest (8 tests fumée)
+- ❌ Validation Open Data ADEME (Phase 2 — tolérance ±5 % cible)
+
+### Prochaines étapes (Phase 2)
+- Implémenter modules bati (déperditions, ouvertures, ponts thermiques, masques, apports)
+- Implémenter modules équipements (chauffage, ECS, ventilation, clim, PV, solaire)
+- Tests Vitest contre 10 cas DPE Open Data ADEME (tolérance ±5%)
+- Fix 3 CSV dirty (uvue, ue, coef_reduction_deperdition_lnc)
+
+**Status** : ✅ DONE
+
+---
+
 ## 2026-04-29 — Sprint qualité : audit bugs + doublons + corrections (17/18 fix)
 
 **Contexte** : Philippe demande audit complet bugs + chemins doublons. 18 findings (1 critique / 7 majeurs / 10 mineurs) + 2 vrais doublons. Plan en 5 phases validé et exécuté.

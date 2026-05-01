@@ -201,6 +201,199 @@ export type Database = {
         }
         Relationships: []
       }
+      brh_audit_factures: {
+        Row: {
+          annee: number
+          audit_id: string
+          conso_kwh: number
+          created_at: string
+          depense_ttc_cents: number | null
+          energie: string
+          id: string
+          notes: string | null
+        }
+        Insert: {
+          annee: number
+          audit_id: string
+          conso_kwh: number
+          created_at?: string
+          depense_ttc_cents?: number | null
+          energie: string
+          id?: string
+          notes?: string | null
+        }
+        Update: {
+          annee?: number
+          audit_id?: string
+          conso_kwh?: number
+          created_at?: string
+          depense_ttc_cents?: number | null
+          energie?: string
+          id?: string
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_audit_factures_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "brh_audits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brh_audit_variantes: {
+        Row: {
+          aides: Json
+          aides_total_cents: number | null
+          audit_id: string
+          cep_kwh_ep_m2_an: number | null
+          cout_fournitures_cents: number | null
+          cout_main_oeuvre_cents: number | null
+          cout_total_ttc_cents: number | null
+          created_at: string
+          delta_inputs: Json
+          economie_annuelle_cents: number | null
+          etiquette_climat: string | null
+          etiquette_energie: string | null
+          ges_kg_co2_m2_an: number | null
+          id: string
+          is_selected: boolean
+          label: string
+          ordre: number
+          payback_annees: number | null
+          reste_a_charge_cents: number | null
+          results: Json
+        }
+        Insert: {
+          aides?: Json
+          aides_total_cents?: number | null
+          audit_id: string
+          cep_kwh_ep_m2_an?: number | null
+          cout_fournitures_cents?: number | null
+          cout_main_oeuvre_cents?: number | null
+          cout_total_ttc_cents?: number | null
+          created_at?: string
+          delta_inputs?: Json
+          economie_annuelle_cents?: number | null
+          etiquette_climat?: string | null
+          etiquette_energie?: string | null
+          ges_kg_co2_m2_an?: number | null
+          id?: string
+          is_selected?: boolean
+          label: string
+          ordre?: number
+          payback_annees?: number | null
+          reste_a_charge_cents?: number | null
+          results?: Json
+        }
+        Update: {
+          aides?: Json
+          aides_total_cents?: number | null
+          audit_id?: string
+          cep_kwh_ep_m2_an?: number | null
+          cout_fournitures_cents?: number | null
+          cout_main_oeuvre_cents?: number | null
+          cout_total_ttc_cents?: number | null
+          created_at?: string
+          delta_inputs?: Json
+          economie_annuelle_cents?: number | null
+          etiquette_climat?: string | null
+          etiquette_energie?: string | null
+          ges_kg_co2_m2_an?: number | null
+          id?: string
+          is_selected?: boolean
+          label?: string
+          ordre?: number
+          payback_annees?: number | null
+          reste_a_charge_cents?: number | null
+          results?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_audit_variantes_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "brh_audits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brh_audits: {
+        Row: {
+          cep_kwh_ep_m2_an: number | null
+          created_at: string
+          diagnostic_id: string | null
+          etiquette_climat: string | null
+          etiquette_energie: string | null
+          finalized_at: string | null
+          ges_kg_co2_m2_an: number | null
+          home_id: string | null
+          id: string
+          inputs: Json
+          pdf_url: string | null
+          pro_user_id: string | null
+          results: Json
+          status: string
+          updated_at: string
+          user_id: string | null
+          xml_ademe_url: string | null
+        }
+        Insert: {
+          cep_kwh_ep_m2_an?: number | null
+          created_at?: string
+          diagnostic_id?: string | null
+          etiquette_climat?: string | null
+          etiquette_energie?: string | null
+          finalized_at?: string | null
+          ges_kg_co2_m2_an?: number | null
+          home_id?: string | null
+          id?: string
+          inputs: Json
+          pdf_url?: string | null
+          pro_user_id?: string | null
+          results?: Json
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          xml_ademe_url?: string | null
+        }
+        Update: {
+          cep_kwh_ep_m2_an?: number | null
+          created_at?: string
+          diagnostic_id?: string | null
+          etiquette_climat?: string | null
+          etiquette_energie?: string | null
+          finalized_at?: string | null
+          ges_kg_co2_m2_an?: number | null
+          home_id?: string | null
+          id?: string
+          inputs?: Json
+          pdf_url?: string | null
+          pro_user_id?: string | null
+          results?: Json
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          xml_ademe_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_audits_diagnostic_id_fkey"
+            columns: ["diagnostic_id"]
+            isOneToOne: false
+            referencedRelation: "brh_diagnostics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_audits_home_id_fkey"
+            columns: ["home_id"]
+            isOneToOne: false
+            referencedRelation: "brh_homes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brh_badges: {
         Row: {
           code: string
@@ -685,6 +878,1434 @@ export type Database = {
           types?: string[]
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_coef_masque_lointain_homogene: {
+        Row: {
+          enum_orientation_id: string | null
+          fe2: number
+          hauteur_alpha: string | null
+          id: number
+          orientation: string | null
+        }
+        Insert: {
+          enum_orientation_id?: string | null
+          fe2: number
+          hauteur_alpha?: string | null
+          id?: number
+          orientation?: string | null
+        }
+        Update: {
+          enum_orientation_id?: string | null
+          fe2?: number
+          hauteur_alpha?: string | null
+          id?: number
+          orientation?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_coef_masque_lointain_non_homogene: {
+        Row: {
+          enum_orientation_id: string | null
+          id: number
+          omb: number
+          orientation: string | null
+          secteur: string | null
+        }
+        Insert: {
+          enum_orientation_id?: string | null
+          id?: number
+          omb: number
+          orientation?: string | null
+          secteur?: string | null
+        }
+        Update: {
+          enum_orientation_id?: string | null
+          id?: number
+          omb?: number
+          orientation?: string | null
+          secteur?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_coef_masque_proche: {
+        Row: {
+          avancee: string | null
+          enum_orientation_id: string | null
+          fe1: number
+          id: number
+          orientation: string | null
+          type_masque_cr: string | null
+          type_masque_proche: string | null
+        }
+        Insert: {
+          avancee?: string | null
+          enum_orientation_id?: string | null
+          fe1: number
+          id?: number
+          orientation?: string | null
+          type_masque_cr?: string | null
+          type_masque_proche?: string | null
+        }
+        Update: {
+          avancee?: string | null
+          enum_orientation_id?: string | null
+          fe1?: number
+          id?: number
+          orientation?: string | null
+          type_masque_cr?: string | null
+          type_masque_proche?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_coef_orientation_pv: {
+        Row: {
+          coef_orientation_pv: number
+          enum_inclinaison_pv_id: number | null
+          enum_orientation_pv_id: number | null
+          id: number
+          inclinaison_pv: string | null
+          orientation_pv: string | null
+        }
+        Insert: {
+          coef_orientation_pv: number
+          enum_inclinaison_pv_id?: number | null
+          enum_orientation_pv_id?: number | null
+          id?: number
+          inclinaison_pv?: string | null
+          orientation_pv?: string | null
+        }
+        Update: {
+          coef_orientation_pv?: number
+          enum_inclinaison_pv_id?: number | null
+          enum_orientation_pv_id?: number | null
+          id?: number
+          inclinaison_pv?: string | null
+          orientation_pv?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_coef_reduction_deperdition: {
+        Row: {
+          aiu_aue_max_incl: number | null
+          aiu_aue_min_excl: number | null
+          b: number
+          cfg_isolation_lnc: string | null
+          enum_cfg_isolation_lnc_id: number | null
+          enum_type_adjacence_id: number | null
+          id: number
+          type_adjacence: string | null
+          uvue: number | null
+          zone_climatique: string | null
+        }
+        Insert: {
+          aiu_aue_max_incl?: number | null
+          aiu_aue_min_excl?: number | null
+          b: number
+          cfg_isolation_lnc?: string | null
+          enum_cfg_isolation_lnc_id?: number | null
+          enum_type_adjacence_id?: number | null
+          id?: number
+          type_adjacence?: string | null
+          uvue?: number | null
+          zone_climatique?: string | null
+        }
+        Update: {
+          aiu_aue_max_incl?: number | null
+          aiu_aue_min_excl?: number | null
+          b?: number
+          cfg_isolation_lnc?: string | null
+          enum_cfg_isolation_lnc_id?: number | null
+          enum_type_adjacence_id?: number | null
+          id?: number
+          type_adjacence?: string | null
+          uvue?: number | null
+          zone_climatique?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_coef_reduction_deperdition_copi: {
+        Row: {
+          aiu_aue_max_incl: number | null
+          aiu_aue_min_excl: number | null
+          b: number
+          cfg_isolation_lnc: string | null
+          enum_cfg_isolation_lnc_id: number | null
+          enum_type_adjacence_id: string | null
+          id: number
+          type_adjacence: string | null
+          uvue: number | null
+          zone_climatique: string | null
+        }
+        Insert: {
+          aiu_aue_max_incl?: number | null
+          aiu_aue_min_excl?: number | null
+          b: number
+          cfg_isolation_lnc?: string | null
+          enum_cfg_isolation_lnc_id?: number | null
+          enum_type_adjacence_id?: string | null
+          id?: number
+          type_adjacence?: string | null
+          uvue?: number | null
+          zone_climatique?: string | null
+        }
+        Update: {
+          aiu_aue_max_incl?: number | null
+          aiu_aue_min_excl?: number | null
+          b?: number
+          cfg_isolation_lnc?: string | null
+          enum_cfg_isolation_lnc_id?: number | null
+          enum_type_adjacence_id?: string | null
+          id?: number
+          type_adjacence?: string | null
+          uvue?: number | null
+          zone_climatique?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_coef_reduction_deperdition_ets: {
+        Row: {
+          b: number
+          cfg_isolation_lnc: string | null
+          enum_cfg_isolation_lnc_id: number | null
+          enum_type_adjacence_id: number | null
+          enum_zone_climatique_id: string | null
+          id: number
+          type_adjacence: string | null
+          zone_climatique: string | null
+        }
+        Insert: {
+          b: number
+          cfg_isolation_lnc?: string | null
+          enum_cfg_isolation_lnc_id?: number | null
+          enum_type_adjacence_id?: number | null
+          enum_zone_climatique_id?: string | null
+          id?: number
+          type_adjacence?: string | null
+          zone_climatique?: string | null
+        }
+        Update: {
+          b?: number
+          cfg_isolation_lnc?: string | null
+          enum_cfg_isolation_lnc_id?: number | null
+          enum_type_adjacence_id?: number | null
+          enum_zone_climatique_id?: string | null
+          id?: number
+          type_adjacence?: string | null
+          zone_climatique?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_coef_reduction_deperdition_lnc: {
+        Row: {
+          aiu_aue_max_incl: number | null
+          aiu_aue_min_excl: number | null
+          b: number
+          cfg_isolation_lnc: string | null
+          enum_cfg_isolation_lnc_id: number | null
+          enum_type_adjacence_id: string | null
+          id: number
+          type_adjacence: string | null
+          uvue: number | null
+        }
+        Insert: {
+          aiu_aue_max_incl?: number | null
+          aiu_aue_min_excl?: number | null
+          b: number
+          cfg_isolation_lnc?: string | null
+          enum_cfg_isolation_lnc_id?: number | null
+          enum_type_adjacence_id?: string | null
+          id?: number
+          type_adjacence?: string | null
+          uvue?: number | null
+        }
+        Update: {
+          aiu_aue_max_incl?: number | null
+          aiu_aue_min_excl?: number | null
+          b?: number
+          cfg_isolation_lnc?: string | null
+          enum_cfg_isolation_lnc_id?: number | null
+          enum_type_adjacence_id?: string | null
+          id?: number
+          type_adjacence?: string | null
+          uvue?: number | null
+        }
+        Relationships: []
+      }
+      brh_dpe_coef_transparence_ets: {
+        Row: {
+          coef_transparence_ets: number
+          enum_type_materiaux_menuiserie_id: string | null
+          enum_type_vitrage_id: string | null
+          id: number
+          type_materiaux_menuiserie: string | null
+          type_vitrage: string | null
+          vitrage_vir: number | null
+        }
+        Insert: {
+          coef_transparence_ets: number
+          enum_type_materiaux_menuiserie_id?: string | null
+          enum_type_vitrage_id?: string | null
+          id?: number
+          type_materiaux_menuiserie?: string | null
+          type_vitrage?: string | null
+          vitrage_vir?: number | null
+        }
+        Update: {
+          coef_transparence_ets?: number
+          enum_type_materiaux_menuiserie_id?: string | null
+          enum_type_vitrage_id?: string | null
+          id?: number
+          type_materiaux_menuiserie?: string | null
+          type_vitrage?: string | null
+          vitrage_vir?: number | null
+        }
+        Relationships: []
+      }
+      brh_dpe_debits_ventilation: {
+        Row: {
+          enum_type_ventilation_id: number | null
+          id: number
+          qvarep_conv: number | null
+          qvasouf_conv: number | null
+          smea_conv: number
+          type_ventilation: string | null
+        }
+        Insert: {
+          enum_type_ventilation_id?: number | null
+          id?: number
+          qvarep_conv?: number | null
+          qvasouf_conv?: number | null
+          smea_conv: number
+          type_ventilation?: string | null
+        }
+        Update: {
+          enum_type_ventilation_id?: number | null
+          id?: number
+          qvarep_conv?: number | null
+          qvasouf_conv?: number | null
+          smea_conv?: number
+          type_ventilation?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_deltar: {
+        Row: {
+          deltar: number
+          enum_type_fermeture_id: number | null
+          id: number
+          type_fermeture: string | null
+        }
+        Insert: {
+          deltar: number
+          enum_type_fermeture_id?: number | null
+          id?: number
+          type_fermeture?: string | null
+        }
+        Update: {
+          deltar?: number
+          enum_type_fermeture_id?: number | null
+          id?: number
+          type_fermeture?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_facteur_couverture_solaire: {
+        Row: {
+          enum_type_installation_solaire_id: number | null
+          enum_zone_climatique_id: number | null
+          facteur_couverture_solaire: number
+          id: number
+          type_batiment: string | null
+          type_installation_solaire: string | null
+          usage: string | null
+          zone_climatique: string | null
+        }
+        Insert: {
+          enum_type_installation_solaire_id?: number | null
+          enum_zone_climatique_id?: number | null
+          facteur_couverture_solaire: number
+          id?: number
+          type_batiment?: string | null
+          type_installation_solaire?: string | null
+          usage?: string | null
+          zone_climatique?: string | null
+        }
+        Update: {
+          enum_type_installation_solaire_id?: number | null
+          enum_zone_climatique_id?: number | null
+          facteur_couverture_solaire?: number
+          id?: number
+          type_batiment?: string | null
+          type_installation_solaire?: string | null
+          usage?: string | null
+          zone_climatique?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_generateur_combustion: {
+        Row: {
+          critere_pn: string | null
+          enum_type_generateur_ch_id: string | null
+          enum_type_generateur_ecs_id: string | null
+          id: number
+          pn: string | null
+          pn_max_incl: number | null
+          pn_min_excl: number | null
+          pveil: number | null
+          qp0_perc: string | null
+          rpint: string | null
+          rpn: string | null
+          type_generateur: string | null
+        }
+        Insert: {
+          critere_pn?: string | null
+          enum_type_generateur_ch_id?: string | null
+          enum_type_generateur_ecs_id?: string | null
+          id?: number
+          pn?: string | null
+          pn_max_incl?: number | null
+          pn_min_excl?: number | null
+          pveil?: number | null
+          qp0_perc?: string | null
+          rpint?: string | null
+          rpn?: string | null
+          type_generateur?: string | null
+        }
+        Update: {
+          critere_pn?: string | null
+          enum_type_generateur_ch_id?: string | null
+          enum_type_generateur_ecs_id?: string | null
+          id?: number
+          pn?: string | null
+          pn_max_incl?: number | null
+          pn_min_excl?: number | null
+          pveil?: number | null
+          qp0_perc?: string | null
+          rpint?: string | null
+          rpn?: string | null
+          type_generateur?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_intermittence: {
+        Row: {
+          comptage_individuel: string | null
+          configuration_chauffage: string | null
+          enum_classe_inertie_id: string | null
+          enum_equipement_intermittence_id: number | null
+          enum_methode_application_dpe_log_id: string | null
+          enum_type_chauffage_id: number | null
+          enum_type_emission_distribution_id: string | null
+          enum_type_installation_id: string | null
+          enum_type_regulation_id: number | null
+          equipement_intermittence: string | null
+          i0: number
+          id: number
+          inertie: string | null
+          type_chauffage: string | null
+          type_emission_simple: string | null
+          type_regulation: string | null
+        }
+        Insert: {
+          comptage_individuel?: string | null
+          configuration_chauffage?: string | null
+          enum_classe_inertie_id?: string | null
+          enum_equipement_intermittence_id?: number | null
+          enum_methode_application_dpe_log_id?: string | null
+          enum_type_chauffage_id?: number | null
+          enum_type_emission_distribution_id?: string | null
+          enum_type_installation_id?: string | null
+          enum_type_regulation_id?: number | null
+          equipement_intermittence?: string | null
+          i0: number
+          id?: number
+          inertie?: string | null
+          type_chauffage?: string | null
+          type_emission_simple?: string | null
+          type_regulation?: string | null
+        }
+        Update: {
+          comptage_individuel?: string | null
+          configuration_chauffage?: string | null
+          enum_classe_inertie_id?: string | null
+          enum_equipement_intermittence_id?: number | null
+          enum_methode_application_dpe_log_id?: string | null
+          enum_type_chauffage_id?: number | null
+          enum_type_emission_distribution_id?: string | null
+          enum_type_installation_id?: string | null
+          enum_type_regulation_id?: number | null
+          equipement_intermittence?: string | null
+          i0?: number
+          id?: number
+          inertie?: string | null
+          type_chauffage?: string | null
+          type_emission_simple?: string | null
+          type_regulation?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_pertes_stockage: {
+        Row: {
+          cr: number
+          enum_type_generateur_ecs_id: string | null
+          id: number
+          type_generateur_ecs: string | null
+          volume_stockage_max_incl: number | null
+          volume_stockage_min_exl: number | null
+        }
+        Insert: {
+          cr: number
+          enum_type_generateur_ecs_id?: string | null
+          id?: number
+          type_generateur_ecs?: string | null
+          volume_stockage_max_incl?: number | null
+          volume_stockage_min_exl?: number | null
+        }
+        Update: {
+          cr?: number
+          enum_type_generateur_ecs_id?: string | null
+          id?: number
+          type_generateur_ecs?: string | null
+          volume_stockage_max_incl?: number | null
+          volume_stockage_min_exl?: number | null
+        }
+        Relationships: []
+      }
+      brh_dpe_pont_thermique: {
+        Row: {
+          enum_type_liaison_id: number | null
+          enum_type_pose_id: number | null
+          id: number
+          isolation_mur: string | null
+          isolation_plancher: string | null
+          k: number
+          largeur_dormant: number | null
+          presence_retour_isolation: number | null
+          type_liaison: string | null
+          type_pose: string | null
+        }
+        Insert: {
+          enum_type_liaison_id?: number | null
+          enum_type_pose_id?: number | null
+          id?: number
+          isolation_mur?: string | null
+          isolation_plancher?: string | null
+          k: number
+          largeur_dormant?: number | null
+          presence_retour_isolation?: number | null
+          type_liaison?: string | null
+          type_pose?: string | null
+        }
+        Update: {
+          enum_type_liaison_id?: number | null
+          enum_type_pose_id?: number | null
+          id?: number
+          isolation_mur?: string | null
+          isolation_plancher?: string | null
+          k?: number
+          largeur_dormant?: number | null
+          presence_retour_isolation?: number | null
+          type_liaison?: string | null
+          type_pose?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_q4pa_conv: {
+        Row: {
+          enum_methode_application_dpe_log_id: string | null
+          enum_periode_construction_id: string | null
+          id: number
+          isolation_surfaces: number | null
+          periode_construction: string | null
+          presence_joints_menuiserie: number | null
+          q4pa_conv: number
+          type_habitation: string | null
+        }
+        Insert: {
+          enum_methode_application_dpe_log_id?: string | null
+          enum_periode_construction_id?: string | null
+          id?: number
+          isolation_surfaces?: number | null
+          periode_construction?: string | null
+          presence_joints_menuiserie?: number | null
+          q4pa_conv: number
+          type_habitation?: string | null
+        }
+        Update: {
+          enum_methode_application_dpe_log_id?: string | null
+          enum_periode_construction_id?: string | null
+          id?: number
+          isolation_surfaces?: number | null
+          periode_construction?: string | null
+          presence_joints_menuiserie?: number | null
+          q4pa_conv?: number
+          type_habitation?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_rendement_distribution_ch: {
+        Row: {
+          enum_type_emission_distribution_id: string | null
+          id: number
+          rd: number
+          reseau_distribution: string | null
+          reseau_distribution_isole: number | null
+        }
+        Insert: {
+          enum_type_emission_distribution_id?: string | null
+          id?: number
+          rd: number
+          reseau_distribution?: string | null
+          reseau_distribution_isole?: number | null
+        }
+        Update: {
+          enum_type_emission_distribution_id?: string | null
+          id?: number
+          rd?: number
+          reseau_distribution?: string | null
+          reseau_distribution_isole?: number | null
+        }
+        Relationships: []
+      }
+      brh_dpe_rendement_distribution_ecs: {
+        Row: {
+          configuration_logement: string | null
+          enum_type_installation_id: string | null
+          id: number
+          rd: number
+          type_installation: string | null
+          type_reseau_collectif: string | null
+        }
+        Insert: {
+          configuration_logement?: string | null
+          enum_type_installation_id?: string | null
+          id?: number
+          rd: number
+          type_installation?: string | null
+          type_reseau_collectif?: string | null
+        }
+        Update: {
+          configuration_logement?: string | null
+          enum_type_installation_id?: string | null
+          id?: number
+          rd?: number
+          type_installation?: string | null
+          type_reseau_collectif?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_rendement_emission: {
+        Row: {
+          enum_type_emission_distribution_id: string | null
+          id: number
+          re: number
+          type_emission: string | null
+        }
+        Insert: {
+          enum_type_emission_distribution_id?: string | null
+          id?: number
+          re: number
+          type_emission?: string | null
+        }
+        Update: {
+          enum_type_emission_distribution_id?: string | null
+          id?: number
+          re?: number
+          type_emission?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_rendement_generation: {
+        Row: {
+          enum_type_generateur_ch_id: string | null
+          id: number
+          rg: number
+          type_generateur_ch: string | null
+        }
+        Insert: {
+          enum_type_generateur_ch_id?: string | null
+          id?: number
+          rg: number
+          type_generateur_ch?: string | null
+        }
+        Update: {
+          enum_type_generateur_ch_id?: string | null
+          id?: number
+          rg?: number
+          type_generateur_ch?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_rendement_regulation: {
+        Row: {
+          enum_type_emission_distribution_id: string | null
+          id: number
+          rr: number
+          type_emission_regulation: string | null
+        }
+        Insert: {
+          enum_type_emission_distribution_id?: string | null
+          id?: number
+          rr: number
+          type_emission_regulation?: string | null
+        }
+        Update: {
+          enum_type_emission_distribution_id?: string | null
+          id?: number
+          rr?: number
+          type_emission_regulation?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_reseau_chaleur_2020: {
+        Row: {
+          chaud_ou_froid: string | null
+          contenu_co2: number | null
+          departement: number | null
+          est_vertueux: number | null
+          hash_reseau: string | null
+          id: number
+          localisation: string | null
+          nom_reseau: string | null
+          taux_enr: number | null
+        }
+        Insert: {
+          chaud_ou_froid?: string | null
+          contenu_co2?: number | null
+          departement?: number | null
+          est_vertueux?: number | null
+          hash_reseau?: string | null
+          id?: number
+          localisation?: string | null
+          nom_reseau?: string | null
+          taux_enr?: number | null
+        }
+        Update: {
+          chaud_ou_froid?: string | null
+          contenu_co2?: number | null
+          departement?: number | null
+          est_vertueux?: number | null
+          hash_reseau?: string | null
+          id?: number
+          localisation?: string | null
+          nom_reseau?: string | null
+          taux_enr?: number | null
+        }
+        Relationships: []
+      }
+      brh_dpe_reseau_chaleur_2021: {
+        Row: {
+          contenu_co2: number | null
+          contenu_co2_acv: number | null
+          correspondance_hash_reseau_2020: string | null
+          correspondance_tv_reseau_chaleur_id_2020: number | null
+          departement: string | null
+          id: number
+          identifiant_reseau: string | null
+          localisation: string | null
+          methode_calcul_taux: string | null
+          nom_reseau: string | null
+          nouveau_reseau_2020_2021: number | null
+          taux_enr: string | null
+        }
+        Insert: {
+          contenu_co2?: number | null
+          contenu_co2_acv?: number | null
+          correspondance_hash_reseau_2020?: string | null
+          correspondance_tv_reseau_chaleur_id_2020?: number | null
+          departement?: string | null
+          id?: number
+          identifiant_reseau?: string | null
+          localisation?: string | null
+          methode_calcul_taux?: string | null
+          nom_reseau?: string | null
+          nouveau_reseau_2020_2021?: number | null
+          taux_enr?: string | null
+        }
+        Update: {
+          contenu_co2?: number | null
+          contenu_co2_acv?: number | null
+          correspondance_hash_reseau_2020?: string | null
+          correspondance_tv_reseau_chaleur_id_2020?: number | null
+          departement?: string | null
+          id?: number
+          identifiant_reseau?: string | null
+          localisation?: string | null
+          methode_calcul_taux?: string | null
+          nom_reseau?: string | null
+          nouveau_reseau_2020_2021?: number | null
+          taux_enr?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_reseau_chaleur_2022: {
+        Row: {
+          contenu_co2: number | null
+          contenu_co2_acv: number | null
+          departement: number | null
+          id: number
+          identifiant_reseau: string | null
+          localisation: string | null
+          methode_calcul_taux: string | null
+          nom_reseau: string | null
+          nouveau_reseau_2021_2022: number | null
+          taux_enr: string | null
+        }
+        Insert: {
+          contenu_co2?: number | null
+          contenu_co2_acv?: number | null
+          departement?: number | null
+          id?: number
+          identifiant_reseau?: string | null
+          localisation?: string | null
+          methode_calcul_taux?: string | null
+          nom_reseau?: string | null
+          nouveau_reseau_2021_2022?: number | null
+          taux_enr?: string | null
+        }
+        Update: {
+          contenu_co2?: number | null
+          contenu_co2_acv?: number | null
+          departement?: number | null
+          id?: number
+          identifiant_reseau?: string | null
+          localisation?: string | null
+          methode_calcul_taux?: string | null
+          nom_reseau?: string | null
+          nouveau_reseau_2021_2022?: number | null
+          taux_enr?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_scop_ch: {
+        Row: {
+          enum_generateur_ch_id: string | null
+          enum_type_emission_ditribution_id: string | null
+          enum_zone_climatique_id: string | null
+          id: number
+          scop: number
+          scop_ou_cop: string | null
+          type_emetteur: string | null
+          type_generateur: string | null
+          zone_climatique: string | null
+        }
+        Insert: {
+          enum_generateur_ch_id?: string | null
+          enum_type_emission_ditribution_id?: string | null
+          enum_zone_climatique_id?: string | null
+          id?: number
+          scop: number
+          scop_ou_cop?: string | null
+          type_emetteur?: string | null
+          type_generateur?: string | null
+          zone_climatique?: string | null
+        }
+        Update: {
+          enum_generateur_ch_id?: string | null
+          enum_type_emission_ditribution_id?: string | null
+          enum_zone_climatique_id?: string | null
+          id?: number
+          scop?: number
+          scop_ou_cop?: string | null
+          type_emetteur?: string | null
+          type_generateur?: string | null
+          zone_climatique?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_scop_ecs: {
+        Row: {
+          enum_generateur_ecs_id: string | null
+          enum_zone_climatique_id: string | null
+          id: number
+          scop: number
+          scop_ou_cop: string | null
+          type_generateur: string | null
+          zone_climatique: string | null
+        }
+        Insert: {
+          enum_generateur_ecs_id?: string | null
+          enum_zone_climatique_id?: string | null
+          id?: number
+          scop: number
+          scop_ou_cop?: string | null
+          type_generateur?: string | null
+          zone_climatique?: string | null
+        }
+        Update: {
+          enum_generateur_ecs_id?: string | null
+          enum_zone_climatique_id?: string | null
+          id?: number
+          scop?: number
+          scop_ou_cop?: string | null
+          type_generateur?: string | null
+          zone_climatique?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_seer: {
+        Row: {
+          eer: number | null
+          enum_periode_installation_fr_id: number | null
+          enum_zone_climatique_id: string | null
+          id: number
+          periode_installation_fr: string | null
+          seer: number | null
+          seer_ou_eer: string | null
+          zone_climatique: string | null
+        }
+        Insert: {
+          eer?: number | null
+          enum_periode_installation_fr_id?: number | null
+          enum_zone_climatique_id?: string | null
+          id?: number
+          periode_installation_fr?: string | null
+          seer?: number | null
+          seer_ou_eer?: string | null
+          zone_climatique?: string | null
+        }
+        Update: {
+          eer?: number | null
+          enum_periode_installation_fr_id?: number | null
+          enum_zone_climatique_id?: string | null
+          id?: number
+          periode_installation_fr?: string | null
+          seer?: number | null
+          seer_ou_eer?: string | null
+          zone_climatique?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_seuils: {
+        Row: {
+          cep_a: number | null
+          cep_b: number | null
+          cep_c: number | null
+          cep_d: number | null
+          cep_e: number | null
+          cep_f: number | null
+          critere_altitude_zone_clim: number | null
+          ges_a: number | null
+          ges_b: number | null
+          ges_c: number | null
+          ges_d: number | null
+          ges_e: number | null
+          ges_f: number | null
+          id: number
+          surface: number | null
+        }
+        Insert: {
+          cep_a?: number | null
+          cep_b?: number | null
+          cep_c?: number | null
+          cep_d?: number | null
+          cep_e?: number | null
+          cep_f?: number | null
+          critere_altitude_zone_clim?: number | null
+          ges_a?: number | null
+          ges_b?: number | null
+          ges_c?: number | null
+          ges_d?: number | null
+          ges_e?: number | null
+          ges_f?: number | null
+          id?: number
+          surface?: number | null
+        }
+        Update: {
+          cep_a?: number | null
+          cep_b?: number | null
+          cep_c?: number | null
+          cep_d?: number | null
+          cep_e?: number | null
+          cep_f?: number | null
+          critere_altitude_zone_clim?: number | null
+          ges_a?: number | null
+          ges_b?: number | null
+          ges_c?: number | null
+          ges_d?: number | null
+          ges_e?: number | null
+          ges_f?: number | null
+          id?: number
+          surface?: number | null
+        }
+        Relationships: []
+      }
+      brh_dpe_solutions: {
+        Row: {
+          created_at: string
+          id: number
+          label: string
+          param: Json
+          pourcentage_tva: number
+          prix_main_oeuvre_ht_cents: number | null
+          prix_metre_ht_cents: number | null
+          prix_unit_ht_cents: number | null
+          score_confort: number | null
+          type_element: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          label: string
+          param?: Json
+          pourcentage_tva?: number
+          prix_main_oeuvre_ht_cents?: number | null
+          prix_metre_ht_cents?: number | null
+          prix_unit_ht_cents?: number | null
+          score_confort?: number | null
+          type_element: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          label?: string
+          param?: Json
+          pourcentage_tva?: number
+          prix_main_oeuvre_ht_cents?: number | null
+          prix_metre_ht_cents?: number | null
+          prix_unit_ht_cents?: number | null
+          score_confort?: number | null
+          type_element?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      brh_dpe_sw: {
+        Row: {
+          enum_type_baie_id: number | null
+          enum_type_materiaux_menuiserie_id: number | null
+          enum_type_pose_id: number | null
+          enum_type_vitrage_id: number | null
+          id: number
+          sw: number
+          type_baie: string | null
+          type_materiaux_menuiserie: string | null
+          type_pose: string | null
+          type_vitrage: string | null
+          vitrage_vir: number | null
+        }
+        Insert: {
+          enum_type_baie_id?: number | null
+          enum_type_materiaux_menuiserie_id?: number | null
+          enum_type_pose_id?: number | null
+          enum_type_vitrage_id?: number | null
+          id?: number
+          sw: number
+          type_baie?: string | null
+          type_materiaux_menuiserie?: string | null
+          type_pose?: string | null
+          type_vitrage?: string | null
+          vitrage_vir?: number | null
+        }
+        Update: {
+          enum_type_baie_id?: number | null
+          enum_type_materiaux_menuiserie_id?: number | null
+          enum_type_pose_id?: number | null
+          enum_type_vitrage_id?: number | null
+          id?: number
+          sw?: number
+          type_baie?: string | null
+          type_materiaux_menuiserie?: string | null
+          type_pose?: string | null
+          type_vitrage?: string | null
+          vitrage_vir?: number | null
+        }
+        Relationships: []
+      }
+      brh_dpe_temp_fonc_100: {
+        Row: {
+          enum_temp_distribution_ch_id: number | null
+          id: number
+          periode_emetteurs: string | null
+          temp_distribution_ch: string | null
+          temp_fonc_100: number
+        }
+        Insert: {
+          enum_temp_distribution_ch_id?: number | null
+          id?: number
+          periode_emetteurs?: string | null
+          temp_distribution_ch?: string | null
+          temp_fonc_100: number
+        }
+        Update: {
+          enum_temp_distribution_ch_id?: number | null
+          id?: number
+          periode_emetteurs?: string | null
+          temp_distribution_ch?: string | null
+          temp_fonc_100?: number
+        }
+        Relationships: []
+      }
+      brh_dpe_temp_fonc_30: {
+        Row: {
+          enum_temp_distribution_ch_id: number | null
+          enum_type_generateur_ch_id: string | null
+          id: number
+          periode_emetteurs: string | null
+          temp_distribution_ch: string | null
+          temp_fonc_30: number
+          type_chaudiere: string | null
+        }
+        Insert: {
+          enum_temp_distribution_ch_id?: number | null
+          enum_type_generateur_ch_id?: string | null
+          id?: number
+          periode_emetteurs?: string | null
+          temp_distribution_ch?: string | null
+          temp_fonc_30: number
+          type_chaudiere?: string | null
+        }
+        Update: {
+          enum_temp_distribution_ch_id?: number | null
+          enum_type_generateur_ch_id?: string | null
+          id?: number
+          periode_emetteurs?: string | null
+          temp_distribution_ch?: string | null
+          temp_fonc_30?: number
+          type_chaudiere?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_ue: {
+        Row: {
+          id: number
+          ratio_2sp: number | null
+          type_adjacence_plancher: string | null
+          ue: number
+          upb: number | null
+        }
+        Insert: {
+          id?: number
+          ratio_2sp?: number | null
+          type_adjacence_plancher?: string | null
+          ue: number
+          upb?: number | null
+        }
+        Update: {
+          id?: number
+          ratio_2sp?: number | null
+          type_adjacence_plancher?: string | null
+          ue?: number
+          upb?: number | null
+        }
+        Relationships: []
+      }
+      brh_dpe_ug: {
+        Row: {
+          enum_inclinaison_vitrage_id: number | null
+          enum_type_gaz_lame_id: number | null
+          enum_type_vitrage_id: number | null
+          epaisseur_lame: number | null
+          id: number
+          inclinaison_vitrage: string | null
+          type_gaz_lame: string | null
+          type_vitrage: string | null
+          ug: number
+          vitrage_vir: number | null
+        }
+        Insert: {
+          enum_inclinaison_vitrage_id?: number | null
+          enum_type_gaz_lame_id?: number | null
+          enum_type_vitrage_id?: number | null
+          epaisseur_lame?: number | null
+          id?: number
+          inclinaison_vitrage?: string | null
+          type_gaz_lame?: string | null
+          type_vitrage?: string | null
+          ug: number
+          vitrage_vir?: number | null
+        }
+        Update: {
+          enum_inclinaison_vitrage_id?: number | null
+          enum_type_gaz_lame_id?: number | null
+          enum_type_vitrage_id?: number | null
+          epaisseur_lame?: number | null
+          id?: number
+          inclinaison_vitrage?: string | null
+          type_gaz_lame?: string | null
+          type_vitrage?: string | null
+          ug?: number
+          vitrage_vir?: number | null
+        }
+        Relationships: []
+      }
+      brh_dpe_ujn: {
+        Row: {
+          deltar: number | null
+          id: number
+          ujn: number
+          uw: number | null
+        }
+        Insert: {
+          deltar?: number | null
+          id?: number
+          ujn: number
+          uw?: number | null
+        }
+        Update: {
+          deltar?: number | null
+          id?: number
+          ujn?: number
+          uw?: number | null
+        }
+        Relationships: []
+      }
+      brh_dpe_umur: {
+        Row: {
+          effet_joule: number | null
+          enum_periode_construction_id: number | null
+          enum_zone_climatique_id: number | null
+          id: number
+          periode_construction: string | null
+          umur: number
+          zone_climatique: string | null
+        }
+        Insert: {
+          effet_joule?: number | null
+          enum_periode_construction_id?: number | null
+          enum_zone_climatique_id?: number | null
+          id?: number
+          periode_construction?: string | null
+          umur: number
+          zone_climatique?: string | null
+        }
+        Update: {
+          effet_joule?: number | null
+          enum_periode_construction_id?: number | null
+          enum_zone_climatique_id?: number | null
+          id?: number
+          periode_construction?: string | null
+          umur?: number
+          zone_climatique?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_umur0: {
+        Row: {
+          enum_materiaux_structure_mur_id: number | null
+          epaisseur_structure: string | null
+          id: number
+          materiaux_structure_mur: string | null
+          umur0: number
+        }
+        Insert: {
+          enum_materiaux_structure_mur_id?: number | null
+          epaisseur_structure?: string | null
+          id?: number
+          materiaux_structure_mur?: string | null
+          umur0: number
+        }
+        Update: {
+          enum_materiaux_structure_mur_id?: number | null
+          epaisseur_structure?: string | null
+          id?: number
+          materiaux_structure_mur?: string | null
+          umur0?: number
+        }
+        Relationships: []
+      }
+      brh_dpe_upb: {
+        Row: {
+          effet_joule: number | null
+          enum_periode_construction_id: number | null
+          enum_zone_climatique_id: number | null
+          id: number
+          periode_construction: string | null
+          upb: number
+          zone_climatique: string | null
+        }
+        Insert: {
+          effet_joule?: number | null
+          enum_periode_construction_id?: number | null
+          enum_zone_climatique_id?: number | null
+          id?: number
+          periode_construction?: string | null
+          upb: number
+          zone_climatique?: string | null
+        }
+        Update: {
+          effet_joule?: number | null
+          enum_periode_construction_id?: number | null
+          enum_zone_climatique_id?: number | null
+          id?: number
+          periode_construction?: string | null
+          upb?: number
+          zone_climatique?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_upb0: {
+        Row: {
+          enum_type_plancher_bas_id: number | null
+          id: number
+          type_plancher_bas: string | null
+          upb0: number
+        }
+        Insert: {
+          enum_type_plancher_bas_id?: number | null
+          id?: number
+          type_plancher_bas?: string | null
+          upb0: number
+        }
+        Update: {
+          enum_type_plancher_bas_id?: number | null
+          id?: number
+          type_plancher_bas?: string | null
+          upb0?: number
+        }
+        Relationships: []
+      }
+      brh_dpe_uph: {
+        Row: {
+          effet_joule: number | null
+          enum_periode_construction_id: number | null
+          enum_zone_climatique_id: number | null
+          id: number
+          periode_construction: string | null
+          type_toiture: string | null
+          uph: number
+          zone_climatique: string | null
+        }
+        Insert: {
+          effet_joule?: number | null
+          enum_periode_construction_id?: number | null
+          enum_zone_climatique_id?: number | null
+          id?: number
+          periode_construction?: string | null
+          type_toiture?: string | null
+          uph: number
+          zone_climatique?: string | null
+        }
+        Update: {
+          effet_joule?: number | null
+          enum_periode_construction_id?: number | null
+          enum_zone_climatique_id?: number | null
+          id?: number
+          periode_construction?: string | null
+          type_toiture?: string | null
+          uph?: number
+          zone_climatique?: string | null
+        }
+        Relationships: []
+      }
+      brh_dpe_uph0: {
+        Row: {
+          enum_type_plancher_haut_id: number | null
+          id: number
+          type_plancher_haut: string | null
+          uph0: number
+        }
+        Insert: {
+          enum_type_plancher_haut_id?: number | null
+          id?: number
+          type_plancher_haut?: string | null
+          uph0: number
+        }
+        Update: {
+          enum_type_plancher_haut_id?: number | null
+          id?: number
+          type_plancher_haut?: string | null
+          uph0?: number
+        }
+        Relationships: []
+      }
+      brh_dpe_uporte: {
+        Row: {
+          enum_type_porte_id: number | null
+          id: number
+          type_porte: string | null
+          uporte: number
+        }
+        Insert: {
+          enum_type_porte_id?: number | null
+          id?: number
+          type_porte?: string | null
+          uporte: number
+        }
+        Update: {
+          enum_type_porte_id?: number | null
+          id?: number
+          type_porte?: string | null
+          uporte?: number
+        }
+        Relationships: []
+      }
+      brh_dpe_uvue: {
+        Row: {
+          enum_type_adjacence_id: number | null
+          id: number
+          type_adjacence: string | null
+          uvue: number
+        }
+        Insert: {
+          enum_type_adjacence_id?: number | null
+          id?: number
+          type_adjacence?: string | null
+          uvue: number
+        }
+        Update: {
+          enum_type_adjacence_id?: number | null
+          id?: number
+          type_adjacence?: string | null
+          uvue?: number
+        }
+        Relationships: []
+      }
+      brh_dpe_uw: {
+        Row: {
+          enum_type_baie_id: number | null
+          enum_type_materiaux_menuiserie_id: number | null
+          id: number
+          type_baie: string | null
+          type_materiaux_menuiserie: string | null
+          ug: number | null
+          uw: number
+        }
+        Insert: {
+          enum_type_baie_id?: number | null
+          enum_type_materiaux_menuiserie_id?: number | null
+          id?: number
+          type_baie?: string | null
+          type_materiaux_menuiserie?: string | null
+          ug?: number | null
+          uw: number
+        }
+        Update: {
+          enum_type_baie_id?: number | null
+          enum_type_materiaux_menuiserie_id?: number | null
+          id?: number
+          type_baie?: string | null
+          type_materiaux_menuiserie?: string | null
+          ug?: number | null
+          uw?: number
+        }
+        Relationships: []
+      }
+      brh_dpe_zones_climatiques: {
+        Row: {
+          altitude_max: number | null
+          altitude_min: number | null
+          departement_numero: string
+          id: number
+          zone_climatique: string
+        }
+        Insert: {
+          altitude_max?: number | null
+          altitude_min?: number | null
+          departement_numero: string
+          id?: number
+          zone_climatique: string
+        }
+        Update: {
+          altitude_max?: number | null
+          altitude_min?: number | null
+          departement_numero?: string
+          id?: number
+          zone_climatique?: string
         }
         Relationships: []
       }
