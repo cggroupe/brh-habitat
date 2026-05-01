@@ -200,6 +200,31 @@
 ### Status
 ✅ DONE — Phase 6.1 funnel bouclé. Visiteur anonyme → lead CRM en 1 clic.
 
+### Phase 6.2 — Migration dpe_prospects PostgreSQL → Supabase
+
+**Migration `20260501130000_brh_dpe_prospects.sql`** :
+- Table `brh_dpe_prospects` (78 cols : DPE + DGFIP + DVF + RNB + Kelvin-parity)
+- Indexes recréés (etiquette, dept, commune, type, score, geo, GIN saut_s2)
+- RLS : pros + admin uniquement
+- Lien `brh_prospect_id UUID` vers `brh_prospects`
+
+**Script `scripts/migrate-dpe-prospects.ts`** :
+- Lit `dpe_prospects` PostgreSQL local via `pg` driver (Docker)
+- Curseur SQL pour streaming
+- Bulk INSERT Supabase via supabase-js + service role (chunks 500)
+- Préserve JSONB (aides_detail, chiffrage_detail, dpe_saut_*)
+
+**Résultat** : **59 306 / 59 306 rows migrés en 52.7 s** (~1 100 rows/s).
+- Verif Supabase : `count(*)` = 59 306 ✅
+- Toutes colonnes JSONB préservées + indexes opérationnels
+
+**Architecture cible** : 1 seule source de vérité Supabase pour les prospects + audits + leads. PostgreSQL local conservé pour scripts batch éventuels mais plus utilisé en prod.
+
+**Tests** : tsc 0, lint 0, vitest 98/98.
+
+### Status
+✅ DONE — Phase 6.2 migration complète.
+
 ---
 
 ## 2026-04-30 — Phase 1 DPE Engine : fondation (portage CapRénov+)
