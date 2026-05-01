@@ -386,6 +386,55 @@ montants Bleu/Rose × 2/3/4+ sauts, orchestrateur MAX(mono, ampleur)).
 selon les caractéristiques du chantier, et applique les bonus Sortie de Passoire + BBC
 quand applicables.
 
+### Phase 10 — Aides locales Bretagne (ADR-014)
+
+**Migration `20260501150000_brh_aides_locales.sql`** (appliquée prod) :
+- Table `brh_aides_locales` (16 cols : programme, organisme, niveau, code_geo,
+  geste_id, forfait/taux/plafond, couleurs_eligibles, cumul_*, url_officielle)
+- 5 niveaux : national / regional / departement / intercommune / commune
+- Indexes geo + active + geste
+- RLS : SELECT public, INSERT/UPDATE admin
+
+**Seed initial Bretagne 2026** (11 aides) :
+- 2× Région Bretagne (Eco-PEB 5k €, Audit énergétique 800 €)
+- 4× Conseils départementaux (22, 29 Tinergie ×2, 35 Eco-Travo, 56)
+- 5× Intercommunalités (Brest Métropole Tinergie + audit, Rennes Métropole
+  Eco-Travo + Sortie passoire, QBO Quimper, Lorient Agglomération)
+
+**Module `aides/aides-locales.ts`** :
+- `deptFromInsee` + `regionFromInsee` + `epciFromInsee` mapping commune → niveaux
+- 25 communes EPCI mappées Bretagne
+- `fetchAidesLocales({ codeInsee, couleur })` : query Supabase + filtre couleur
+- `calcAidesLocales` : calcul total selon gestes + critère saut DPE
+
+**Hook `useAidesLocales`** : React Query 30 min cache.
+
+**UI VariantesCompare** :
+- Section dédiée "Aides locales cumulables (N)" sous le tableau scénarios
+- Badge "Bonus Bretagne" en haut
+- Total potentiel cumulable mis en évidence
+- Card par aide : programme + organisme + niveau + montant + lien officiel
+
+**Impact business chiffré** :
+- Bleu Brest rénovation globale F→A : +9 000 € locales (Tinergie + Eco-PEB
+  + Dépt 29) → total 83 200 € subventions (vs 67 200 € national seul)
+- Jaune Rennes isolation 30k € : +11 500 € locales (Eco-Travo + Sortie
+  passoire + Région + Dépt 35) → total 24 500 €
+
+**Tests** : tsc 0, lint 0, build 13.30s, vitest 146/146.
+
+### Status
+✅ DONE — Phase 10 livrée. Visiteurs/clients Bretagne voient leurs aides locales
+cumulables, +5 000 à +12 000 € selon territoire.
+
+### ADR-011 à ADR-015 actées
+
+- **ADR-011** : Activation MPR Ampleur en prod dès agrément MAR
+- **ADR-012** : Sunset partiel simulateur 8915 (BDNB CSTB only)
+- **ADR-013** : Tarification audit pro RGE = SaaS récurrent (impl Phase 16+)
+- **ADR-014** : Périmètre Bretagne V1 puis extension France
+- **ADR-015** : Multi-tenant white-label = stretch Phase 16+
+
 ---
 
 ## 2026-04-30 — Phase 1 DPE Engine : fondation (portage CapRénov+)

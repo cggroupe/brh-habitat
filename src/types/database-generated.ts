@@ -62,6 +62,78 @@ export type Database = {
           },
         ]
       }
+      brh_aides_locales: {
+        Row: {
+          active: boolean
+          code_geo: string
+          couleurs_eligibles: string[] | null
+          created_at: string
+          cumul_cee: boolean
+          cumul_eco_ptz: boolean
+          cumul_mpr: boolean
+          date_validite_debut: string | null
+          date_validite_fin: string | null
+          forfait_euros: number | null
+          geste_id: string
+          id: number
+          niveau: string
+          notes: string | null
+          organisme: string
+          plafond_euros: number | null
+          programme: string
+          saut_dpe_min: number | null
+          taux_pct: number | null
+          updated_at: string
+          url_officielle: string | null
+        }
+        Insert: {
+          active?: boolean
+          code_geo: string
+          couleurs_eligibles?: string[] | null
+          created_at?: string
+          cumul_cee?: boolean
+          cumul_eco_ptz?: boolean
+          cumul_mpr?: boolean
+          date_validite_debut?: string | null
+          date_validite_fin?: string | null
+          forfait_euros?: number | null
+          geste_id: string
+          id?: number
+          niveau: string
+          notes?: string | null
+          organisme: string
+          plafond_euros?: number | null
+          programme: string
+          saut_dpe_min?: number | null
+          taux_pct?: number | null
+          updated_at?: string
+          url_officielle?: string | null
+        }
+        Update: {
+          active?: boolean
+          code_geo?: string
+          couleurs_eligibles?: string[] | null
+          created_at?: string
+          cumul_cee?: boolean
+          cumul_eco_ptz?: boolean
+          cumul_mpr?: boolean
+          date_validite_debut?: string | null
+          date_validite_fin?: string | null
+          forfait_euros?: number | null
+          geste_id?: string
+          id?: number
+          niveau?: string
+          notes?: string | null
+          organisme?: string
+          plafond_euros?: number | null
+          programme?: string
+          saut_dpe_min?: number | null
+          taux_pct?: number | null
+          updated_at?: string
+          url_officielle?: string | null
+        }
+        Relationships: []
+      }
       brh_appointments: {
         Row: {
           admin_notes: string | null
@@ -1461,6 +1533,269 @@ export type Database = {
           type_pose?: string | null
         }
         Relationships: []
+      }
+      brh_dpe_prospects: {
+        Row: {
+          adresse: string | null
+          adresse_ban: string | null
+          aides_barem_date: string | null
+          aides_detail: Json | null
+          annee_construction: number | null
+          brh_prospect_id: string | null
+          cee_total: number | null
+          chiffrage_date: string | null
+          chiffrage_detail: Json | null
+          chiffrage_total_ht: number | null
+          chiffrage_total_ttc: number | null
+          code_postal: string | null
+          commune: string | null
+          conso_m2_ep: number | null
+          cout_chauffage: number | null
+          cout_eclairage: number | null
+          cout_ecs: number | null
+          cout_energie_annuel: number | null
+          date_collecte: string | null
+          date_contact: string | null
+          date_dpe: string | null
+          departement: string | null
+          deperditions_baies_vitrees: number | null
+          deperditions_murs: number | null
+          deperditions_planchers_bas: number | null
+          deperditions_planchers_hauts: number | null
+          deperditions_ponts_thermiques: number | null
+          description_chauffage: string | null
+          description_ecs: string | null
+          dpe_saut_confidence: string | null
+          dpe_saut_s1: Json | null
+          dpe_saut_s2: Json | null
+          dpe_saut_s3: Json | null
+          dvf_date: string | null
+          dvf_distance_m: number | null
+          dvf_nature: string | null
+          dvf_prix: number | null
+          dvf_prix_m2: number | null
+          dvf_surface: number | null
+          dvf_type: string | null
+          energie_chauffage: string | null
+          energie_ecs: string | null
+          enriched: boolean | null
+          etiquette_dpe: string | null
+          etiquette_ges: string | null
+          hauteur_sous_plafond: number | null
+          id: number
+          imported_at: string
+          isolation_enveloppe: string | null
+          isolation_menuiseries: string | null
+          isolation_murs: string | null
+          isolation_plancher: string | null
+          isolation_toiture_detail: string | null
+          latitude: number | null
+          longitude: number | null
+          mpr_bleu_total: number | null
+          mpr_jaune_total: number | null
+          mpr_rose_total: number | null
+          mpr_violet_total: number | null
+          nombre_niveau: number | null
+          notes: string | null
+          numero_dpe: string | null
+          owner_name: string | null
+          owner_siren: string | null
+          owner_type: string | null
+          periode_construction: string | null
+          qualite_isolation_menuiseries: string | null
+          qualite_isolation_murs: string | null
+          qualite_isolation_plancher_bas: string | null
+          qualite_isolation_plancher_haut: string | null
+          rnb_address: string | null
+          rnb_distance_m: number | null
+          rnb_id: string | null
+          rnb_status: string | null
+          score_prospect: number | null
+          statut: string | null
+          surface_habitable: number | null
+          type_batiment: string | null
+          type_energie_chauffage: string | null
+          type_energie_ecs: string | null
+          type_ventilation: string | null
+          ubat: number | null
+        }
+        Insert: {
+          adresse?: string | null
+          adresse_ban?: string | null
+          aides_barem_date?: string | null
+          aides_detail?: Json | null
+          annee_construction?: number | null
+          brh_prospect_id?: string | null
+          cee_total?: number | null
+          chiffrage_date?: string | null
+          chiffrage_detail?: Json | null
+          chiffrage_total_ht?: number | null
+          chiffrage_total_ttc?: number | null
+          code_postal?: string | null
+          commune?: string | null
+          conso_m2_ep?: number | null
+          cout_chauffage?: number | null
+          cout_eclairage?: number | null
+          cout_ecs?: number | null
+          cout_energie_annuel?: number | null
+          date_collecte?: string | null
+          date_contact?: string | null
+          date_dpe?: string | null
+          departement?: string | null
+          deperditions_baies_vitrees?: number | null
+          deperditions_murs?: number | null
+          deperditions_planchers_bas?: number | null
+          deperditions_planchers_hauts?: number | null
+          deperditions_ponts_thermiques?: number | null
+          description_chauffage?: string | null
+          description_ecs?: string | null
+          dpe_saut_confidence?: string | null
+          dpe_saut_s1?: Json | null
+          dpe_saut_s2?: Json | null
+          dpe_saut_s3?: Json | null
+          dvf_date?: string | null
+          dvf_distance_m?: number | null
+          dvf_nature?: string | null
+          dvf_prix?: number | null
+          dvf_prix_m2?: number | null
+          dvf_surface?: number | null
+          dvf_type?: string | null
+          energie_chauffage?: string | null
+          energie_ecs?: string | null
+          enriched?: boolean | null
+          etiquette_dpe?: string | null
+          etiquette_ges?: string | null
+          hauteur_sous_plafond?: number | null
+          id?: number
+          imported_at?: string
+          isolation_enveloppe?: string | null
+          isolation_menuiseries?: string | null
+          isolation_murs?: string | null
+          isolation_plancher?: string | null
+          isolation_toiture_detail?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          mpr_bleu_total?: number | null
+          mpr_jaune_total?: number | null
+          mpr_rose_total?: number | null
+          mpr_violet_total?: number | null
+          nombre_niveau?: number | null
+          notes?: string | null
+          numero_dpe?: string | null
+          owner_name?: string | null
+          owner_siren?: string | null
+          owner_type?: string | null
+          periode_construction?: string | null
+          qualite_isolation_menuiseries?: string | null
+          qualite_isolation_murs?: string | null
+          qualite_isolation_plancher_bas?: string | null
+          qualite_isolation_plancher_haut?: string | null
+          rnb_address?: string | null
+          rnb_distance_m?: number | null
+          rnb_id?: string | null
+          rnb_status?: string | null
+          score_prospect?: number | null
+          statut?: string | null
+          surface_habitable?: number | null
+          type_batiment?: string | null
+          type_energie_chauffage?: string | null
+          type_energie_ecs?: string | null
+          type_ventilation?: string | null
+          ubat?: number | null
+        }
+        Update: {
+          adresse?: string | null
+          adresse_ban?: string | null
+          aides_barem_date?: string | null
+          aides_detail?: Json | null
+          annee_construction?: number | null
+          brh_prospect_id?: string | null
+          cee_total?: number | null
+          chiffrage_date?: string | null
+          chiffrage_detail?: Json | null
+          chiffrage_total_ht?: number | null
+          chiffrage_total_ttc?: number | null
+          code_postal?: string | null
+          commune?: string | null
+          conso_m2_ep?: number | null
+          cout_chauffage?: number | null
+          cout_eclairage?: number | null
+          cout_ecs?: number | null
+          cout_energie_annuel?: number | null
+          date_collecte?: string | null
+          date_contact?: string | null
+          date_dpe?: string | null
+          departement?: string | null
+          deperditions_baies_vitrees?: number | null
+          deperditions_murs?: number | null
+          deperditions_planchers_bas?: number | null
+          deperditions_planchers_hauts?: number | null
+          deperditions_ponts_thermiques?: number | null
+          description_chauffage?: string | null
+          description_ecs?: string | null
+          dpe_saut_confidence?: string | null
+          dpe_saut_s1?: Json | null
+          dpe_saut_s2?: Json | null
+          dpe_saut_s3?: Json | null
+          dvf_date?: string | null
+          dvf_distance_m?: number | null
+          dvf_nature?: string | null
+          dvf_prix?: number | null
+          dvf_prix_m2?: number | null
+          dvf_surface?: number | null
+          dvf_type?: string | null
+          energie_chauffage?: string | null
+          energie_ecs?: string | null
+          enriched?: boolean | null
+          etiquette_dpe?: string | null
+          etiquette_ges?: string | null
+          hauteur_sous_plafond?: number | null
+          id?: number
+          imported_at?: string
+          isolation_enveloppe?: string | null
+          isolation_menuiseries?: string | null
+          isolation_murs?: string | null
+          isolation_plancher?: string | null
+          isolation_toiture_detail?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          mpr_bleu_total?: number | null
+          mpr_jaune_total?: number | null
+          mpr_rose_total?: number | null
+          mpr_violet_total?: number | null
+          nombre_niveau?: number | null
+          notes?: string | null
+          numero_dpe?: string | null
+          owner_name?: string | null
+          owner_siren?: string | null
+          owner_type?: string | null
+          periode_construction?: string | null
+          qualite_isolation_menuiseries?: string | null
+          qualite_isolation_murs?: string | null
+          qualite_isolation_plancher_bas?: string | null
+          qualite_isolation_plancher_haut?: string | null
+          rnb_address?: string | null
+          rnb_distance_m?: number | null
+          rnb_id?: string | null
+          rnb_status?: string | null
+          score_prospect?: number | null
+          statut?: string | null
+          surface_habitable?: number | null
+          type_batiment?: string | null
+          type_energie_chauffage?: string | null
+          type_energie_ecs?: string | null
+          type_ventilation?: string | null
+          ubat?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_dpe_prospects_brh_prospect_id_fkey"
+            columns: ["brh_prospect_id"]
+            isOneToOne: false
+            referencedRelation: "brh_prospects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       brh_dpe_q4pa_conv: {
         Row: {

@@ -15,6 +15,7 @@ export * from './cee-detaille'
 export * from './eco-ptz'
 export * from './cumul-plafonds'
 export * from './mpr-ampleur'
+export * from './aides-locales'
 
 import type { CouleurMPR } from './decile'
 import type { ZoneClimaCEE } from './cee-detaille'

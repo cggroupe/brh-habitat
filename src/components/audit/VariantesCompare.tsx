@@ -20,7 +20,10 @@ import {
   Calculator,
   Award,
   Sparkles,
+  MapPin,
+  ExternalLink,
 } from 'lucide-react'
+import { useAidesLocales } from '@/hooks/queries/aides-locales'
 import {
   calcCouleurFromAudit,
   calcCouleurMpr,
@@ -83,6 +86,12 @@ export function VariantesCompare({ baseInputs, baseDpe }: Props) {
     const fromAudit = calcCouleurFromAudit(baseInputs)
     return fromAudit?.couleur ?? 'jaune'
   }, [baseInputs])
+
+  // Aides locales (Phase 10) — fetch depuis Supabase selon INSEE + couleur
+  const aidesLocales = useAidesLocales({
+    codeInsee: baseInputs.geo.codeInsee,
+    couleur: couleurInitiale,
+  })
 
   const [couleur, setCouleur] = useState<CouleurMPR>(couleurInitiale)
   const [foyer, setFoyer] = useState({
@@ -378,6 +387,70 @@ export function VariantesCompare({ baseInputs, baseDpe }: Props) {
           </tbody>
         </table>
       </div>
+
+      {/* Aides locales (Phase 10) */}
+      {aidesLocales.data && aidesLocales.data.length > 0 && (
+        <div className="border-t border-gray-200 bg-gradient-to-r from-amber-50 to-orange-50 px-4 py-3">
+          <div className="mb-2 flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-orange-700" />
+            <h3 className="text-sm font-bold text-orange-900">
+              Aides locales cumulables ({aidesLocales.data.length})
+            </h3>
+            <span className="rounded-full bg-orange-200 px-2 py-0.5 text-[10px] font-semibold text-orange-800">
+              Bonus Bretagne
+            </span>
+          </div>
+          <p className="mb-3 text-xs text-orange-800/80">
+            Ces aides s'ajoutent à MPR + CEE + ÉcoPTZ et sont spécifiques à votre territoire.
+            Total potentiel cumulable :{' '}
+            <strong>
+              {aidesLocales.data
+                .reduce((s, a) => s + (a.forfait_euros ?? 0), 0)
+                .toLocaleString('fr-FR')}{' '}
+              €
+            </strong>
+            .
+          </p>
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+            {aidesLocales.data.map((aide) => (
+              <div
+                key={aide.id}
+                className="rounded-md bg-white p-3 shadow-sm ring-1 ring-orange-200"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm font-semibold text-gray-900">{aide.programme}</span>
+                      <span className="rounded bg-orange-100 px-1.5 py-0.5 text-[10px] font-semibold text-orange-800 capitalize">
+                        {aide.niveau === 'regional' ? 'Région' : aide.niveau === 'departement' ? 'Dépt' : aide.niveau === 'intercommune' ? 'Métropole' : aide.niveau}
+                      </span>
+                    </div>
+                    <div className="mt-0.5 text-xs text-gray-500">{aide.organisme}</div>
+                    {aide.notes && (
+                      <div className="mt-1 text-xs text-gray-600">{aide.notes}</div>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-orange-700">
+                      {(aide.forfait_euros ?? 0).toLocaleString('fr-FR')} €
+                    </div>
+                    {aide.url_officielle && (
+                      <a
+                        href={aide.url_officielle}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="inline-flex items-center gap-0.5 text-[10px] text-orange-600 hover:underline"
+                      >
+                        Officiel <ExternalLink className="h-2.5 w-2.5" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="border-t border-gray-200 bg-gray-50 px-4 py-3 text-xs text-gray-600 leading-relaxed">
         <strong>Légende</strong> :{' '}

@@ -168,6 +168,11 @@ export {
   isSortiePassoire,
   isBbcAtteint,
   TABLE_MPR_AMPLEUR,
+  // Phase 10 : Aides locales
+  fetchAidesLocales,
+  calcAidesLocales,
+  regionFromInsee,
+  epciFromInsee,
 } from './aides'
 export type {
   CouleurMPR,
@@ -193,6 +198,12 @@ export type {
   ParamMprAmpleur,
   MprAmpleurInput,
   MprAmpleurResult,
+  // Phase 10
+  AideLocale,
+  NiveauAide,
+  AideLocaleApplied,
+  CalcAidesLocalesInput,
+  CalcAidesLocalesResult,
 } from './aides'
 
 import type { AuditInputs, DpeResult } from './types'
