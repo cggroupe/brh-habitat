@@ -52,6 +52,34 @@
 ### Status
 ✅ DONE — Phase 3.0 (UI Pro fondation) prête. Phase 3.1 (précision moteur) à venir.
 
+### Phase 4.0 — PDF audit (génération côté client)
+
+**Composants PDF** (`src/components/audit/pdf/`) :
+- `AuditPdf.tsx` — Document racine 4 pages (A4, fontFamily Helvetica)
+- `pages/PageSynthese.tsx` — Page 1 : caractéristiques + 3 étiquettes DPE + chiffres clés
+- `pages/PageBatiEquip.tsx` — Page 2 : parois opaques + ouvertures + chauffage + ECS + ventilation
+- `pages/PageDeperditions.tsx` — Page 3 : bar chart conso par poste (5 postes) + tableau déperditions + GV/Ubat
+- `pages/PageMentions.tsx` — Page 4 : hypothèses + méthodologie + limites + statut + mentions légales
+- `components/DpeLabelPdf.tsx` — Étiquette A→G colorée (couleurs ADEME 2021)
+- `components/HeaderPdf.tsx` + `FooterPdf.tsx` — header marque + footer pagination
+- `styles.ts` — StyleSheet partagé + couleurs DPE/brand
+
+**Décision V1** : génération **côté client** (browser) via `pdf().toBlob()` + téléchargement direct.
+- Avantages : zéro charge serveur, instantané, pas de Storage Supabase requis
+- Bouton "Générer PDF" dans `ProAuditResults` télécharge `audit-energetique-{id8}.pdf`
+- Phase 4.1+ : EF `render-audit-pdf` côté Deno + Storage Supabase + URL signée 1h (pour partage par email aux clients)
+
+**Conformité** :
+- Mention "Audit selon méthode 3CL-DPE 2021 (arrêté 8 oct 2021 modifié)"
+- Mention loi Climat & Résilience 2021 (passoires F/G)
+- Référence Observatoire DPE-Audit ADEME pour DPE réglementaire opposable
+- Disclaimer : audit indicatif (vente/location → diagnostiqueur certifié)
+
+**Tests** : tsc 0, lint 0, build 12.32s, 98/98 tests, bundle inchangé (react-pdf déjà présent).
+
+### Status
+✅ DONE — Phase 4.0 PDF V1 livrée. Phase 4.1 (EF + Storage + email Resend) à venir.
+
 ---
 
 ## 2026-04-30 — Phase 1 DPE Engine : fondation (portage CapRénov+)

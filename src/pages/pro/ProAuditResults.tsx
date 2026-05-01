@@ -2,15 +2,39 @@
  * Page résultats audit — affichage détaillé après calcul + finalisation.
  */
 
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, FileText, Edit } from 'lucide-react'
+import { ArrowLeft, FileText, Edit, Loader } from 'lucide-react'
+import { pdf } from '@react-pdf/renderer'
 import { useAudit } from '@/hooks/queries/audits'
 import { DpeLabelGauge } from '@/components/audit/DpeLabelGauge'
+import { AuditPdf } from '@/components/audit/pdf/AuditPdf'
 import type { DpeResult } from '@/lib/dpe-engine/types'
 
 export default function ProAuditResults() {
   const { id } = useParams<{ id: string }>()
   const { data: audit, isLoading } = useAudit(id)
+  const [generatingPdf, setGeneratingPdf] = useState(false)
+
+  const handleGeneratePdf = async () => {
+    if (!audit) return
+    setGeneratingPdf(true)
+    try {
+      const r = audit.results as DpeResult
+      const blob = await pdf(<AuditPdf audit={audit} result={r} />).toBlob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `audit-energetique-${audit.id.slice(0, 8)}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      console.error(e)
+      alert('Erreur lors de la génération du PDF : ' + String(e))
+    } finally {
+      setGeneratingPdf(false)
+    }
+  }
 
   if (isLoading) return <div className="p-6 text-gray-500">Chargement…</div>
   if (!audit) return <div className="p-6 text-red-600">Audit introuvable</div>
@@ -58,11 +82,16 @@ export default function ProAuditResults() {
           )}
           <button
             type="button"
-            disabled
-            className="inline-flex items-center gap-2 rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white opacity-50"
-            title="Disponible Phase 4"
+            onClick={handleGeneratePdf}
+            disabled={generatingPdf}
+            className="inline-flex items-center gap-2 rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800 disabled:opacity-50"
           >
-            <FileText className="h-4 w-4" /> Générer PDF
+            {generatingPdf ? (
+              <Loader className="h-4 w-4 animate-spin" />
+            ) : (
+              <FileText className="h-4 w-4" />
+            )}
+            Générer PDF
           </button>
         </div>
       </div>
