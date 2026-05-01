@@ -5,6 +5,60 @@
 
 ---
 
+## 2026-05-01 — Phase 11.1.1 : Scripts seed Bretagne + enrichissement IRIS prospects
+
+- **Contexte** : Activer le scoring v2 sur les ~59 306 prospects DPE F/G Bretagne. La Phase 11.1 a livré le moteur (tables + EF + modules). Phase 11.1.1 livre les **4 scripts d'orchestration** pour remplir les tables externes et associer chaque prospect à son IRIS.
+- **Fichiers modifiés** :
+  - `scripts/external/seed-iris-bretagne.ts` (NEW — Enedis Opendatasoft + GRDF Opendatasoft + CSV Filosofi/Recensement optionnels)
+  - `scripts/external/seed-commune-bretagne.ts` (NEW — Géorisques BRGM + RGE ADEME via geo.api.gouv.fr)
+  - `scripts/external/enrich-iris-from-prospect.ts` (NEW — assigne `iris_code` via Pyris API depuis lat/lng)
+  - `scripts/external/batch-score-v2-all.ts` (NEW — calcule score_v2 pour 59k prospects, batch parallèle 10 updates)
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations créées** : Aucune (Phase 11.1 a déjà créé les 3 tables `brh_ext_*`).
+- **Edge Functions** : Aucune (les scripts utilisent service_role direct, plus rapide pour batch 59k).
+- **Pages wiki impactées** :
+  - `external-data-sources.md` § Scripts d'ingestion batch (à mettre à jour : ajouter `enrich-iris-from-prospect.ts`)
+  - `log.md` (cette entrée)
+- **APIs externes utilisées** :
+  - Enedis Opendatasoft : `consommation-electrique-par-secteur-dactivite-iris` (résidentiel 2023, thermosens kWh/DJU)
+  - GRDF Opendatasoft : `consommation-annuelle-de-gaz-par-iris-et-code-naf0` (filtre `code_categorie=RES`)
+  - Géorisques (BRGM) : `/rga` (avec latlon obligatoire), `/radon`, `/zonage_sismique`, `/gaspar/risques`
+  - geo.api.gouv.fr : liste communes par dépt + centroid
+  - Pyris (`pyris.datajazz.io`) : lat/lng → IRIS INSEE 9 chars
+  - Annuaire RGE ADEME : `data.ademe.fr/data-fair/.../liste-des-entreprises-rge-2/lines`
+- **Tests réels exécutés** :
+  - `seed-iris-bretagne.ts --dept=29` → ✅ **499 IRIS Finistère seedés** (Enedis + GRDF joints)
+  - `seed-commune-bretagne.ts --dept=29 --limit=5` → ✅ **5 communes Finistère** (radon catégorie 3 attendue, sismique zone 2)
+  - `enrich-iris-from-prospect.ts --dept=29 --limit=20` → ✅ **20/20 prospects résolus** via Pyris
+  - `batch-score-v2-all.ts --limit=5` → ✅ score_v2=0/cold pour les 5 (cohérent : pas de Filosofi CSV chargé)
+- **Bugs résolus en cours de session** :
+  - URL Enedis : domaine changé `data.enedis.fr` → `opendata.enedis.fr` + dataset renommé
+  - URL GRDF : dataset correct `consommation-annuelle-de-gaz-par-iris-et-code-naf0`
+  - GRDF parsing : nombres avec virgule décimale (`"4780,68098"`) → `parseFloat(s.replace(',', '.'))`
+  - Géorisques : `/rga` exige `latlon=` obligatoire (sinon 500), centroid commune via geo.api.gouv.fr
+  - Géorisques : format réponse `{codeExposition, exposition}` plat (pas wrappé `data: []`)
+  - Pyris : format réponse plat (pas GeoJSON Feature) — gestion polymorphe
+  - batch-score-v2 : `upsert(onConflict)` casse les NOT NULL → switch vers `update().eq('id')` parallèle (10 updates concurrents)
+  - batch-score-v2 : `range()` sans `.order()` ne garantit pas l'ordre id ASC
+- **Conformité 14 règles BRH** :
+  - Règle 4 ✅ — pas de `as unknown as` (types polymorphes via `'prop' in json`)
+  - Règle 5 ✅ — `if (error) throw error` partout
+  - Règle 13 ✅ — pas de `toISOString().slice(0,10)` (helpers ad-hoc)
+- **Risque** : Low. Scripts idempotents (UPSERT par PK / UPDATE par id). Phase 11.1.2 livrera les CSV INSEE Filosofi/Recensement pour activer les règles décile MPR + précarité max.
+- **Tests** : 212/212 globaux verts. Tsc clean. Lint clean.
+- **Status** : ✅ DONE V1 (4 scripts fonctionnels et testés sur 1 dépt). À exécuter par Philippe quand le timing convient :
+  1. `seed-iris-bretagne.ts` (4 dépts, ~10 min)
+  2. `seed-commune-bretagne.ts` (4 dépts × ~300 communes × 200ms = ~4 min)
+  3. `enrich-iris-from-prospect.ts` (59k × 200ms = ~3h30 — peut tourner overnight)
+  4. `batch-score-v2-all.ts` (59k × ~10ms parallèle 10 = ~1 min)
+- **Décisions de cadrage** :
+  - **Updates individuels parallèles (10 concurrents)** plutôt qu'upsert bulk : préserve les colonnes non touchées (NOT NULL `numero_dpe`, etc.). Compromis vitesse acceptable pour 59k.
+  - **Pyris (datajazz.io) plutôt qu'IGN apicarto** : Pyris fournit déjà l'IRIS complet 9 chars, IGN nécessite POST + GeoJSON wrapper.
+  - **CSV INSEE optionnels Phase 11.1.1** : Filosofi/Recensement nécessitent download manuel (~50 Mo). Le seed continue gracefully sans, le scoring sera juste partiel jusqu'à Phase 11.1.2.
+  - **Pas de seed dans CI/automation** : ces scripts sont des outils ops manuels (cron mensuel envisagé Phase 11.2 pour DVF/Sit@del2).
+
+---
+
 ## 2026-05-01 — Phase 11.1 : Tier 1 socle scoring (sources externes prospection)
 
 - **Contexte** : Implémentation du Tier 1 du plan `external-data-sources.md` (Phase 11.0). Livrable : moteur de score composite v2 (0-100) sur 9 règles + bonus précarité, segmentation actionnable (`ultra_chaud` / `mpr_bleu_prio` / `premium` / `standard` / `cold`), enrichissement IRIS (Filosofi décile MPR auto + Recensement + Enedis thermosens + GRDF gaz) et risques commune (Géorisques RGA/radon/inondation/cavités). Pré-requis pour batch scoring des 59 306 prospects DPE F/G Bretagne.
