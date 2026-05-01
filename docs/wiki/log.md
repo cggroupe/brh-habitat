@@ -5,6 +5,55 @@
 
 ---
 
+## 2026-05-01 — Phase 2 + Phase 3 DPE Engine : moteur complet + UI Pro
+
+### Phase 2 (5 sprints, 98 tests Vitest)
+
+**P2.1 Bâti** — 9 modules : coef-reduction-b, calc-up, ouvertures, déperditions, perméabilité, renouvellement-air, ponts-thermiques, apports, calc-gv-ubat.
+
+**P2.2 Chauffage** — 6 modules : climat (DH/Nref/ECh JSON 3CL), besoins (Bch + F_j), rendements Re·Rd·Rr·Rg, PAC SCOP/COP, intermittence i0, calcChauffage (Cch_EF/EP/GES).
+
+**P2.3 ECS + usages mineurs** — 4 modules : ECS (Becs + Rg + pertes stockage), éclairage forfait, auxiliaires, climatisation, photovoltaïque.
+
+**P2.4 Étiquettes DPE** — 1 module : 66 seuils bundlés JSON, interpolation linéaire surface, classifyValue (CEP/GES/A→G), dpeFinal = max.
+
+**P2.5 Validation ADEME** — Script `scripts/validate-dpe.ts` : 99 DPE 3CL réels comparés. Verdict V1 honnête : étiquettes ±1 classe sur 14% des cas. Précision réglementaire (±5%) demande Phase 3+ (lookups détaillés DataMur, ψ_menuiseries, Qp0…).
+
+### Phase 3.0 — UI Pro Wizard + API + Hooks
+
+**API + Hooks** :
+- `src/api/audits.ts` : CRUD + compute (calcul côté front via moteur TS) + finalize + delete
+- `src/hooks/queries/audits.ts` : useAudits, useAudit, useCreateAudit, useUpdateAudit, useComputeAudit, useFinalizeAudit, useDeleteAudit
+- `src/api/schemas.ts` : auditInputsSchema, dpeResultSchema, auditRowSchema (Zod stricts)
+
+**UI Pro** (3 nouvelles pages) :
+- `/pro/audits` — Liste audits avec étiquettes colorées + statut (draft/submitted/archived)
+- `/pro/audits/nouveau` ou `/pro/audits/:id` — **Éditeur wizard simplifié** : 5 sections (géo, bâtiment, parois, ouvertures, équipements) + **aperçu live** (DpeLabelGauge en sidebar, recalcul debounced 300ms)
+- `/pro/audits/:id/results` — Page résultats : 3 étiquettes DPE + détail postes (kWh EP/an) + déperditions (W/K + Ubat) + hypothèses
+
+**Composant** : `DpeLabelGauge` — étiquette A→G colorée conforme ADEME (couleurs officielles), jauge avec barres croissantes.
+
+**Décision V1** : le calcul DPE se fait **côté front** (~50 ms via moteur TS bundlé). EF `compute-dpe` reportée Phase 4 (rate limit + audit log côté serveur si nécessaire).
+
+### Pages wiki impactées
+- `data-model.md` — pas de changement (les 79 tables sont déjà documentées)
+- `architecture-snapshot.md` — bump pages Pro 17 → 20 (3 nouvelles)
+- Cette page (`log.md`)
+
+### Risque
+**Low** — toutes nouvelles tables (`brh_audits*`) déjà en prod (Phase 1), nouvelles pages isolées dans `/pro/audits/*`, aucune modification du code existant.
+
+### Tests
+- ✅ Lint (0 erreur)
+- ✅ Build (14.37s, bundle audits 42 KB/gzip 11 KB)
+- ✅ Vitest 98/98 passants
+- ✅ Validation ADEME : pipeline tourne sur 99 DPE réels sans crash
+
+### Status
+✅ DONE — Phase 3.0 (UI Pro fondation) prête. Phase 3.1 (précision moteur) à venir.
+
+---
+
 ## 2026-04-30 — Phase 1 DPE Engine : fondation (portage CapRénov+)
 
 **Contexte** : démarrage du portage CapRénov+ 26.0.2 (reverse-engineered) dans BRH Habitat. Phase 1 = fondation (migrations + scaffold moteur TS + cas test fumée). 10 ADR cadrés au préalable dans `caprenov-reverse/decisions/`.

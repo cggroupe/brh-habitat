@@ -76,6 +76,9 @@ const ProChiffrage = lazy(() => import('@/pages/pro/ProChiffrage'))
 const ProChiffrages = lazy(() => import('@/pages/pro/ProChiffrages'))
 const ProTeamStats = lazy(() => import('@/pages/pro/ProTeamStats'))
 const ProRapport = lazy(() => import('@/pages/pro/ProRapport'))
+const ProAuditsList = lazy(() => import('@/pages/pro/ProAuditsList'))
+const ProAuditEditor = lazy(() => import('@/pages/pro/ProAuditEditor'))
+const ProAuditResults = lazy(() => import('@/pages/pro/ProAuditResults'))
 
 // Lazy loaded pages — Particulier
 const PartDashboard = lazy(() => import('@/pages/particulier/PartDashboard'))
@@ -193,6 +196,10 @@ export default function App() {
                 <Route path="/pro/chiffrages" element={<FeatureRoute feature="aiChiffrage"><ProChiffrages /></FeatureRoute>} />
                 <Route path="/pro/stats-equipe" element={<FeatureRoute feature="teamStats"><ProTeamStats /></FeatureRoute>} />
                 <Route path="/pro/rapport" element={<FeatureRoute feature="monthlyPdfReport"><ProRapport /></FeatureRoute>} />
+                <Route path="/pro/audits" element={<ProAuditsList />} />
+                <Route path="/pro/audits/nouveau" element={<ProAuditEditor />} />
+                <Route path="/pro/audits/:id" element={<ProAuditEditor />} />
+                <Route path="/pro/audits/:id/results" element={<ProAuditResults />} />
               </Route>
             </Route>
 
