@@ -5,7 +5,7 @@
  * Voir ADR-003 (mix Supabase + JSON statiques bundlés).
  */
 
-import { supabaseTyped } from '@/lib/supabase'
+import { supabaseTyped } from '../../supabase'
 
 // ============================================================================
 // Cache mémoire (key: serialized lookup args, value: number ou null)
