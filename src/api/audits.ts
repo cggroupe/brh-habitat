@@ -121,4 +121,60 @@ export const auditsApi = {
     const { error } = await supabase.from('brh_audits').delete().eq('id', id)
     if (error) throw error
   },
+
+  /**
+   * Upload du PDF d'audit dans Supabase Storage (bucket 'audits').
+   * Path : `{audit_id}/audit.pdf`. Persiste pdf_url dans brh_audits.
+   *
+   * V1 : le PDF est généré côté front via @react-pdf/renderer puis uploadé.
+   * Phase 4.2+ : EF render-audit-pdf si on veut le faire côté serveur.
+   */
+  async uploadPdf(id: string, blob: Blob): Promise<{ path: string; signedUrl: string }> {
+    const path = `${id}/audit.pdf`
+    const { error: upErr } = await supabase.storage
+      .from('audits')
+      .upload(path, blob, {
+        contentType: 'application/pdf',
+        upsert: true,
+      })
+    if (upErr) throw upErr
+
+    // Persiste pdf_url dans la row audit (URL signée 1 an pour conserver le lien valide)
+    const { data: signed, error: signErr } = await supabase.storage
+      .from('audits')
+      .createSignedUrl(path, 60 * 60 * 24 * 365)
+    if (signErr) throw signErr
+
+    await auditsApi.update(id, { pdf_url: signed.signedUrl })
+    return { path, signedUrl: signed.signedUrl }
+  },
+
+  /**
+   * Génère une URL signée fraîche pour le PDF (TTL 1h).
+   */
+  async getSignedPdfUrl(id: string): Promise<string | null> {
+    const path = `${id}/audit.pdf`
+    const { data, error } = await supabase.storage
+      .from('audits')
+      .createSignedUrl(path, 3600)
+    if (error) return null
+    return data.signedUrl
+  },
+
+  /**
+   * Envoi du PDF par email au client via EF send-audit-email.
+   */
+  async sendByEmail(params: {
+    auditId: string
+    recipientEmail: string
+    message?: string
+  }): Promise<{ ok: boolean; resendId?: string }> {
+    const { data, error } = await supabase.functions.invoke<{ ok: boolean; resendId?: string }>(
+      'send-audit-email',
+      { body: params },
+    )
+    if (error) throw error
+    if (!data) throw new Error('Réponse vide de send-audit-email')
+    return data
+  },
 }

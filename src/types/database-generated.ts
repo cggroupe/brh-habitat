@@ -201,6 +201,56 @@ export type Database = {
         }
         Relationships: []
       }
+      brh_audit_emails: {
+        Row: {
+          audit_id: string
+          created_at: string
+          error_message: string | null
+          id: string
+          message: string | null
+          recipient_email: string
+          resend_id: string | null
+          sent_at: string | null
+          sent_by: string
+          status: string
+          subject: string | null
+        }
+        Insert: {
+          audit_id: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message?: string | null
+          recipient_email: string
+          resend_id?: string | null
+          sent_at?: string | null
+          sent_by: string
+          status?: string
+          subject?: string | null
+        }
+        Update: {
+          audit_id?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message?: string | null
+          recipient_email?: string
+          resend_id?: string | null
+          sent_at?: string | null
+          sent_by?: string
+          status?: string
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_audit_emails_audit_id_fkey"
+            columns: ["audit_id"]
+            isOneToOne: false
+            referencedRelation: "brh_audits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brh_audit_factures: {
         Row: {
           annee: number

@@ -107,6 +107,44 @@
 ### Status
 ✅ DONE — Phase 5.0 UI Particulier livrée. **Workflow utilisateur complet** : Pro crée → calcule → finalise → Particulier consulte → discute.
 
+### Phase 4.1 — Storage Supabase + email Resend
+
+**Migration Supabase** : `20260501100000_brh_audits_storage.sql`
+- Storage bucket `audits` (privé, 20 MB max, application/pdf only)
+- 4 RLS policies storage : pro+particulier read, pro insert/update, admin all
+- Table `brh_audit_emails` (audit trail RGPD : pending/sent/failed + resend_id + error_message)
+
+**Edge Function `send-audit-email`** (déployée sur projet `lygmmvxnmvlgynmrcpny`):
+- Auth JWT obligatoire + rate limit 5 req/min
+- Vérifie pro_user_id de l'audit (admin override)
+- Génère URL signée 30 jours du PDF Storage
+- Envoie via Resend API avec template HTML brandé BRH (couleur DPE, logo, CTA bouton)
+- Log dans brh_audit_emails (pending → sent ou failed)
+- Returns `{ ok, resendId, signedUrl }`
+
+**API + Hooks** (src/api/audits.ts + src/hooks/queries/audits.ts) :
+- `auditsApi.uploadPdf(id, blob)` : upload Storage + persist pdf_url
+- `auditsApi.getSignedPdfUrl(id)` : URL fraîche 1h
+- `auditsApi.sendByEmail({ auditId, recipientEmail, message? })` : appelle EF
+- `useUploadAuditPdf()`, `useSendAuditByEmail()` (React Query)
+
+**UI ProAuditResults** :
+- Bouton "Télécharger PDF" : génération côté front + download local (V1 Phase 4.0)
+- Bouton "Envoyer par email" : ouvre dialog modal
+- Dialog : input email + textarea message optionnel + validation email regex
+- Workflow complet : génère PDF → upload Storage → envoie email Resend
+- État loader (Génération PDF… → Envoi en cours… → ✅ Email envoyé)
+- Auto-close 2s après succès
+
+**Pré-requis prod** :
+- ⚠️ `RESEND_API_KEY` à setter via `supabase secrets set RESEND_API_KEY=re_xxx` avant utilisation
+- `EMAIL_FROM` par défaut : `BRH Habitat <noreply@renovation-brh.fr>` (override via secret)
+
+**Tests** : tsc 0, lint 0, build 11.90s, vitest 98/98.
+
+### Status
+✅ DONE — Phase 4.1 livrée. Le pro RGE peut envoyer le PDF d'audit au client par email avec un seul clic.
+
 ---
 
 ## 2026-04-30 — Phase 1 DPE Engine : fondation (portage CapRénov+)

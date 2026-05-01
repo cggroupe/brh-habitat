@@ -4,9 +4,9 @@
 
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, FileText, Edit, Loader } from 'lucide-react'
+import { ArrowLeft, FileText, Edit, Loader, Mail, X, CheckCircle } from 'lucide-react'
 import { pdf } from '@react-pdf/renderer'
-import { useAudit } from '@/hooks/queries/audits'
+import { useAudit, useUploadAuditPdf, useSendAuditByEmail } from '@/hooks/queries/audits'
 import { DpeLabelGauge } from '@/components/audit/DpeLabelGauge'
 import { AuditPdf } from '@/components/audit/pdf/AuditPdf'
 import type { DpeResult } from '@/lib/dpe-engine/types'
@@ -15,13 +15,25 @@ export default function ProAuditResults() {
   const { id } = useParams<{ id: string }>()
   const { data: audit, isLoading } = useAudit(id)
   const [generatingPdf, setGeneratingPdf] = useState(false)
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false)
+  const [emailRecipient, setEmailRecipient] = useState('')
+  const [emailMessage, setEmailMessage] = useState('')
+  const [emailSent, setEmailSent] = useState(false)
+  const uploadPdf = useUploadAuditPdf()
+  const sendEmail = useSendAuditByEmail()
+
+  const generatePdfBlob = async (): Promise<Blob | null> => {
+    if (!audit) return null
+    const r = audit.results as DpeResult
+    return pdf(<AuditPdf audit={audit} result={r} />).toBlob()
+  }
 
   const handleGeneratePdf = async () => {
     if (!audit) return
     setGeneratingPdf(true)
     try {
-      const r = audit.results as DpeResult
-      const blob = await pdf(<AuditPdf audit={audit} result={r} />).toBlob()
+      const blob = await generatePdfBlob()
+      if (!blob) return
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -33,6 +45,36 @@ export default function ProAuditResults() {
       alert('Erreur lors de la génération du PDF : ' + String(e))
     } finally {
       setGeneratingPdf(false)
+    }
+  }
+
+  const handleSendEmail = async () => {
+    if (!audit || !emailRecipient) return
+    try {
+      // 1) Génère le PDF côté front
+      const blob = await generatePdfBlob()
+      if (!blob) throw new Error('Génération PDF échouée')
+
+      // 2) Upload dans Supabase Storage
+      await uploadPdf.mutateAsync({ id: audit.id, blob })
+
+      // 3) EF send-audit-email envoie le mail Resend avec lien
+      await sendEmail.mutateAsync({
+        auditId: audit.id,
+        recipientEmail: emailRecipient,
+        message: emailMessage || undefined,
+      })
+
+      setEmailSent(true)
+      setTimeout(() => {
+        setEmailDialogOpen(false)
+        setEmailSent(false)
+        setEmailRecipient('')
+        setEmailMessage('')
+      }, 2000)
+    } catch (e) {
+      console.error(e)
+      alert("Erreur lors de l'envoi : " + String(e))
     }
   }
 
@@ -91,7 +133,14 @@ export default function ProAuditResults() {
             ) : (
               <FileText className="h-4 w-4" />
             )}
-            Générer PDF
+            Télécharger PDF
+          </button>
+          <button
+            type="button"
+            onClick={() => setEmailDialogOpen(true)}
+            className="inline-flex items-center gap-2 rounded-md bg-green-700 px-4 py-2 text-sm font-medium text-white hover:bg-green-800"
+          >
+            <Mail className="h-4 w-4" /> Envoyer par email
           </button>
         </div>
       </div>
@@ -187,6 +236,101 @@ export default function ProAuditResults() {
           </div>
         </div>
       </div>
+
+      {/* Dialog Envoyer par email */}
+      {emailDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">Envoyer l'audit au client</h2>
+              <button
+                type="button"
+                onClick={() => setEmailDialogOpen(false)}
+                className="rounded p-1 text-gray-400 hover:bg-gray-100"
+                aria-label="Fermer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {emailSent ? (
+              <div className="flex flex-col items-center gap-3 py-8 text-center">
+                <CheckCircle className="h-16 w-16 text-green-600" />
+                <p className="text-lg font-semibold text-green-700">Email envoyé !</p>
+                <p className="text-sm text-gray-600">
+                  Le client recevra l'audit dans quelques instants.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <label className="block">
+                  <span className="mb-1 block text-sm font-medium text-gray-700">
+                    Email du client
+                  </span>
+                  <input
+                    type="email"
+                    value={emailRecipient}
+                    onChange={(e) => setEmailRecipient(e.target.value)}
+                    placeholder="client@exemple.fr"
+                    className="w-full rounded border-gray-300 text-sm"
+                    required
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-1 block text-sm font-medium text-gray-700">
+                    Message personnalisé (optionnel)
+                  </span>
+                  <textarea
+                    value={emailMessage}
+                    onChange={(e) => setEmailMessage(e.target.value)}
+                    rows={3}
+                    placeholder="Bonjour, voici votre audit énergétique..."
+                    className="w-full rounded border-gray-300 text-sm"
+                  />
+                </label>
+
+                <div className="rounded-md bg-blue-50 p-3 text-xs text-blue-800">
+                  Le PDF sera généré, sauvegardé dans votre espace BRH, et envoyé au client avec
+                  un lien de téléchargement valable 30 jours.
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setEmailDialogOpen(false)}
+                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSendEmail}
+                    disabled={
+                      !emailRecipient ||
+                      uploadPdf.isPending ||
+                      sendEmail.isPending ||
+                      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRecipient)
+                    }
+                    className="inline-flex items-center gap-2 rounded-md bg-green-700 px-4 py-2 text-sm font-medium text-white hover:bg-green-800 disabled:opacity-50"
+                  >
+                    {(uploadPdf.isPending || sendEmail.isPending) ? (
+                      <Loader className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Mail className="h-4 w-4" />
+                    )}
+                    {uploadPdf.isPending
+                      ? 'Génération PDF…'
+                      : sendEmail.isPending
+                        ? 'Envoi en cours…'
+                        : 'Envoyer'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

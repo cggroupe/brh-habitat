@@ -80,3 +80,20 @@ export function useDeleteAudit() {
     },
   })
 }
+
+export function useUploadAuditPdf() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, blob }: { id: string; blob: Blob }) => auditsApi.uploadPdf(id, blob),
+    onSuccess: (_, { id }) => {
+      qc.invalidateQueries({ queryKey: ['audits', id] })
+    },
+  })
+}
+
+export function useSendAuditByEmail() {
+  return useMutation({
+    mutationFn: (params: { auditId: string; recipientEmail: string; message?: string }) =>
+      auditsApi.sendByEmail(params),
+  })
+}
