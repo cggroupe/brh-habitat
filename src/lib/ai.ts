@@ -3,10 +3,9 @@
  * pour eviter le Mixed Content (HTTP API sur page HTTPS)
  */
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string
+import { SUPABASE_ANON_KEY, edgeFunctionUrl } from './config'
 
-const AI_PROXY_URL = `${SUPABASE_URL}/functions/v1/ai-proxy`
+const AI_PROXY_URL = edgeFunctionUrl('ai-proxy')
 
 export type AIMode = 'visiteur' | 'pro' | 'chiffrage'
 

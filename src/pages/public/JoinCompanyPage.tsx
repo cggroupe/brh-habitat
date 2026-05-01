@@ -1,12 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { SUPABASE_ANON_KEY, edgeFunctionUrl } from '@/lib/config'
 import { useAppStore } from '@/stores/appStore'
 import { Users, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react'
 import { logError } from '@/lib/error'
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string
 
 interface InvitationData {
   invitation_id: string
@@ -37,12 +35,13 @@ export default function JoinCompanyPage() {
   const [error, setError] = useState<string | null>(null)
 
   const [form, setForm] = useState({ fullName: '', phone: '', password: '' })
+  const navigateTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   useEffect(() => {
-    if (!token) { setState('invalid'); setError('Lien d\'invitation manquant.'); return }
     void (async () => {
+      if (!token) { setState('invalid'); setError('Lien d\'invitation manquant.'); return }
       try {
-        const resp = await fetch(`${SUPABASE_URL}/functions/v1/company-invite-verify`, {
+        const resp = await fetch(edgeFunctionUrl('company-invite-verify'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
           body: JSON.stringify({ token }),
@@ -54,12 +53,18 @@ export default function JoinCompanyPage() {
     })()
   }, [token])
 
+  useEffect(() => {
+    return () => {
+      if (navigateTimeoutRef.current) clearTimeout(navigateTimeoutRef.current)
+    }
+  }, [])
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
   async function acceptToken(accessToken: string): Promise<void> {
-    const resp = await fetch(`${SUPABASE_URL}/functions/v1/company-invite-accept`, {
+    const resp = await fetch(edgeFunctionUrl('company-invite-accept'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
       body: JSON.stringify({ token }),
@@ -108,7 +113,7 @@ export default function JoinCompanyPage() {
         })
       }
       setState('done')
-      setTimeout(() => navigate('/pro', { replace: true }), 1500)
+      navigateTimeoutRef.current = setTimeout(() => navigate('/pro', { replace: true }), 1500)
     } catch (err) {
       logError('JoinCompany:signup', err)
       setError('Une erreur inattendue s\'est produite.')

@@ -11,7 +11,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
-import { randomBytes, randomUUID } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import { writeFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -80,7 +80,6 @@ async function createUser(role: 'pro' | 'particulier', index: number): Promise<U
   })
   if (error || !data.user) throw new Error(`createUser[${role}#${index}]: ${error?.message}`)
 
-  const city = pick(CITIES)
   const { error: upErr } = await db.from('profiles').update({
     role, full_name: fullName, phone: makePhone(),
     locale: 'fr', is_active: true,

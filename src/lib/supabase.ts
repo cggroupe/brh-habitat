@@ -1,17 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Missing Supabase environment variables. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.local',
-  )
-}
-
-// Note: non type avec <Database> car le type ne couvre pas les ~20 tables partenaires
-// Typer quand database.ts sera genere depuis supabase gen types
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+// Note: client non-type avec <Database> car le format Database manuel n'est pas
+// reconnu par supabase-js (.insert/.update voient 'never'). A activer apres
+// generation via `supabase gen types typescript --project-id lygmmvxnmvlgynmrcpny > src/types/database.ts`.
+// Les Row interfaces de src/types/database.ts restent utilisees explicitement dans api/*.
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,

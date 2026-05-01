@@ -160,7 +160,7 @@ export function AddressAutocomplete({
       </div>
 
       {isOpen && suggestions.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden animate-fadeIn">
+        <div className="absolute z-[60] w-full mt-1 bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden animate-fadeIn">
           {suggestions.map((s, i) => (
             <button
               key={`${s.label}-${i}`}

@@ -1,14 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { SUPABASE_ANON_KEY, edgeFunctionUrl } from '@/lib/config'
 import { useAppStore } from '@/stores/appStore'
 import { logError } from '@/lib/error'
 import { Building2, ArrowRight, Search, CheckCircle2, AlertCircle, MapPin } from 'lucide-react'
 import { createCompany, updateCompanyRecruiter } from '@/api/companies'
 import { addCompanyMember } from '@/api/company-members'
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string
 
 interface SiretData {
   siret: string
@@ -59,7 +57,7 @@ export default function RegisterProPage() {
     if (!/^\d{14}$/.test(siret)) { setSiretError('Le SIRET doit contenir 14 chiffres.'); return }
     setVerifying(true)
     try {
-      const resp = await fetch(`${SUPABASE_URL}/functions/v1/verify-siret`, {
+      const resp = await fetch(edgeFunctionUrl('verify-siret'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
         body: JSON.stringify({ siret }),

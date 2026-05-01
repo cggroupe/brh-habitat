@@ -240,10 +240,6 @@ export function formatEuros(n: number): string {
   return n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
 }
 
-export function formatEurosPrecis(n: number): string {
-  return n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
-}
-
 export const PROFILE_META: Record<Profile, { label: string; description: string; color: string; emoji: string }> = {
   loisirs: {
     label: 'Loisirs',
