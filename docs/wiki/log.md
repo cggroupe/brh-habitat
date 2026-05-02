@@ -5,6 +5,57 @@
 
 ---
 
+## 2026-05-02 — Phase 13.6.2 : 🔗 Lier moteur courrier IA → marketplace artisans (workflow end-to-end)
+
+- **Contexte** : Boucler la chaîne SaaS BRH **lead → courrier IA → recommandation artisan → chantier signé → commission**. Phase 13.6 a livré la marketplace, Phase 13.6.1 l'a peuplée (861 artisans RGE). Phase 13.6.2 connecte les deux : un pro RGE génère un courrier IA Phase 13 → après envoi → recommande un artisan local en 2 clics → lead transmis → suivi conversion.
+- **Fichiers modifiés** :
+  - `src/components/letters/RecommendArtisanModal.tsx` (NEW ~280 LOC — modal sélection geste + top 5 matching + recommander)
+  - `src/components/letters/GenerateLetterModal.tsx` — bouton "🔧 Recommander artisan" en bas du modal post-génération courrier
+  - `src/pages/pro/ProMesLeadsArtisans.tsx` (NEW ~230 LOC — vue pro de ses recommandations + KPIs commissions + funnel statut)
+  - `src/pages/pro/ProMarketplaceArtisans.tsx` — bouton "Mes recommandations" dans header
+  - `src/pages/pro/ProAnalytics.tsx` — bouton "Mes leads" dans header
+  - `src/App.tsx` — route `/pro/mes-leads-artisans` (lazy + ProGuard)
+- **Migrations créées** : Aucune (réutilise `brh_artisan_leads` Phase 13.6).
+- **Edge Functions** : Aucune.
+- **Workflow end-to-end (4 clics, ~30 secondes)** :
+  1. Pro voit prospect ultra-chaud sur `/pro/prospects-bretagne` ou `/pro/prospects-carte`
+  2. Clique "✨ Courrier IA" → Claude Opus 4.7 génère le courrier (10s)
+  3. Clique "🔧 Recommander artisan" → modal s'ouvre, sélectionne le geste prioritaire
+  4. Top 5 artisans RGE matchés (Haversine + score qualité + premium boost) s'affichent
+  5. Clique "Recommander cet artisan" → lead créé en DB, status `pending`
+  6. Pro suit ses recommandations sur `/pro/mes-leads-artisans` (commissions, conversion)
+- **`RecommendArtisanModal` (~280 LOC)** :
+  - Sélecteur geste : 6 gestes prioritaires affichés par défaut (PAC air-eau, isolation combles/murs, fenêtres double-vitrage, VMC double-flux, chauffe-eau thermo) + bouton "Voir tous les gestes (18)"
+  - Top 5 artisans matchés (réutilise `useArtisanMatchForProspect` Phase 13.6)
+  - Cartes : nom + premium badge + commune + distance km + score étoile + score combiné + taux conversion + contacts (tél/email)
+  - Bouton "Recommander cet artisan" → `useCreateArtisanLead` mutation
+  - Anti-doublon : message clair si déjà recommandé pour ce geste (catch contrainte UNIQUE)
+  - État après reco : badge vert ✓ "Recommandé"
+- **`ProMesLeadsArtisans` (~230 LOC)** :
+  - 4 KPI cards : Total / Signés (avec taux conversion) / Commission attendue / Commission perçue
+  - Tableau leads : date, prospect, geste, statut (badge color-coded), montant chantier, commission
+  - Workflow status 7 états : pending → accepted → quoted → signed → completed (+ declined / canceled)
+  - État vide avec CTA "Voir mes prospects →"
+- **Pages wiki impactées** : `architecture-snapshot.md` (à mettre à jour : 22 → 23 pages Pro), `log.md` (cette entrée).
+- **Conformité 14 règles BRH** :
+  - Règle 4 ✅ — typage strict (`ArtisanLeadRow` import, pas de cast)
+  - Règle 5 ✅ — `if (error) throw error` partout
+  - Règle 6 ✅ — Routes guardées par `ProGuard`
+  - Règle 8 ✅ — RLS strict (réutilise policies `pro_select_own_recommendations`, `pro_insert_recommendation`)
+- **Risque** : Low. Réutilise composants existants Phase 13 + 13.6. Pas de nouvelle EF, pas de migration. Le pattern modal-dans-modal (Recommend dans Generate) testé manuellement OK avec z-index 50/60.
+- **Tests** : 246/246 globaux verts. Tsc clean. Lint clean.
+- **Status** : ✅ DONE V1 — workflow end-to-end fonctionnel.
+- **Décisions de cadrage** :
+  - **Modal-dans-modal** plutôt que page dédiée : le pro reste dans le contexte du courrier généré, conversion plus fluide
+  - **6 gestes prioritaires + bouton "voir tous"** : 90 % des cas couverts en 1 clic, exhaustivité dispo en 2 clics
+  - **Top 5 par défaut** (pas top 10 comme sur la page marketplace) : décision rapide, pas paralysie de choix
+  - **Pas d'envoi email auto à l'artisan** Phase 13.6.2 : on laisse le pro gérer le contact direct (téléphone/email affichés dans le modal) ; auto-email Phase 13.6.3
+  - **Page séparée `/pro/mes-leads-artisans`** plutôt que onglet dans marketplace : suivi commercial = vue principale du pro, mérite sa page
+  - **Pas de filtre par statut** dans la liste leads V1 : volumes faibles initialement, filtrage Phase 13.6.4 si > 100 leads par pro
+- **Phase suivante** : 13.6.3 envoi email auto à l'artisan (Resend) avec contexte prospect / 13.6.4 dashboard artisan (vue inverse, leads reçus) / 13.6.5 onboarding artisan via lien d'invitation magique
+
+---
+
 ## 2026-05-02 — Phase 13.6 : 🔧 Marketplace artisans RGE bretons (network effect)
 
 - **Contexte stratégique** : Compléter la chaîne SaaS BRH du lead → la signature → **chantier**. Killer feature business : matching prospect ↔ artisan RGE local breton. Network effect : plus il y a d'artisans, mieux le matching ; plus il y a de leads, plus les artisans s'inscrivent. Pricing futur Phase 13.6.1 : artisan abonné premium 79 €/mois pour boost dans le tri + leads exclusifs.

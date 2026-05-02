@@ -8,6 +8,7 @@
 
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+// `Link` est utilisé pour le lien "Mes recommandations" (haut) et l'état vide (en bas)
 import {
   Wrench,
   Filter,
@@ -72,13 +73,21 @@ export default function ProMarketplaceArtisans() {
             cas de chantier signé.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowFilters(!showFilters)}
-          className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >
-          <Filter className="h-4 w-4" /> Filtres
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/pro/mes-leads-artisans"
+            className="inline-flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-900 hover:bg-amber-100"
+          >
+            <Wrench className="h-4 w-4" /> Mes recommandations
+          </Link>
+          <button
+            type="button"
+            onClick={() => setShowFilters(!showFilters)}
+            className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <Filter className="h-4 w-4" /> Filtres
+          </button>
+        </div>
       </div>
 
       {/* Filtres */}

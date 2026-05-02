@@ -9,10 +9,11 @@
 
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { X, Loader, FileText, Mail, Sparkles, CheckCircle, AlertTriangle, CreditCard } from 'lucide-react'
+import { X, Loader, FileText, Mail, Sparkles, CheckCircle, AlertTriangle, CreditCard, Wrench } from 'lucide-react'
 import { pdf } from '@react-pdf/renderer'
 import { useGenerateLetter, useUpdateLetter } from '@/hooks/queries/prospect-letters'
 import { ProspectLetterPdf } from './ProspectLetterPdf'
+import { RecommendArtisanModal } from './RecommendArtisanModal'
 import type { ProspectBretagneRow } from '@/api/prospects-bretagne'
 
 interface Props {
@@ -35,6 +36,7 @@ export function GenerateLetterModal({ prospect, onClose }: Props) {
   } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [editing, setEditing] = useState(false)
+  const [showArtisanModal, setShowArtisanModal] = useState(false)
 
   const generate = useGenerateLetter()
   const update = useUpdateLetter()
@@ -321,9 +323,25 @@ export function GenerateLetterModal({ prospect, onClose }: Props) {
             >
               <Mail className="h-4 w-4" /> Marquer envoyé
             </button>
+            <button
+              type="button"
+              onClick={() => setShowArtisanModal(true)}
+              className="inline-flex items-center gap-1 rounded-md bg-amber-700 px-3 py-2 text-sm font-medium text-white hover:bg-amber-800"
+              title="Recommander un artisan RGE local"
+            >
+              <Wrench className="h-4 w-4" /> Recommander artisan
+            </button>
           </div>
         )}
       </div>
+
+      {/* Modal Recommander artisan (Phase 13.6.2) */}
+      {showArtisanModal && (
+        <RecommendArtisanModal
+          prospect={prospect}
+          onClose={() => setShowArtisanModal(false)}
+        />
+      )}
     </div>
   )
 }

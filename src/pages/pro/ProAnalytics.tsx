@@ -121,6 +121,12 @@ export default function ProAnalytics() {
             <Wrench className="h-3 w-3" /> Artisans
           </Link>
           <Link
+            to="/pro/mes-leads-artisans"
+            className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-50"
+          >
+            Mes leads
+          </Link>
+          <Link
             to="/pro/abonnement"
             className="inline-flex items-center gap-1 rounded-md bg-purple-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-800"
           >
