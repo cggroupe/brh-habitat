@@ -1,7 +1,7 @@
 # BRH Habitat — Edge Functions Reference
 
 > Source : `supabase/functions/`.
-> **Dernière mesure** : 2026-04-23 · **Total** : 11 fonctions + `_shared/`.
+> **Dernière mesure** : 2026-05-01 · **Total** : 19 fonctions + `_shared/` (Phase 11.1 + Phase 13 + Phase 15).
 
 ## Convention globale
 
@@ -68,6 +68,44 @@ Stratégie hybride : **Clerk** gère l'UI d'authentification, **Supabase** garde
 
 **Correction v7** : Auparavant public sans auth (faille critique). Maintenant auth admin + rate limit strict.
 
+### 🌐 Sources externes prospection — Phase 11.1 (2)
+
+| Fonction | Rôle | Auth | Rate limit |
+|----------|------|------|------------|
+| `enrich-prospect` | Enrichit 1 prospect (IRIS + commune + Géorisques) + calcule score_v2 | JWT | 20 req/min |
+| `georisques-lookup` | Wrapper API Géorisques BRGM avec cache 90j Supabase | JWT | 30 req/min |
+
+→ Voir [external-data-sources.md](external-data-sources.md) pour le détail Tier 1.
+
+### ✨ Killer feature — Courrier IA Phase 13 (1)
+
+| Fonction | Rôle | Auth | Rate limit |
+|----------|------|------|------------|
+| `generate-prospect-letter` | Génère un courrier de prospection IA (Claude Opus 4.7) avec quota Phase 15 | JWT | 20 req/min |
+
+**Quota gating Phase 15** : la fonction appelle `brh_consume_letter_quota(profile_id)` avant Claude. Refus 402 si quota dépassé. Le tier est lu depuis `brh_pro_subscriptions`.
+
+### 💳 SaaS Stripe — Phase 15 (3)
+
+| Fonction | Rôle | Auth | Rate limit |
+|----------|------|------|------------|
+| `create-checkout-session` | Crée Stripe Checkout pour upgrade vers Pro/Expert | JWT | 5 req/min |
+| `create-portal-session` | Crée Stripe Customer Portal (gestion abonnement) | JWT | 10 req/min |
+| `stripe-webhook` | Reçoit events Stripe (subscription created/updated/deleted) → sync `brh_pro_subscriptions` | Signature Stripe HMAC SHA-256 | n/a (Stripe) |
+
+**Variables d'environnement Phase 15** :
+- `STRIPE_SECRET_KEY` — clé secrète Stripe (sk_live_... ou sk_test_...)
+- `STRIPE_WEBHOOK_SECRET` — secret de vérification du webhook
+- `STRIPE_PRICE_PRO`, `STRIPE_PRICE_EXPERT` — IDs des prix Stripe (price_...)
+- `SITE_URL` — URL de retour Checkout (par défaut `https://www.renovation-brh.fr`)
+
+**Mode preview** : si `STRIPE_SECRET_KEY` absent, les EFs renvoient 503 avec message clair (mode développement). Le code est prêt pour brancher Stripe quand les credentials seront fournis.
+
+**Tarification SaaS pro RGE** (distincte des paliers agences immo Phase 12) :
+- **Free** (Découverte) : 0 €, 5 courriers IA / mois
+- **Pro** : 49 €/mois, 100 courriers IA + bulk top 50 + ZIP + export CSV
+- **Expert** : 149 €/mois, 500 courriers IA + marketplace artisans (Phase 13.6) + API + multi-utilisateurs
+
 ## Variables d'environnement
 
 | Variable | Usage |
@@ -79,6 +117,10 @@ Stratégie hybride : **Clerk** gère l'UI d'authentification, **Supabase** garde
 | `CLERK_WEBHOOK_SECRET` | clerk-webhook (vérification signature) |
 | `SIRENE_API_KEY` | verify-siret |
 | `CRM_WEBHOOK_URL`, `CRM_WEBHOOK_SECRET` | crm-sync |
+| `ANTHROPIC_API_KEY` | generate-prospect-letter (Claude Opus 4.7) |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | create-checkout-session, stripe-webhook, create-portal-session |
+| `STRIPE_PRICE_PRO`, `STRIPE_PRICE_EXPERT` | IDs des Prices Stripe (49€/mois et 149€/mois) |
+| `SITE_URL` | URL de retour Checkout/Portal (https://www.renovation-brh.fr) |
 
 ## Patterns d'implémentation
 

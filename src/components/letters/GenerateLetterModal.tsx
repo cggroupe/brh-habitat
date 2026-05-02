@@ -8,7 +8,8 @@
  */
 
 import { useState } from 'react'
-import { X, Loader, FileText, Mail, Sparkles, CheckCircle, AlertTriangle } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { X, Loader, FileText, Mail, Sparkles, CheckCircle, AlertTriangle, CreditCard } from 'lucide-react'
 import { pdf } from '@react-pdf/renderer'
 import { useGenerateLetter, useUpdateLetter } from '@/hooks/queries/prospect-letters'
 import { ProspectLetterPdf } from './ProspectLetterPdf'
@@ -198,9 +199,19 @@ export function GenerateLetterModal({ prospect, onClose }: Props) {
           {error && (
             <div className="mb-4 flex items-start gap-2 rounded-md bg-red-50 p-3 text-sm text-red-800">
               <AlertTriangle className="h-4 w-4 flex-shrink-0" />
-              <div>
-                <div className="font-semibold">Erreur</div>
+              <div className="flex-1">
+                <div className="font-semibold">
+                  {error.includes('Quota') ? 'Quota mensuel dépassé' : 'Erreur'}
+                </div>
                 <div className="text-xs">{error}</div>
+                {error.includes('Quota') && (
+                  <Link
+                    to="/pro/abonnement"
+                    className="mt-2 inline-flex items-center gap-1 rounded bg-purple-700 px-2 py-1 text-xs font-medium text-white hover:bg-purple-800"
+                  >
+                    <CreditCard className="h-3 w-3" /> Upgrader pour plus de courriers
+                  </Link>
+                )}
               </div>
             </div>
           )}

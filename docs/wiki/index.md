@@ -52,6 +52,7 @@
 | [scoring-audit-vs-vente-immo.md](scoring-audit-vs-vente-immo.md) | ⭐ **Audit Phase 11.0** — Comparaison score v2 vs référentiel "scoring prédictif de vente immo" (4 familles + 6 sources). Verdict + 3 ajouts validés + 4 rejets motivés |
 | [score-vente-agences.md](score-vente-agences.md) | ⭐ **Phase 12** — Score Vente v1 (heuristique 13 règles) pour agences immo partenaires + portail dédié + flywheel data acquéreur F/G + 3 paliers SaaS (0/290/890€) |
 | [score-vente-amelioration-pre-build.md](score-vente-amelioration-pre-build.md) | ⭐ **Pre-Mortem Phase 12** — 10 améliorations critiques (lead actionnable + outillage agence + garantie ROI + anti-doublon + compliance Hoguet) + plan révisé + MRR cible M+12 = 20k€/mois |
+| [tenant-multitenancy.md](tenant-multitenancy.md#phase-15-tier-dynamique-par-utilisateur-stripe-saas) | ⭐ **Phase 15** — Tier dynamique pro RGE (Free/Pro 49€/Expert 149€) avec quota courriers IA mensuel + Stripe Checkout + webhook auto-sync. Distinct du pricing agences immo Phase 12. |
 
 ### Partie 3 — Qualité & opérations
 

@@ -151,6 +151,32 @@ Toutes features activées :
 recruitmentPyramid ✓  // différence clé vs Pro
 ```
 
+## ⭐ Phase 15 — Tier dynamique par utilisateur (Stripe SaaS)
+
+> Le tenant `tier: 'enterprise'` ci-dessus est **statique** par tenant (config `tenants/brh.ts`). À partir de Phase 15, les pros RGE individuels ont **leur propre tier dynamique** (`free` / `pro` / `expert`) stocké dans `brh_pro_subscriptions`. Cohérent avec le multi-tenancy : un tenant Enterprise peut accueillir plusieurs pros RGE individuels avec des abonnements Stripe distincts.
+
+**Tarification pros RGE** (distincte du pricing agences immo Phase 12 — voir [score-vente-amelioration-pre-build.md](score-vente-amelioration-pre-build.md)) :
+
+| Tier | Prix HT/mois | Quota courriers IA | Features clés |
+|---|---|---|---|
+| **Free** (Découverte) | 0 € | 5 | Tableau prospects + Carte + Analytics |
+| **Pro** | **49 €** | 100 | Bulk top 50 + ZIP + Export CSV + Support email |
+| **Expert** | **149 €** | 500 | Marketplace artisans + API + Multi-utilisateurs |
+
+**Implémentation** :
+- Table `brh_pro_subscriptions` (1 row par profile pro RGE)
+- Helper SQL `brh_consume_letter_quota(profile_id)` (atomique, auto-création free, auto-reset mensuel)
+- 3 EFs Stripe : `create-checkout-session`, `stripe-webhook`, `create-portal-session`
+- Page `/pro/abonnement` avec 3 cards + features matrix + Stripe Customer Portal
+
+**Quota gating** : l'EF `generate-prospect-letter` appelle `brh_consume_letter_quota` avant Claude → refus 402 + lien vers `/pro/abonnement` si quota dépassé.
+
+**Cohérence avec tenant feature flags** : ces 2 systèmes coexistent.
+- `TenantContext.tier` → branding, palette couleurs, features tenant-wide (recruitmentPyramid, etc.)
+- `brh_pro_subscriptions.tier` → quotas user-level (courriers IA), accès SaaS individuel
+
+Un user Pro RGE peut avoir `TenantContext.tier === 'enterprise'` (BRH master) **et** `brh_pro_subscriptions.tier === 'expert'` (son abonnement individuel).
+
 ## Config BRH (`src/config/tenants/brh.ts`)
 
 ```typescript

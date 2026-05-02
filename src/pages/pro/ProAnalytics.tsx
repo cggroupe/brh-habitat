@@ -19,6 +19,7 @@ import {
   Users,
   Activity,
   Loader,
+  CreditCard,
 } from 'lucide-react'
 import {
   ResponsiveContainer,
@@ -111,6 +112,12 @@ export default function ProAnalytics() {
             className="inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
           >
             <MapPin className="h-3 w-3" /> Carte
+          </Link>
+          <Link
+            to="/pro/abonnement"
+            className="inline-flex items-center gap-1 rounded-md bg-purple-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-800"
+          >
+            <CreditCard className="h-3 w-3" /> Abonnement
           </Link>
         </div>
       </div>

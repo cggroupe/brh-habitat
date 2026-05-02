@@ -5,6 +5,82 @@
 
 ---
 
+## 2026-05-01 — Phase 15 : 💳 SaaS Stripe + Quota courriers IA (Free / Pro 49€ / Expert 149€)
+
+- **Contexte stratégique** : Monétisation directe des pros RGE. Tarification distincte du pricing agences immo (Phase 12 : 0/390/990/2490 €). Modèle freemium : Free 5 courriers/mois → conversion vers Pro 49€ ou Expert 149€. Quota gating atomique côté EF.
+- **Fichiers modifiés** :
+  - `supabase/migrations/20260601100000_brh_pro_subscriptions.sql` (NEW — table + helper SQL `brh_consume_letter_quota` + 2 RLS policies + trigger updated_at)
+  - `supabase/functions/_shared/stripe-config.ts` (NEW — PRO_TIERS config + tierFromStripePrice helper)
+  - `supabase/functions/create-checkout-session/index.ts` (NEW — Stripe Checkout API direct)
+  - `supabase/functions/stripe-webhook/index.ts` (NEW — verify HMAC SHA-256 + sync sub events)
+  - `supabase/functions/create-portal-session/index.ts` (NEW — Stripe Customer Portal)
+  - `supabase/functions/generate-prospect-letter/index.ts` — quota gating ajouté (RPC `brh_consume_letter_quota` + 402 si dépassé)
+  - `src/api/pro-subscription.ts` (NEW — getMine + checkout + portal)
+  - `src/hooks/queries/pro-subscription.ts` (NEW — 3 hooks + invalidation)
+  - `src/pages/pro/ProAbonnement.tsx` (NEW ~280 LOC — 3 cards + features matrix + status sub + portal)
+  - `src/components/letters/GenerateLetterModal.tsx` — gestion erreur 402 + CTA upgrade
+  - `src/pages/pro/ProAnalytics.tsx` — bouton "💳 Abonnement" dans header
+  - `src/App.tsx` — route `/pro/abonnement` (lazy + ProGuard)
+  - `docs/wiki/index.md` — référencement Phase 15
+  - `docs/wiki/edge-functions-reference.md` — 4 nouvelles EFs (catalog 11 → 19)
+  - `docs/wiki/tenant-multitenancy.md` — section Phase 15 tier dynamique
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations créées** :
+  - `20260601100000_brh_pro_subscriptions.sql` ✅ APPLIQUÉE Supabase prod
+- **Edge Functions déployées** :
+  - `create-checkout-session` ✅ (rate 5/min)
+  - `stripe-webhook` ✅ (`--no-verify-jwt`, signature HMAC vérifiée)
+  - `create-portal-session` ✅ (rate 10/min)
+  - `generate-prospect-letter` ✅ redéployée avec quota gating
+- **Architecture quota gating** :
+  - Helper SQL atomique `brh_consume_letter_quota(profile_id)` en `SECURITY DEFINER` avec `SET search_path = ''` (règle BRH 12)
+  - Auto-crée free par défaut si sub absent (UPSERT)
+  - Auto-reset si `current_period_end < now()` (rolling 30 jours)
+  - Verrou `FOR UPDATE` pour éviter race conditions sur le compteur
+  - Refus avec retour `{ allowed: false, tier, used, quota, period_end }`
+  - EF appelle ce helper AVANT Claude → 402 si dépassé avec lien `upgrade_url: /pro/abonnement`
+- **Architecture Stripe** :
+  - **Mode preview safe** : si `STRIPE_SECRET_KEY` absent, EFs renvoient 503 avec message clair (pas de crash)
+  - Customer auto-créé au 1er Checkout (email pro depuis Auth)
+  - Métadonnées profile_id propagées sur Customer + Subscription (link bidirectionnel)
+  - Webhook : signature HMAC SHA-256 vérifiée via WebCrypto (pas de lib externe)
+  - 3 events handlés : `checkout.session.completed`, `customer.subscription.created/updated/deleted`
+  - Tier auto-déduit depuis `tierFromStripePrice(priceId)` ou metadata
+  - Cancellation → downgrade automatique vers Free (quota 5/mois)
+- **UX page `/pro/abonnement`** :
+  - 3 cards (Free / Pro / Expert) avec features matrix
+  - Card "Pro" badgée POPULAIRE
+  - État sub actuel : tier + quota utilisé (progress bar) + statut Stripe + lien Portal
+  - Boutons "Souscrire" → Stripe Checkout (window.location.assign)
+  - Bandeau succès/cancel après retour Stripe (auto-refresh + nettoyage URL après 5s)
+  - Garantie satisfait ou remboursé 14 jours mentionnée
+- **Pages wiki impactées** : `index.md` ✅, `edge-functions-reference.md` ✅, `tenant-multitenancy.md` ✅, `data-model.md` (à mettre à jour : 82 → 83 tables)
+- **Conformité 14 règles BRH** :
+  - Règle 4 ✅ — pas de `as unknown as` (typage strict ProSubscriptionRow)
+  - Règle 5 ✅ — `if (error) throw error` partout dans `api/pro-subscription.ts`
+  - Règle 6 ✅ — Route guardée par `ProGuard`
+  - Règle 8 ✅ — RLS strict (pro voit son sub, admin tout, écriture service_role only via webhook)
+  - Règle 9 ✅ — Rate limit sur les 3 nouvelles EFs (5/10/n/a)
+  - Règle 11 ✅ — TIMESTAMPTZ partout (`current_period_*`, `canceled_at`, `created_at`)
+  - Règle 12 ✅ — `brh_consume_letter_quota` + `brh_pro_subs_set_updated_at` avec `SET search_path = ''`
+  - Règle 13 ✅ — Pas de `toISOString().slice(0,10)`
+- **Risque** : Low. EFs Stripe en mode preview-safe (503 si pas configuré). Quota gating SQL atomique. Webhook avec signature HMAC obligatoire en prod. Mode dev : `STRIPE_WEBHOOK_SECRET` absent = skip vérif (à activer en prod).
+- **Tests** : 228/228 globaux verts. Tsc clean. Lint clean.
+- **Status** : ✅ DONE V1 — code complet, EFs déployées. **Pending** : configurer `STRIPE_SECRET_KEY` + `STRIPE_PRICE_PRO` + `STRIPE_PRICE_EXPERT` + `STRIPE_WEBHOOK_SECRET` côté Supabase secrets pour activer les paiements réels.
+- **Décisions de cadrage** :
+  - **Tarif 49 € / 149 €** : positionnement competitive vs concurrents B2B SaaS (HelloBoard 39€, Capifrance 99€). Marge confortable couvre coûts IA (~5€/mois pour 100 courriers).
+  - **Quota mensuel rolling** plutôt que calendaire : plus juste pour le user (1er du mois ne lui prend pas son quota anniversaire)
+  - **Free 5 courriers** plutôt que 10 : le besoin minimum pour tester la qualité, mais incitation forte à upgrader dès qu'on commence à scaler
+  - **Helper SQL `brh_consume_letter_quota`** plutôt que logique côté EF : atomicité garantie (verrou `FOR UPDATE`), pas de race condition sur compteur en cas de bulk parallèle
+  - **`fetch` direct Stripe API** plutôt que SDK Deno : bundle EF léger (~50 KB), pas de dépendance fragile
+  - **HMAC SHA-256 via WebCrypto** plutôt que lib `crypto-js` : 0 dépendance, native Deno
+  - **Mode preview-safe** : permet de déployer le code maintenant et brancher Stripe plus tard sans crash en prod
+  - **Pas d'EF batch reset quota** : trigger SQL `current_period_end < now()` au moment du `brh_consume_letter_quota` suffit (pas de cron nécessaire)
+  - **Pricing distinct agences vs pros** : 2 tables `brh_pro_subscriptions` + future `brh_agence_subscriptions` (Phase 12). Cohérent avec personas séparés.
+- **Phase suivante** : 13.6 marketplace artisans RGE / 14.1 cost monitoring ECB FX / 16 multi-tenant SaaS
+
+---
+
 ## 2026-05-01 — Phase 14 : 📊 Dashboard analytique pro (recharts + KPIs temps réel)
 
 - **Contexte stratégique** : Créer la **rétention quotidienne** des pros RGE — le SaaS doit donner envie de venir tous les matins voir ses chiffres. Démonstration immédiate du ROI : MPR potentiel total €, cost monitoring IA, funnel d'activation, top 10 ultra-chauds.

@@ -287,6 +287,36 @@ Deno.serve(async (req: Request) => {
     }
     const proUserId = userData.user.id
 
+    // ========================================================================
+    // Phase 15 — Quota gating SaaS
+    // ========================================================================
+    const { data: quotaRows, error: quotaErr } = await supa.rpc('brh_consume_letter_quota', {
+      p_profile_id: proUserId,
+    })
+    if (quotaErr) {
+      console.error('quota error:', quotaErr.message)
+      return new Response(JSON.stringify({ error: 'Quota check failed' }), {
+        status: 500,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+      })
+    }
+    const quota = quotaRows?.[0] as
+      | { allowed: boolean; tier: string; used: number; quota: number; period_end: string }
+      | undefined
+    if (!quota || !quota.allowed) {
+      return new Response(
+        JSON.stringify({
+          error: 'Quota mensuel dépassé',
+          tier: quota?.tier,
+          used: quota?.used,
+          quota: quota?.quota,
+          period_end: quota?.period_end,
+          upgrade_url: '/pro/abonnement',
+        }),
+        { status: 402, headers: { ...cors, 'Content-Type': 'application/json' } },
+      )
+    }
+
     // 1. Charge le prospect (avec colonnes étendues)
     const { data: prospect, error: pErr } = await supa
       .from('brh_dpe_prospects')
