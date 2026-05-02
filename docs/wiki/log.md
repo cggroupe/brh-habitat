@@ -5,6 +5,75 @@
 
 ---
 
+## 2026-05-01 — Phase 13.5 : 🗺️ Carte chaleur Bretagne (Leaflet + heatmap)
+
+- **Contexte** : Visualisation impressionnante des 59 306 prospects scorés v2 sur carte Bretagne. Outil démo commerciale + qualification visuelle des zones les plus chaudes (heatmap rouge = ultra-chaud). Couplé au killer feature Phase 13 : popup carte → bouton "Courrier IA" en 1 clic.
+- **Fichiers modifiés** :
+  - `package.json` — `leaflet@1.9.4`, `react-leaflet@5.0.0`, `@types/leaflet`, `leaflet.heat`
+  - `src/api/prospects-bretagne.ts` — méthode `listForMap` (lat/lng + segment, max 5000 pts)
+  - `src/hooks/queries/prospects-bretagne.ts` — hook `useProspectsBretagneMap`
+  - `src/components/map/HeatmapLayer.tsx` (NEW — wrapper leaflet.heat pour react-leaflet)
+  - `src/pages/pro/ProProspectsCarte.tsx` (NEW ~280 LOC — page carte + filtres + popup)
+  - `src/App.tsx` — route `/pro/prospects-carte` (lazy + ProGuard)
+  - `src/pages/pro/ProProspectsBretagne.tsx` — bouton "📍 Carte" dans header
+- **Migrations créées** : Aucune.
+- **Edge Functions** : Aucune.
+- **Architecture carte** :
+  - **Leaflet + OpenStreetMap tiles** : pas de token Mapbox, gratuit, open-source, RGPD-friendly
+  - **leaflet.heat plugin** : heatmap pondérée par `score_v2 / 100` (intensité 0.1-1.0)
+  - **CircleMarker** pour les segments les plus chauds (max 500 pour perf)
+  - **Popup quick-action** : bouton "Courrier IA" + lien Détail (réutilise `GenerateLetterModal` Phase 13)
+  - **`useMap` + `useEffect`** pour intégrer leaflet.heat (pas de wrapper officiel)
+- **Filtres latéraux** : segment, département, score min (slider 0-100), toggle heatmap/markers, cards résumé live par segment, FitBretagne (zoom auto si dépt sélectionné)
+- **Légende heatmap** : gradient bleu → jaune → orange → rouge, bas-droite
+- **Centrage Bretagne** : 48.2°N / -3.0°W (Pontivy), zoom 8, min 7 / max 17
+- **Performance** : limite REST 5000 points, markers cap 500, cache React Query 5 min
+- **Conformité 14 règles BRH** : 4 (typage strict + casts isolés leaflet.heat), 5 (throw error), 6 (ProGuard)
+- **Risque** : Low. Lib leaflet.heat stable malgré l'absence de typings officiels.
+- **Tests** : 228/228 globaux verts. Tsc clean. Lint clean.
+- **Status** : ✅ DONE V1.
+- **Décisions de cadrage** :
+  - **Leaflet + OSM tiles** plutôt que Mapbox : zéro coût, pas de token, RGPD-friendly
+  - **CircleMarker** : pas d'asset images, color-coded par segment, plus rapide
+  - **leaflet.heat sans wrapper** : intégration directe `useMap()`, léger
+  - **Cap 5000 points** : compromis couverture/fluidité (Bretagne complète ≈ 12k DPE F/G)
+  - **Reuse `GenerateLetterModal`** : workflow unique courrier toutes surfaces
+- **Phase suivante** : 13.3 génération bulk top 50 / 13.6 marketplace artisans RGE / 14 dashboard analytique pro
+
+---
+
+## 2026-05-01 — Phase 12.0-DESIGN : Score Vente v1 pour agences immo partenaires
+
+- **Contexte** : Conception d'un module distinct du score rénovation v2 (Phase 11), à destination des agences immobilières partenaires (`brh_companies.partner_type = 'agence_immo'`). Levier de monétisation BRH (3 paliers 0/290/890€/mois) + flywheel data : agence livre acquéreur F/G post-mutation → BRH récupère lead rénovation chaud (segment `acquereur_F_G_post_mutation`, score v2 démarrant à 80).
+- **Fichiers modifiés** :
+  - `docs/wiki/score-vente-agences.md` (NEW — design complet 13 règles + 4 EF + portail agence + business model, ~360 lignes)
+  - `docs/wiki/index.md` (référencement Partie 2)
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations créées** : Aucune (design uniquement). Phase 12.1 livrera :
+  - `20260612100000_brh_score_vente_v1.sql` — ALTER `brh_dpe_prospects` (+5 cols dont `score_vente_v1`, `score_vente_v1_segment`) + ALTER `brh_companies` (+4 cols dont `partner_type`, `agence_zones_epci`) + 2 nouvelles tables (`brh_agence_leads_envoyes`, `brh_agence_lead_outcomes`)
+- **Edge Functions à créer** : 4 EF (`score-vente-prospect`, `batch-score-vente-bretagne`, `agence-leads-export`, `agence-lead-feedback`) — pattern rate-limit existant
+- **Modules TS à créer** : `score-vente-v1.ts`, `dvf-chainage.ts`, `sci-succession.ts`, `sitadel-valorisation.ts` dans `src/lib/dpe-engine/external/`
+- **Pages à créer** : 4 pages `/pro/agence/*` (leads-vente, lead-detail, leads-tracking, parametres) + ProGuard + feature gate `partner_type='agence_immo'`
+- **Pages wiki impactées** :
+  - `score-vente-agences.md` (créée)
+  - `external-data-sources.md` (référencée — extensions module TS dans `external/`)
+  - `partner-platform.md` (à mettre à jour Phase 12.0 quand `partner_type` réellement ajouté)
+  - `data-model.md` (à mettre à jour Phase 12.1 : 79 → 81 tables)
+  - `index.md` (référencement)
+- **Risque** : Medium (DPIA RGPD obligatoire, scoring SCI personnes morales pour démarchage commercial tiers — droit d'opposition art. 21 RGPD à intégrer dans chaque lead livré)
+- **Tests** : N/A (design uniquement)
+- **Status** : 🟡 PARTIEL (Phase 12.0-DESIGN livré, Phases 12.0 → 12.5 à démarrer après validation business + DPIA)
+- **Décisions de cadrage** :
+  - Score VENTE distinct du score RÉNOVATION (pas extension de v2) — cas d'usage et persona différents
+  - 13 règles heuristiques (9 positives + 4 négatives) + 3 segments (`vente_imminente` ≥80, `vente_probable_18m` 60-79, `veille_passive` 40-59)
+  - Pré-requis Phase 11.1 + 11.2 (Sit@del2, IRIS, Géorisques, DGFIP × INPI)
+  - Bascule prédictive (XGBoost/LightGBM) reportée Phase 12.5 (T+12 mois, conditionné à ≥5 agences actives produisant feedback)
+  - Flywheel data acquéreur F/G = clause contractuelle obligatoire (justifie palier Standard à 290€)
+  - Audit ProHacker RGPD requis avant Phase 12.1
+  - Périmètre Bretagne uniquement (extension 44 envisagée si volume `vente_imminente` < 200/mois)
+
+---
+
 ## 2026-05-01 — Phase 13 : 🚀 KILLER FEATURE — Générateur IA de courrier de prospection
 
 - **Contexte stratégique** : Différenciation absolue vs Kelvin° (s'arrête au lead) et CapRénov+ (s'arrête à l'audit). **BRH va du lead à la signature en 1 clic.** Sur les 59 306 prospects scorés v2, le pro RGE clique "Courrier IA" → Claude Opus 4.7 analyse les signaux DVF/MPR/Géorisques → courrier A4 personnalisé prêt à imprimer en ~10s.

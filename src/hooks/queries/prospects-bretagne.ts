@@ -35,3 +35,11 @@ export function useProspectsBretagneCounts(opts: { departement?: '22' | '29' | '
     staleTime: 60_000,
   })
 }
+
+export function useProspectsBretagneMap(filters: Parameters<typeof prospectsBretagneApi.listForMap>[0]) {
+  return useQuery({
+    queryKey: [...PROSPECTS_BZH_KEY, 'map', filters] as const,
+    queryFn: () => prospectsBretagneApi.listForMap(filters),
+    staleTime: 5 * 60_000,
+  })
+}

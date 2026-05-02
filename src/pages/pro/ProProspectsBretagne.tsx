@@ -10,7 +10,7 @@
 
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Loader, ExternalLink, Filter, X, Sparkles } from 'lucide-react'
+import { Loader, ExternalLink, Filter, X, Sparkles, MapPin } from 'lucide-react'
 import {
   useProspectsBretagne,
   useProspectsBretagneCounts,
@@ -89,14 +89,23 @@ export default function ProProspectsBretagne() {
             59 306 logements F/G — scoring composite v2 (sources externes 27)
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowFilters(!showFilters)}
-          className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >
-          <Filter className="h-4 w-4" />
-          Filtres
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/pro/prospects-carte"
+            className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            title="Carte chaleur Bretagne"
+          >
+            <MapPin className="h-4 w-4" /> Carte
+          </Link>
+          <button
+            type="button"
+            onClick={() => setShowFilters(!showFilters)}
+            className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <Filter className="h-4 w-4" />
+            Filtres
+          </button>
+        </div>
       </div>
 
       {/* Cards résumé par segment */}

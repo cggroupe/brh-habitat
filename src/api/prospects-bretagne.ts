@@ -126,6 +126,49 @@ export const prospectsBretagneApi = {
   },
 
   /**
+   * Liste légère lat/lng + segment pour la carte (Phase 13.5).
+   * Limite 5000 points pour les perf de Leaflet/heat.
+   */
+  async listForMap(filters: {
+    segment?: ScoreV2Segment | null
+    departement?: '22' | '29' | '35' | '56' | null
+    scoreMin?: number | null
+    limit?: number
+  } = {}): Promise<Array<{
+    id: number
+    lat: number
+    lng: number
+    score: number | null
+    segment: ScoreV2Segment | null
+    etiquette: string | null
+    commune: string | null
+  }>> {
+    let q = supabase
+      .from('brh_dpe_prospects')
+      .select('id, latitude, longitude, score_v2, score_v2_segment, etiquette_dpe, commune')
+      .not('latitude', 'is', null)
+      .not('longitude', 'is', null)
+
+    if (filters.segment) q = q.eq('score_v2_segment', filters.segment)
+    if (filters.departement) q = q.eq('departement', filters.departement)
+    if (filters.scoreMin != null) q = q.gte('score_v2', filters.scoreMin)
+
+    q = q.order('score_v2', { ascending: false, nullsFirst: false }).limit(filters.limit ?? 5000)
+
+    const { data, error } = await q
+    if (error) throw error
+    return (data ?? []).map((r) => ({
+      id: r.id as number,
+      lat: Number(r.latitude),
+      lng: Number(r.longitude),
+      score: (r.score_v2 as number | null) ?? null,
+      segment: (r.score_v2_segment as ScoreV2Segment | null) ?? null,
+      etiquette: (r.etiquette_dpe as string | null) ?? null,
+      commune: (r.commune as string | null) ?? null,
+    }))
+  },
+
+  /**
    * Compteur par segment (pour cards résumé).
    */
   async countBySegment(filters: Pick<ListProspectsFilters, 'departement'> = {}): Promise<

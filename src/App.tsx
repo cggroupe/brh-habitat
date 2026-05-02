@@ -81,6 +81,7 @@ const ProAuditsList = lazy(() => import('@/pages/pro/ProAuditsList'))
 const ProAuditEditor = lazy(() => import('@/pages/pro/ProAuditEditor'))
 const ProAuditResults = lazy(() => import('@/pages/pro/ProAuditResults'))
 const ProProspectsBretagne = lazy(() => import('@/pages/pro/ProProspectsBretagne'))
+const ProProspectsCarte = lazy(() => import('@/pages/pro/ProProspectsCarte'))
 const AuditView = lazy(() => import('@/pages/AuditView'))
 
 // Lazy loaded pages — Particulier
@@ -206,6 +207,7 @@ export default function App() {
                 <Route path="/pro/audits/:id" element={<ProAuditEditor />} />
                 <Route path="/pro/audits/:id/results" element={<ProAuditResults />} />
                 <Route path="/pro/prospects-bretagne" element={<ProProspectsBretagne />} />
+                <Route path="/pro/prospects-carte" element={<ProProspectsCarte />} />
               </Route>
             </Route>
 

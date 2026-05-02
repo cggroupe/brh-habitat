@@ -50,6 +50,7 @@
 | [diagnostic-engine.md](diagnostic-engine.md) | Moteur de diagnostic multi-étapes + renovation-plan-engine + aides-engine |
 | [external-data-sources.md](external-data-sources.md) | ⭐ **Phase 11** — 27 sources publiques gratuites (Enedis, GRDF, Géorisques, Filosofi, DVF, RGE, ANIL...) pour scoring composite v2 sur 59 306 prospects DPE F/G Bretagne |
 | [scoring-audit-vs-vente-immo.md](scoring-audit-vs-vente-immo.md) | ⭐ **Audit Phase 11.0** — Comparaison score v2 vs référentiel "scoring prédictif de vente immo" (4 familles + 6 sources). Verdict + 3 ajouts validés + 4 rejets motivés |
+| [score-vente-agences.md](score-vente-agences.md) | ⭐ **Phase 12** — Score Vente v1 (heuristique 13 règles) pour agences immo partenaires + portail dédié + flywheel data acquéreur F/G + 3 paliers SaaS (0/290/890€) |
 
 ### Partie 3 — Qualité & opérations
 
