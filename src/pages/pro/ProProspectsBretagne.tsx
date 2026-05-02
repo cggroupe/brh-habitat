@@ -10,13 +10,14 @@
 
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Loader, ExternalLink, Filter, X, Sparkles, MapPin } from 'lucide-react'
+import { Loader, ExternalLink, Filter, X, Sparkles, MapPin, Layers } from 'lucide-react'
 import {
   useProspectsBretagne,
   useProspectsBretagneCounts,
 } from '@/hooks/queries/prospects-bretagne'
 import type { ScoreV2Segment } from '@/lib/dpe-engine/external/types'
 import { GenerateLetterModal } from '@/components/letters/GenerateLetterModal'
+import { BulkGenerateModal } from '@/components/letters/BulkGenerateModal'
 import type { ProspectBretagneRow } from '@/api/prospects-bretagne'
 
 const SEGMENT_LABELS: Record<ScoreV2Segment, string> = {
@@ -53,6 +54,7 @@ export default function ProProspectsBretagne() {
   const [page, setPage] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
   const [letterProspect, setLetterProspect] = useState<ProspectBretagneRow | null>(null)
+  const [bulkProspects, setBulkProspects] = useState<ProspectBretagneRow[] | null>(null)
   const PAGE_SIZE = 50
 
   const filters = {
@@ -90,6 +92,17 @@ export default function ProProspectsBretagne() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {data && data.rows.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setBulkProspects(data.rows.slice(0, Math.min(50, data.rows.length)))}
+              className="inline-flex items-center gap-2 rounded-md bg-purple-700 px-3 py-2 text-sm font-medium text-white hover:bg-purple-800"
+              title={`Générer un courrier IA pour les ${Math.min(50, data.rows.length)} top prospects de la page`}
+            >
+              <Layers className="h-4 w-4" />
+              Bulk top {Math.min(50, data.rows.length)}
+            </button>
+          )}
           <Link
             to="/pro/prospects-carte"
             className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
@@ -301,6 +314,11 @@ export default function ProProspectsBretagne() {
           prospect={letterProspect}
           onClose={() => setLetterProspect(null)}
         />
+      )}
+
+      {/* Modal bulk */}
+      {bulkProspects && (
+        <BulkGenerateModal prospects={bulkProspects} onClose={() => setBulkProspects(null)} />
       )}
 
       {/* Pagination */}

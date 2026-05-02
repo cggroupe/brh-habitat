@@ -5,6 +5,83 @@
 
 ---
 
+## 2026-05-01 — Phase 13.3 : ⚡ Génération bulk de courriers IA (top 50 en parallèle)
+
+- **Contexte** : Scaler le killer feature Phase 13 — un pro RGE veut traiter 50 prospects ultra-chauds par jour, pas 1 par 1. Bulk en 1 clic + ZIP de tous les PDF.
+- **Fichiers modifiés** :
+  - `package.json` — `jszip` (bundle ZIP côté client)
+  - `supabase/functions/generate-prospect-letter/index.ts` — rate limit 5/min → **20/min/IP** (auth user vérifiée)
+  - `src/api/prospect-letters.ts` — méthode `generateBulk` (throttle parallèle 3 concurrents + 3.5s pace)
+  - `src/components/letters/BulkGenerateModal.tsx` (NEW ~250 LOC — modal preview + progress live + ZIP download)
+  - `src/pages/pro/ProProspectsBretagne.tsx` — bouton "Bulk top 50" dans header
+- **Migrations créées** : Aucune.
+- **Edge Functions** : `generate-prospect-letter` ✅ redéployée (rate limit relaxé)
+- **Architecture bulk** :
+  - 3 parallèles + 3.5s entre requêtes par slot = ~17 req/min (sous EF 20/min)
+  - Pour 50 courriers : ~3 min total
+  - Cost : 50 × 0.02 € avec cache ≈ **1 € par session bulk**
+- **UX** : preview prospects → progress bar live (%) → liste résultats unitaires (✅/❌) → bouton "Télécharger ZIP" (JSZip côté client)
+- **JSZip côté client** : pas de Storage temporaire à nettoyer, zéro latence serveur, archive `courriers-prospects-YYYY-MM-DD.zip`
+- **Conformité 14 règles BRH** : 4 (no-cast), 5 (throw error), 9 (rate-limit relaxé mais auth user obligatoire), 13 (formatDateOnly)
+- **Risque** : Low. Rate limit 20/min/IP suffisant. Audit trail complet (chaque courrier insert en DB).
+- **Tests** : 228/228 verts. Tsc + lint clean.
+- **Status** : ✅ DONE V1.
+- **Décisions de cadrage** :
+  - Rate limit 20/min (pas 50) : compromis bulk acceptable + anti-abus
+  - 3 parallèles (pas 5) : évite spike qui consomme tout le rate limit window
+  - JSZip côté client : pas de Storage temporaire, zéro infra serveur
+  - Pas d'EF batch dédiée : ~3 min total = front-side workers suffisent (vs job background + polling status overkill)
+  - Top N = `data.rows.slice(0, 50)` : utilise filtres+tri actuels de la page tableau
+- **Phase suivante** : 14 dashboard analytique pro / 15 Stripe SaaS / 13.6 marketplace artisans RGE
+
+---
+
+## 2026-05-01 — Phase 12.0-PRE-MORTEM : Améliorations score vente avant développement
+
+- **Contexte** : Pre-mortem stratégique du design Phase 12 livré le matin même. Constat : design conceptuellement correct mais commercialement incomplet (5/7 risques de churn agence non mitigés, renouvellement estimé < 30 % à M+6 sans corrections). Demande Philippe : "comment le rendre absolument parfait et rentable pour les utilisateurs (agences immo) avant tout développement".
+- **Fichiers modifiés** :
+  - `docs/wiki/score-vente-amelioration-pre-build.md` (NEW — pre-mortem + 10 améliorations + plan révisé + modélisation économique, ~470 lignes)
+  - `docs/wiki/index.md` (référencement Partie 2)
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations créées** : Aucune (pre-mortem documentaire)
+- **Pages wiki impactées** :
+  - `score-vente-amelioration-pre-build.md` (créée)
+  - `score-vente-agences.md` (référencée — design initial)
+  - `scoring-audit-vs-vente-immo.md` (référencée — audit initial)
+  - `index.md` (référencement)
+- **Risque** : None (analyse documentaire, aucun code touché)
+- **Tests** : N/A
+- **Status** : ✅ DONE (pre-mortem livré, plan Phase 12 révisé)
+- **Améliorations critiques identifiées** (10 axes) :
+  1. **Lead actionnable** : courrier "Au propriétaire" + tournée TSP optimisée + fiche mobile (8h)
+  2. **Précision démontrée** : garantie ROI + dashboard transparence + A/B test + score confiance par lead (12h)
+  3. **Timing temps réel** : push notif + décay automatique + replay quotidien (15h)
+  4. **Outillage agence** : PDF tournée + scripts IA + handle objections + email quotidien (25h) — réutilise Phase 13 générateur courrier !
+  5. **Effet réseau Bretagne** : anti-doublon 90j + crowdsourcing + map "déjà mandaté" (10h)
+  6. **Pricing révisé** : 0/390/990/2490 € (vs 0/290/890) + garantie ROI 3 mois (5h)
+  7. **Funnel acquisition** : démo gratuite + webinar mensuel + partenariats FNAIM/SNPI/UNIS + white-label réseaux (30h sur 3 mois)
+  8. **Compliance** : DPIA RGPD + avis avocat Hoguet (1500€) + page opt-out + charte éthique + info préalable SCI (40h + 1500€) — **BLOQUE-LAUNCH LÉGAL**
+  9. **Algo enrichi** : saisonnalité + pondération EPCI + Bayes feedback + score confiance par lead (12h)
+  10. **North Star + AARRR** : dashboard mandats/mois + funnel + cohortes (8h)
+- **Plan Phase 12 révisé** :
+  - 12.0 cadrage + DPIA + Hoguet (J+30, 50h + 1500€) — **prérequis légal**
+  - 12.1 scoring socle enrichi (J+50, 40h)
+  - 12.2 outillage agence CRITIQUE (J+75, 60h)
+  - 12.3 anti-doublon + effet réseau (J+85, 20h)
+  - 12.4 Stripe + dashboard transparence (J+95, 25h)
+  - 12.5 funnel acquisition parallèle (J+30→J+120, 30h)
+  - 12.6 North Star (J+100, 10h)
+  - 12.7 flywheel acquéreur (J+110, 15h)
+  - 12.8 bascule prédictive XGBoost (T+12 mois)
+- **Modélisation économique révisée** :
+  - MRR M+6 conservatif : 5 100 €/mois (8 Standard + 2 Premium)
+  - MRR M+12 agressif : 20 160 €/mois (25 Standard + 8 Premium + 1 Réseau)
+  - Marge brute M+12 estimée : ~95 %
+  - Break-even ~3 mois après Phase 12.4
+- **GO / NO-GO** : 8 conditions à valider avant Phase 12.1 (DPIA, avocat, paliers, 3 agences pilotes signées, page opt-out, templates SCI, audit ProHacker)
+
+---
+
 ## 2026-05-01 — Phase 13.5 : 🗺️ Carte chaleur Bretagne (Leaflet + heatmap)
 
 - **Contexte** : Visualisation impressionnante des 59 306 prospects scorés v2 sur carte Bretagne. Outil démo commerciale + qualification visuelle des zones les plus chaudes (heatmap rouge = ultra-chaud). Couplé au killer feature Phase 13 : popup carte → bouton "Courrier IA" en 1 clic.

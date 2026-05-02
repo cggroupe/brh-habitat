@@ -228,8 +228,9 @@ Deno.serve(async (req: Request) => {
   const cors = getCorsHeaders(req)
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
 
-  // Rate limit strict 5/min (coût IA)
-  const rl = checkRateLimit(req, 'generate-prospect-letter', { maxRequests: 5, windowSeconds: 60 })
+  // Rate limit 20/min (autorise génération bulk top 50 = ~2.5 min via UI front avec throttle).
+  // Auth user vérifiée plus bas — 1 IP = 1 pro authentifié, pas d'abus anonyme possible.
+  const rl = checkRateLimit(req, 'generate-prospect-letter', { maxRequests: 20, windowSeconds: 60 })
   if (!rl.allowed) {
     return new Response(JSON.stringify({ error: 'Trop de générations — patientez 1 min' }), {
       status: 429,
