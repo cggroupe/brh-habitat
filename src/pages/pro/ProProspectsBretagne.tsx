@@ -10,7 +10,7 @@
 
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Loader, ExternalLink, Filter, X, Sparkles, MapPin, Layers } from 'lucide-react'
+import { Loader, ExternalLink, Filter, X, Sparkles, MapPin, Layers, Activity } from 'lucide-react'
 import {
   useProspectsBretagne,
   useProspectsBretagneCounts,
@@ -103,6 +103,13 @@ export default function ProProspectsBretagne() {
               Bulk top {Math.min(50, data.rows.length)}
             </button>
           )}
+          <Link
+            to="/pro/analytics"
+            className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            title="Dashboard analytique"
+          >
+            <Activity className="h-4 w-4" /> Analytics
+          </Link>
           <Link
             to="/pro/prospects-carte"
             className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"

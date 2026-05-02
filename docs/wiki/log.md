@@ -5,6 +5,56 @@
 
 ---
 
+## 2026-05-01 — Phase 14 : 📊 Dashboard analytique pro (recharts + KPIs temps réel)
+
+- **Contexte stratégique** : Créer la **rétention quotidienne** des pros RGE — le SaaS doit donner envie de venir tous les matins voir ses chiffres. Démonstration immédiate du ROI : MPR potentiel total €, cost monitoring IA, funnel d'activation, top 10 ultra-chauds.
+- **Fichiers modifiés** :
+  - `package.json` — `recharts` (charts React déclaratifs)
+  - `src/api/pro-analytics.ts` (NEW ~210 LOC — overview + aides + letters + topProspects)
+  - `src/hooks/queries/pro-analytics.ts` (NEW — 4 hooks React Query)
+  - `src/pages/pro/ProAnalytics.tsx` (NEW ~330 LOC — page complète)
+  - `src/App.tsx` — route `/pro/analytics`
+  - `src/pages/pro/ProProspectsBretagne.tsx` — bouton "📊 Analytics" dans header
+- **Migrations créées** : Aucune.
+- **Edge Functions** : Aucune.
+- **API endpoints** :
+  - `overview()` : counts par segment + totaux scorés/enrichis/DVF
+  - `aides()` : somme MPR Bleu/Jaune/Violet + CEE sur ultra_chaud + bleu_prio + premium (paginated 1000)
+  - `letters()` : total + thisWeek + draft/edited/sent + costEstimateEur (Opus 4.7 pricing × 0.92 EUR) + cacheHitRate + trend7d
+  - `topProspects(10)` : top 10 par score DESC
+- **Charts recharts (déclaratifs, accessibles)** :
+  - **BarChart** distribution segments (couleurs cohérentes avec carte Phase 13.5)
+  - **LineChart** trend courriers 7j (purple, dot + line monotone)
+  - **Funnel d'activation horizontal** : DPE F/G BZH → Scorés → IRIS → DVF → Courriers → Envoyés (% chaque étape)
+- **Cost monitoring Opus 4.7** :
+  - Pricing exact intégré : input $5/M, output $25/M, cache_read $0.5/M, cache_write $6.25/M
+  - Conversion EUR : × 0.92
+  - Affichage : coût cumulé / coût moyen par courrier / cache hit rate / statut envoi
+- **KPI cards top 4** :
+  - Prospects scorés v2 (% sur 59 306 BZH)
+  - Ultra-chauds + Bleu prio (leads chauds prioritaires)
+  - **MPR potentiel total €** (somme aides identifiées) — l'argument vente principal
+  - Courriers IA générés (cumul + cette semaine + cost EUR)
+- **Top 10 prospects** : table avec lien direct vers `/pro/prospects/:id`
+- **Pages wiki impactées** : `architecture-snapshot.md` (à mettre à jour : 19 → 20 pages Pro)
+- **Conformité 14 règles BRH** :
+  - Règle 4 ✅ (typage strict, pas de `as unknown as` dans api/pro-analytics.ts)
+  - Règle 5 ✅ (`if (error) throw error` partout)
+  - Règle 6 ✅ (Route guardée par `ProGuard`)
+- **Risque** : Low. Recharts SSR-safe, ResponsiveContainer tolérant. API analytics paginated pour scaler 59k+. Cache React Query 60s/5min selon endpoint.
+- **Tests** : 228/228 globaux verts. Tsc clean. Lint clean.
+- **Status** : ✅ DONE V1.
+- **Décisions de cadrage** :
+  - **recharts** plutôt que chart.js : déclaratif React (pas de ref + lifecycle), responsive natif, bundle ~120 KB acceptable
+  - **Pricing Opus 4.7 hard-codé** : préférable à un fetch `models/{id}` à chaque vue analytics. À mettre à jour si ré-pricing Anthropic.
+  - **Cost EUR conversion 0.92** : approximatif fixe. Phase 14.1 : taux de change live ECB.
+  - **MPR potentiel limité aux segments chauds** (`ultra_chaud + bleu_prio + premium`) : chiffre commercial actionnable, pas de pollution avec les "cold" non actionnables
+  - **Funnel horizontal 6 étapes** : raconte une histoire (pipeline scoring → engagement IA → envoi)
+  - **Top 10 (pas 100)** : focus actionnable, le pro ne traite pas 100 prospects/jour
+- **Phase suivante** : 15 Stripe SaaS 3 tiers / 13.6 marketplace artisans RGE / 14.1 cost monitoring live ECB FX
+
+---
+
 ## 2026-05-01 — Phase 13.3 : ⚡ Génération bulk de courriers IA (top 50 en parallèle)
 
 - **Contexte** : Scaler le killer feature Phase 13 — un pro RGE veut traiter 50 prospects ultra-chauds par jour, pas 1 par 1. Bulk en 1 clic + ZIP de tous les PDF.
