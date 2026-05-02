@@ -5,6 +5,120 @@
 
 ---
 
+## 2026-05-02 — Phase 13.6 : 🔧 Marketplace artisans RGE bretons (network effect)
+
+- **Contexte stratégique** : Compléter la chaîne SaaS BRH du lead → la signature → **chantier**. Killer feature business : matching prospect ↔ artisan RGE local breton. Network effect : plus il y a d'artisans, mieux le matching ; plus il y a de leads, plus les artisans s'inscrivent. Pricing futur Phase 13.6.1 : artisan abonné premium 79 €/mois pour boost dans le tri + leads exclusifs.
+- **Fichiers modifiés** :
+  - `supabase/migrations/20260615100000_brh_artisans_rge.sql` (NEW — 2 tables + helper SQL `brh_update_artisan_score` + 5 RLS policies + triggers updated_at)
+  - `src/lib/dpe-engine/marketplace/match-artisans.ts` (NEW ~150 LOC — Haversine km + proximityFactor + matchArtisansForGeste + findProspectsForArtisan)
+  - `src/lib/dpe-engine/marketplace/index.ts` (NEW — public exports)
+  - `src/lib/dpe-engine/marketplace/tests/match-artisans.test.ts` (NEW — 18 tests)
+  - `src/api/artisans-rge.ts` (NEW — list/matchForProspect/get/createLead/myLeads)
+  - `src/hooks/queries/artisans-rge.ts` (NEW — 5 hooks React Query)
+  - `src/pages/pro/ProMarketplaceArtisans.tsx` (NEW ~225 LOC — page liste filtrable + cartes artisan + contact)
+  - `src/App.tsx` — route `/pro/marketplace-artisans`
+  - `src/pages/pro/ProAnalytics.tsx` — bouton "🔧 Artisans" dans header
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations créées** :
+  - `20260615100000_brh_artisans_rge.sql` ✅ APPLIQUÉE Supabase prod
+- **Tables créées** :
+  - **brh_artisans_rge** (annuaire enrichi : siret unique, géo lat/lng + INSEE + dépt, geste_specialites TEXT[], rge_certifications JSONB, score_qualite 0-100, taux_conversion_brh, marketplace_premium boost, source 'ademe_rge_v2'/'manual'/'partner_invite')
+  - **brh_artisan_leads** (matching prospect ↔ artisan : status pending/accepted/declined/quoted/signed/completed/canceled, expected_commission_eur 5-10 %, anti-doublon `UNIQUE(prospect_id, geste)`)
+- **Helper SQL** : `brh_update_artisan_score(artisan_id)` — recalcule score Bayesian-style après chaque update statut lead. `SECURITY DEFINER` avec `SET search_path = ''` (règle BRH 12).
+- **Edge Functions** : Aucune (matching côté front, calcul léger sur ~1k artisans BZH).
+- **Algorithme matching** :
+  - Filtre `geste_specialites @> [geste]` + `marketplace_active`
+  - Distance Haversine prospect ↔ artisan (km)
+  - Coefficient de proximité par paliers : ≤10km=1.0 / 10-25=0.85 / 25-50=0.7 / 50-100=0.5 / >100=0.3
+  - Score combiné = `score_qualite × proximity × premium_boost (1.15 si premium)`
+  - Tri DESC, top N (10 par défaut)
+- **Pages wiki impactées** :
+  - `architecture-snapshot.md` (à mettre à jour : 21 → 22 pages Pro)
+  - `data-model.md` (à mettre à jour : 83 → 85 tables avec 2 nouvelles `brh_artisans_*`)
+  - `partner-platform.md` (à mettre à jour : marketplace artisans rejoint le système d'affiliation existant)
+  - `external-data-sources.md` (référence : annuaire RGE ADEME = source officielle d'import Phase 13.6.1)
+- **API publique exposée** :
+  - **Modules** : `haversineKm`, `proximityFactor`, `matchArtisansForGeste`, `findProspectsForArtisan` + types `GesteId`, `ArtisanCandidate`, `ArtisanMatch`
+  - **Hooks** : `useArtisansList`, `useArtisanMatchForProspect`, `useArtisan`, `useCreateArtisanLead`, `useMyArtisanLeads`
+- **Page Pro `/pro/marketplace-artisans`** :
+  - Filtres : geste (18 options) + département (22/29/35/56) + bouton réinitialiser
+  - Liste cartes 2-col : nom entreprise + représentant + score étoile + taux conversion + adresse + spécialités (chips bleu) + stats chantiers + boutons contact (téléphone/email/site web)
+  - Tri : premium DESC > score_qualite DESC NULLS LAST
+  - État vide : message clair "Phase 13.6.1 — onboarding via cron import RGE ADEME en cours"
+  - Limit 50 cartes (paginated Phase 13.6.1+)
+- **Conformité 14 règles BRH** :
+  - Règle 4 ✅ — typage strict (`ArtisanCandidate`, `ArtisanRow extends`)
+  - Règle 5 ✅ — `if (error) throw error` partout dans `api/artisans-rge.ts`
+  - Règle 6 ✅ — Route guardée par `ProGuard`
+  - Règle 8 ✅ — RLS strict (artisans actifs publics readable, écriture admin only ; leads pro voit ses recommandations, admin tout)
+  - Règle 11 ✅ — TIMESTAMPTZ partout (`responded_at`, `signed_at`, `completed_at`, `commission_paid_at`)
+  - Règle 12 ✅ — `brh_update_artisan_score` + `brh_artisans_set_updated_at` avec `SET search_path = ''`
+- **Risque** : Low. Tables vides au déploiement (table d'attente prête). Phase 13.6.1+ : import nightly depuis annuaire RGE ADEME (data.ademe.fr/datasets/liste-des-entreprises-rge-2). Le matching côté front est performant pour <1k artisans.
+- **Tests** : ✅ **18 nouveaux tests** Vitest matching → **246/246 globaux verts** (était 228). Tsc clean. Lint clean.
+- **Status** : ✅ DONE V1 — code complet, schéma DB prêt. Phase 13.6.1 : import artisans RGE ADEME + cron nightly + Bayesian update score post-feedback.
+- **Décisions de cadrage** :
+  - **Matching côté front** plutôt que SQL `<->` (PostGIS) : Haversine TS suffisant pour <1k artisans BZH, évite extension PostGIS, calcul <50ms
+  - **Anti-doublon `UNIQUE(prospect_id, geste)`** : 1 prospect ne peut être recommandé qu'1 fois pour le même geste (évite spam artisan + double commission)
+  - **Status workflow 7 états** : couvre le cycle de vie complet du lead (pending → completed) sans surcomplexification
+  - **Score qualité Bayesian-style** : `50 + conversion_rate × 50` clamp [0,100]. Pondération avancée Phase 13.6.1+ (reviews texte, decay temporel)
+  - **Commission 5 % par défaut** : conservatrice, ajustable par contrat artisan. Phase 13.6.1 : pricing différencié par geste (PAC = 7 %, isolation = 5 %, fenêtres = 4 %)
+  - **Pas de `brh_artisan_subscriptions`** Phase 13.6 : on attend de valider le concept avec quelques artisans pilotes manuellement avant de monétiser
+  - **`marketplace_premium` boolean simple** plutôt que tier dédié : permet boost ranking sans compléxifier la logique. Tier dédié arrivera Phase 13.6.1
+- **Phase suivante** : 13.6.1 import nightly RGE ADEME / 13.6.2 modal "Recommander artisan" depuis ProAuditResults / 13.6.3 dashboard artisan (vue inverse) / 13.6.4 onboarding artisan via lien d'invitation
+
+---
+
+## 2026-05-02 — Audit retard wiki + résolution conflit numérotation Phase 12 → Phase 16
+
+- **Contexte** : Demande explicite de Philippe ("fais une analyse du wiki pour moi tu es en retard dans les phases de dev"). Audit du log.md (1480 lignes, 21 entrées) révèle que **8 phases de code ont été livrées en prod le 2026-05-01** (Phase 11.1 → 11.2.1, Phase 12 XML ADEME, Phase 13 → 13.5, Phase 14, Phase 15) pendant que je produisais en parallèle 4 entrées documentaires (Phase 11.0 plan, 11.0-AUDIT, 12.0-DESIGN, 12.0-PRE-MORTEM). **Conflit de numérotation détecté** : "Phase 12" = mon design Score Vente Agences ET Export XML ADEME livré.
+- **Fichiers modifiés** :
+  - `docs/wiki/audit-retard-phases-mai-2026.md` (NEW — état réel 8 phases livrées + recommandations re-priorisation, ~190 lignes)
+  - `docs/wiki/score-vente-agences.md` — renommée Phase 12 → Phase 16 (header + sections + statut)
+  - `docs/wiki/score-vente-amelioration-pre-build.md` — renommée Phase 12 → Phase 16 + bandeau réutilisation Phase 13/14/15
+  - `docs/wiki/index.md` — libellés corrigés Partie 2
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations créées** : Aucune (audit + renommage documentaire)
+- **Pages wiki impactées** :
+  - `audit-retard-phases-mai-2026.md` (créée)
+  - `score-vente-agences.md` (renommée Phase 12 → Phase 16)
+  - `score-vente-amelioration-pre-build.md` (renommée Phase 12 → Phase 16, bandeau ajouté)
+  - `index.md` (référencement + correction libellés)
+- **Risque** : None (renommage documentaire, aucun code touché, log.md antéchrono inchangé)
+- **Tests** : N/A
+- **Status** : ✅ DONE (audit livré, conflit résolu)
+- **Constat brutal** :
+  - Mes contributions documentaires Phase 11.0 plan ont guidé Phase 11.1 → 11.2.1 ✅ (utile)
+  - Mon Phase 12 design score vente est en CONFLIT avec Phase 12 XML ADEME livrée
+  - Mon pre-mortem Phase 12 contient 10 améliorations dont **6/10 sont déjà partiellement résolues** par briques Phase 13/14/15 livrées :
+    - Lead actionnable → Phase 13 générateur courrier IA
+    - Précision démontrée → Phase 14 dashboard analytique
+    - Timing temps réel → Phase 13.3 bulk top 50
+    - Outillage agence → Phase 13 (PDF + EF Claude existent)
+    - Pricing Stripe → Phase 15 (modèle dupliquable)
+    - North Star + AARRR → Phase 14 KPIs + funnel 6 étapes
+- **Effort Phase 16 RÉVISÉ** : ~110h dev + 1500€ avocat (vs ~205h initial) — gain ~50% grâce réutilisation
+- **Plan Phase 16 révisé (10 sous-phases)** :
+  - 16.0 Cadrage + DPIA + Hoguet (50h + 1500€) — **PRÉ-REQUIS LÉGAL**
+  - 16.1 Algo score-vente-v1 + table brh_agence_* (25h)
+  - 16.2 Adapter générateur courrier IA pour persona agence (4h vs 8h initial)
+  - 16.3 Bulk leads agence (1h vs 15h initial — réutilisation Phase 13.3)
+  - 16.4 Dashboard agence (4h vs 12h initial — clone Phase 14)
+  - 16.5 Stripe agences (3h vs 30h initial — clone Phase 15)
+  - 16.6 TSP solver tournée + scripts vente IA (8h)
+  - 16.7 Anti-doublon 90j + crowdsourcing (10h)
+  - 16.8 Funnel acquisition (30h sur 3 mois, business)
+  - 16.9 Algo enrichi saisonnalité+Bayes (12h)
+  - 16.10 Flywheel data acquéreur F/G (15h)
+- **Action immédiate user-side** (déjà mentionnée par Phase 11.2.1) :
+  ```bash
+  npx tsx scripts/external/enrich-dvf-bretagne.ts   # ~30 min, 1208 communes × 3 années
+  npx tsx scripts/external/batch-score-v2-all.ts    # 59k prospects rescoring complet
+  ```
+  → débloque les vrais scores ultra-chauds dans Phase 13.5 carte chaleur + Phase 14 dashboard
+- **Leçon retenue** : lecture systématique log.md AVANT chaque session pour éviter conflit de numérotation et désynchronisation. Privilégier réutilisation patterns existants vs design from scratch.
+
+---
+
 ## 2026-05-01 — Phase 15 : 💳 SaaS Stripe + Quota courriers IA (Free / Pro 49€ / Expert 149€)
 
 - **Contexte stratégique** : Monétisation directe des pros RGE. Tarification distincte du pricing agences immo (Phase 12 : 0/390/990/2490 €). Modèle freemium : Free 5 courriers/mois → conversion vers Pro 49€ ou Expert 149€. Quota gating atomique côté EF.

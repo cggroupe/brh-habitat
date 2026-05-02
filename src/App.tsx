@@ -84,6 +84,7 @@ const ProProspectsBretagne = lazy(() => import('@/pages/pro/ProProspectsBretagne
 const ProProspectsCarte = lazy(() => import('@/pages/pro/ProProspectsCarte'))
 const ProAnalytics = lazy(() => import('@/pages/pro/ProAnalytics'))
 const ProAbonnement = lazy(() => import('@/pages/pro/ProAbonnement'))
+const ProMarketplaceArtisans = lazy(() => import('@/pages/pro/ProMarketplaceArtisans'))
 const AuditView = lazy(() => import('@/pages/AuditView'))
 
 // Lazy loaded pages — Particulier
@@ -212,6 +213,7 @@ export default function App() {
                 <Route path="/pro/prospects-carte" element={<ProProspectsCarte />} />
                 <Route path="/pro/analytics" element={<ProAnalytics />} />
                 <Route path="/pro/abonnement" element={<ProAbonnement />} />
+                <Route path="/pro/marketplace-artisans" element={<ProMarketplaceArtisans />} />
               </Route>
             </Route>
 

@@ -1,12 +1,14 @@
-# Score Vente v1 — Améliorations Pre-Build (Pre-Mortem Phase 12)
+# Score Vente v1 — Améliorations Pre-Build (Pre-Mortem Phase 16)
 
-> Source : Pre-mortem 2026-05-01 du design [score-vente-agences.md](score-vente-agences.md), avant tout développement Phase 12.1.
+> ⚠️ **2026-05-02 — Renommée Phase 12 → Phase 16** : conflit numérotation avec Phase 12 "Export XML ADEME" déjà livrée. **Mise à jour effort révisé** : 6/10 améliorations sont DÉJÀ partiellement résolues par les briques Phase 13 (générateur courrier IA) + 14 (dashboard analytique) + 15 (Stripe SaaS) livrées le 2026-05-01. Détails dans [audit-retard-phases-mai-2026.md](audit-retard-phases-mai-2026.md). **Effort total révisé : ~110h dev + 1500€ avocat (vs ~205h initial)**.
+
+> Source : Pre-mortem 2026-05-01 du design [score-vente-agences.md](score-vente-agences.md), avant tout développement Phase 16.1.
 > Dernière mesure : 2026-05-01
 > Rôle : Identifier les angles morts du design initial et proposer 10 améliorations concrètes pour rendre le produit **véritablement rentable côté agence** (= taux renouvellement abonnement ≥ 80 % à 6 mois). L'objectif n'est pas le scoring — c'est le **cash flow de l'agence**.
 
 ## Vue d'ensemble
 
-Le design Phase 12 livré le 2026-05-01 répond à une question technique ("comment scorer une intention de vente") mais **pas à la question commerciale** : pourquoi un agent immobilier paierait 290 €/mois plutôt qu'un boîtage à 0,01 €/flyer ? Cette page corrige ce biais en partant de la question : "Si je suis Pierre, agent immo à Lannion, qu'est-ce qui me ferait renouveler à M+3 ?"
+Le design Phase 16 livré le 2026-05-01 répond à une question technique ("comment scorer une intention de vente") mais **pas à la question commerciale** : pourquoi un agent immobilier paierait 290 €/mois plutôt qu'un boîtage à 0,01 €/flyer ? Cette page corrige ce biais en partant de la question : "Si je suis Pierre, agent immo à Lannion, qu'est-ce qui me ferait renouveler à M+3 ?"
 
 **Constat** : le design initial est **conceptuellement correct mais commercialement incomplet**. Manquent l'outillage opérationnel (tournée optimisée, scripts), la transparence de précision (sans elle, churn à M+2), le timing temps réel (un lead "imminent" de 6 mois est mort), et l'effet réseau qui justifie le prix.
 
@@ -24,9 +26,9 @@ Avant tout build, lister honnêtement les 7 raisons probables d'abandon :
 | 6 | "Le propriétaire me dit 'comment vous avez eu mes coordonnées ?'" | **Haute** | ❌ Pas de page opt-out publique transparente |
 | 7 | "C'est trop cher pour le volume réel actionnable" | **Moyenne** | 🟡 3 paliers prévus mais ROI non démontré |
 
-**Verdict pré-mortem** : 5/7 risques de churn n'ont **aucune mitigation** dans le design Phase 12 initial. Sans corrections, **renouvellement estimé < 30 % à M+6** (vs cible 80 %).
+**Verdict pré-mortem** : 5/7 risques de churn n'ont **aucune mitigation** dans le design Phase 16 initial. Sans corrections, **renouvellement estimé < 30 % à M+6** (vs cible 80 %).
 
-## Les 10 améliorations à intégrer AVANT Phase 12.1
+## Les 10 améliorations à intégrer AVANT Phase 16.1
 
 ### Amélioration #1 — "Lead actionnable" (vs simple adresse)
 
@@ -129,7 +131,7 @@ Avant tout build, lister honnêtement les 7 raisons probables d'abandon :
 
 ### Amélioration #7 — Funnel acquisition agences (comment vendre le produit ?)
 
-**Problème** : design Phase 12 silencieux sur la stratégie d'acquisition agences. Sans agence, le produit n'existe pas.
+**Problème** : design Phase 16 silencieux sur la stratégie d'acquisition agences. Sans agence, le produit n'existe pas.
 
 **Solutions** :
 
@@ -148,12 +150,12 @@ Avant tout build, lister honnêtement les 7 raisons probables d'abandon :
 
 ### Amélioration #8 — Compliance & confiance (Hoguet + RGPD + éthique)
 
-**Problème** : 3 risques juridiques majeurs non traités dans Phase 12 initial.
+**Problème** : 3 risques juridiques majeurs non traités dans Phase 16 initial.
 
 **Solutions** :
 
 1. **Loi Hoguet 70-9** : vérifier avec avocat que la facturation **abonnement forfaitaire** (pas par lead facturé) reste hors champ "courtage en données" / "mise en relation rémunérée à la performance" qui demande carte T. **Action** : consultation cabinet immobilier-spécialisé (1 500 € one-shot).
-2. **DPIA RGPD** (déjà mentionné) : Analyse d'Impact obligatoire car scoring d'individus pour démarchage commercial tiers. Process formel article 35 RGPD. Templates CNIL gratuits, mais relecture DPO recommandée. **Action** : DPIA livré avant Phase 12.1, audit ProHacker complet.
+2. **DPIA RGPD** (déjà mentionné) : Analyse d'Impact obligatoire car scoring d'individus pour démarchage commercial tiers. Process formel article 35 RGPD. Templates CNIL gratuits, mais relecture DPO recommandée. **Action** : DPIA livré avant Phase 16.1, audit ProHacker complet.
 3. **Page opt-out publique** sur renovation-brh.fr/prospection-immobiliere :
    - Formulaire "Je ne souhaite plus apparaître dans la base" (vérification email + adresse)
    - Process automatisé : entrée → trigger → suppression `brh_dpe_prospects` + log RGPD 36 mois
@@ -185,7 +187,7 @@ Avant tout build, lister honnêtement les 7 raisons probables d'abandon :
 
 ### Amélioration #10 — North Star Metric & cohortes mesure
 
-**Problème** : design Phase 12 ne définit aucun KPI cible. Comment savoir si on réussit ?
+**Problème** : design Phase 16 ne définit aucun KPI cible. Comment savoir si on réussit ?
 
 **Solutions** :
 
@@ -225,9 +227,9 @@ Avant tout build, lister honnêtement les 7 raisons probables d'abandon :
 
 **Total bloque-launch** : ~120h dev + 1 500 € avocat. **Total post-launch** : ~70h.
 
-## Plan Phase 12 RÉVISÉ (intégrant les améliorations critiques)
+## Plan Phase 16 RÉVISÉ (intégrant les améliorations critiques)
 
-### Phase 12.0 — Cadrage business + DPIA RGPD + Hoguet (J+30, ~50h + 1500€)
+### Phase 16.0 — Cadrage business + DPIA RGPD + Hoguet (J+30, ~50h + 1500€)
 
 1. ✅ Validation business model révisé (3 paliers à 0/390/990 + Réseau 2490)
 2. ✅ Consultation avocat immo Hoguet (1 500 €)
@@ -236,7 +238,7 @@ Avant tout build, lister honnêtement les 7 raisons probables d'abandon :
 5. ✅ Page opt-out publique `/prospection-immobiliere`
 6. ✅ Templates courrier propriétaire SCI (info préalable 30j)
 
-### Phase 12.1 — Scoring socle ENRICHI (J+50, ~40h)
+### Phase 16.1 — Scoring socle ENRICHI (J+50, ~40h)
 
 1. Migration enrichie + ALTER `brh_dpe_prospects` (+5 cols base + `score_confiance` + `dernier_contact_at`)
 2. Modules TS : `score-vente-v1.ts` + `confiance-signaux.ts` + `saisonnalite.ts` + `epci-pondération.ts`
@@ -244,7 +246,7 @@ Avant tout build, lister honnêtement les 7 raisons probables d'abandon :
 4. Cron quotidien refresh DVF/INSEE décès/Sit@del2
 5. Tests Vitest (couverture ≥ 80 %)
 
-### Phase 12.2 — Outillage agence (CRITIQUE) (J+75, ~60h)
+### Phase 16.2 — Outillage agence (CRITIQUE) (J+75, ~60h)
 
 1. Générateur PDF tournée optimisée TSP (réutilisation jsPDF existant)
 2. Scripts prospection IA par segment (réutilisation `ai-proxy` existant)
@@ -254,7 +256,7 @@ Avant tout build, lister honnêtement les 7 raisons probables d'abandon :
 6. Push notifications + SMS (Twilio API ou similaire)
 7. Email quotidien "Votre tournée du jour" PDF + lien Google Maps
 
-### Phase 12.3 — Anti-doublon + effet réseau (J+85, ~20h)
+### Phase 16.3 — Anti-doublon + effet réseau (J+85, ~20h)
 
 1. Logique d'exclusion 90j dans `agence-leads-export`
 2. Crowdsourcing feedback (table `brh_agence_lead_feedback_communautaire`)
@@ -262,14 +264,14 @@ Avant tout build, lister honnêtement les 7 raisons probables d'abandon :
 4. Tags `mandate_concurrent_actif` + `dpe_renove_recent`
 5. Hot zones notification
 
-### Phase 12.4 — Stripe + dashboard transparence (J+95, ~25h)
+### Phase 16.4 — Stripe + dashboard transparence (J+95, ~25h)
 
 1. Stripe paliers révisés
 2. Dashboard agence avec funnel + comparaison plateforme
 3. Garantie ROI workflow (refund auto si 0 mandat M+3)
 4. A/B test mensuel (10 % leads contrôle aléatoires)
 
-### Phase 12.5 — Funnel acquisition (parallèle, J+30 → J+120, ~30h)
+### Phase 16.5 — Funnel acquisition (parallèle, J+30 → J+120, ~30h)
 
 1. Landing page SEO `/agences-bretagne`
 2. Webinar setup mensuel
@@ -277,21 +279,21 @@ Avant tout build, lister honnêtement les 7 raisons probables d'abandon :
 4. Partenariats syndicats (FNAIM/SNPI/UNIS Bretagne)
 5. White-label négociations réseaux franchisés
 
-### Phase 12.6 — North Star + AARRR (J+100, ~10h)
+### Phase 16.6 — North Star + AARRR (J+100, ~10h)
 
 1. Dashboard admin temps réel
 2. Tracking events PostHog ou similaire
 3. Revue mensuelle process
 
-### Phase 12.7 — Boucle data acquéreur (flywheel) (J+110, ~15h)
+### Phase 16.7 — Boucle data acquéreur (flywheel) (J+110, ~15h)
 
 (Inchangé vs design initial)
 
-### Phase 12.8 — Bascule prédictive XGBoost (T+12 mois)
+### Phase 16.8 — Bascule prédictive XGBoost (T+12 mois)
 
 (Inchangé vs design initial, conditionné ≥ 5 agences actives)
 
-## Check-list "GO / NO-GO" avant Phase 12.1
+## Check-list "GO / NO-GO" avant Phase 16.1
 
 Conditions à valider AVANT le moindre commit code :
 
@@ -330,7 +332,7 @@ Conditions à valider AVANT le moindre commit code :
 
 **Marge brute M+12 estimée** : ~95 % (produit SaaS pur, pas de coût marginal par lead)
 
-**Break-even Phase 12** : ~3 mois après Phase 12.4 (Stripe live), si funnel acquisition tient les hypothèses.
+**Break-even Phase 16** : ~3 mois après Phase 16.4 (Stripe live), si funnel acquisition tient les hypothèses.
 
 ## Risques résiduels post-amélioration
 
@@ -344,15 +346,15 @@ Conditions à valider AVANT le moindre commit code :
 
 ## Conformité aux 14 règles BRH (CLAUDE.md)
 
-(Identique au design Phase 12 initial, toutes règles applicables respectées dans les améliorations)
+(Identique au design Phase 16 initial, toutes règles applicables respectées dans les améliorations)
 
 ## Statut d'implémentation
 
-- ✅ Phase 12.0-PRE-MORTEM : Cette page (10 améliorations identifiées)
-- ❌ Phase 12.0 : Cadrage business + DPIA + Hoguet (à démarrer)
-- ❌ Phase 12.1 → 12.7 : selon plan révisé ci-dessus
-- ❌ Phase 12.8 : Bascule prédictive (T+12 mois)
+- ✅ Phase 16.0-PRE-MORTEM : Cette page (10 améliorations identifiées)
+- ❌ Phase 16.0 : Cadrage business + DPIA + Hoguet (à démarrer)
+- ❌ Phase 16.1 → 12.7 : selon plan révisé ci-dessus
+- ❌ Phase 16.8 : Bascule prédictive (T+12 mois)
 
 ## Mises à jour de cette page
 
-- **2026-05-01** : Création — pre-mortem + 10 améliorations critiques + plan révisé Phase 12 + modélisation économique
+- **2026-05-01** : Création — pre-mortem + 10 améliorations critiques + plan révisé Phase 16 + modélisation économique

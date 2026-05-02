@@ -20,6 +20,7 @@ import {
   Activity,
   Loader,
   CreditCard,
+  Wrench,
 } from 'lucide-react'
 import {
   ResponsiveContainer,
@@ -112,6 +113,12 @@ export default function ProAnalytics() {
             className="inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
           >
             <MapPin className="h-3 w-3" /> Carte
+          </Link>
+          <Link
+            to="/pro/marketplace-artisans"
+            className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-100"
+          >
+            <Wrench className="h-3 w-3" /> Artisans
           </Link>
           <Link
             to="/pro/abonnement"

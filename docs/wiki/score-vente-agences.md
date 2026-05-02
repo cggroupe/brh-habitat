@@ -1,4 +1,6 @@
-# Score Vente v1 — Module Partenaires Agences Immobilières (Phase 12)
+# Score Vente v1 — Module Partenaires Agences Immobilières (Phase 16)
+
+> ⚠️ **2026-05-02 — Renommée Phase 12 → Phase 16** : conflit numérotation avec Phase 12 "Export XML ADEME" déjà livrée (cf. [audit-retard-phases-mai-2026.md](audit-retard-phases-mai-2026.md)). Plan d'effort révisé à ~110h (vs ~205h initial) grâce aux briques Phase 13 (générateur courrier IA) + 14 (dashboard analytique) + 15 (Stripe SaaS) déjà livrées et réutilisables.
 
 > Source : Conception 2026-05-01, basée sur audit [scoring-audit-vs-vente-immo.md](scoring-audit-vs-vente-immo.md) + KG existant [data-model.md](data-model.md) + référentiel partenaires [partner-platform.md](partner-platform.md)
 > Dernière mesure : 2026-05-01
@@ -8,7 +10,7 @@
 
 Le score vente v1 est un **produit B2B distinct** du score rénovation v2 :
 - **Score rénovation v2** (Phase 11) : à usage interne BRH commerciaux pour cibler leurs propres prospects rénovation
-- **Score vente v1** (Phase 12) : à destination des **agences immobilières partenaires** (type `brh_companies.partner_type = 'agence_immo'`), livré comme flux de leads qualifiés "intention de vente"
+- **Score vente v1** (Phase 16) : à destination des **agences immobilières partenaires** (type `brh_companies.partner_type = 'agence_immo'`), livré comme flux de leads qualifiés "intention de vente"
 
 **Win-win partenariat** : l'agence reçoit des leads vente géolocalisés (chiffre d'affaires direct), BRH récupère **en contrepartie** les coordonnées des nouveaux acquéreurs F/G (via mandat de vente signé) qui rentrent automatiquement dans son funnel rénovation post-mutation. C'est **le même flux que Kelvin° vend à Effy** mais en circuit fermé Bretagne.
 
@@ -27,10 +29,10 @@ Constat acté en audit : aucune source publique gratuite ne capte parfaitement l
 
 Comme le score rénovation v2, le score vente v1 sera **100 % heuristique** au démarrage (règles métier pondérées). La transition vers un modèle prédictif (XGBoost / LightGBM) demande :
 - ≥ 500 prospects scorés × statut final (mandat signé / refusé / non contacté) sur ≥ 6 mois
-- Une table `brh_agence_lead_outcomes` (à créer Phase 12.1, cf. § Modèle de données)
+- Une table `brh_agence_lead_outcomes` (à créer Phase 16.1, cf. § Modèle de données)
 - Un modèle entraîné en Python côté script (scripts/external/train-vente-model.py), exporté en ONNX et inféré dans une EF Deno
 
-Bascule prédictive estimée Phase 12.5 (T+12 mois minimum, conditionnée à ≥ 5 agences partenaires actives produisant du feedback).
+Bascule prédictive estimée Phase 16.5 (T+12 mois minimum, conditionnée à ≥ 5 agences partenaires actives produisant du feedback).
 
 ## Algorithme `score_vente_v1` (règles + pondérations)
 
@@ -229,7 +231,7 @@ Deno.serve(async (req) => {
 ```
 src/lib/dpe-engine/external/
 ├── score-v2.ts              # Score rénovation (Phase 11)
-├── score-vente-v1.ts        # ★ NEW : score vente (Phase 12)
+├── score-vente-v1.ts        # ★ NEW : score vente (Phase 16)
 ├── dvf-chainage.ts          # ★ NEW : chaînage parcellaire DVF 5 ans
 ├── sci-succession.ts        # ★ NEW : DGFIP × INPI × INSEE décès
 ├── sitadel-valorisation.ts  # ★ NEW : détection travaux pré-vente
@@ -272,7 +274,7 @@ src/pages/pro/agence/
 
 ## Business model partenaire (intégration `brh_companies`)
 
-3 paliers d'abonnement à acter avec Philippe (à valider en Phase 12.0) :
+3 paliers d'abonnement à acter avec Philippe (à valider en Phase 16.0) :
 
 | Palier | Quota leads/mois | Segments inclus | Prix HT/mois | Cible |
 |--------|-----------------|-----------------|--------------|-------|
@@ -286,13 +288,13 @@ src/pages/pro/agence/
 
 ## Phase d'implémentation
 
-### Phase 12.0 — Cadrage business + RGPD (J+30, ~10h)
+### Phase 16.0 — Cadrage business + RGPD (J+30, ~10h)
 
 1. Validation des 3 paliers tarifaires + clause contrat partenariat avec Philippe
 2. Déclaration CNIL / DPIA pour le scoring vente (impact = scoring d'individus / personnes morales pour démarchage commercial tiers)
 3. Mention légale "Données issues de sources publiques (DVF, DGFIP, INSEE, INPI) — droit d'opposition" sur chaque lead exporté
 
-### Phase 12.1 — Scoring socle (J+45, ~25h)
+### Phase 16.1 — Scoring socle (J+45, ~25h)
 
 1. Migration `20260612100000_brh_score_vente_v1.sql` — ALTER + 2 nouvelles tables + RLS
 2. Modules TS : `score-vente-v1.ts`, `dvf-chainage.ts`, `sci-succession.ts`, `sitadel-valorisation.ts` + tests Vitest
@@ -302,27 +304,27 @@ src/pages/pro/agence/
 
 **Livrable mesurable** : 59 306 prospects scorés, ~3 000 estimés dans segment `vente_probable_18m`, ~500 en `vente_imminente`.
 
-### Phase 12.2 — Portail Agence (J+60, ~30h)
+### Phase 16.2 — Portail Agence (J+60, ~30h)
 
 1. EF `agence-leads-export` + `agence-lead-feedback`
 2. UI 4 pages `/pro/agence/*` + composants
 3. Onboarding agence : formulaire SIRET + zones EPCI + paliers Stripe
 4. Email de bienvenue Resend (EF `send-notification-email` existante)
 
-### Phase 12.3 — Intégration Stripe paliers (J+75, ~15h)
+### Phase 16.3 — Intégration Stripe paliers (J+75, ~15h)
 
 1. Stripe Subscription paliers Standard/Premium
 2. Webhook Stripe → mise à jour `brh_companies.agence_leads_quota_mois`
 3. Compteur leads consommés vs quota (dashboard agence)
 
-### Phase 12.4 — Boucle data acquéreur (J+90, ~10h)
+### Phase 16.4 — Boucle data acquéreur (J+90, ~10h)
 
 1. Formulaire agence "déclarer mandat signé + acquéreur" (`agence-lead-feedback` enrichi)
 2. Création automatique `brh_prospects` segment `acquereur_F_G_post_mutation`
 3. Score rénovation v2 démarrant à 80 (règle #1 mutation_24m + autres bonus contextuels)
 4. Trigger email Resend "Bienvenue dans BRH Habitat" à l'acquéreur (consentement explicite obligatoire)
 
-### Phase 12.5 — Bascule prédictive (T+12 mois, conditionnée à ≥ 5 agences actives)
+### Phase 16.5 — Bascule prédictive (T+12 mois, conditionnée à ≥ 5 agences actives)
 
 1. Script `scripts/external/train-vente-model.py` — XGBoost / LightGBM sur `brh_agence_lead_outcomes`
 2. Export ONNX → inférence dans EF `score-vente-prospect-v2`
@@ -340,7 +342,7 @@ Ce module **scorera des personnes morales (SCI/SARL via DGFIP) et indirectement 
 - ⚠️ **Information du dirigeant SCI** : envoi d'un courrier "votre SCI a été identifiée dans notre base prospection" 30 jours avant transmission à un tiers (best practice CNIL)
 - ⚠️ **PAS de scoring d'individu personne physique sans interaction préalable** (le matching INSEE décès n'est appliqué qu'aux SCI, pas aux propriétaires personnes physiques connus)
 
-**Action préalable obligatoire** : audit ProHacker dédié RGPD (cf. skill `prohacker`) + consultation DPO BRH avant Phase 12.1.
+**Action préalable obligatoire** : audit ProHacker dédié RGPD (cf. skill `prohacker`) + consultation DPO BRH avant Phase 16.1.
 
 ## Comparaison avec concurrents
 
@@ -375,13 +377,13 @@ Ce module **scorera des personnes morales (SCI/SARL via DGFIP) et indirectement 
 
 ## Statut d'implémentation
 
-- ✅ Phase 12.0-DESIGN : Cette page (conception complète)
-- ❌ Phase 12.0 : Cadrage business + DPIA RGPD
-- ❌ Phase 12.1 : Scoring socle (dépend de Phase 11.1 + 11.2)
-- ❌ Phase 12.2 : Portail Agence
-- ❌ Phase 12.3 : Stripe paliers
-- ❌ Phase 12.4 : Boucle data acquéreur (flywheel)
-- ❌ Phase 12.5 : Bascule prédictive (T+12 mois)
+- ✅ Phase 16.0-DESIGN : Cette page (conception complète)
+- ❌ Phase 16.0 : Cadrage business + DPIA RGPD
+- ❌ Phase 16.1 : Scoring socle (dépend de Phase 11.1 + 11.2)
+- ❌ Phase 16.2 : Portail Agence
+- ❌ Phase 16.3 : Stripe paliers
+- ❌ Phase 16.4 : Boucle data acquéreur (flywheel)
+- ❌ Phase 16.5 : Bascule prédictive (T+12 mois)
 
 ## Mises à jour de cette page
 

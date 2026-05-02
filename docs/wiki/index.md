@@ -50,9 +50,11 @@
 | [diagnostic-engine.md](diagnostic-engine.md) | Moteur de diagnostic multi-étapes + renovation-plan-engine + aides-engine |
 | [external-data-sources.md](external-data-sources.md) | ⭐ **Phase 11** — 27 sources publiques gratuites (Enedis, GRDF, Géorisques, Filosofi, DVF, RGE, ANIL...) pour scoring composite v2 sur 59 306 prospects DPE F/G Bretagne |
 | [scoring-audit-vs-vente-immo.md](scoring-audit-vs-vente-immo.md) | ⭐ **Audit Phase 11.0** — Comparaison score v2 vs référentiel "scoring prédictif de vente immo" (4 familles + 6 sources). Verdict + 3 ajouts validés + 4 rejets motivés |
-| [score-vente-agences.md](score-vente-agences.md) | ⭐ **Phase 12** — Score Vente v1 (heuristique 13 règles) pour agences immo partenaires + portail dédié + flywheel data acquéreur F/G + 3 paliers SaaS (0/290/890€) |
-| [score-vente-amelioration-pre-build.md](score-vente-amelioration-pre-build.md) | ⭐ **Pre-Mortem Phase 12** — 10 améliorations critiques (lead actionnable + outillage agence + garantie ROI + anti-doublon + compliance Hoguet) + plan révisé + MRR cible M+12 = 20k€/mois |
+| [score-vente-agences.md](score-vente-agences.md) | ⭐ **Phase 16** (renommée 02/05) — Score Vente v1 (heuristique 13 règles) pour agences immo partenaires + portail dédié + flywheel data acquéreur F/G + 3 paliers SaaS (0/390/990/2490€) |
+| [score-vente-amelioration-pre-build.md](score-vente-amelioration-pre-build.md) | ⭐ **Pre-Mortem Phase 16** (renommée 02/05) — 10 améliorations critiques + plan révisé ~110h (vs 205h grâce réutilisation Phase 13/14/15) + MRR cible M+12 = 20k€/mois |
+| [audit-retard-phases-mai-2026.md](audit-retard-phases-mai-2026.md) | 🚨 **Audit 02/05** — État réel des phases : 8 phases code livrées le 01/05 (11.1→11.2.1, 12 XML ADEME, 13/13.3/13.5, 14, 15) pendant production docs Phase 11.0/12.0. Conflit numérotation résolu, plan Phase 16 révisé |
 | [tenant-multitenancy.md](tenant-multitenancy.md#phase-15-tier-dynamique-par-utilisateur-stripe-saas) | ⭐ **Phase 15** — Tier dynamique pro RGE (Free/Pro 49€/Expert 149€) avec quota courriers IA mensuel + Stripe Checkout + webhook auto-sync. Distinct du pricing agences immo Phase 12. |
+| [log.md#2026-05-02-phase-13-6-marketplace-artisans-rge-bretons-network-effect](log.md#2026-05-02--phase-136--marketplace-artisans-rge-bretons-network-effect) | ⭐ **Phase 13.6** — Marketplace artisans RGE bretons : matching prospect ↔ artisan local (Haversine + score qualité), 2 tables `brh_artisans_*`, page `/pro/marketplace-artisans`, commission 5-10 % chantier signé, network effect SaaS |
 
 ### Partie 3 — Qualité & opérations
 
