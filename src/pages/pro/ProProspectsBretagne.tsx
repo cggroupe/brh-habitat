@@ -10,12 +10,14 @@
 
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Loader, ExternalLink, Filter, X } from 'lucide-react'
+import { Loader, ExternalLink, Filter, X, Sparkles } from 'lucide-react'
 import {
   useProspectsBretagne,
   useProspectsBretagneCounts,
 } from '@/hooks/queries/prospects-bretagne'
 import type { ScoreV2Segment } from '@/lib/dpe-engine/external/types'
+import { GenerateLetterModal } from '@/components/letters/GenerateLetterModal'
+import type { ProspectBretagneRow } from '@/api/prospects-bretagne'
 
 const SEGMENT_LABELS: Record<ScoreV2Segment, string> = {
   ultra_chaud: 'Ultra-chaud (>=80)',
@@ -50,6 +52,7 @@ export default function ProProspectsBretagne() {
   const [hasMprBleu, setHasMprBleu] = useState(false)
   const [page, setPage] = useState(0)
   const [showFilters, setShowFilters] = useState(false)
+  const [letterProspect, setLetterProspect] = useState<ProspectBretagneRow | null>(null)
   const PAGE_SIZE = 50
 
   const filters = {
@@ -259,12 +262,22 @@ export default function ProProspectsBretagne() {
                     </div>
                   </td>
                   <td className="px-3 py-2">
-                    <Link
-                      to={`/pro/prospects/${p.id}`}
-                      className="inline-flex items-center gap-1 text-blue-700 hover:text-blue-900"
-                    >
-                      Détail <ExternalLink className="h-3 w-3" />
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setLetterProspect(p)}
+                        className="inline-flex items-center gap-1 rounded bg-purple-100 px-2 py-1 text-xs font-medium text-purple-900 hover:bg-purple-200"
+                        title="Générer un courrier IA personnalisé (Claude Opus 4.7)"
+                      >
+                        <Sparkles className="h-3 w-3" /> Courrier IA
+                      </button>
+                      <Link
+                        to={`/pro/prospects/${p.id}`}
+                        className="inline-flex items-center gap-1 text-blue-700 hover:text-blue-900"
+                      >
+                        Détail <ExternalLink className="h-3 w-3" />
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -272,6 +285,14 @@ export default function ProProspectsBretagne() {
           </table>
         )}
       </div>
+
+      {/* Modal courrier IA */}
+      {letterProspect && (
+        <GenerateLetterModal
+          prospect={letterProspect}
+          onClose={() => setLetterProspect(null)}
+        />
+      )}
 
       {/* Pagination */}
       {data && data.total > PAGE_SIZE && (

@@ -5,6 +5,45 @@
 
 ---
 
+## 2026-05-01 — Phase 13 : 🚀 KILLER FEATURE — Générateur IA de courrier de prospection
+
+- **Contexte stratégique** : Différenciation absolue vs Kelvin° (s'arrête au lead) et CapRénov+ (s'arrête à l'audit). **BRH va du lead à la signature en 1 clic.** Sur les 59 306 prospects scorés v2, le pro RGE clique "Courrier IA" → Claude Opus 4.7 analyse les signaux DVF/MPR/Géorisques → courrier A4 personnalisé prêt à imprimer en ~10s.
+- **Fichiers modifiés** :
+  - `supabase/migrations/20260520100000_brh_prospect_letters.sql` (NEW — table audit + 5 RLS policies + trigger)
+  - `supabase/functions/generate-prospect-letter/index.ts` (NEW ~340 LOC — EF Deno + Claude API direct)
+  - `src/api/prospect-letters.ts` + `src/hooks/queries/prospect-letters.ts` (NEW — pattern API ↔ Hooks)
+  - `src/components/letters/GenerateLetterModal.tsx` (NEW ~280 LOC — modal génération + édition)
+  - `src/components/letters/ProspectLetterPdf.tsx` (NEW ~190 LOC — PDF A4 français standard)
+  - `src/pages/pro/ProProspectsBretagne.tsx` (bouton "✨ Courrier IA" sur chaque ligne)
+- **Migrations créées** : `20260520100000_brh_prospect_letters.sql` ✅ APPLIQUÉE Supabase prod
+- **Edge Functions** : `generate-prospect-letter` ✅ déployée + secret `ANTHROPIC_API_KEY` configuré
+- **Architecture IA — Claude Opus 4.7** :
+  - Modèle : `claude-opus-4-7` (intelligence maximale)
+  - Adaptive thinking ON (`thinking: {type: 'adaptive'}`) + effort `high`
+  - Prompt caching `cache_control: {type: 'ephemeral'}` sur le system prompt frozen → ~80% économie dès le 2ᵉ courrier
+  - Format JSON strict : subject + greeting + body_md + signature + signaux_used
+- **Audit trail (`brh_prospect_letters`)** :
+  - Snapshot scoring v2 + signaux utilisés (JSONB) → traçabilité commerciale
+  - Tracking IA : tokens (input/output/cache_read/cache_creation) + duration_ms → cost monitoring
+  - Workflow : `draft` → `edited` → `sent` (email/pdf_print/postal)
+- **PDF A4 français standard** : fenêtre adresse droite (La Poste), expéditeur en-tête, lieu+date, objet, Markdown rendu (gras/italique), signature, footer mentions RGE/SIRET
+- **UX** : Bouton "✨ Courrier IA" sur chaque ligne → modal 3 phases (briefing → loader 5-10s → preview éditable) → Télécharger PDF / Marquer envoyé
+- **Pages wiki impactées** : `architecture-snapshot.md` (à mettre à jour : nouvelle EF + table + composants letters/), `data-model.md` (à mettre à jour : 81 → 82 tables), `feature-prospects.md` (à créer Phase 13.1)
+- **Conformité 14 règles BRH** : 4 (no-cast), 5 (throw error), 6 (ProGuard), 8 (RLS strict pro/admin), 9 (rate-limit 5/min EF), 11 (TIMESTAMPTZ), 12 (search_path SECURITY DEFINER), 13 (formatDateOnly helper PDF)
+- **Économie modèle** : ~0.05 €/courrier first → ~0.015 € avec cache → 45 €/mois pour 100 courriers/jour. ROI immédiat (1 chantier > 100k €).
+- **Risque** : Low. EF rate-limitée, audit trail complet, édition humaine avant envoi.
+- **Tests** : 228/228 globaux verts. Tsc clean. Lint clean.
+- **Status** : ✅ DONE V1 — bouton fonctionnel, EF déployée, secret configuré.
+- **Décisions de cadrage** :
+  - **Opus 4.7 (pas Sonnet)** : qualité courrier = asset principal, économies Sonnet ne valent pas un courrier moyen
+  - **Adaptive thinking ON** : permet réflexion sur signaux avant rédaction (PV existant, ABF, OPAH)
+  - **fetch direct Anthropic API** (pas de SDK Deno) : garde bundle EF léger ~65 KB
+  - **System prompt cacheable, user message volatile** : architecture optimale prompt caching
+  - **Format A4 fenêtre droite** : standard La Poste (envoi postal valide)
+- **Phase suivante** : 13.1 envoi email Resend / 13.2 La Poste API / 13.3 génération bulk top 50 / 13.4 A/B testing accroches / 13.5 carte chaleur Bretagne
+
+---
+
 ## 2026-05-01 — Phase 11.2.1 : Script enrich-dvf-bretagne.ts + fix batch-score-v2
 
 - **Contexte** : Activer la règle #1 du score-v2 (mutation 24m + F/G = +35 pts) en enrichissant les prospects avec les données DVF data.gouv.fr.
@@ -315,6 +354,34 @@
   - Renommage Phase 11 → **Phase 12** pour éviter collision avec Phase 11 (sources externes prospection) cadrée 2026-05-01.
   - Pas de XSD-validation à la volée côté front (lourde, non bloquant V1) — déléguée à xmllint hors-ligne.
   - Pas d'envoi automatique vers Observatoire DPE-Audit V1 — bouton manuel téléchargement uniquement.
+
+---
+
+## 2026-05-01 — Phase 11.0-AUDIT : Audit scoring v2 vs référentiel vente immo
+
+- **Contexte** : Vérification de la complétude du score composite v2 (planifié Phase 11.0) face au référentiel "scoring prédictif de vente immobilière" utilisé par les agences (4 familles : détention/historique, sociodémo, triggers vie, comportemental + 6 sources open data DVF/Cadastre/IRIS/BAN/Sit@del2/Géorisques/GPU). Demandé par Philippe pour arbitrer si on doit ajouter, ignorer ou pivoter.
+- **Fichiers modifiés** :
+  - `docs/wiki/scoring-audit-vs-vente-immo.md` (NEW — audit complet 4 familles, ~280 lignes)
+  - `docs/wiki/index.md` (référencement Partie 2)
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations créées** : Aucune (audit uniquement)
+- **Pages wiki impactées** :
+  - `scoring-audit-vs-vente-immo.md` (créée)
+  - `external-data-sources.md` (référencée — pas modifiée)
+  - `index.md` (référencement Partie 2)
+- **Risque** : None (audit documentaire, aucun code touché)
+- **Tests** : N/A
+- **Status** : ✅ DONE (audit livré)
+- **Verdict** :
+  - Couverture score v2 vs référentiel vente : ~35-40 % (Famille 1 50%, Famille 2 70%, Famille 3 5%, Famille 4 0%)
+  - Couverture jugée suffisante car cas d'usage = rénovation (pas vente) — les signaux manquants (succession, comportemental) sont moins prédictifs pour rénovation
+  - Constat clé : score v2 = 100% heuristique (pas prédictif). Bascule XGBoost reportée Phase 11.6 (post 6-12 mois exploitation)
+  - 3 ajouts validés (gratuits, RGPD-clean) :
+    1. Indicateur sur-dimensionnement logement (ratio surface_dpe/taille_menage_iris) — Phase 11.2, 2h
+    2. SCI familiale vieillissante (DGFIP × INPI × INSEE décès) — Phase 11.2, 6h
+    3. Table `brh_prospect_outcomes` (vérité terrain) — Phase 11.1, 2h, INDISPENSABLE long terme
+  - 4 propositions rejetées (RGPD, payant ou hors scope) : DV3F privé (impasse), Perval (50-200€/mois), leads MeilleursAgents (15-80€/lead), triggers mariage/divorce/mutation pro
+  - 3 pivots documentaires : renommer `score_v2` → `score_renovation_v2`, ajouter `model_type` dans output EF, corriger médiane détention 8→10 ans
 
 ---
 
