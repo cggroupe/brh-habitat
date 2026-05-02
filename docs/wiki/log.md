@@ -5,6 +5,69 @@
 
 ---
 
+## 2026-05-02 — Phase 13.6.4 : 🛠️ Dashboard artisan (vue inverse + accept/decline/sign workflow)
+
+- **Contexte** : Compléter la boucle marketplace en livrant l'espace artisan. L'artisan se connecte à son compte BRH (lié à `brh_artisans_rge.profile_id`), voit les leads qu'il a reçus, accepte/refuse en 1 clic, marque devis envoyé, signe, complète. Score qualité auto-recalculé en cascade.
+- **Fichiers modifiés** :
+  - `supabase/migrations/20260620100000_brh_artisans_link_profile.sql` (NEW — ALTER artisan + profile_id UNIQUE + 4 RLS policies + helper SQL `brh_artisan_respond_lead`)
+  - `src/api/artisan-portal.ts` (NEW — getMyArtisan + myLeadsReceived + respondToLead)
+  - `src/hooks/queries/artisan-portal.ts` (NEW — 3 hooks React Query)
+  - `src/pages/artisan/ArtisanDashboard.tsx` (NEW ~330 LOC — dashboard complet)
+  - `src/App.tsx` — route `/artisan/dashboard` (sous AuthGuard générique)
+- **Migrations créées** :
+  - `20260620100000_brh_artisans_link_profile.sql` ✅ APPLIQUÉE Supabase prod
+- **Schema additions** :
+  - ALTER `brh_artisans_rge` : `profile_id UUID UNIQUE REFERENCES profiles(id)` (FK lien compte BRH)
+  - 4 RLS policies : `artisan_select_own_profile`, `artisan_update_own_profile`, `artisan_select_own_leads`, `artisan_update_own_leads`
+  - Index `brh_artisans_profile` partial (WHERE profile_id IS NOT NULL)
+- **Helper SQL** : `brh_artisan_respond_lead(lead_id, action, reason, actual_chantier_eur)`
+  - `SECURITY DEFINER` avec `SET search_path = ''` (règle BRH 12)
+  - Vérifie auth + ownership artisan
+  - Mappe action (accept/decline/quote/sign/complete/cancel) → status DB
+  - Met à jour timestamps : `responded_at`, `signed_at`, `completed_at`
+  - Recalcule automatiquement le score artisan via `brh_update_artisan_score`
+  - Retourne `{ success, new_status, message }` typé
+- **Edge Functions** : Aucune (RPC SQL suffit, pas de logique métier complexe).
+- **Workflow artisan complet (5 étapes)** :
+  1. Pro RGE recommande (Phase 13.6.2) → email auto (Phase 13.6.3) reçu
+  2. Artisan se connecte sur `/artisan/dashboard`
+  3. Voit le lead `pending` → clique **Accepter** ou **Refuser**
+  4. Si accepté → contacte le prospect → revient marquer **Devis envoyé** (status `quoted`)
+  5. Si signature → marque **Signé** avec montant TTC réel → status `signed` + score recalc
+  6. Quand chantier fini → marque **Terminé** (`completed`) + commission BRH due
+- **`ArtisanDashboard` (~330 LOC)** :
+  - Header artisan : nom + premium badge + spécialités chips + score étoile + taux conversion
+  - 5 KPI cards : Total / À traiter / Actifs / Signés / Terminés
+  - Liste leads chronologique avec :
+    - Status badge color-coded (7 états)
+    - Geste prioritaire en gras + adresse + DPE + surface
+    - Chantier estimé + nom du pro recommandeur
+    - Boutons d'action contextuels selon status (pending → accept/decline ; accepted → quote/cancel ; quoted → sign avec input montant ; signed → complete)
+    - Lien "Détail prospect" visible uniquement après acceptation (anti-leak)
+  - État sans artisan lié : message clair + email contact pour onboarding manuel (V1)
+  - Mention commission BRH 5-10 % en footer informatif
+- **Pages wiki impactées** : `architecture-snapshot.md` (à mettre à jour : 23 → 24 pages, nouveau portail artisan), `data-model.md` (`brh_artisans_rge.profile_id` + 4 RLS policies + 1 helper), `log.md` ✅
+- **Conformité 14 règles BRH** :
+  - Règle 4 ✅ — typage strict (`ArtisanLeadEnriched`, types LeadAction)
+  - Règle 5 ✅ — `if (error) throw error` partout
+  - Règle 6 ✅ — Route sous `AuthGuard` (l'auth check fin se fait sur `profile_id` de l'artisan)
+  - Règle 8 ✅ — RLS strict : artisan voit/edit UNIQUEMENT ses propres leads + sa fiche
+  - Règle 11 ✅ — TIMESTAMPTZ partout (`responded_at`, `signed_at`, `completed_at`)
+  - Règle 12 ✅ — Helper `brh_artisan_respond_lead` + `brh_artisans_set_updated_at` avec `SET search_path = ''`
+- **Risque** : Low. Tables RLS testées via flow standard. Pour V1 : pas d'ArtisanGuard dédié — l'AuthGuard générique suffit, et le composant affiche un message clair si l'user n'est pas lié à un artisan. Phase 13.6.5 livrera le magic link pour onboarding sans password (le user pro saisit son email artisan, reçoit un lien, link vers son `profile_id`).
+- **Tests** : 246/246 globaux verts. Tsc clean. Lint clean.
+- **Status** : ✅ DONE V1.
+- **Décisions de cadrage** :
+  - **Pas d'ArtisanGuard dédié** : AuthGuard générique suffit ; la page gère elle-même le cas "pas d'artisan lié". Évite de créer un 5ème guard pour 1 seule route initialement.
+  - **Helper SQL pour `respondToLead`** plutôt que côté client : atomicité (status + timestamp + score recalc en 1 transaction), pas de race condition, sécurité auth check côté DB
+  - **Détail prospect masqué jusqu'à acceptation** : anti-leak adresse complète aux artisans qui refusent → respect RGPD propriétaires + évite démarchage parallèle
+  - **Bouton Sign avec input montant TTC réel** : critique pour le calcul commission BRH (% du montant *réellement* signé, pas estimé)
+  - **5 KPI au lieu de 4** : ajout "Actifs" pour visualiser le pipeline en cours (accepted+quoted) — vue ops pour l'artisan
+  - **Pas de filtres dans V1** : volume initial < 20 leads par artisan, pagination/filter Phase 13.6.4.1+
+- **Phase suivante** : 13.6.5 Magic link onboarding artisan (sans password) / 13.6.6 cron rappel artisan si lead `pending` > 7 jours / 13.6.7 commission tracking BRH-side (paiement mensuel auto)
+
+---
+
 ## 2026-05-02 — Phase 13.6.3 : 📧 Email auto à l'artisan (Resend + template HTML BRH)
 
 - **Contexte** : Finaliser la boucle network effect Phase 13.6.2. Quand un pro RGE recommande un prospect, l'artisan doit être notifié immédiatement avec le contexte complet (DPE, MPR éligibles, geste, coordonnées). Sans email auto, le lead reste invisible côté artisan → pas de conversion.

@@ -86,6 +86,7 @@ const ProAnalytics = lazy(() => import('@/pages/pro/ProAnalytics'))
 const ProAbonnement = lazy(() => import('@/pages/pro/ProAbonnement'))
 const ProMarketplaceArtisans = lazy(() => import('@/pages/pro/ProMarketplaceArtisans'))
 const ProMesLeadsArtisans = lazy(() => import('@/pages/pro/ProMesLeadsArtisans'))
+const ArtisanDashboard = lazy(() => import('@/pages/artisan/ArtisanDashboard'))
 const AuditView = lazy(() => import('@/pages/AuditView'))
 
 // Lazy loaded pages — Particulier
@@ -164,6 +165,8 @@ export default function App() {
                 <Route path="/mes-rdv" element={<MesRdv />} />
                 <Route path="/profil" element={<ProfilPage />} />
                 <Route path="/audit-energetique/:id" element={<AuditView />} />
+                {/* Phase 13.6.4 — Espace artisan (vue inverse marketplace) */}
+                <Route path="/artisan/dashboard" element={<ArtisanDashboard />} />
               </Route>
             </Route>
 
