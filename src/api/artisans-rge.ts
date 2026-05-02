@@ -137,6 +137,20 @@ export const artisansRgeApi = {
   },
 
   /**
+   * Phase 13.6.3 — Notifie l'artisan par email (Resend) avec le contexte prospect complet.
+   * À appeler après createLead pour finaliser la boucle.
+   */
+  async notifyArtisanByEmail(leadId: string): Promise<{ sent: boolean; resendId?: string; to?: string }> {
+    const { data, error } = await supabase.functions.invoke<{
+      sent: boolean
+      resendId?: string
+      to?: string
+    }>('notify-artisan-lead', { body: { leadId } })
+    if (error) throw error
+    return data ?? { sent: false }
+  },
+
+  /**
    * Liste les leads recommandés par le pro courant.
    */
   async myLeads(): Promise<ArtisanLeadRow[]> {

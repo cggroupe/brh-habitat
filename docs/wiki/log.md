@@ -5,6 +5,59 @@
 
 ---
 
+## 2026-05-02 — Phase 13.6.3 : 📧 Email auto à l'artisan (Resend + template HTML BRH)
+
+- **Contexte** : Finaliser la boucle network effect Phase 13.6.2. Quand un pro RGE recommande un prospect, l'artisan doit être notifié immédiatement avec le contexte complet (DPE, MPR éligibles, geste, coordonnées). Sans email auto, le lead reste invisible côté artisan → pas de conversion.
+- **Fichiers modifiés** :
+  - `supabase/functions/notify-artisan-lead/index.ts` (NEW ~280 LOC — EF Deno + template HTML responsive + Resend API direct)
+  - `src/api/artisans-rge.ts` — méthode `notifyArtisanByEmail(leadId)` ajoutée
+  - `src/hooks/queries/artisans-rge.ts` — `useCreateArtisanLead` enrichi : appelle automatiquement `notifyArtisanByEmail` après création (best-effort)
+  - `docs/wiki/edge-functions-reference.md` — section Marketplace artisans (1 EF) + total 19 → 20 EFs
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations créées** : Aucune.
+- **Edge Functions déployées** :
+  - `notify-artisan-lead` ✅ (rate limit 10/min/IP, JWT auth obligatoire)
+- **Architecture email** :
+  - **Resend API direct** via `fetch` (pas de SDK Deno, bundle léger 63 KB)
+  - **Template HTML responsive** : header gradient vert BRH + cartes contexte (adresse, caractéristiques logement, aides MPR, action recommandée + CTA) + footer mentions
+  - **Reply-To** = email du pro recommandeur (l'artisan peut répondre directement)
+  - **Subject** localisé : `🔧 Nouveau lead BRH Habitat — {commune} (DPE {étiquette})`
+- **Données injectées dans l'email** :
+  - Identité artisan (`representant ?? nom_entreprise`)
+  - Geste prioritaire (mapping 18 GesteId → label français)
+  - Estimation chantier TTC (si disponible depuis moteur BRH)
+  - Adresse complète prospect
+  - Caractéristiques : DPE + GES + surface + conso m² + énergie + coût annuel
+  - Aides MPR Bleu/Jaune/Violet + CEE (color-coded)
+  - Action recommandée : "contactez le prospect dans les 48h"
+  - Mention commission BRH 5-10 %
+- **Auto-trigger côté front** :
+  - `useCreateArtisanLead` enchaîne automatiquement `createLead` → `notifyArtisanByEmail`
+  - Best-effort : si Resend down, le lead reste créé (warn console, pas d'échec mutation)
+  - Pattern cohérent avec `send-audit-email` Phase 4
+- **Pages wiki impactées** :
+  - `edge-functions-reference.md` ✅ mise à jour (catalogue 19 → 20 EFs + section Marketplace artisans)
+  - `log.md` ✅ entrée
+  - `architecture-snapshot.md` (à mettre à jour : `brh_artisan_leads` workflow includes auto-email)
+- **Conformité 14 règles BRH** :
+  - Règle 4 ✅ — typage strict (`LeadRow`, `ArtisanRow`, `ProspectRow` avec champs précis)
+  - Règle 5 ✅ — `if (error) throw error` partout (côté front)
+  - Règle 9 ✅ — Rate limit 10/min/IP sur la nouvelle EF
+  - Règle 13 ✅ — Pas de `toISOString().slice(0,10)`
+  - **Notable** : utilise `escapeHtml` custom pour empêcher XSS dans le template HTML email (cohérent avec EF `send-audit-email`)
+- **Risque** : Low. Best-effort behavior : Resend down ≠ échec création lead. Si artisan sans email enregistré → 422 clair côté front (warn console, pas de bloquage). Phase 13.6.4 : ajout d'une UI alertant le pro qu'aucun email n'a été envoyé.
+- **Tests** : 246/246 globaux verts. Tsc clean. Lint clean.
+- **Status** : ✅ DONE V1. **Pending** : `RESEND_API_KEY` + `EMAIL_FROM` déjà configurés depuis Phase 4 (auto-email). Aucune action user requise pour activer.
+- **Décisions de cadrage** :
+  - **Best-effort, pas mandatory** : `useCreateArtisanLead` ne fail pas si l'email échoue. Pourquoi : un artisan sans email reste un lead valide (le pro peut l'appeler). Forcer l'email serait une régression UX.
+  - **Template HTML inline** plutôt qu'externe : pas de fichier .html à maintenir, code colocalisé avec la logique d'envoi. Maintenable car contenu stable.
+  - **`reply_to` = email du pro recommandeur** : permet à l'artisan de répondre directement au pro (cas typique : "tu peux me donner plus d'infos sur cette adresse ?"). Sans Reply-To, les réponses iraient à `noreply@brh-habitat.fr` (perdues).
+  - **Pas de lien magique d'acceptation V1** : Phase 13.6.5 livrera le magic link pour accept/decline sans login. V1 : artisan se connecte à son espace BRH (à créer Phase 13.6.4).
+  - **Mention commission BRH dans l'email** : transparence financière dès le 1er contact, évite les surprises ("vous avez signé via BRH, on commission 5 %"). Conforme art. L.121-21 Code commerce (mandat de courtage).
+- **Phase suivante** : 13.6.4 dashboard artisan (vue inverse, liste leads reçus + accept/decline) / 13.6.5 magic link onboarding artisan (pas de password) / 13.6.6 cron mensuel rappel artisan si lead `pending` > 7 jours
+
+---
+
 ## 2026-05-02 — Phase 13.6.2 : 🔗 Lier moteur courrier IA → marketplace artisans (workflow end-to-end)
 
 - **Contexte** : Boucler la chaîne SaaS BRH **lead → courrier IA → recommandation artisan → chantier signé → commission**. Phase 13.6 a livré la marketplace, Phase 13.6.1 l'a peuplée (861 artisans RGE). Phase 13.6.2 connecte les deux : un pro RGE génère un courrier IA Phase 13 → après envoi → recommande un artisan local en 2 clics → lead transmis → suivi conversion.

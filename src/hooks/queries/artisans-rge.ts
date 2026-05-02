@@ -47,7 +47,20 @@ export function useArtisan(id: string | undefined) {
 export function useCreateArtisanLead() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: artisansRgeApi.createLead,
+    mutationFn: async (input: Parameters<typeof artisansRgeApi.createLead>[0]) => {
+      // 1. Crée le lead en DB
+      const lead = await artisansRgeApi.createLead(input)
+
+      // 2. Phase 13.6.3 — Tente d'envoyer l'email auto à l'artisan (best-effort, n'échoue pas la mutation)
+      try {
+        await artisansRgeApi.notifyArtisanByEmail(lead.id)
+      } catch (e) {
+        // L'email peut échouer (artisan sans email, Resend down) — on log mais on garde le lead
+        console.warn('notify-artisan-lead failed:', e)
+      }
+
+      return lead
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [...ARTISANS_KEY, 'leads'] })
     },

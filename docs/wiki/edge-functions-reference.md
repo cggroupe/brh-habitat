@@ -1,7 +1,7 @@
 # BRH Habitat — Edge Functions Reference
 
 > Source : `supabase/functions/`.
-> **Dernière mesure** : 2026-05-01 · **Total** : 19 fonctions + `_shared/` (Phase 11.1 + Phase 13 + Phase 15).
+> **Dernière mesure** : 2026-05-02 · **Total** : 20 fonctions + `_shared/` (+ Phase 13.6.3 `notify-artisan-lead`).
 
 ## Convention globale
 
@@ -105,6 +105,16 @@ Stratégie hybride : **Clerk** gère l'UI d'authentification, **Supabase** garde
 - **Free** (Découverte) : 0 €, 5 courriers IA / mois
 - **Pro** : 49 €/mois, 100 courriers IA + bulk top 50 + ZIP + export CSV
 - **Expert** : 149 €/mois, 500 courriers IA + marketplace artisans (Phase 13.6) + API + multi-utilisateurs
+
+### 🔧 Marketplace artisans — Phase 13.6.3 (1)
+
+| Fonction | Rôle | Auth | Rate limit |
+|----------|------|------|------------|
+| `notify-artisan-lead` | Envoie email Resend à l'artisan quand un pro RGE lui recommande un prospect (template HTML BRH avec contexte DPE + MPR + signaux) | JWT | 10 req/min |
+
+**Trigger** : appelée automatiquement par le hook `useCreateArtisanLead` après création du lead (best-effort, n'échoue pas la mutation si Resend indisponible).
+
+**Variables d'environnement** : `RESEND_API_KEY` + `EMAIL_FROM` (déjà configurés depuis Phase 4).
 
 ## Variables d'environnement
 
