@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-PASSWORD="${BRH_SUPABASE_DB_PASSWORD:-${BRH_SUPABASE_DB_PASSWORD:?Set this env var first}}"
+PASSWORD="${BRH_SUPABASE_DB_PASSWORD:?Set BRH_SUPABASE_DB_PASSWORD env var first (cf. /opt/stack/.env)}"
 DB_URL="postgresql://postgres.lygmmvxnmvlgynmrcpny@aws-1-eu-west-1.pooler.supabase.com:5432/postgres"
 
 echo "=== Phase R11 — Audit RLS post-migration R1 ==="
