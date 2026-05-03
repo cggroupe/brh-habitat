@@ -5,6 +5,84 @@
 
 ---
 
+## 2026-05-03 — Phase 16.0 : Score Vente Agences Immo (modèle Hoguet "A")
+
+**Lancement de la phase la plus monétisable du SaaS BRH** : leads scorés pour agences immobilières bretonnes. Modèle Hoguet "A" (vendeur de fiches d'opportunité, pas de transaction directe → pas de carte T requise). Validation business par Philippe : DPIA reportée à post-lancement (compromis pragmatique), charte auto-générée par RAG juridique avec signature simple eIDAS.
+
+### Phase 16.0.1 — Fondations DB (migration `20260704100000_brh_phase16_score_vente.sql`)
+- **`brh_score_vente_v1`** : cache scoring (0-100, segment, rules_breakdown JSONB, proba_6m, algo_version)
+- **`brh_optout_requests`** : demandes RGPD Art. 21 (opposition / suppression / rectification) avec deadline 30j auto + IP/UA preuve
+- **`brh_lead_assignments`** : exclusivité lead → 1 agence pendant 30j, frequency cap 2 tentatives, anti-doublon UNIQUE INDEX status='active'
+- **`brh_partner_contracts`** : chartes partenaires signées eIDAS (signer + IP + horodatage + email 2FA token + snapshot du contenu au signing). Versionning template
+- Helper SQL `brh_release_expired_assignments()` SECURITY DEFINER (à brancher sur pg_cron daily)
+- 9 policies RLS au total (admin all + scope spécifique par usage)
+- **Appliquée en cloud** ✅ via `psql` direct, 4 tables + 1 helper + 2 triggers
+
+### Phase 16.0.2 — Algo Score Vente v1 (heuristique 13 règles)
+- `src/lib/dpe-engine/score-vente/index.ts` : `computeScoreVente(input): { score, segment, proba_6m, rules_breakdown }`
+- 13 règles pondérées : DPE F/G base, DPE ≥ 5 ans, mutation 24m, propriétaire ≥ 65 ans, revenu IRIS, surface, construction, CEP critique, chauffage collectif (pénalité), maison individuelle, zone active, durée détention courte, bonus Bretagne
+- 4 segments : très_chaud (≥80, proba 65 %), chaud (≥60, 40 %), tiède (≥40, 20 %), froid (<40, 5 %)
+- Score plafonné à 100, plancher 0
+- **42 tests Vitest** : règles individuelles + scénarios composites + plafonnement + breakdown
+- Vitest passe à **353 tests** (+42)
+
+### Phase 16.0.3 — Page admin `/admin/score-vente`
+- Tableau prospects scorés avec filtres (segment, dept, score min)
+- 4 KPI cards par segment (gradient rouge/orange/ambre/gris)
+- Panneau dépliant des 13 règles (transparence pour audit)
+- Affichage règles déclenchées par prospect (badges courts cliquables)
+- Lecture seule pour MVP (recalcul batch en script ops à venir)
+
+### Phase 16.0.4 — Page publique `/opt-out` (RGPD Art. 21)
+- Formulaire sans authentification (3 types : opposition / suppression / rectification)
+- Insert direct via RLS `optout_insert_anon` (bypasse besoin EF non déployée)
+- EF `submit-optout` codée mais **pas déployée** (besoin SUPABASE_ACCESS_TOKEN), peut être activée plus tard pour ajouter email Resend
+- UX rassurante : design vert/blanc, bandeau succès avec deadline 30j visible, lien `mailto:rgpd@`
+- Capture user-agent côté client + IP côté EF future
+
+### Phase 16.0.5 — Anti-doublon Lead Assignments
+- **API** `src/api/lead-assignments.ts` : `claim` / `logAttempt` / `release` / `releaseExpired` / `countActiveForAgence`
+- **Hooks** `src/hooks/queries/lead-assignments.ts`
+- Logique métier `logAttempt` : si `outcome='interested'` → status `contacted`, sinon si `attempts >= 2` → blacklisted auto
+- UNIQUE INDEX `prospect_id WHERE status='active'` empêche le double-claim atomiquement (transaction-safe)
+- `releaseExpired` appelle le helper SQL `brh_release_expired_assignments()`
+
+### Phase 16.0.6 — Squelette portail `/agence/*`
+- **`AgenceGuard`** : verifie `brh_partner_contracts` actif + signer = auth.uid() (proxy, pas de UserRole='agence' en DB)
+- **`AgenceShell`** : sidebar branding bleu (vs vert pro classique BRH) + 5 entrées + rappel modèle Hoguet "A" en bas
+- **`AgenceDashboard`** : KPI cards (mes leads actifs, très chauds, chauds), 2 quick actions, rappel charte (5 engagements list)
+- Hook réutilisable `useMyAgenceMembership` dans `hooks/queries/agence-membership.ts`
+- Route `/agence` sous AgenceGuard. Pages futures : `/leads`, `/score-vente`, `/abonnement`, `/profil`
+
+### Conformité 14 règles BRH
+- ✅ Règle #2 INTEGER cents : montants Stripe non encore touchés (Phase 16.0.x future)
+- ✅ Règle #5 `if (error) throw error` partout dans 3 nouveaux APIs
+- ✅ Règle #6 nouveau guard AgenceGuard
+- ✅ Règle #8 pas de `USING (true)` (sauf optout_insert_anon documenté)
+- ✅ Règle #9 EF rate-limit (submit-optout 5/IP/h)
+- ✅ Règle #11 TIMESTAMPTZ partout
+- ✅ Règle #12 SET search_path='' sur helper SQL
+
+### Status
+✅ DONE — Phase 16.0 livrée. Pré-requis manquants (avant ouverture publique aux agences) :
+1. **Avocat valide template charte** (1 500 € one-shot) — à mandater
+2. **Onboarding partenaire** (Phase 16.0.7 future) : page `/inscription/agence` avec génération charte par RAG juridique + signature en ligne + envoi token email 2FA
+3. **Stripe 3 paliers** (Phase 16.0.8 future) : 390 / 990 / 2 490 € avec quotas leads
+4. **Audit aléatoire mensuel** (Phase 16.0.9 future) : pg_cron + email vérification propriétaires
+5. **DPIA light** rédigée par toi avec ton RAG juridique (4 h, gratuit) avant 1ère agence en prod
+6. **Page opt-out cron de purge** (à brancher sur `brh_optout_requests` deadline) — déjà en table
+
+### Métriques
+| | Avant Phase 16.0 | Après |
+|---|---|---|
+| Tables BRH | 81 | **85** (+score_vente_v1, +optout_requests, +lead_assignments, +partner_contracts) |
+| Portails | 6 | **7** (+/agence) |
+| Guards | 5 | **6** (+AgenceGuard) |
+| Tests Vitest | 311 | **353** (+42 tests algo Score Vente) |
+| EF | 11 | **12** (+submit-optout codée non déployée) |
+
+---
+
 ## 2026-05-03 — R10b + R18 : tracking marketplace + seed agences cloud
 
 **Mini-itération de finition** post-R12, pour rendre la boucle terrain immédiatement utilisable.

@@ -13,6 +13,8 @@ import ProGuard from '@/components/auth/ProGuard'
 import ParticulierGuard from '@/components/auth/ParticulierGuard'
 import ArtisanGuard from '@/components/auth/ArtisanGuard'
 import ArtisanShell from '@/components/layout/ArtisanShell'
+import AgenceGuard from '@/components/auth/AgenceGuard'
+import AgenceShell from '@/components/layout/AgenceShell'
 import { FeatureRoute } from '@/components/shared/FeatureGate'
 import { PermissionRoute } from '@/components/auth/PermissionRoute'
 
@@ -37,6 +39,7 @@ const PolitiqueConfidentialitePage = lazy(() => import('@/pages/public/Politique
 const PartenairesPage = lazy(() => import('@/pages/public/PartenairesPage'))
 const AssistantPage = lazy(() => import('@/pages/public/AssistantPage'))
 const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'))
+const OptOutPage = lazy(() => import('@/pages/public/OptOutPage'))
 
 // Lazy loaded pages — Dashboard (user)
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'))
@@ -58,6 +61,7 @@ const AdminArticles = lazy(() => import('@/pages/admin/AdminArticles'))
 const AdminUtilisateurs = lazy(() => import('@/pages/admin/AdminUtilisateurs'))
 const AdminPartenaires = lazy(() => import('@/pages/admin/AdminPartenaires'))
 const AdminAgencesImmo = lazy(() => import('@/pages/admin/AdminAgencesImmo'))
+const AdminScoreVente = lazy(() => import('@/pages/admin/AdminScoreVente'))
 const AdminProspects = lazy(() => import('@/pages/admin/AdminProspects'))
 const AdminCommissionsArtisans = lazy(() => import('@/pages/admin/AdminCommissionsArtisans'))
 const AdminCommissions = lazy(() => import('@/pages/admin/AdminCommissions'))
@@ -100,6 +104,7 @@ const ArtisanMissions = lazy(() => import('@/pages/artisan/ArtisanMissions'))
 const ArtisanAgenda = lazy(() => import('@/pages/artisan/ArtisanAgenda'))
 const ArtisanProfil = lazy(() => import('@/pages/artisan/ArtisanProfil'))
 const ArtisanMessages = lazy(() => import('@/pages/artisan/ArtisanMessages'))
+const AgenceDashboard = lazy(() => import('@/pages/agence/AgenceDashboard'))
 
 // Phase 17 — PWA install prompt (non-lazy, léger)
 import { InstallPwaPrompt } from '@/components/pwa/InstallPwaPrompt'
@@ -171,6 +176,7 @@ export default function App() {
               <Route path="/assistant" element={<AssistantPage />} />
               <Route path="/mentions-legales" element={<MentionsLegalesPage />} />
               <Route path="/politique-de-confidentialite" element={<PolitiqueConfidentialitePage />} />
+              <Route path="/opt-out" element={<OptOutPage />} />
             </Route>
 
             {/* Authenticated user routes */}
@@ -201,6 +207,14 @@ export default function App() {
               </Route>
             </Route>
 
+            {/* Phase 16.0.6 — Portail agence immobilière (AgenceGuard + AgenceShell) */}
+            <Route element={<AgenceGuard />}>
+              <Route element={<AgenceShell />}>
+                <Route path="/agence" element={<AgenceDashboard />} />
+                {/* Pages futures : /agence/leads, /agence/score-vente, /agence/abonnement, /agence/profil */}
+              </Route>
+            </Route>
+
             {/* Admin routes */}
             <Route element={<AdminGuard />}>
               <Route element={<AdminShell />}>
@@ -214,6 +228,7 @@ export default function App() {
                 <Route path="/admin/utilisateurs" element={<AdminUtilisateurs />} />
                 <Route path="/admin/partenaires" element={<AdminPartenaires />} />
                 <Route path="/admin/agences-immo" element={<AdminAgencesImmo />} />
+                <Route path="/admin/score-vente" element={<AdminScoreVente />} />
                 <Route path="/admin/prospects" element={<AdminProspects />} />
                 <Route path="/admin/commissions-artisans" element={<AdminCommissionsArtisans />} />
                 <Route path="/admin/commissions" element={<AdminCommissions />} />
