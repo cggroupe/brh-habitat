@@ -6,7 +6,7 @@
  *   - drawer pin map terrain
  *   - bouton flottant page /pro/terrain (mode "logger sur place")
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 import { useCreateVisit } from '@/hooks/queries/field-visits'
 import type { VisitType, VisitStatus, VisitTargetType } from '@/api/field-visits'
@@ -60,6 +60,16 @@ export function LogVisitModal({
 
   const createVisit = useCreateVisit()
 
+  // Phase R12 — A11y : Escape ferme la modale
+  useEffect(() => {
+    if (!open) return
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [open, onClose])
+
   if (!open) return null
 
   const isPlanned = status === 'planned'
@@ -90,13 +100,16 @@ export function LogVisitModal({
     <div
       className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="log-visit-title"
     >
       <div
         className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Logger une visite</h2>
+          <h2 id="log-visit-title" className="text-lg font-semibold">Logger une visite</h2>
           <button
             onClick={onClose}
             className="p-1 hover:bg-gray-100 rounded"

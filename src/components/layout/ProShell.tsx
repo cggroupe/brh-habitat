@@ -225,13 +225,22 @@ export default function ProShell() {
             if (visibleChildren.length === 0) return null
 
             const isOpen = openGroups.includes(entry.id)
+            const submenuId = `pro-submenu-${entry.id}`
             const groupBody = (
               <>
                 <button
                   type="button"
                   onClick={() => toggle(entry.id)}
-                  className="w-full flex items-center px-4 py-2.5 text-green-100/70 hover:text-white hover:bg-white/10 rounded-xl transition"
+                  onKeyDown={(e) => {
+                    // Phase R12 — A11y : Escape ferme le groupe ouvert
+                    if (e.key === 'Escape' && isOpen) {
+                      e.preventDefault()
+                      toggle(entry.id)
+                    }
+                  }}
+                  className="w-full flex items-center px-4 py-2.5 text-green-100/70 hover:text-white hover:bg-white/10 rounded-xl transition focus:outline-none focus:ring-2 focus:ring-white/40"
                   aria-expanded={isOpen}
+                  aria-controls={submenuId}
                 >
                   <entry.icon size={18} className="mr-3 shrink-0" />
                   <span className="text-xs font-bold uppercase tracking-wider flex-1 text-left">
@@ -240,10 +249,16 @@ export default function ProShell() {
                   <ChevronDown
                     size={14}
                     className={`shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                    aria-hidden="true"
                   />
                 </button>
                 {isOpen && (
-                  <div className="mt-0.5 mb-1 space-y-0.5">
+                  <div
+                    id={submenuId}
+                    role="group"
+                    aria-label={`Sous-menu ${entry.label}`}
+                    className="mt-0.5 mb-1 space-y-0.5"
+                  >
                     {visibleChildren.map((child) => {
                       const link = (
                         <NavLink key={child.to} to={child.to} className={subNavLinkClass}>
