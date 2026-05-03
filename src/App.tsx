@@ -11,6 +11,8 @@ import AuthGuard from '@/components/auth/AuthGuard'
 import AdminGuard from '@/components/auth/AdminGuard'
 import ProGuard from '@/components/auth/ProGuard'
 import ParticulierGuard from '@/components/auth/ParticulierGuard'
+import ArtisanGuard from '@/components/auth/ArtisanGuard'
+import ArtisanShell from '@/components/layout/ArtisanShell'
 import { FeatureRoute } from '@/components/shared/FeatureGate'
 
 // Eagerly loaded (above the fold)
@@ -92,6 +94,10 @@ const ProIAHistorique = lazy(() => import('@/pages/pro/ProIAHistorique'))
 const ArtisanDashboard = lazy(() => import('@/pages/artisan/ArtisanDashboard'))
 const ArtisanOnboarding = lazy(() => import('@/pages/artisan/ArtisanOnboarding'))
 const ArtisanFactures = lazy(() => import('@/pages/artisan/ArtisanFactures'))
+const ArtisanMissions = lazy(() => import('@/pages/artisan/ArtisanMissions'))
+const ArtisanAgenda = lazy(() => import('@/pages/artisan/ArtisanAgenda'))
+const ArtisanProfil = lazy(() => import('@/pages/artisan/ArtisanProfil'))
+const ArtisanMessages = lazy(() => import('@/pages/artisan/ArtisanMessages'))
 
 // Phase 17 — PWA install prompt (non-lazy, léger)
 import { InstallPwaPrompt } from '@/components/pwa/InstallPwaPrompt'
@@ -176,9 +182,20 @@ export default function App() {
                 <Route path="/mes-rdv" element={<MesRdv />} />
                 <Route path="/profil" element={<ProfilPage />} />
                 <Route path="/audit-energetique/:id" element={<AuditView />} />
-                {/* Phase 13.6.4 — Espace artisan (vue inverse marketplace) */}
-                <Route path="/artisan/dashboard" element={<ArtisanDashboard />} />
+              </Route>
+            </Route>
+
+            {/* Phase R4 — Portail artisan elevé (ArtisanGuard + ArtisanShell) */}
+            <Route element={<ArtisanGuard />}>
+              <Route element={<ArtisanShell />}>
+                <Route path="/artisan" element={<ArtisanDashboard />} />
+                <Route path="/artisan/missions" element={<ArtisanMissions />} />
+                <Route path="/artisan/agenda" element={<ArtisanAgenda />} />
                 <Route path="/artisan/factures" element={<ArtisanFactures />} />
+                <Route path="/artisan/profil" element={<ArtisanProfil />} />
+                <Route path="/artisan/messages" element={<ArtisanMessages />} />
+                {/* Redirect legacy /artisan/dashboard → /artisan */}
+                <Route path="/artisan/dashboard" element={<Navigate to="/artisan" replace />} />
               </Route>
             </Route>
 
