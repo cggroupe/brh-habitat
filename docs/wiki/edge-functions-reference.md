@@ -1,7 +1,7 @@
 # BRH Habitat — Edge Functions Reference
 
 > Source : `supabase/functions/`.
-> **Dernière mesure** : 2026-05-02 · **Total** : 20 fonctions + `_shared/` (+ Phase 13.6.3 `notify-artisan-lead`).
+> **Dernière mesure** : 2026-05-02 · **Total** : 23 fonctions + `_shared/` (+ Phase 13.6.5 `artisan-invite-*`).
 
 ## Convention globale
 
@@ -115,6 +115,29 @@ Stratégie hybride : **Clerk** gère l'UI d'authentification, **Supabase** garde
 **Trigger** : appelée automatiquement par le hook `useCreateArtisanLead` après création du lead (best-effort, n'échoue pas la mutation si Resend indisponible).
 
 **Variables d'environnement** : `RESEND_API_KEY` + `EMAIL_FROM` (déjà configurés depuis Phase 4).
+
+### 🔧 Onboarding artisan magic link — Phase 13.6.5 (3)
+
+| Fonction | Rôle | Auth | Rate limit |
+|----------|------|------|------------|
+| `artisan-invite-create` | Admin crée invitation magic link + email Resend (avec template HTML CTA) | JWT admin | 30 req/min |
+| `artisan-invite-verify` | **PUBLIC** — vérifie token (valide / expired / accepted / revoked / invalid) | Aucune | 60 req/min |
+| `artisan-invite-accept` | Lie `profile_id` du user authentifié à `brh_artisans_rge.id` via helper SQL atomique | JWT | 10 req/min |
+
+**Workflow magic link** (zéro friction, sans password) :
+1. Admin BRH crée l'invitation → token 64 chars hex aléatoire (helper SQL `brh_gen_artisan_token`)
+2. Email Resend envoyé à l'artisan avec lien `/artisan/onboarding/:token`
+3. Artisan clique le lien → page publique vérifie le token via `artisan-invite-verify`
+4. Saisit son email → `supabase.auth.signInWithOtp` envoie un magic link Supabase
+5. Clique le 2ᵉ email magic link → revient sur la page avec session active
+6. Page appelle `artisan-invite-accept` → helper SQL `brh_artisan_invite_accept` lie atomiquement
+7. Redirection vers `/artisan/dashboard`
+
+**Sécurité** :
+- Token 32 bytes random encodé hex (256 bits d'entropie, anti-bruteforce)
+- Expiry 30 jours (auto-marqué `expired` au prochain verify post-deadline)
+- 1 artisan ne peut être lié qu'à 1 seul `profile_id` (UNIQUE constraint)
+- Helper SQL avec `FOR UPDATE` lock + `SECURITY DEFINER` + `SET search_path = ''`
 
 ## Variables d'environnement
 

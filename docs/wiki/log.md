@@ -5,6 +5,83 @@
 
 ---
 
+## 2026-05-02 — Phase 13.6.5 : 🪄 Magic link onboarding artisan (zéro friction, sans password)
+
+- **Contexte** : Friction zéro pour l'onboarding artisan. Un artisan reçoit un email avec un lien magique → clique → saisit son email → reçoit un 2ᵉ magic link Supabase Auth → clique → compte BRH activé + lié à sa fiche `brh_artisans_rge`. Aucun password à choisir/retenir.
+- **Fichiers modifiés** :
+  - `supabase/migrations/20260625100000_brh_artisan_invitations.sql` (NEW — table + 2 helpers SQL + 2 RLS policies)
+  - `supabase/functions/artisan-invite-create/index.ts` (NEW ~270 LOC — admin crée + email Resend HTML)
+  - `supabase/functions/artisan-invite-verify/index.ts` (NEW ~110 LOC — endpoint **public** anti-bruteforce)
+  - `supabase/functions/artisan-invite-accept/index.ts` (NEW ~140 LOC — link profile_id ↔ artisan)
+  - `src/api/artisan-invitations.ts` (NEW — verify + accept + create + sendMagicLink wrapper)
+  - `src/pages/artisan/ArtisanOnboarding.tsx` (NEW ~370 LOC — flow 5 étapes magic link)
+  - `src/App.tsx` — route publique `/artisan/onboarding/:token`
+  - `docs/wiki/edge-functions-reference.md` — section onboarding artisan (3 EFs) + total 20 → 23
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations créées** :
+  - `20260625100000_brh_artisan_invitations.sql` ✅ APPLIQUÉE Supabase prod
+- **Schéma table `brh_artisan_invitations`** :
+  - `token TEXT UNIQUE` (64 chars hex via `brh_gen_artisan_token`, 256 bits d'entropie)
+  - `email_to TEXT`, `status` ∈ pending/sent/accepted/expired/revoked
+  - `expires_at TIMESTAMPTZ` (défaut now() + 30 jours)
+  - `message_personnel TEXT` (mot du créateur dans l'email)
+  - FK `artisan_id`, `created_by` (admin), `accepted_by` (artisan)
+- **2 helpers SQL** (tous deux `SECURITY DEFINER` + `SET search_path = ''`) :
+  - `brh_gen_artisan_token()` : génère 32 bytes random encodés hex via `gen_random_bytes`
+  - `brh_artisan_invite_accept(token, user_id)` : atomique avec `FOR UPDATE` lock — vérifie expiry + ownership unique + lie `profile_id` + marque accepted en 1 transaction
+- **Edge Functions déployées** :
+  - `artisan-invite-create` ✅ (admin only, 30/min, génère token + email Resend HTML CTA)
+  - `artisan-invite-verify` ✅ (`--no-verify-jwt`, public, 60/min anti-bruteforce)
+  - `artisan-invite-accept` ✅ (JWT obligatoire, 10/min)
+- **Page `/artisan/onboarding/:token` (~370 LOC)** :
+  - 6 états (FlowStep) : `loading` → `identify` → `sent` → `accepting` → `done` ou `invalid` / `error`
+  - Étape `loading` : verify token au montage (auto)
+  - Étape `identify` : affiche nom artisan + spécialités + message perso, formulaire email pré-rempli depuis `email_to`
+  - Étape `sent` : confirmation envoi magic link Supabase + bouton "renvoyer"
+  - Étape `accepting` : auto-déclenchée si user a session active (post-clic magic link)
+  - Étape `done` : success + redirection auto vers `/artisan/dashboard` après 1.5s
+  - Design : gradient amber/orange, card 2xl rounded, spécialités chips, message perso italique
+- **Email Resend HTML** :
+  - Header gradient vert BRH + "Bienvenue chez BRH Habitat"
+  - 4 bullet points value prop (leads gratuits / 0 abonnement / onboarding 30s / score qualité)
+  - CTA bouton "🚀 Activer mon compte BRH" (lien magique 30 jours)
+  - Mention "ce lien expire dans 30 jours"
+- **Sécurité** :
+  - Token 32 bytes (256 bits) → résistant bruteforce hors-ligne
+  - Verify rate-limited 60/min/IP (anti-énumération)
+  - 1 invitation `accepted` ne peut pas être réutilisée (status check)
+  - Anti-conflit : si artisan déjà lié à un autre user → refus claire
+  - Helper SQL en transaction atomique (verrou pessimiste)
+- **Rôle `artisan`** : créé/upserté dans `profiles.role = 'artisan'` après accept (pour usage futur RLS spécifique)
+- **Pages wiki impactées** :
+  - `edge-functions-reference.md` ✅ (catalogue 20 → 23 EFs + section onboarding artisan)
+  - `log.md` ✅ entrée
+  - `data-model.md` (à mettre à jour : 86 → 87 tables avec `brh_artisan_invitations`)
+  - `architecture-snapshot.md` (à mettre à jour : route publique `/artisan/onboarding/:token`)
+- **Conformité 14 règles BRH** :
+  - Règle 4 ✅ — typage strict (`InviteVerifyResult`, `InviteAcceptResult`)
+  - Règle 5 ✅ — `if (error) throw error` partout
+  - Règle 6 ✅ — Route onboarding publique par design (sinon impossible de cliquer un lien magic), accept côté EF check JWT obligatoire
+  - Règle 8 ✅ — RLS strict (admin only insert/update, invité voit son sub via `accepted_by`)
+  - Règle 9 ✅ — Rate limit sur les 3 EFs (30/60/10)
+  - Règle 11 ✅ — TIMESTAMPTZ partout
+  - Règle 12 ✅ — 2 helpers SQL `SECURITY DEFINER` avec `SET search_path = ''`
+  - Règle 13 ✅ — Pas de `toISOString().slice(0,10)`
+- **Risque** : Low. Pattern aligné avec `brh_company_invitations` Phase 6 (déjà testé en prod). Resend déjà configuré. Magic link Supabase Auth standard (pas custom).
+- **Tests** : 246/246 globaux verts. Tsc clean. Lint clean.
+- **Status** : ✅ DONE V1 — flow complet fonctionnel.
+- **Décisions de cadrage** :
+  - **Page onboarding publique** sous `PublicShell` : nécessaire pour qu'un artisan non auth puisse cliquer le lien email. La sécurité repose sur le token 256 bits + verify côté serveur, pas sur l'auth UI
+  - **Double magic link** (BRH + Supabase Auth) : 1er email pour identifier l'artisan + valider l'invitation, 2ᵉ email Supabase pour authentifier le user. Plus complexe que single-step mais évite la création de session anonyme côté Supabase
+  - **`shouldCreateUser: true`** dans `signInWithOtp` : auto-crée le compte Supabase si l'email n'existe pas (évite step "register" séparé)
+  - **30 jours d'expiry** : compromis entre sécurité (assez court pour limiter exploitation token volé) et UX (assez long pour les artisans qui partent en congé)
+  - **Helper SQL atomique pour accept** : évite race conditions (2 users simultanés sur même token) — verrou `FOR UPDATE` garantit unicité
+  - **Auto-upsert `profiles.role = 'artisan'`** : évite step manuel admin pour assigner le rôle, prêt pour RLS futurs spécifiques au rôle artisan
+  - **Pas d'UI admin V1 pour créer invitations** : admin peut appeler l'EF via curl/SQL pour V1 (volume initial faible). UI admin Phase 13.6.5.1 si besoin de bulk
+- **Phase suivante** : 13.6.5.1 UI admin pour créer/gérer invitations en bulk / 13.6.6 cron rappel artisan si lead `pending` > 7 jours / 13.6.7 commission tracking + paiement auto Stripe Connect
+
+---
+
 ## 2026-05-02 — Phase 13.6.4 : 🛠️ Dashboard artisan (vue inverse + accept/decline/sign workflow)
 
 - **Contexte** : Compléter la boucle marketplace en livrant l'espace artisan. L'artisan se connecte à son compte BRH (lié à `brh_artisans_rge.profile_id`), voit les leads qu'il a reçus, accepte/refuse en 1 clic, marque devis envoyé, signe, complète. Score qualité auto-recalculé en cascade.

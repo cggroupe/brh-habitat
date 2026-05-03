@@ -87,6 +87,7 @@ const ProAbonnement = lazy(() => import('@/pages/pro/ProAbonnement'))
 const ProMarketplaceArtisans = lazy(() => import('@/pages/pro/ProMarketplaceArtisans'))
 const ProMesLeadsArtisans = lazy(() => import('@/pages/pro/ProMesLeadsArtisans'))
 const ArtisanDashboard = lazy(() => import('@/pages/artisan/ArtisanDashboard'))
+const ArtisanOnboarding = lazy(() => import('@/pages/artisan/ArtisanOnboarding'))
 const AuditView = lazy(() => import('@/pages/AuditView'))
 
 // Lazy loaded pages — Particulier
@@ -137,6 +138,8 @@ export default function App() {
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/diagnostic" element={<DiagnosticPage />} />
               <Route path="/diagnostic-express" element={<DiagnosticExpressPage />} />
+              {/* Phase 13.6.5 — Magic link onboarding artisan (public, magic link Supabase) */}
+              <Route path="/artisan/onboarding/:token" element={<ArtisanOnboarding />} />
               <Route path="/diagnostic/resultats/local" element={<DiagnosticResultsPage />} />
               <Route path="/diagnostic/resultats/:id" element={<DiagnosticResultsPage />} />
               <Route path="/articles" element={<ArticlesPage />} />
