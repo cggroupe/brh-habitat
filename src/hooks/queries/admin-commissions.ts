@@ -52,3 +52,26 @@ export function useUpdateInvoiceStatus() {
     },
   })
 }
+
+/** Phase 13.6.7.2 — Upload PDF facture commission. */
+export function useUploadCommissionPdf() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { invoice: CommissionInvoiceRow; blob: Blob }) =>
+      adminCommissionsApi.uploadPdf(input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ADMIN_COMMISSIONS_KEY })
+    },
+  })
+}
+
+/** Phase 13.6.7.2 — Envoie facture par email Resend (signed URL 30j). */
+export function useSendCommissionInvoice() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (invoiceId: string) => adminCommissionsApi.sendInvoiceByEmail(invoiceId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ADMIN_COMMISSIONS_KEY })
+    },
+  })
+}

@@ -5,6 +5,75 @@
 
 ---
 
+## 2026-05-02 — Phase 13.6.7.2 : 📄 PDF facture commission auto + envoi Resend (zero-touch ops)
+
+- **Contexte** : Compléter la Phase 13.6.7 (tracking commissions) avec la **génération PDF + envoi email automatique**. Admin clique "Envoyer" sur une facture → PDF A4 français (mentions légales + CGV + RIB) généré côté front via `@react-pdf/renderer` → uploadé dans bucket Storage privé → EF Resend envoie email à l'artisan avec signed URL 30 jours. 3 actions admin manuelles → 1 clic.
+- **Fichiers modifiés** :
+  - `supabase/migrations/20260701100000_brh_commission_storage.sql` (NEW — bucket + 4 colonnes ALTER + 2 RLS Storage policies)
+  - `supabase/functions/send-commission-invoice/index.ts` (NEW ~280 LOC — Resend HTML + signed URL + update tracking)
+  - `src/components/admin/CommissionInvoicePdf.tsx` (NEW ~290 LOC — facture A4 française mentions légales)
+  - `src/api/admin-commissions.ts` — méthodes `uploadPdf` + `sendInvoiceByEmail`
+  - `src/hooks/queries/admin-commissions.ts` — 2 hooks `useUploadCommissionPdf` + `useSendCommissionInvoice`
+  - `src/pages/admin/AdminCommissionsArtisans.tsx` — handlers `handleSendInvoice` + `handleDownloadPdf` + 2 boutons par ligne
+- **Migrations créées** :
+  - `20260701100000_brh_commission_storage.sql` ✅ APPLIQUÉE Supabase prod
+- **Schema additions** :
+  - Bucket Storage `brh-commission-invoices` (privé, 10 MB max, MIME pdf only)
+  - ALTER `brh_commission_invoices` (+4 colonnes) : `pdf_path`, `pdf_uploaded_at`, `email_sent_at`, `email_resend_id`
+  - 2 RLS Storage : `admin_all_commission_pdfs` + `artisan_read_own_commission_pdfs` (path-based ownership via `split_part(name, '/', 1)`)
+- **Edge Function `send-commission-invoice`** :
+  - Auth admin obligatoire (vérifie `profiles.role = 'admin'`)
+  - Rate limit 30/min/IP
+  - Charge facture + artisan + crée signed URL 30 jours
+  - Email Resend HTML avec gradient vert BRH + tableau breakdown (CA / commission) + CTA "Télécharger ma facture (PDF)"
+  - Reply-To : `EMAIL_REPLY_TO` (compta@brh-habitat.fr) pour réponse directe
+  - Update auto : `status = 'invoiced'` + `invoiced_at` + `email_sent_at` + `email_resend_id`
+- **Composant `CommissionInvoicePdf` (~290 LOC)** :
+  - Format A4 français standard avec mentions légales L.441-10 (pénalités retard + indemnité 40 €)
+  - Header émetteur (SIRET + TVA + RCS) + N° facture (BRH-YYYY-MM-{artisan_short})
+  - Destinataire (artisan + commune + dépt + email)
+  - Tableau leads détaillés (audit trail) avec montants chantiers + commission par lead
+  - Totaux box (HT + TVA 20 % + TTC) avec accent vert BRH
+  - RIB IBAN/BIC + référence à indiquer (numéro facture)
+  - Footer fixe avec mentions légales
+  - **Pureté composant** : dates passées en props (lint `react-hooks/purity`), fallback `new Date(invoice.created_at)`
+- **Workflow zero-touch admin (1 clic = 3 actions)** :
+  1. Admin sur `/admin/commissions-artisans` voit la liste générée Phase 13.6.7
+  2. Clique "Envoyer" sur une ligne :
+     - **Étape 1** : `getLeadsForInvoice(invoiceId)` charge les leads liés
+     - **Étape 2** : `pdf(<CommissionInvoicePdf />).toBlob()` génère PDF côté navigateur
+     - **Étape 3** : `uploadPdf` mute → Supabase Storage `{artisan_id}/{year}/{month}.pdf`
+     - **Étape 4** : `sendInvoiceByEmail(invoiceId)` invoke EF → signed URL + Resend
+     - **Étape 5** : status auto-passé à `invoiced`, tracking `email_resend_id` stocké
+  3. L'artisan reçoit l'email avec lien PDF valable 30 jours
+- **Bouton secondaire** : "📄 Télécharger PDF" (sans envoi) pour aperçu admin
+- **Pages wiki impactées** :
+  - `edge-functions-reference.md` ✅ (catalogue 23 → 24 EFs + section Facturation commission)
+  - `data-model.md` (à mettre à jour : ajout bucket + 4 colonnes commission)
+  - `log.md` ✅ entrée
+- **Conformité 14 règles BRH** :
+  - Règle 4 ✅ — typage strict (`InvoiceRow`, `ArtisanRow` dans EF)
+  - Règle 5 ✅ — `if (error) throw error` partout
+  - Règle 6 ✅ — Route admin sous `AdminGuard` + EF check `role = 'admin'` côté serveur
+  - Règle 8 ✅ — RLS strict Storage : admin tout / artisan path-scoped via `split_part(name, '/', 1)`
+  - Règle 9 ✅ — Rate limit 30/min sur l'EF
+  - Règle 11 ✅ — TIMESTAMPTZ pour `pdf_uploaded_at`, `email_sent_at`
+  - Règle 13 ✅ — Pas de `toISOString().slice(0,10)` (helper `formatDateFr` custom)
+- **Risque** : Low. Pattern aligné avec `send-audit-email` Phase 4 (déjà testé prod). PDF généré côté front = pas de surcharge serveur. Signed URL 30j = pas d'auth issue.
+- **Tests** : 246/246 globaux verts. Tsc clean. Lint clean (avec fix `react-hooks/purity`).
+- **Status** : ✅ DONE V1 — workflow ops zero-touch fonctionnel.
+- **Décisions de cadrage** :
+  - **PDF généré côté front** plutôt que Deno : `@react-pdf/renderer` ne tourne pas en Deno, et la génération côté browser admin réduit la latence (pas de roundtrip serveur). Pattern aligné avec `AuditPdf` Phase 4.
+  - **Path conventionnel `{artisan_id}/{year}/{month}.pdf`** : structure prévisible pour RLS path-based + simple lookup + permet upsert (re-génération sans duplicate).
+  - **Signed URL 30j** plutôt que public : sécurité (pas de leak via crawlers) + permet révocation. 30 jours = délai légal de paiement, parfaitement cohérent.
+  - **Email avec `reply_to: compta@brh-habitat.fr`** : l'artisan répond à un humain (questions facturation) plutôt qu'à un noreply.
+  - **Bouton "Télécharger PDF" séparé** : permet aperçu admin avant envoi (qualité contrôlée), sans coût Resend.
+  - **Mentions légales L.441-10 obligatoires** : conformité Code de Commerce (pénalités retard 3× taux légal + indemnité 40 €). Génère du PDF "défendable" en cas de contentieux paiement.
+  - **TVA 20 % calculée à partir du TTC** : `ht = ttc / 1.2`, `tva = ttc - ht`. La facture commission BRH inclut la TVA française standard. Phase 13.6.7.3+ : auto-exonération si artisan auto-entrepreneur (régime franchise TVA).
+- **Phase suivante** : 13.6.7.3 cron mensuel auto-génération + auto-envoi le 1er du mois (zero-touch complet) / 13.6.7.4 Stripe Connect SEPA (auto-prélèvement) / 13.6.7.5 dashboard artisan factures historiques
+
+---
+
 ## 2026-05-02 — Phase 13.6.7 : 💰 Tracking commissions BRH (boucle financière)
 
 - **Contexte stratégique** : Boucler la chaîne SaaS BRH avec la **monétisation effective**. Chaque chantier `completed` génère une commission BRH 5-10 % du montant signé. Cette phase livre l'agrégation mensuelle automatique + le dashboard admin pour piloter la facturation. Phase 13.6.7.1+ ajoutera Stripe Connect pour auto-prélèvement SEPA.

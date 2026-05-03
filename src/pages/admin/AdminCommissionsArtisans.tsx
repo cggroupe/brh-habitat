@@ -18,14 +18,20 @@ import {
   AlertTriangle,
   Loader,
   Wrench,
+  Mail,
+  FileText,
 } from 'lucide-react'
+import { pdf } from '@react-pdf/renderer'
 import {
   useCommissionInvoicesForPeriod,
   useGenerateInvoices,
   useMarkInvoicePaid,
   useUpdateInvoiceStatus,
+  useUploadCommissionPdf,
+  useSendCommissionInvoice,
 } from '@/hooks/queries/admin-commissions'
-import type { CommissionInvoiceRow } from '@/api/admin-commissions'
+import { adminCommissionsApi, type CommissionInvoiceEnriched, type CommissionInvoiceRow } from '@/api/admin-commissions'
+import { CommissionInvoicePdf } from '@/components/admin/CommissionInvoicePdf'
 
 const STATUS_LABELS: Record<CommissionInvoiceRow['status'], string> = {
   pending: 'À facturer',
@@ -73,6 +79,9 @@ export default function AdminCommissionsArtisans() {
   const generate = useGenerateInvoices()
   const markPaid = useMarkInvoicePaid()
   const updateStatus = useUpdateInvoiceStatus()
+  const uploadPdf = useUploadCommissionPdf()
+  const sendEmail = useSendCommissionInvoice()
+  const [sendingId, setSendingId] = useState<string | null>(null)
 
   const stats = useMemo(() => {
     if (!invoices) return { total: 0, totalDue: 0, totalPaid: 0, nbInvoices: 0, nbArtisans: 0 }
@@ -116,6 +125,55 @@ export default function AdminCommissionsArtisans() {
     setError(null)
     try {
       await updateStatus.mutateAsync({ invoiceId, patch: { status } })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
+  /**
+   * Phase 13.6.7.2 — Génère PDF + upload Storage + envoie email en 1 clic.
+   */
+  const handleSendInvoice = async (invoice: CommissionInvoiceEnriched) => {
+    setError(null)
+    setSendingId(invoice.id)
+    try {
+      // 1. Charge les leads liés (audit trail)
+      const leads = await adminCommissionsApi.getLeadsForInvoice(invoice.id)
+
+      // 2. Numéro facture : BRH-2026-04-{artisan_id_short}
+      const invoiceNumber = `BRH-${invoice.period_year}-${String(invoice.period_month).padStart(2, '0')}-${invoice.artisan_id.slice(0, 8).toUpperCase()}`
+
+      // 3. Génère PDF côté front
+      const blob = await pdf(
+        <CommissionInvoicePdf invoice={invoice} leads={leads} invoiceNumber={invoiceNumber} />,
+      ).toBlob()
+
+      // 4. Upload Storage
+      await uploadPdf.mutateAsync({ invoice, blob })
+
+      // 5. Envoie email Resend
+      await sendEmail.mutateAsync(invoice.id)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setSendingId(null)
+    }
+  }
+
+  const handleDownloadPdf = async (invoice: CommissionInvoiceEnriched) => {
+    setError(null)
+    try {
+      const leads = await adminCommissionsApi.getLeadsForInvoice(invoice.id)
+      const invoiceNumber = `BRH-${invoice.period_year}-${String(invoice.period_month).padStart(2, '0')}-${invoice.artisan_id.slice(0, 8).toUpperCase()}`
+      const blob = await pdf(
+        <CommissionInvoicePdf invoice={invoice} leads={leads} invoiceNumber={invoiceNumber} />,
+      ).toBlob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${invoiceNumber}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     }
@@ -289,12 +347,37 @@ export default function AdminCommissionsArtisans() {
                     </td>
                     <td className="px-3 py-2 text-right">
                       <div className="flex justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadPdf(inv)}
+                          className="rounded-md border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                          title="Télécharger PDF (sans envoi)"
+                        >
+                          <FileText className="h-3 w-3" />
+                        </button>
+                        {(inv.status === 'pending' || inv.status === 'invoiced') && (
+                          <button
+                            type="button"
+                            onClick={() => handleSendInvoice(inv)}
+                            disabled={sendingId === inv.id}
+                            className="inline-flex items-center gap-0.5 rounded-md bg-purple-700 px-2 py-1 text-xs font-medium text-white hover:bg-purple-800 disabled:opacity-50"
+                            title="Génère PDF + Upload Storage + envoie email Resend"
+                          >
+                            {sendingId === inv.id ? (
+                              <Loader className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <Mail className="h-3 w-3" />
+                            )}
+                            Envoyer
+                          </button>
+                        )}
                         {inv.status === 'pending' && (
                           <button
                             type="button"
                             onClick={() => handleSetStatus(inv.id, 'invoiced')}
                             disabled={updateStatus.isPending}
                             className="rounded-md border border-blue-300 bg-blue-50 px-2 py-1 text-xs font-medium text-blue-900 hover:bg-blue-100 disabled:opacity-50"
+                            title="Marquer facturée (sans envoi)"
                           >
                             Facturée
                           </button>

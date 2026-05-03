@@ -133,6 +133,51 @@ export const adminCommissionsApi = {
   },
 
   /**
+   * Phase 13.6.7.2 — Upload PDF facture dans Supabase Storage + update invoice.pdf_path.
+   * Path conventionnel : `{artisan_id}/{year}/{month}.pdf`.
+   */
+  async uploadPdf(input: {
+    invoice: CommissionInvoiceRow
+    blob: Blob
+  }): Promise<{ path: string }> {
+    const path = `${input.invoice.artisan_id}/${input.invoice.period_year}/${String(input.invoice.period_month).padStart(2, '0')}.pdf`
+    const { error: uErr } = await supabase.storage
+      .from('brh-commission-invoices')
+      .upload(path, input.blob, {
+        contentType: 'application/pdf',
+        upsert: true,
+      })
+    if (uErr) throw uErr
+
+    const { error: iErr } = await supabase
+      .from('brh_commission_invoices')
+      .update({ pdf_path: path, pdf_uploaded_at: new Date().toISOString() })
+      .eq('id', input.invoice.id)
+    if (iErr) throw iErr
+
+    return { path }
+  },
+
+  /**
+   * Phase 13.6.7.2 — Envoie la facture à l'artisan par email Resend (signed URL 30j).
+   */
+  async sendInvoiceByEmail(invoiceId: string): Promise<{
+    sent: boolean
+    resendId?: string
+    signedUrl?: string
+    to?: string
+  }> {
+    const { data, error } = await supabase.functions.invoke<{
+      sent: boolean
+      resendId?: string
+      signedUrl?: string
+      to?: string
+    }>('send-commission-invoice', { body: { invoiceId } })
+    if (error) throw error
+    return data ?? { sent: false }
+  },
+
+  /**
    * Charge les leads liés à une facture (audit trail).
    */
   async getLeadsForInvoice(invoiceId: string): Promise<

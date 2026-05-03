@@ -1,7 +1,7 @@
 # BRH Habitat — Edge Functions Reference
 
 > Source : `supabase/functions/`.
-> **Dernière mesure** : 2026-05-02 · **Total** : 23 fonctions + `_shared/` (+ Phase 13.6.5 `artisan-invite-*`).
+> **Dernière mesure** : 2026-05-02 · **Total** : 24 fonctions + `_shared/` (+ Phase 13.6.7.2 `send-commission-invoice`).
 
 ## Convention globale
 
@@ -115,6 +115,16 @@ Stratégie hybride : **Clerk** gère l'UI d'authentification, **Supabase** garde
 **Trigger** : appelée automatiquement par le hook `useCreateArtisanLead` après création du lead (best-effort, n'échoue pas la mutation si Resend indisponible).
 
 **Variables d'environnement** : `RESEND_API_KEY` + `EMAIL_FROM` (déjà configurés depuis Phase 4).
+
+### 💰 Facturation commission — Phase 13.6.7.2 (1)
+
+| Fonction | Rôle | Auth | Rate limit |
+|----------|------|------|------------|
+| `send-commission-invoice` | Génère signed URL 30j sur PDF Storage + envoie email Resend HTML à l'artisan + update `email_sent_at` + `email_resend_id` | JWT admin | 30 req/min |
+
+**Workflow** : Admin clique "Envoyer" sur AdminCommissionsArtisans → front génère PDF via `@react-pdf/renderer` → upload Supabase Storage `brh-commission-invoices/{artisan_id}/{year}/{month}.pdf` → EF crée signed URL + envoie Resend.
+
+**Bucket** : `brh-commission-invoices` (privé, max 10 MB, MIME pdf only). RLS : admin tout, artisan voit `{artisan.id}/*` via signed URL.
 
 ### 🔧 Onboarding artisan magic link — Phase 13.6.5 (3)
 
