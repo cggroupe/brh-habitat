@@ -14,6 +14,7 @@ import {
   useUpdateAgenceImmo,
   useDeleteAgenceImmo,
 } from '@/hooks/queries/agences-immo'
+import { VisitHistoryList } from '@/components/terrain/VisitHistoryList'
 import type { AgenceImmo, AgenceImmoStatus } from '@/api/agences-immo'
 
 const STATUS_LABELS: Record<AgenceImmoStatus, string> = {
@@ -204,6 +205,7 @@ export default function AdminAgencesImmo() {
         <AgenceFormModal
           initial={editing ?? EMPTY_FORM}
           isEdit={!!editing}
+          editingId={editing?.id ?? null}
           onClose={() => {
             setShowCreate(false)
             setEditing(null)
@@ -226,11 +228,14 @@ export default function AdminAgencesImmo() {
 function AgenceFormModal({
   initial,
   isEdit,
+  editingId,
   onClose,
   onSubmit,
 }: {
   initial: FormState
   isEdit: boolean
+  /** UUID si édition (pour brancher l'historique tracking), null sinon. */
+  editingId: string | null
   onClose: () => void
   onSubmit: (data: FormState) => Promise<void>
 }) {
@@ -421,6 +426,20 @@ function AgenceFormModal({
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none"
             />
           </Field>
+
+          {/* R10c — Historique tracking pour cette agence (admin voit toutes les visites grace au bypass RLS) */}
+          {isEdit && editingId ? (
+            <div className="border-t border-gray-100 pt-3 mt-3">
+              <p className="text-xs font-medium text-gray-600 mb-2 uppercase tracking-wide">
+                Historique visites
+              </p>
+              <VisitHistoryList
+                targetType="agence_immo"
+                targetId={editingId}
+                compact
+              />
+            </div>
+          ) : null}
 
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
 

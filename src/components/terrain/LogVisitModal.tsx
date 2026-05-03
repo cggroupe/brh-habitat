@@ -6,7 +6,7 @@
  *   - drawer pin map terrain
  *   - bouton flottant page /pro/terrain (mode "logger sur place")
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
 import { useCreateVisit } from '@/hooks/queries/field-visits'
 import type { VisitType, VisitStatus, VisitTargetType } from '@/api/field-visits'
@@ -59,15 +59,51 @@ export function LogVisitModal({
   const [scheduledAt, setScheduledAt] = useState('')
 
   const createVisit = useCreateVisit()
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const previousFocusRef = useRef<HTMLElement | null>(null)
 
   // Phase R12 — A11y : Escape ferme la modale
+  // Phase R14 — A11y : focus trap (Tab cyclique) + restore focus à la fermeture
   useEffect(() => {
     if (!open) return
+
+    // Mémorise l'élément qui avait le focus avant ouverture
+    previousFocusRef.current = document.activeElement as HTMLElement | null
+
+    // Auto-focus du premier élément focusable
+    const firstInput = dialogRef.current?.querySelector<HTMLElement>(
+      'select, input, textarea, button',
+    )
+    firstInput?.focus()
+
     function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') {
+        onClose()
+        return
+      }
+      if (e.key === 'Tab' && dialogRef.current) {
+        const focusables = dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        )
+        if (focusables.length === 0) return
+        const first = focusables[0]
+        const last = focusables[focusables.length - 1]
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
     }
     window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
+
+    return () => {
+      window.removeEventListener('keydown', handleKey)
+      // Restore focus à la fermeture (FAB Logger / bouton card / etc.)
+      previousFocusRef.current?.focus?.()
+    }
   }, [open, onClose])
 
   if (!open) return null
@@ -105,6 +141,7 @@ export function LogVisitModal({
       aria-labelledby="log-visit-title"
     >
       <div
+        ref={dialogRef}
         className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6"
         onClick={(e) => e.stopPropagation()}
       >
