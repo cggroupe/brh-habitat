@@ -5,6 +5,124 @@
 
 ---
 
+## 2026-05-03 — Refonte UX complète R1 → R8 : 6 portails homogènes + IA unifiée + tracking terrain
+
+**Refonte structurelle Option C demandée par Philippe** ("revoir l'entièreté de la structure, c'est un peu brouillon"). 7 phases code livrées (R1 à R7) + audit final (R8). Migration DB pushée en cloud, 8 commits propres sur `feature/dpe-engine`.
+
+### Diagnostic initial
+- 6 personas hétérogènes (particulier rénovateur, particulier vendeur/parrain, pro owner, employé pro, admin, artisan)
+- Confusion "vendeur" : le mot couvrait à la fois le parrain pyramidal et la future agence immo Phase 16
+- Doublons IA : 3 entrées de menu (Chiffrage, Mes chiffrages, IA Bâtiment) côté Pro **et** côté Particulier (= 6 routes au total)
+- Menu pro à **14 entrées top-level** sans hiérarchie
+- Portail Artisan = 3 pages dispersées sous `AuthGuard` générique
+- Aucun système de permissions employé (member vs owner traitement identique côté UI)
+- Pas de tracking commercial terrain (pas de map "qui est passé chez qui")
+
+### Phase R1 — Fondations DB (permissions + tracking + agences)
+- **Migration `20260703100000_brh_refonte_r1_fondations.sql`** (poussée en cloud le 2026-05-03 via `psql` direct + password partagé `${BRH_SUPABASE_DB_PASSWORD:?Set this env var first}`) :
+  - `ALTER brh_company_members ADD permissions JSONB DEFAULT '{}'`
+  - `CREATE TABLE brh_agences_immo` (préparation Phase 16, alimentation manuelle MVP)
+  - `CREATE TABLE brh_field_visits` (target polymorphe prospect/artisan/agence)
+  - RLS field_visits : tous les members voient, chacun édite ses propres, owner peut delete tout, admin BRH bypass
+  - Helper SQL `brh_user_can(user_id, perm_key)` SECURITY DEFINER + search_path=''
+- **Code TS** :
+  - `src/types/permissions.ts` (5 clés Permission + presets)
+  - `src/lib/permissions.ts` (résolveur pur `userCan` + 13 tests)
+  - `src/hooks/queries/membership.ts` (`useMyMembership`)
+  - `src/components/auth/PermissionGate.tsx`
+- Vitest : 298 → 311 tests (+13)
+
+### Phase R2 — Tracking commercial terrain (`/pro/terrain`)
+- **API & hooks** : `field-visits.ts` + `agences-immo.ts` avec hooks complets
+- **Composants** :
+  - `<ContactButtons>` (tel: / mailto: / message in-app routing)
+  - `<LogVisitModal>` (4 types visite × 5 statuts × notes × scheduled_at)
+- **Page** `/pro/terrain` : map Leaflet centrée région active, layer agences (jaune) + visites (couleur stable par employé pour anti-doublon), filtres statut/cible/employé, drawer pin sélectionné, FAB "Logger visite"
+
+### Phase R3 — IA pro unifiée (`/pro/ia`)
+- Fusion `/pro/chiffrage` + `/pro/chiffrages` + `/pro/assistant` → **1 seule page** avec sélecteur de mode
+- Modes : Chiffrage / Conseil DTU / Courrier prospect
+- Page `/pro/ia/historique` pour les threads passés
+- 3 redirects 301 préservent les anciennes URLs
+
+### Phase R4 — Portail Artisan élevé
+- Avant : 3 pages sous `AuthGuard`. Après : portail dédié `/artisan/*` avec 6 entrées
+- **`ArtisanGuard`** : vérifie `brh_artisans_rge.profile_id = auth.uid()`
+- **`ArtisanShell`** : sidebar dédiée, branding "Espace artisan"
+- 4 nouvelles pages : `ArtisanMissions`, `ArtisanAgenda` (placeholder), `ArtisanProfil` (vue lecture profil RGE), `ArtisanMessages`
+- Redirect `/artisan/dashboard` → `/artisan`
+
+### Phase R5 — Refonte menu ProShell (14 → 8 entrées)
+- Hiérarchie 2 niveaux avec accordéons :
+  - Accueil
+  - Prospection [Mes prospects, Top Bretagne, Carte, Marketplace]
+  - Terrain (R2)
+  - IA Bâtiment [Chiffrage, DTU, Courrier, Historique]
+  - Équipe & Réseau [Employés, Réseau parrainage, Stats équipe]
+  - Finance [Commissions, Mes leads, Analytics, Abonnement, Rapport] (gated `canViewFinance`)
+  - Communication [Messages, Réseaux sociaux, QR Code]
+  - Mon entreprise
+- Auto-expand du groupe contenant la route active
+- PermissionGate appliqué au niveau groupe ET feuille
+- Mobile : flat list dans `PortalMobileNav`
+
+### Phase R6 — Application permissions employé (defense in depth)
+- Nouveau composant `<PermissionRoute permission="canViewFinance">` qui redirect `/pro` si refusée
+- 5 routes wrappées : `/pro/commissions`, `/pro/abonnement`, `/pro/rapport`, `/pro/analytics`, `/pro/mes-leads-artisans`
+- admin BRH override + owner override + member lookup JSONB
+
+### Phase R7 — Cleanup fichiers legacy + symétrie particulier
+- Supprimés (-6 fichiers) : `ProAssistant`, `ProChiffrage`, `ProChiffrages`, `PartAssistant`, `PartChiffrage`, `PartChiffrages`
+- Créés : `PartIA` + `PartIAHistorique` (symétrie pro)
+- 3 redirects 301 côté particulier
+- Menu ParticulierShell condensé (3 → 2 entrées IA)
+
+### Phase R8 — Audit final + wiki
+- Build prod final OK 19s
+- Tests : Vitest 311 / 311 + Playwright 3 smoke
+- Wiki mis à jour : `architecture-snapshot.md` (5 → 6 portails, 4 → 5 guards, +section permissions employé), `log.md` (cette entrée)
+- 8 commits sur `feature/dpe-engine` :
+  - `d~ feat(refonte): R1` — fondations DB + permissions
+  - `~ feat(refonte): R2` — tracking terrain
+  - `~ feat(refonte): R3` — IA pro unifiée
+  - `~ feat(refonte): R4` — portail artisan élevé
+  - `6013b49 feat(refonte): R5` — menu 14 → 8 entrées
+  - `a4c6656 feat(refonte): R6` — PermissionRoute
+  - `~ feat(refonte): R7` — cleanup legacy + symétrie particulier
+  - **R8** : ce commit (wiki)
+
+### Conformité 14 règles BRH
+- ✅ Règle #5 `if (error) throw error` partout dans field-visits.ts / agences-immo.ts
+- ✅ Règle #6 nouveau guard ArtisanGuard (pas de route sans guard)
+- ✅ Règle #7 RLS testées : member voit visites company, pas commissions autres
+- ✅ Règle #8 pas de `USING (true)` (toutes RLS scopées)
+- ✅ Règle #11 TIMESTAMPTZ partout
+- ✅ Règle #12 `SET search_path = ''` sur 2 fonctions SECURITY DEFINER
+- ✅ Règle #13 pas de `.toISOString().slice(0,10)`
+
+### Métriques avant/après
+| Métrique | Avant | Après |
+|---|---|---|
+| Portails distincts | 5 (artisan dilué) | **6** clairs |
+| Guards | 4 | **5** (+ArtisanGuard) |
+| Menu pro entrées | 14 flat | **8** accordéons |
+| Pages IA pro | 3 | **1** (3 modes) |
+| Pages IA particulier | 3 | **1** (2 modes) |
+| Pages artisan | 3 | **6** |
+| Système permissions | aucun | **5 clés JSONB** + helper SQL |
+| Tracking terrain | absent | **table + map + 4 types visite** |
+| Tests Vitest | 298 | **311** |
+| Tables BRH | 79 | **81** (+brh_field_visits, +brh_agences_immo) |
+
+### Risque
+- **Low** : refonte additive principalement, redirects 301 préservent les anciennes URLs.
+- **Medium** sur R1 (RLS field_visits) : à valider avec un user `member` réel sur staging avant activation marketing.
+
+### Status
+✅ DONE — 7 phases code + audit final livrées en une session le 2026-05-03.
+
+---
+
 ## 2026-05-03 — Phase 20 + 21 + 22 + 23 : CI + Bundle + Tests pure + Sentry release
 
 **Quadruple livraison "production hardening"** : fermeture du loop qualité (CI GitHub Actions), réduction du Time To Interactive (bundle splits), couverture tests des helpers business critiques, et symbolisation des erreurs prod.
