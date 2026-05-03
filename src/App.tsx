@@ -57,6 +57,7 @@ const AdminMessages = lazy(() => import('@/pages/admin/AdminMessages'))
 const AdminArticles = lazy(() => import('@/pages/admin/AdminArticles'))
 const AdminUtilisateurs = lazy(() => import('@/pages/admin/AdminUtilisateurs'))
 const AdminPartenaires = lazy(() => import('@/pages/admin/AdminPartenaires'))
+const AdminAgencesImmo = lazy(() => import('@/pages/admin/AdminAgencesImmo'))
 const AdminProspects = lazy(() => import('@/pages/admin/AdminProspects'))
 const AdminCommissionsArtisans = lazy(() => import('@/pages/admin/AdminCommissionsArtisans'))
 const AdminCommissions = lazy(() => import('@/pages/admin/AdminCommissions'))
@@ -212,6 +213,7 @@ export default function App() {
                 <Route path="/admin/articles" element={<AdminArticles />} />
                 <Route path="/admin/utilisateurs" element={<AdminUtilisateurs />} />
                 <Route path="/admin/partenaires" element={<AdminPartenaires />} />
+                <Route path="/admin/agences-immo" element={<AdminAgencesImmo />} />
                 <Route path="/admin/prospects" element={<AdminProspects />} />
                 <Route path="/admin/commissions-artisans" element={<AdminCommissionsArtisans />} />
                 <Route path="/admin/commissions" element={<AdminCommissions />} />
