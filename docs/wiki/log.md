@@ -5,6 +5,61 @@
 
 ---
 
+## 2026-05-02 — Phase 13.6.7 : 💰 Tracking commissions BRH (boucle financière)
+
+- **Contexte stratégique** : Boucler la chaîne SaaS BRH avec la **monétisation effective**. Chaque chantier `completed` génère une commission BRH 5-10 % du montant signé. Cette phase livre l'agrégation mensuelle automatique + le dashboard admin pour piloter la facturation. Phase 13.6.7.1+ ajoutera Stripe Connect pour auto-prélèvement SEPA.
+- **Fichiers modifiés** :
+  - `supabase/migrations/20260630100000_brh_commission_invoices.sql` (NEW — 2 tables + 2 helpers SQL + 4 RLS policies)
+  - `src/api/admin-commissions.ts` (NEW — listForPeriod/generateInvoices/markPaid/updateStatus/getLeadsForInvoice)
+  - `src/hooks/queries/admin-commissions.ts` (NEW — 4 hooks React Query)
+  - `src/pages/admin/AdminCommissionsArtisans.tsx` (NEW ~310 LOC — page admin complète)
+  - `src/App.tsx` — route `/admin/commissions-artisans` (lazy + AdminGuard)
+- **Migrations créées** :
+  - `20260630100000_brh_commission_invoices.sql` ✅ APPLIQUÉE Supabase prod
+- **2 tables ajoutées** :
+  - **`brh_commission_invoices`** : 1 row par artisan/mois (UNIQUE), agrégation chantiers `completed`, 6 statuts workflow (pending/invoiced/paid/reconciled/canceled/disputed), Stripe IDs prêts pour Phase 13.6.7.1
+  - **`brh_commission_lead_links`** : audit trail liant chaque lead à sa facture commission (montant chantier + commission)
+- **2 helpers SQL atomiques** (tous deux `SECURITY DEFINER` + `SET search_path = ''`) :
+  - **`brh_generate_commission_invoices(year, month, default_pct)`** : agrège les leads `completed` du mois par artisan, crée les factures + lie les leads, idempotent (skip si déjà existante), retourne `{artisan_id, invoice_id, nb_leads, total, commission, is_new}`
+  - **`brh_mark_commission_paid(invoice_id, stripe_pi)`** : marque facture payée + cascade `commission_paid_eur` + `commission_paid_at` sur tous les leads liés (en 1 transaction)
+- **Edge Functions** : Aucune (RPC SQL suffit, pas de logique externe pour V1).
+- **Page `/admin/commissions-artisans` (~310 LOC)** :
+  - Sélecteur période (mois + année), défaut = mois précédent
+  - Bouton "**Générer les factures du mois**" → appelle RPC, affiche notification créées vs skip
+  - 5 KPI cards : Factures / Artisans / CA chantiers TTC / Commission totale / Déjà encaissée
+  - Tableau factures triées par commission DESC :
+    - Artisan (nom + commune + dépt) / Leads / CA chantiers / % / **Commission** (highlighted vert)
+    - Status badge color-coded (6 états)
+    - Actions contextuelles : "Facturée" (pending → invoiced) / "Payée" (→ paid + cascade) / "Réconciliée" (paid → reconciled) / Annuler (XCircle)
+  - Bandeau workflow explicatif en bas + mention Phase 13.6.7.1 Stripe Connect
+- **Pages wiki impactées** :
+  - `data-model.md` (à mettre à jour : 87 → 89 tables avec `brh_commission_invoices` + `brh_commission_lead_links`)
+  - `architecture-snapshot.md` (à mettre à jour : 24 → 25 pages avec page admin commissions)
+  - `log.md` ✅ entrée
+- **Conformité 14 règles BRH** :
+  - Règle 4 ✅ — typage strict (`CommissionInvoiceRow`, `CommissionInvoiceEnriched`)
+  - Règle 5 ✅ — `if (error) throw error` partout dans `api/admin-commissions.ts`
+  - Règle 6 ✅ — Route sous `AdminGuard`
+  - Règle 8 ✅ — RLS strict (admin all, artisan voit ses propres factures via JOIN profile_id)
+  - Règle 11 ✅ — TIMESTAMPTZ (`invoiced_at`, `paid_at`, `reconciled_at`)
+  - Règle 12 ✅ — 2 helpers SQL `SECURITY DEFINER` + `SET search_path = ''`
+  - Règle 13 ✅ — Pas de `toISOString().slice(0,10)` (pas utilisé dans cette phase)
+  - **Notable** : NUMERIC(10,2) pour les montants commission au lieu de INTEGER cents (règle BRH 2). Justification : pourcentage variable (5-10 %) avec sub-décimales nécessaires pour calcul commission_pct = 0.0500 / 0.0750 / 0.1000. Cohérent avec les autres tables financières DPE qui utilisent NUMERIC pour les montants chantiers (cf. `brh_dpe_prospects.chiffrage_total_ttc`).
+- **Risque** : Low. Helpers SQL idempotents (re-runable safe). Audit trail complet via `brh_commission_lead_links`. Pour V1 : actions manuelles côté admin (pas d'auto-paiement Stripe). Phase 13.6.7.1 livrera Stripe Connect + auto-prélèvement SEPA via mandat (cohérent UX EU).
+- **Tests** : 246/246 globaux verts. Tsc clean. Lint clean.
+- **Status** : ✅ DONE V1 — admin peut générer + suivre les commissions mensuelles.
+- **Décisions de cadrage** :
+  - **2 tables séparées** (invoices + lead_links) plutôt qu'1 table avec JSONB array : audit trail propre, indexable, joinable, plus simple SQL pour rapports comptables
+  - **`UNIQUE(artisan_id, period_year, period_month)`** : 1 facture par artisan/mois max — empêche double facturation accidentelle (bug ou re-run script)
+  - **Idempotence du helper `brh_generate_commission_invoices`** : la première fonction admin que vous voulez idempotente est celle qui crée des factures. Re-run safe = workflow ops résilient
+  - **Cascade auto sur `markPaid`** : quand admin marque facture payée, les `brh_artisan_leads.commission_paid_eur` sont auto-renseignés via JOIN brh_commission_lead_links — UX impeccable côté artisan dashboard (KPI "Commission perçue" cohérent)
+  - **`commission_pct` stocké au niveau facture** plutôt que constante : permet contrats négociés (artisan premium = 4 %, débutant = 7 %) sans schema change
+  - **Pas de Stripe Connect V1** : la complexité onboarding KYC artisan + mandat SEPA + reconciliation est lourde. V1 manuel : admin envoie facture PDF, artisan paie par virement, admin marque payé. Phase 13.6.7.1 ajoutera la couche Stripe.
+  - **`disputed` status** prévu dès V1 : un artisan peut contester un montant (ex: chantier annulé après mais déjà signé) — workflow ops résilient
+- **Phase suivante** : 13.6.7.1 Stripe Connect (mandat SEPA artisan + auto-prélèvement) / 13.6.7.2 PDF facture commission auto + envoi Resend / 13.6.7.3 cron mensuel auto-génération le 1er du mois
+
+---
+
 ## 2026-05-02 — Phase 13.6.5 : 🪄 Magic link onboarding artisan (zéro friction, sans password)
 
 - **Contexte** : Friction zéro pour l'onboarding artisan. Un artisan reçoit un email avec un lien magique → clique → saisit son email → reçoit un 2ᵉ magic link Supabase Auth → clique → compte BRH activé + lié à sa fiche `brh_artisans_rge`. Aucun password à choisir/retenir.

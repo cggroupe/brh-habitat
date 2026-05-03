@@ -55,6 +55,7 @@ const AdminArticles = lazy(() => import('@/pages/admin/AdminArticles'))
 const AdminUtilisateurs = lazy(() => import('@/pages/admin/AdminUtilisateurs'))
 const AdminPartenaires = lazy(() => import('@/pages/admin/AdminPartenaires'))
 const AdminProspects = lazy(() => import('@/pages/admin/AdminProspects'))
+const AdminCommissionsArtisans = lazy(() => import('@/pages/admin/AdminCommissionsArtisans'))
 const AdminCommissions = lazy(() => import('@/pages/admin/AdminCommissions'))
 const AdminCatalogue = lazy(() => import('@/pages/admin/AdminCatalogue'))
 const AdminParametres = lazy(() => import('@/pages/admin/AdminParametres'))
@@ -186,6 +187,7 @@ export default function App() {
                 <Route path="/admin/utilisateurs" element={<AdminUtilisateurs />} />
                 <Route path="/admin/partenaires" element={<AdminPartenaires />} />
                 <Route path="/admin/prospects" element={<AdminProspects />} />
+                <Route path="/admin/commissions-artisans" element={<AdminCommissionsArtisans />} />
                 <Route path="/admin/commissions" element={<AdminCommissions />} />
                 <Route path="/admin/catalogue" element={<AdminCatalogue />} />
                 <Route path="/admin/parametres" element={<AdminParametres />} />
