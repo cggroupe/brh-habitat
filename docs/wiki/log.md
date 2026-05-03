@@ -5,6 +5,70 @@
 
 ---
 
+## 2026-05-03 — Phase 13.6.7.3.1 + 13.6.7.5 + 17 : Widget cron + Factures artisan + PWA install
+
+**Triple livraison consolidée** : 3 phases livrées ensemble pour boucler la chaîne UX commission + amorcer le mobile-first.
+
+### Phase 13.6.7.3.1 — Widget cron status (admin observability)
+- **Fichiers** : `src/api/admin-commissions.ts` (méthode `getLastCronRun`), `src/hooks/queries/admin-commissions.ts` (hook `useLastCronRun`), `src/pages/admin/AdminCommissionsArtisans.tsx` (widget visible)
+- **Comportement** : bandeau coloré (bleu/rouge/jaune selon status) en tête de page admin commissions affichant le dernier run pg_cron : timestamp + status + nombre de factures créées + total commission générée
+- **Observability** : `brh_cron_runs` interrogeable directement dans l'UI, plus besoin SSH/SQL pour debug ops
+- **Risque** : None (lecture seule)
+
+### Phase 13.6.7.5 — Page artisan factures historiques
+- **Fichiers** :
+  - `src/api/artisan-portal.ts` (`myCommissionInvoices` + `getInvoicePdfUrl`)
+  - `src/hooks/queries/artisan-portal.ts` (hook `useMyCommissionInvoices`)
+  - `src/pages/artisan/ArtisanFactures.tsx` (NEW ~280 LOC)
+  - `src/pages/artisan/ArtisanDashboard.tsx` (lien "Mes factures BRH")
+  - `src/App.tsx` (route `/artisan/factures` sous `AuthGuard`)
+- **Page `/artisan/factures`** :
+  - 4 KPI : Total factures / À régler / Commissions cumulées / Réglées
+  - Tableau historique 36 derniers mois (3 ans) trié par période DESC
+  - Colonnes : période + nb chantiers + CA TTC + commission + statut + dates émission/paiement + bouton télécharger PDF
+  - Signed URL 5 minutes pour download (RLS Storage path-based via `split_part(name, '/', 1)`)
+  - État vide explicatif si aucune facture
+  - Bandeau bleu explicatif sur le workflow facturation BRH
+- **RLS** : artisan voit UNIQUEMENT ses propres factures (RLS Phase 13.6.7 + RLS Storage Phase 13.6.7.2 cumul)
+- **Risque** : Low — lecture filtrée par RLS, pas de mutations
+
+### Phase 17 — Mobile PWA install prompt
+- **Fichiers** : `src/components/pwa/InstallPwaPrompt.tsx` (NEW ~80 LOC), `src/App.tsx` (mount global)
+- **Comportement** :
+  - Écoute event `beforeinstallprompt` (déclenché auto par Chrome/Edge sur mobile éligible)
+  - Affiche bandeau bottom-right (mobile bottom full) avec CTA "Installer"
+  - Stocke dismiss dans `localStorage` avec délai re-affichage 7 jours (anti-spam)
+  - `appinstalled` event → masque immédiatement
+- **Pré-requis déjà en place** : `manifest.json` valide (icons 192/512, theme color, standalone), `sw.js` actif depuis Phase 4 cache v3
+- **Cible** : pros RGE / artisans en chantier (mobile-first)
+
+### Conformité 14 règles BRH
+- Règle 4 ✅ — typage strict partout
+- Règle 5 ✅ — `if (error) throw error`
+- Règle 6 ✅ — Routes guardées (Admin / Auth / public PWA prompt)
+- Règle 8 ✅ — RLS strict (artisan voit ses factures via JOIN profile_id, RLS Storage path-based)
+- Règle 11 ✅ — TIMESTAMPTZ
+- Règle 13 ✅ — Pas de `toISOString().slice(0,10)`
+
+### Tests : 246/246 globaux verts. Tsc + lint clean.
+
+### Status : ✅ DONE V1
+**Boucle UX 100 % bouclée** : admin observe le cron + artisan voit ses factures + tous les users peuvent installer la PWA.
+
+### Décisions cadrage
+- **Pas de devis ni factures générales dans le SaaS** (contrainte business explicite Philippe) — uniquement commissions chantiers (Phase 13.6.7.x) et abonnements SaaS (Phase 15 Stripe). BRH n'a pas vocation à devenir un outil de facturation général.
+- **Widget cron au lieu d'email notification** : observabilité in-app suffit pour MVP, évite spam admin
+- **Signed URL 5 min** côté artisan vs 30 jours côté admin email : artisan accède en session active, durée courte = sécurité ; email a besoin de 30j pour persistance lien
+- **PWA install prompt non bloquant** : dismiss 7 jours, ne casse pas l'UX desktop, complètement passif sur mobile non-éligible
+- **Pas d'auto-envoi par cron Phase 13.6.7.3.1** : on reste sur cron-génère + bouton admin "Envoyer tout" Phase 13.6.7.3. Auto-envoi nécessiterait PDF côté Deno (lib non triviale), non priorité MVP
+
+### Phase suivante
+- **13.6.7.4** Stripe Connect SEPA auto-prélèvement (V2 monétisation)
+- **18** Multi-tenant scaling IDF/PACA (croissance géo)
+- **14.1** Cost monitoring ECB FX live (polish)
+
+---
+
 ## 2026-05-03 — Phase 13.6.7.3 : ⏰ Cron mensuel auto-génération + bouton "Envoyer tout"
 
 - **Contexte** : Compléter Phase 13.6.7.2 avec **automatisation 100 % zero-touch**. Le 1er du mois à 02h UTC, `pg_cron` génère automatiquement toutes les factures du mois précédent + audit trail. Côté UI, bouton "Envoyer tout" qui parallélise l'envoi de toutes les factures `pending` en 3 workers concurrents avec progress bar.

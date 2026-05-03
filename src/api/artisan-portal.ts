@@ -88,6 +88,63 @@ export const artisanPortalApi = {
   },
 
   /**
+   * Phase 13.6.7.5 — Liste les factures commission BRH de l'artisan.
+   * RLS filtre automatiquement par artisan.profile_id = auth.uid().
+   */
+  async myCommissionInvoices(): Promise<
+    Array<{
+      id: string
+      period_year: number
+      period_month: number
+      nb_leads_completed: number
+      total_chantiers_ttc_eur: number
+      total_commission_due_eur: number
+      status: string
+      pdf_path: string | null
+      invoiced_at: string | null
+      paid_at: string | null
+      email_sent_at: string | null
+      created_at: string
+    }>
+  > {
+    const { data, error } = await supabase
+      .from('brh_commission_invoices')
+      .select(
+        'id,period_year,period_month,nb_leads_completed,total_chantiers_ttc_eur,total_commission_due_eur,status,pdf_path,invoiced_at,paid_at,email_sent_at,created_at',
+      )
+      .order('period_year', { ascending: false })
+      .order('period_month', { ascending: false })
+      .limit(36) // 3 ans d'historique
+    if (error) throw error
+    return (data ?? []) as unknown as Array<{
+      id: string
+      period_year: number
+      period_month: number
+      nb_leads_completed: number
+      total_chantiers_ttc_eur: number
+      total_commission_due_eur: number
+      status: string
+      pdf_path: string | null
+      invoiced_at: string | null
+      paid_at: string | null
+      email_sent_at: string | null
+      created_at: string
+    }>
+  },
+
+  /**
+   * Phase 13.6.7.5 — Génère un signed URL temporaire pour télécharger le PDF d'une facture.
+   * RLS Storage path-based : artisan accède uniquement à `{son_artisan_id}/...`
+   */
+  async getInvoicePdfUrl(pdfPath: string): Promise<string | null> {
+    const { data, error } = await supabase.storage
+      .from('brh-commission-invoices')
+      .createSignedUrl(pdfPath, 5 * 60) // 5 min
+    if (error) throw error
+    return data?.signedUrl ?? null
+  },
+
+  /**
    * L'artisan répond à un lead (accept / decline / quote / sign / complete / cancel).
    * Wrapper RPC `brh_artisan_respond_lead` avec auth check + score recalc côté DB.
    */

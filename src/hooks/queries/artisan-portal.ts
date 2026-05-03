@@ -23,6 +23,15 @@ export function useMyLeadsReceived() {
   })
 }
 
+/** Phase 13.6.7.5 — Liste les factures commission BRH de l'artisan courant. */
+export function useMyCommissionInvoices() {
+  return useQuery({
+    queryKey: [...ARTISAN_PORTAL_KEY, 'commission-invoices'] as const,
+    queryFn: () => artisanPortalApi.myCommissionInvoices(),
+    staleTime: 60_000,
+  })
+}
+
 export function useRespondToLead() {
   const qc = useQueryClient()
   return useMutation({

@@ -65,6 +65,15 @@ export function useUploadCommissionPdf() {
   })
 }
 
+/** Phase 13.6.7.3.1 — Dernier run du cron auto-génération mensuelle. */
+export function useLastCronRun() {
+  return useQuery({
+    queryKey: [...ADMIN_COMMISSIONS_KEY, 'cron-last'] as const,
+    queryFn: () => adminCommissionsApi.getLastCronRun(),
+    staleTime: 60_000,
+  })
+}
+
 /** Phase 13.6.7.2 — Envoie facture par email Resend (signed URL 30j). */
 export function useSendCommissionInvoice() {
   const qc = useQueryClient()

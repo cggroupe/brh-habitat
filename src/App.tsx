@@ -89,6 +89,10 @@ const ProMarketplaceArtisans = lazy(() => import('@/pages/pro/ProMarketplaceArti
 const ProMesLeadsArtisans = lazy(() => import('@/pages/pro/ProMesLeadsArtisans'))
 const ArtisanDashboard = lazy(() => import('@/pages/artisan/ArtisanDashboard'))
 const ArtisanOnboarding = lazy(() => import('@/pages/artisan/ArtisanOnboarding'))
+const ArtisanFactures = lazy(() => import('@/pages/artisan/ArtisanFactures'))
+
+// Phase 17 — PWA install prompt (non-lazy, léger)
+import { InstallPwaPrompt } from '@/components/pwa/InstallPwaPrompt'
 const AuditView = lazy(() => import('@/pages/AuditView'))
 
 // Lazy loaded pages — Particulier
@@ -131,6 +135,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <InstallPwaPrompt />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Public routes */}
@@ -171,6 +176,7 @@ export default function App() {
                 <Route path="/audit-energetique/:id" element={<AuditView />} />
                 {/* Phase 13.6.4 — Espace artisan (vue inverse marketplace) */}
                 <Route path="/artisan/dashboard" element={<ArtisanDashboard />} />
+                <Route path="/artisan/factures" element={<ArtisanFactures />} />
               </Route>
             </Route>
 

@@ -186,6 +186,39 @@ export const adminCommissionsApi = {
   },
 
   /**
+   * Phase 13.6.7.3.1 — Charge le dernier run du cron auto-génération mensuelle.
+   */
+  async getLastCronRun(): Promise<{
+    id: string
+    job_name: string
+    started_at: string
+    finished_at: string | null
+    status: 'running' | 'success' | 'error'
+    invoices_created: number | null
+    total_commission_eur: number | null
+    error_message: string | null
+  } | null> {
+    const { data, error } = await supabase
+      .from('brh_cron_runs')
+      .select('*')
+      .eq('job_name', 'brh_monthly_commissions')
+      .order('started_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (error) throw error
+    return (data as unknown as {
+      id: string
+      job_name: string
+      started_at: string
+      finished_at: string | null
+      status: 'running' | 'success' | 'error'
+      invoices_created: number | null
+      total_commission_eur: number | null
+      error_message: string | null
+    } | null) ?? null
+  },
+
+  /**
    * Charge les leads liés à une facture (audit trail).
    */
   async getLeadsForInvoice(invoiceId: string): Promise<

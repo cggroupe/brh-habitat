@@ -29,6 +29,7 @@ import {
   useUpdateInvoiceStatus,
   useUploadCommissionPdf,
   useSendCommissionInvoice,
+  useLastCronRun,
 } from '@/hooks/queries/admin-commissions'
 import { adminCommissionsApi, type CommissionInvoiceEnriched, type CommissionInvoiceRow } from '@/api/admin-commissions'
 import { CommissionInvoicePdf } from '@/components/admin/CommissionInvoicePdf'
@@ -76,6 +77,7 @@ export default function AdminCommissionsArtisans() {
   const [genResult, setGenResult] = useState<{ created: number; skipped: number } | null>(null)
 
   const { data: invoices, isLoading } = useCommissionInvoicesForPeriod(year, month)
+  const { data: lastCronRun } = useLastCronRun()
   const generate = useGenerateInvoices()
   const markPaid = useMarkInvoicePaid()
   const updateStatus = useUpdateInvoiceStatus()
@@ -233,6 +235,47 @@ export default function AdminCommissionsArtisans() {
           Tracking des commissions BRH (5-10 % chantiers signés). Facturation mensuelle.
         </p>
       </div>
+
+      {/* Phase 13.6.7.3.1 — Widget cron status */}
+      {lastCronRun && (
+        <div
+          className={`rounded-lg border p-3 text-xs ${
+            lastCronRun.status === 'success'
+              ? 'border-blue-200 bg-blue-50 text-blue-900'
+              : lastCronRun.status === 'error'
+                ? 'border-red-200 bg-red-50 text-red-900'
+                : 'border-yellow-200 bg-yellow-50 text-yellow-900'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <strong>Dernière exécution cron auto-génération :</strong>{' '}
+              {new Date(lastCronRun.started_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}
+              {' · '}
+              <span className="capitalize">{lastCronRun.status}</span>
+              {lastCronRun.status === 'success' && (
+                <>
+                  {' · '}
+                  <strong>{lastCronRun.invoices_created ?? 0}</strong> nouvelle(s) facture(s)
+                  {lastCronRun.total_commission_eur != null && (
+                    <>
+                      {' · '}
+                      <strong>{formatEur(Number(lastCronRun.total_commission_eur))}</strong>{' '}
+                      de commission générée
+                    </>
+                  )}
+                </>
+              )}
+              {lastCronRun.status === 'error' && lastCronRun.error_message && (
+                <span className="ml-2 italic">— {lastCronRun.error_message}</span>
+              )}
+            </div>
+            <span className="text-[10px] opacity-70">
+              Cron : 1er du mois à 02h UTC · pg_cron
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Sélecteur période */}
       <div className="flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">

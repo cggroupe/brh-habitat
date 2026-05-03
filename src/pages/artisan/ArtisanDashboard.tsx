@@ -21,6 +21,7 @@ import {
   Star,
   Award,
   ArrowRight,
+  Euro,
 } from 'lucide-react'
 import {
   useMyArtisan,
@@ -151,6 +152,16 @@ export default function ArtisanDashboard() {
 
   return (
     <div className="container mx-auto max-w-7xl space-y-6 p-6">
+      {/* Top nav artisan */}
+      <div className="flex items-center justify-end">
+        <Link
+          to="/artisan/factures"
+          className="inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-900 hover:bg-emerald-100"
+        >
+          <Euro className="h-3 w-3" /> Mes factures BRH
+        </Link>
+      </div>
+
       {/* Header artisan */}
       <div className="rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-5">
         <div className="flex items-center justify-between">
