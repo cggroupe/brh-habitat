@@ -1,6 +1,7 @@
 import { ArrowLeft, Phone, Mail, MapPin, Wrench, Clock, Star, FileText } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { useProspectDetail } from '@/hooks/queries'
+import { TrackingPanel } from '@/components/terrain/TrackingPanel'
 import type { ProspectStatus } from '@/types/partner'
 
 const STATUS_BADGE: Record<ProspectStatus, string> = {
@@ -260,6 +261,17 @@ export default function ProProspectDetail() {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Phase R10 — Suivi commercial terrain */}
+          <div className="mt-6">
+            <TrackingPanel
+              targetType="prospect_dpe"
+              targetId={String(prospect.id)}
+              targetLabel={`${prospect.client_first_name ?? ''} ${prospect.client_last_name ?? ''}`.trim() || `Prospect #${prospect.id}`}
+              email={prospect.client_email ?? null}
+              phone={prospect.client_phone ?? null}
+            />
           </div>
         </div>
       </div>
