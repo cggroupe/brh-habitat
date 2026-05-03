@@ -80,6 +80,8 @@ export default function Footer() {
               {[
                 { to: '/mentions-legales', label: 'Mentions légales' },
                 { to: '/politique-de-confidentialite', label: 'Politique de confidentialité' },
+                { to: '/opt-out', label: 'Mes données (RGPD)' },
+                { to: '/inscription/agence', label: 'Devenir agence partenaire' },
                 { to: '/connexion', label: 'Connexion' },
                 { to: '/inscription', label: 'Créer un compte' },
               ].map((link) => (

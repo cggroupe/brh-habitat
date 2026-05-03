@@ -63,6 +63,10 @@ const AdminUtilisateurs = lazy(() => import('@/pages/admin/AdminUtilisateurs'))
 const AdminPartenaires = lazy(() => import('@/pages/admin/AdminPartenaires'))
 const AdminAgencesImmo = lazy(() => import('@/pages/admin/AdminAgencesImmo'))
 const AdminScoreVente = lazy(() => import('@/pages/admin/AdminScoreVente'))
+const AdminOptOutRequests = lazy(() => import('@/pages/admin/AdminOptOutRequests'))
+const AdminPartnerContracts = lazy(() => import('@/pages/admin/AdminPartnerContracts'))
+const AdminAgenceAudits = lazy(() => import('@/pages/admin/AdminAgenceAudits'))
+const AdminLeadAssignments = lazy(() => import('@/pages/admin/AdminLeadAssignments'))
 const AdminProspects = lazy(() => import('@/pages/admin/AdminProspects'))
 const AdminCommissionsArtisans = lazy(() => import('@/pages/admin/AdminCommissionsArtisans'))
 const AdminCommissions = lazy(() => import('@/pages/admin/AdminCommissions'))
@@ -238,6 +242,10 @@ export default function App() {
                 <Route path="/admin/partenaires" element={<AdminPartenaires />} />
                 <Route path="/admin/agences-immo" element={<AdminAgencesImmo />} />
                 <Route path="/admin/score-vente" element={<AdminScoreVente />} />
+                <Route path="/admin/opt-out-requests" element={<AdminOptOutRequests />} />
+                <Route path="/admin/partner-contracts" element={<AdminPartnerContracts />} />
+                <Route path="/admin/agence-audits" element={<AdminAgenceAudits />} />
+                <Route path="/admin/lead-assignments" element={<AdminLeadAssignments />} />
                 <Route path="/admin/prospects" element={<AdminProspects />} />
                 <Route path="/admin/commissions-artisans" element={<AdminCommissionsArtisans />} />
                 <Route path="/admin/commissions" element={<AdminCommissions />} />

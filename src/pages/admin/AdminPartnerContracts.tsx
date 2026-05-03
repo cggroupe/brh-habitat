@@ -241,6 +241,9 @@ export default function AdminPartnerContracts() {
         <div
           className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto"
           onClick={() => setViewing(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Aperçu contrat signé"
         >
           <div
             className="bg-white rounded-2xl shadow-xl max-w-3xl w-full p-6 my-8"
@@ -279,9 +282,14 @@ export default function AdminPartnerContracts() {
 
       {/* Modal révocation */}
       {revokeId && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="revoke-contract-title"
+        >
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-            <h2 className="text-lg font-semibold mb-2">Révoquer ce contrat</h2>
+            <h2 id="revoke-contract-title" className="text-lg font-semibold mb-2">Révoquer ce contrat</h2>
             <p className="text-sm text-gray-600 mb-4">
               Cette action est irréversible. Le partenaire perdra immédiatement accès aux services
               associés (leads, factures…).
