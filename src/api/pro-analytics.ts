@@ -156,9 +156,23 @@ export const proAnalyticsApi = {
   },
 
   /**
-   * Stats courriers IA (cost monitoring + funnel).
+   * Phase 14.1 — Fetch USD/EUR rate live (ECB via frankfurter.app, cache 24h serveur).
    */
-  async letters(): Promise<AnalyticsLetters> {
+  async fetchUsdEurRate(): Promise<{ rate: number; date: string; source: string }> {
+    const { data, error } = await supabase.functions.invoke<{
+      rate: number
+      date: string
+      source: string
+    }>('fetch-fx-rate', { body: { from: 'USD', to: 'EUR' } })
+    if (error) throw error
+    return data ?? { rate: 0.92, date: '2024-01-01', source: 'fallback' }
+  },
+
+  /**
+   * Stats courriers IA (cost monitoring + funnel).
+   * @param usdEurRate Taux USD→EUR à utiliser (par défaut 0.92, peut être passé live via fetchUsdEurRate)
+   */
+  async letters(usdEurRate = 0.92): Promise<AnalyticsLetters> {
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
     const sevenDaysAgoIso = sevenDaysAgo.toISOString()
@@ -212,7 +226,7 @@ export const proAnalyticsApi = {
           (output * 25) / 1_000_000 +
           (cacheRead * 0.5) / 1_000_000 +
           (cacheCreation * 6.25) / 1_000_000) *
-        0.92
+        usdEurRate
       acc.costEstimateEur += cost
       totalCacheRead += cacheRead
       totalInputUncached += input

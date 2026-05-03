@@ -5,6 +5,74 @@
 
 ---
 
+## 2026-05-03 — Phase 14.1 + 19 + 18 : FX live + Smoke E2E + Multi-tenant base
+
+**Triple livraison consolidée** : finalisation cost monitoring exact, premier filet E2E, structure multi-tenant prête pour partenaires régionaux IDF/PACA.
+
+### Phase 14.1 — Cost monitoring FX live (ECB via frankfurter.app)
+- **Contexte** : Phase 14 utilisait un taux USD→EUR hardcodé `0.92`. Drift réel possible jusqu'à ±10 % → mauvaise lecture du coût Anthropic dans le dashboard pro analytics.
+- **Fichiers** :
+  - `supabase/functions/fetch-fx-rate/index.ts` (NEW ~130 LOC) — EF cache 24h dans `brh_ext_cache`, fallback graceful (cache stale → valeur défaut 0.92), rate-limit 60/min
+  - `src/api/pro-analytics.ts` — méthode `fetchUsdEurRate()` + signature `letters(usdEurRate = 0.92)` paramétrable
+  - `src/hooks/queries/pro-analytics.ts` — hook `useUsdEurRate()` (staleTime 1h client) + `useAnalyticsLetters()` qui consomme le rate live
+- **API ECB** : frankfurter.app (gratuite, sans clé, basée taux ECB officiels)
+- **Validation live** : EF déployée et testée → retourne `{rate: 0.85455, date: "2026-04-30", source: "api"}`
+- **Pattern réutilisé** : `brh_ext_cache` (Phase 11.1) + EF rate-limit pattern (Phase 9)
+- **Risque** : None — fallback robuste à chaque étape
+
+### Phase 19 — Smoke tests E2E (Playwright)
+- **Contexte** : `docs/wiki/tests.md` recensait l'absence totale de tests E2E. Premier filet pour détecter régressions visibles avant deploy.
+- **Fichiers** :
+  - `playwright.config.ts` (NEW) — config Chromium + dev server auto :5173 + traces on-first-retry
+  - `e2e/smoke.spec.ts` (NEW) — 3 tests : page d'accueil sans erreur console bloquante, login expose champ email, `/admin` redirige visiteur non-auth
+  - `e2e/README.md` (NEW) — guide d'usage local + CI
+  - `package.json` — scripts `test:e2e` + `test:e2e:ui` + devDep `@playwright/test ^1.59.1`
+- **Périmètre volontairement minimal** : pas de flows authentifiés (Clerk fixtures = roadmap Phase 6 tests.md). Les 3 smoke détectent build cassé / route 404 / guard désactivé par erreur.
+- **Validation** : `npx playwright test --list` → 3 tests détectés correctement
+- **Risque** : None — tests opt-in, n'impactent ni build ni `npm run test` (Vitest)
+
+### Phase 18 — Multi-tenant base (extension IDF / PACA)
+- **Contexte** : `tenant-multitenancy.md` annonçait la structure white-label prête mais aucun gabarit non-BRH n'existait. Phase 18 amorce le déploiement régional.
+- **Fichiers** :
+  - `src/config/tenant.types.ts` — types `TenantRegionCode`, `TenantRegion`, catalogue `TENANT_REGIONS` (Bretagne / IDF / PACA), champ optionnel `TenantConfig.region`
+  - `src/config/tenants/brh.ts` — câblage `region: TENANT_REGIONS.bretagne`
+  - `src/config/tenants/idf.ts` (NEW) — gabarit Île-de-France, tier `pro`, branding bleu, 8 départements (75/77/78/91/92/93/94/95)
+  - `src/config/tenants/paca.ts` (NEW) — gabarit PACA, tier `pro`, branding orange, 6 départements (04/05/06/13/83/84)
+  - `src/lib/tenant-region.ts` (NEW) — helpers `departementFromInsee`, `departementFromPostalCode` (gère Corse 2A/2B), `isInActiveRegion`, constante `activeRegion`
+  - `src/config/tenant.test.ts` (NEW, 9 tests) — sanity multi-tenant : chargement, cohérence région, départements disjoints, branding minimal
+  - `src/lib/tenant-region.test.ts` (NEW, 9 tests) — extraction département, scoping région active
+- **Décisions de cadrage** :
+  - `TenantConfig.region` = optionnel (rétrocompat) → BRH continue de fonctionner même si helpers tenant-region pas encore consommés
+  - IDF + PACA = tier `pro` (pas `enterprise`) — ce sont des gabarits partenaires, pas le master
+  - Corse rattachée à PACA ? Non, hors-scope MVP. Catalogue départements PACA officiel 6 dépts uniquement.
+  - Couleurs IDF (bleu) / PACA (orange) = placeholders, à remplacer par marque partenaire avant activation
+- **Activation** : `VITE_TENANT=idf npm run build:tenant` ou `VITE_TENANT=paca npm run build:tenant`
+- **Risque** : None — additif pur, pas de breaking change sur BRH
+
+### Conformité règles anti-bug BRH (14)
+- ✅ Règle #2 INTEGER cents : pas de financier touché
+- ✅ Règle #3 localStorage scoped tenant : `appStore.ts` continue d'utiliser `${tenant.tenantId}-*`
+- ✅ Règle #5 `if (error) throw error` : `fetchUsdEurRate` respecte
+- ✅ Règle #9 EF rate-limit : `fetch-fx-rate` rate-limit 60/min
+- ✅ Règle #11 TIMESTAMPTZ : pas de schéma touché
+- ✅ Règle #13 pas de `.toISOString().slice(0,10)` : helpers tenant-region utilisent `.slice(0, 2)` sur INSEE 5-char (légitime)
+
+### Pages wiki impactées
+- `docs/wiki/log.md` (cette entrée)
+- `docs/wiki/tests.md` (Playwright passe de "à installer" à "installé + 3 smoke tests")
+- `docs/wiki/tenant-multitenancy.md` (IDF + PACA gabarits + helpers region)
+
+### Tests
+- TypeScript : ✅ clean (`npx tsc -b --noEmit`)
+- Lint : ✅ clean (`npm run lint`)
+- Vitest : ✅ **264 / 264** (était 246 avant — +18 nouveaux tests Phase 18)
+- Playwright : ✅ 3 tests listés correctement (pas exécuté en CI, browser à installer manuellement via `npx playwright install chromium`)
+
+### Status
+✅ DONE — 3 phases livrées, code stabilisé, wiki à jour.
+
+---
+
 ## 2026-05-03 — Phase 13.6.7.3.1 + 13.6.7.5 + 17 : Widget cron + Factures artisan + PWA install
 
 **Triple livraison consolidée** : 3 phases livrées ensemble pour boucler la chaîne UX commission + amorcer le mobile-first.

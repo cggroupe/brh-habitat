@@ -1,9 +1,11 @@
 import type { TenantConfig } from '../tenant.types'
+import { TENANT_REGIONS } from '../tenant.types'
 import { TIER_FEATURES } from '../tier-presets'
 
 const config: TenantConfig = {
   tenantId: 'brh',
   tier: 'enterprise',
+  region: TENANT_REGIONS.bretagne,
   branding: {
     companyName: 'Bretagne Renovation Habitat',
     companyShortName: 'BRH',

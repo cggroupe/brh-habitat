@@ -3,9 +3,18 @@
 > Source : `package.json` + inspection `src/test/` (si existe) + audit ARCHITECTURE.md.
 > **Dernière mesure** : 2026-04-23.
 
-## État actuel : AUCUN TEST AUTOMATISÉ
+## État actuel (2026-05-03)
 
-**Constat honnête** : le projet n'a pas de tests unitaires, d'intégration ou E2E automatisés.
+**Vitest (unitaires + intégration)** : ✅ **264 tests passants** (15 fichiers).
+**Playwright (E2E)** : ✅ **infra installée + 3 smoke tests** depuis Phase 19.
+**RLS / triggers / EFs auth-flow** : ❌ pas encore couverts (roadmap Phase 1-5 ci-dessous).
+
+### Ce qui est couvert
+- DPE Engine (computeDpe, zones climatiques, MPR ampleur, chauffage, bâti, finals)
+- Multi-tenant config (chargement BRH / IDF / PACA, helpers region)
+- Lib pure (tenant-region, dpe-engine fixtures)
+
+### Ce qui ne l'est pas (roadmap)
 
 La qualité est assurée par :
 1. ✅ **TypeScript strict** (évite classe entière de bugs)
@@ -126,16 +135,24 @@ Framework : `@testing-library/react` + `@testing-library/react-hooks`.
 ### 🟡 Priorité basse — tests E2E
 
 #### 6. Tests E2E (Playwright)
-Flows critiques :
+**Phase 19 livrée 2026-05-03** : infra Playwright + 3 smoke tests dans `e2e/smoke.spec.ts` :
+1. Page d'accueil charge sans erreur console bloquante
+2. `/login` expose un champ email
+3. `/admin` redirige les visiteurs non-authentifiés
+
+Lancer en local :
+```bash
+npx playwright install chromium    # one-shot (download browser)
+npm run test:e2e                   # lance dev server + tests
+npm run test:e2e:ui                # mode UI debug
+E2E_BASE_URL=https://… npm run test:e2e   # cibler un environnement déjà en route
+```
+
+**Reste à faire** (flows authentifiés, demandent fixtures Clerk + Supabase) :
 - Inscription particulier → diagnostic → résultats
 - Inscription pro → création company → invitation membre
 - Pro → création prospect → devis → signature
 - Admin → gestion commissions
-
-```bash
-npm install -D @playwright/test
-npx playwright install
-```
 
 ## Configuration recommandée
 
@@ -238,13 +255,18 @@ Avant chaque déploiement, Philippe teste manuellement :
 
 ## Status actuel
 
-- ❌ Aucun test automatisé
+- ✅ **Vitest 264 / 264 passants** (DPE engine + multi-tenant + lib pure)
+- ✅ **Playwright infra + 3 smoke tests** (Phase 19 du 2026-05-03)
+- ❌ Tests RLS Supabase pas encore implémentés
+- ❌ Tests triggers (cascade commissions) pas encore implémentés
+- ❌ Tests EF (happy path + auth fail) pas encore implémentés
 - ✅ TypeScript strict
 - ✅ Zod validation
 - ✅ Audits sécurité (v4→v8)
 - ✅ Tests manuels Philippe avant deploy
-- 🔴 **Recommandation** : implémenter phase 1-3 (infra + RLS + triggers) en priorité avant prochaine montée en charge
+- 🟠 **Recommandation** : implémenter phase 2-3 (RLS + triggers) avant prochaine montée en charge
 
 ## Mises à jour de cette page
 
 - **2026-04-23** : Création (audit wiki Karpathy v2). Honnêteté sur absence tests + roadmap.
+- **2026-05-03** : Phase 19 — Playwright installé + 3 smoke tests + Vitest passe à 264 tests (15 fichiers).

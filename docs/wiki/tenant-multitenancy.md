@@ -10,19 +10,55 @@ BRH Habitat est conçu comme une **plateforme white-label multi-tenant**. Chaque
 - Son **tier** (`starter`, `pro`, `enterprise`) qui active/désactive des features
 - Ses **feature flags** granulaires
 
-Actuellement, **1 seul tenant en prod** : `brh` (enterprise). La structure est prête pour en ajouter d'autres.
+**État au 2026-05-03 (Phase 18)** :
+- `brh` (enterprise) — seul tenant **en production**
+- `idf` (pro) — gabarit Île-de-France, prêt à déployer (placeholders branding)
+- `paca` (pro) — gabarit PACA, prêt à déployer (placeholders branding)
 
 ## Architecture
 
 ```
 src/config/
-├── tenant.ts              # Fonction resolve du tenant courant
-├── tenant.types.ts        # Types TenantConfig, TenantFeatures, PricingTier
+├── tenant.ts              # Résolveur du tenant courant (lit VITE_TENANT)
+├── tenant.types.ts        # Types TenantConfig, TenantFeatures, PricingTier,
+│                          #   TenantRegion + catalogue TENANT_REGIONS
 ├── TenantContext.tsx      # React Context + Provider
 ├── tenants/
-│   ├── brh.ts             # Config BRH (enterprise)
-│   └── template.ts        # Template pour nouveau tenant
-└── tier-presets.ts        # Presets features par tier
+│   ├── brh.ts             # Config BRH (enterprise, region Bretagne)
+│   ├── idf.ts             # Gabarit IDF (pro, 8 départements 75/77/.../95)
+│   └── paca.ts            # Gabarit PACA (pro, 6 départements 04/05/06/13/83/84)
+├── tier-presets.ts        # Presets features par tier
+└── tenant.test.ts         # Sanity tests multi-tenant (Phase 18)
+
+src/lib/
+├── tenant-region.ts       # Helpers departementFromInsee / isInActiveRegion
+└── tenant-region.test.ts  # Tests scoping région
+```
+
+### Activation d'un tenant régional
+
+```bash
+VITE_TENANT=idf npm run build:tenant      # Build production IDF
+VITE_TENANT=paca npm run dev              # Dev local PACA
+VITE_TENANT=brh npm run build             # Default — pas besoin de la var
+```
+
+### Scoping prospects par région tenant
+
+Les helpers `src/lib/tenant-region.ts` permettent de filtrer prospects /
+artisans / aides par département de la région active :
+
+```ts
+import { activeRegion, isInActiveRegion } from '@/lib/tenant-region'
+
+// Côté requête Supabase — filtrer prospects au département de la région active
+const { data } = await supabase
+  .from('brh_dpe_prospects')
+  .select('*')
+  .in('code_dept', activeRegion.departments)
+
+// Côté UI — masquer un prospect hors région
+const visible = prospects.filter((p) => isInActiveRegion(p.code_insee))
 ```
 
 ## Types

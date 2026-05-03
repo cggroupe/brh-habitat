@@ -19,7 +19,9 @@
     "stress-actions": "tsx scripts/stress-actions.ts",
     "configure-clerk": "tsx scripts/configure-clerk.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.4.0",
@@ -43,6 +45,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/vite": "^4.2.1",
     "@types/node": "^24.10.1",
     "@types/pg": "^8.20.0",
