@@ -5,6 +5,88 @@
 
 ---
 
+## 2026-05-03 — Audit admin Phase 16 : 4 pages management + subscription panel
+
+**Audit fait à la demande de Philippe** : "vérifier que l'admin a bien accès au management de toutes les nouvelles fonctionnalités". Constat : 5 manques identifiés sur les nouvelles tables Phase 16 + Refonte. 4 pages créées + 1 panel intégré au modal agence.
+
+### Diagnostic
+Tables ajoutées par Refonte R1 + Phase 16 sans page admin associée :
+
+| Table | Page admin avant | Statut |
+|---|---|---|
+| `brh_optout_requests` (Phase 16.0.4) | ❌ aucune | ⚠ critique RGPD (deadline 30j) |
+| `brh_partner_contracts` (Phase 16.0.7) | ❌ aucune | Important (eIDAS preuve) |
+| `brh_agence_audits` (Phase 16.0.9) | ❌ aucune | Important (qualité réseau) |
+| `brh_lead_assignments` (Phase R1) | ❌ aucune | Important (anti-doublon) |
+| `brh_agence_subscriptions` (Phase 16.0.8) | ❌ aucune | Visible uniquement par signataire |
+
+### Pages admin créées (4)
+
+#### `/admin/opt-out-requests` — Demandes RGPD
+- Filtres par statut (pending/processing/completed/rejected)
+- KPI cards : pending · ⚠ overdue (deadline dépassée) · total
+- Bandeau rouge si overdue > 0 (risque CNIL)
+- Workflow par card : "Démarrer traitement" → "Clôturer (avec note)" / "Rejeter"
+- Affiche prospect matché auto si code postal + commune ont retourné un hit
+- Workflow recommandé documenté en bas de page
+
+#### `/admin/partner-contracts` — Chartes signées
+- Toutes chartes (artisan + agence + pro company) avec icônes différenciées
+- Filtres type + statut
+- Modal "Eye" → preview complet du contenu signé (snapshot Markdown)
+- Modal "XCircle" → révocation manuelle avec motif
+- Affiche preuve eIDAS : IP, user-agent, horodatage, consents 3-cases, email_confirmed_at
+
+#### `/admin/agence-audits` — Audits aléatoires mensuels
+- KPI : ⚠ intrusifs · 🚫 plaintes · total
+- Filtres mois + statut + feedback
+- Workflow par audit : ✓ vérifier OK / ⚠ avertir agence / 🚫 suspendre agence
+- Bouton "Générer audits du mois précédent" → trigger manuel `brh_generate_monthly_audits()` RPC
+
+#### `/admin/lead-assignments` — Supervision claims
+- Top 5 agences abusives (% blacklisted élevé) en bandeau d'alerte
+- Filtres par statut
+- Bouton "Release expired" (cron manuel) → trigger `brh_release_expired_assignments()` RPC
+- Action override admin : libérer un lead bloqué (passe outre RLS)
+
+### Extension `/admin/agences-immo` modal édition
+- Nouveau composant `<SubscriptionPanel agenceId>` intégré au formulaire édition
+- Affiche : palier (Discovery/Standard/Premium/Expert) + prix + quota mensuel + consommé + % usage + statut Stripe
+- Affichage italique "Aucun abonnement" si charte pas signée
+
+### Menu AdminShell étendu (15 → 19 entrées)
+
+```
+Tableau de bord · Logements · Dossiers · Rendez-vous · Messages · Articles
+Utilisateurs · Partenaires · Agences immo · Score Vente v1
++ Claims agences (NEW)
++ Audits agences (NEW)
++ Chartes signées (NEW)
++ Demandes RGPD (NEW)
+Prospects · Commissions · Catalogue · Paramètres · Publications
+```
+
+### Ce qui n'est PAS couvert (intentionnel)
+- ❌ Édition permissions JSONB des members company pro depuis admin → reste géré par les owners via `/pro/equipe` (cohérent avec le modèle de délégation pro)
+- ❌ Page `/admin/field-visits` cross-company → admin BRH peut consulter via `/pro/terrain` directement (bypass RLS)
+- ❌ Édition manuelle subscription tier depuis admin → laissé à l'agence via `/agence/abonnement` (Stripe Checkout en prod)
+
+### Conformité 14 règles BRH
+- ✅ Règle #5 `if (error) throw error` partout
+- ✅ Règle #6 toutes routes sous AdminGuard
+- ✅ Règle #11 TIMESTAMPTZ (utilisé `processed_at`, `revoked_at`, `reviewed_at` partout)
+- ✅ Règle #13 `toLocaleDateString('fr-FR')` natif (pas de `toISOString().slice()`)
+
+### Tests
+- TS strict : ✅ clean
+- ESLint : ✅ clean
+- Vitest : ✅ 353 / 353 (inchangé, pas de tests UI sur composants admin)
+
+### Status
+✅ DONE — l'admin BRH a maintenant un accès complet et explicite à toutes les nouvelles fonctionnalités Phase 16 + Refonte.
+
+---
+
 ## 2026-05-03 — Phase 16.0.7 + 16.0.8 + 16.0.9 : pipeline complet pour démo avocat
 
 **Suite directe de Phase 16.0.1-6.** Pipeline end-to-end fonctionnel : onboarding agence → tier → charte signée → portail agence → Stripe (preview-safe) → audit aléatoire mensuel + DPIA light prête pour relecture avocat.

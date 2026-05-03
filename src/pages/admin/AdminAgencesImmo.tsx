@@ -15,6 +15,8 @@ import {
   useDeleteAgenceImmo,
 } from '@/hooks/queries/agences-immo'
 import { VisitHistoryList } from '@/components/terrain/VisitHistoryList'
+import { useAgenceSubscription } from '@/hooks/queries/agence-subscriptions'
+import { TIER_LABELS, TIER_PRICES } from '@/api/agence-subscriptions'
 import type { AgenceImmo, AgenceImmoStatus } from '@/api/agences-immo'
 
 const STATUS_LABELS: Record<AgenceImmoStatus, string> = {
@@ -429,16 +431,19 @@ function AgenceFormModal({
 
           {/* R10c — Historique tracking pour cette agence (admin voit toutes les visites grace au bypass RLS) */}
           {isEdit && editingId ? (
-            <div className="border-t border-gray-100 pt-3 mt-3">
-              <p className="text-xs font-medium text-gray-600 mb-2 uppercase tracking-wide">
-                Historique visites
-              </p>
-              <VisitHistoryList
-                targetType="agence_immo"
-                targetId={editingId}
-                compact
-              />
-            </div>
+            <>
+              <SubscriptionPanel agenceId={editingId} />
+              <div className="border-t border-gray-100 pt-3 mt-3">
+                <p className="text-xs font-medium text-gray-600 mb-2 uppercase tracking-wide">
+                  Historique visites
+                </p>
+                <VisitHistoryList
+                  targetType="agence_immo"
+                  targetId={editingId}
+                  compact
+                />
+              </div>
+            </>
           ) : null}
 
           {error ? <p className="text-sm text-red-600">{error}</p> : null}
@@ -460,6 +465,55 @@ function AgenceFormModal({
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  )
+}
+
+function SubscriptionPanel({ agenceId }: { agenceId: string }) {
+  const { data: sub } = useAgenceSubscription(agenceId)
+  if (!sub) {
+    return (
+      <div className="border-t border-gray-100 pt-3 mt-3">
+        <p className="text-xs font-medium text-gray-600 mb-2 uppercase tracking-wide">
+          Abonnement
+        </p>
+        <p className="text-xs text-gray-400 italic">Aucun abonnement (charte non signée)</p>
+      </div>
+    )
+  }
+  const usedPct = sub.monthly_lead_quota
+    ? Math.round((sub.current_month_claims / sub.monthly_lead_quota) * 100)
+    : 0
+  return (
+    <div className="border-t border-gray-100 pt-3 mt-3 bg-blue-50/30 rounded-lg p-3 -mx-1">
+      <p className="text-xs font-medium text-gray-600 mb-2 uppercase tracking-wide">
+        Abonnement
+      </p>
+      <div className="grid grid-cols-3 gap-2 text-xs">
+        <div>
+          <p className="text-gray-500">Palier</p>
+          <p className="font-semibold">
+            {TIER_LABELS[sub.tier]}{' '}
+            <span className="text-gray-400 font-normal">
+              ({TIER_PRICES[sub.tier] === 0 ? 'gratuit' : `${TIER_PRICES[sub.tier]}€/m`})
+            </span>
+          </p>
+        </div>
+        <div>
+          <p className="text-gray-500">Quota mensuel</p>
+          <p className="font-semibold">
+            {sub.current_month_claims} /{' '}
+            {sub.monthly_lead_quota === null ? '∞' : sub.monthly_lead_quota}
+            {sub.monthly_lead_quota !== null ? ` (${usedPct}%)` : ''}
+          </p>
+        </div>
+        <div>
+          <p className="text-gray-500">Stripe</p>
+          <p className="font-semibold">
+            {sub.stripe_status ?? <span className="text-gray-400 italic">N/A</span>}
+          </p>
+        </div>
       </div>
     </div>
   )
