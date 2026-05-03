@@ -14,6 +14,7 @@ import ParticulierGuard from '@/components/auth/ParticulierGuard'
 import ArtisanGuard from '@/components/auth/ArtisanGuard'
 import ArtisanShell from '@/components/layout/ArtisanShell'
 import { FeatureRoute } from '@/components/shared/FeatureGate'
+import { PermissionRoute } from '@/components/auth/PermissionRoute'
 
 // Eagerly loaded (above the fold)
 import HomePage from '@/pages/public/HomePage'
@@ -227,7 +228,7 @@ export default function App() {
                 <Route path="/pro/prospects" element={<ProProspects />} />
                 <Route path="/pro/prospects/nouveau" element={<ProProspectNew />} />
                 <Route path="/pro/prospects/:id" element={<ProProspectDetail />} />
-                <Route path="/pro/commissions" element={<ProCommissions />} />
+                <Route path="/pro/commissions" element={<PermissionRoute permission="canViewFinance"><ProCommissions /></PermissionRoute>} />
                 <Route path="/pro/equipe" element={<ProEquipe />} />
                 <Route path="/pro/messages" element={<ProMessages />} />
                 <Route path="/pro/profil" element={<ProProfil />} />
@@ -237,17 +238,17 @@ export default function App() {
                 {/* Phase R3 — routes /pro/assistant + /pro/chiffrage + /pro/chiffrages
                     déplacées en redirects 301 plus bas (vers /pro/ia unifié). */}
                 <Route path="/pro/stats-equipe" element={<FeatureRoute feature="teamStats"><ProTeamStats /></FeatureRoute>} />
-                <Route path="/pro/rapport" element={<FeatureRoute feature="monthlyPdfReport"><ProRapport /></FeatureRoute>} />
+                <Route path="/pro/rapport" element={<PermissionRoute permission="canViewFinance"><FeatureRoute feature="monthlyPdfReport"><ProRapport /></FeatureRoute></PermissionRoute>} />
                 <Route path="/pro/audits" element={<ProAuditsList />} />
                 <Route path="/pro/audits/nouveau" element={<ProAuditEditor />} />
                 <Route path="/pro/audits/:id" element={<ProAuditEditor />} />
                 <Route path="/pro/audits/:id/results" element={<ProAuditResults />} />
                 <Route path="/pro/prospects-bretagne" element={<ProProspectsBretagne />} />
                 <Route path="/pro/prospects-carte" element={<ProProspectsCarte />} />
-                <Route path="/pro/analytics" element={<ProAnalytics />} />
-                <Route path="/pro/abonnement" element={<ProAbonnement />} />
+                <Route path="/pro/analytics" element={<PermissionRoute permission="canViewFinance"><ProAnalytics /></PermissionRoute>} />
+                <Route path="/pro/abonnement" element={<PermissionRoute permission="canViewFinance"><ProAbonnement /></PermissionRoute>} />
                 <Route path="/pro/marketplace-artisans" element={<ProMarketplaceArtisans />} />
-                <Route path="/pro/mes-leads-artisans" element={<ProMesLeadsArtisans />} />
+                <Route path="/pro/mes-leads-artisans" element={<PermissionRoute permission="canViewFinance"><ProMesLeadsArtisans /></PermissionRoute>} />
                 <Route path="/pro/terrain" element={<ProTerrain />} />
                 <Route path="/pro/ia" element={<FeatureRoute feature="aiChiffrage"><ProIA /></FeatureRoute>} />
                 <Route path="/pro/ia/historique" element={<FeatureRoute feature="aiChiffrage"><ProIAHistorique /></FeatureRoute>} />
