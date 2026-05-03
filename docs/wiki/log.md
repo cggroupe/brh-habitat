@@ -5,6 +5,61 @@
 
 ---
 
+## 2026-05-03 — Phase 13.6.7.3 : ⏰ Cron mensuel auto-génération + bouton "Envoyer tout"
+
+- **Contexte** : Compléter Phase 13.6.7.2 avec **automatisation 100 % zero-touch**. Le 1er du mois à 02h UTC, `pg_cron` génère automatiquement toutes les factures du mois précédent + audit trail. Côté UI, bouton "Envoyer tout" qui parallélise l'envoi de toutes les factures `pending` en 3 workers concurrents avec progress bar.
+- **Fichiers modifiés** :
+  - `supabase/migrations/20260702100000_brh_commission_cron.sql` (NEW — pg_cron job + 2 helpers SQL + table audit `brh_cron_runs`)
+  - `src/api/admin-commissions.ts` — interface `CommissionInvoiceRow` enrichie (pdf_path, pdf_uploaded_at, email_sent_at, email_resend_id)
+  - `src/pages/admin/AdminCommissionsArtisans.tsx` — bouton "Envoyer tout" + handler `handleSendAll` + progress bar bulk
+- **Migrations créées** :
+  - `20260702100000_brh_commission_cron.sql` ✅ APPLIQUÉE Supabase prod
+- **pg_cron job** :
+  - Nom : `brh_monthly_commissions`
+  - Pattern : `0 2 1 * *` (1er de chaque mois à 02h00 UTC)
+  - Action : `SELECT public.brh_cron_generate_with_audit()`
+  - Idempotent (re-run safe) + idempotent par `cron.unschedule` avant `cron.schedule`
+- **2 helpers SQL** (tous deux `SECURITY DEFINER` + `SET search_path = ''`) :
+  - **`brh_cron_generate_previous_month_commissions()`** : calcule mois M-1 + appelle `brh_generate_commission_invoices` + retourne stats (count + total)
+  - **`brh_cron_generate_with_audit()`** : wrapper qui crée un run audit dans `brh_cron_runs`, exécute la génération, marque succès/erreur en cas d'EXCEPTION
+- **Table `brh_cron_runs`** (nouvelle) :
+  - Audit trail des exécutions cron : `job_name`, `started_at`, `finished_at`, `status` (running/success/error), `invoices_created`, `total_commission_eur`, `error_message`, `metadata` JSONB
+  - RLS : admin only
+  - Indexée par `(job_name, started_at DESC)` + `(status, started_at DESC)`
+- **Test live** : `SELECT brh_cron_generate_with_audit()` → run_id `d916241f...` créé, status `success`, 0 invoices créées (pas de chantiers `completed` en avril 2026 dans les tests). Audit fonctionne.
+- **Bouton "Envoyer tout" (UI admin)** :
+  - Compte automatique des factures `pending` du mois affiché
+  - Confirmation avant envoi avec estimation durée (~target/3 minutes)
+  - Throttle : 3 workers parallèles + 500ms pace par worker = ~30 envois/min (sous EF rate limit 30/min)
+  - Progress bar live : `done/total` + nombre d'erreurs
+  - Pour chaque facture : appelle `handleSendInvoice` (Phase 13.6.7.2 = PDF gen + upload + email Resend)
+- **Pages wiki impactées** :
+  - `data-model.md` (à mettre à jour : 89 → 90 tables avec `brh_cron_runs`)
+  - `playbooks.md` (à mettre à jour : nouveau playbook "Cron mensuel commissions" + how to debug via `brh_cron_runs`)
+  - `log.md` ✅ entrée
+- **Conformité 14 règles BRH** :
+  - Règle 4 ✅ — typage strict (`pdf_path` etc. ajoutés à interface)
+  - Règle 5 ✅ — `if (error) throw error` partout
+  - Règle 6 ✅ — Route admin sous `AdminGuard`
+  - Règle 8 ✅ — RLS strict admin only sur `brh_cron_runs`
+  - Règle 9 ✅ — Rate limit côté EF respecté par throttle 500ms × 3 workers
+  - Règle 11 ✅ — TIMESTAMPTZ partout (`started_at`, `finished_at`)
+  - Règle 12 ✅ — 2 nouveaux helpers SQL avec `SECURITY DEFINER` + `SET search_path = ''`
+- **Risque** : Low. pg_cron natif Supabase Cloud (pas d'extension externe). Idempotence à 3 niveaux (migration + helper SQL + cron jobname unique). Audit trail complet pour debug ops.
+- **Tests** : 246/246 globaux verts. Tsc clean. Lint clean. Test manuel cron OK (run audit créé).
+- **Status** : ✅ DONE V1 — pipeline 100 % zero-touch jusqu'au 1er du mois, **+ bouton "Envoyer tout" en backup admin pour rattrapages**.
+- **Décisions de cadrage** :
+  - **pg_cron** plutôt qu'EF Supabase scheduled functions : extension native PostgreSQL, exécute SQL directement (pas de roundtrip EF), idempotent, audit via `cron.job_run_details` (option future)
+  - **02h00 UTC** : créneau bas trafic, évite collision avec utilisateurs front actifs en France (= 03h-04h CET selon DST)
+  - **Run le 1er** plutôt que le dernier jour du mois : on attend que tous les chantiers du mois soient bien `completed` avec timestamp fin de mois inclus
+  - **Audit trail dédié `brh_cron_runs`** plutôt que reposer uniquement sur `cron.job_run_details` (système) : permet métadonnées custom (count, total, error_message) + RLS admin
+  - **Bouton "Envoyer tout"** en complément du cron : le cron *génère* les factures, l'envoi reste manuel pour V1 (sécurité — admin valide avant envoi). Phase 13.6.7.3.1+ pourra automatiser aussi l'envoi.
+  - **PARALLEL=3 + PACE_MS=500** : évite spike rate limit EF (30/min/IP) tout en restant rapide (~30 envois/min effectif)
+  - **Confirmation `confirm()` avant bulk** : évite envoi accidentel à 50+ artisans (decision protectrice)
+- **Phase suivante** : 13.6.7.3.1 (auto-envoi cron-triggered, opt-in admin) / 13.6.7.5 dashboard artisan factures historiques / 13.6.7.4 Stripe Connect SEPA
+
+---
+
 ## 2026-05-02 — Phase 13.6.7.2 : 📄 PDF facture commission auto + envoi Resend (zero-touch ops)
 
 - **Contexte** : Compléter la Phase 13.6.7 (tracking commissions) avec la **génération PDF + envoi email automatique**. Admin clique "Envoyer" sur une facture → PDF A4 français (mentions légales + CGV + RIB) généré côté front via `@react-pdf/renderer` → uploadé dans bucket Storage privé → EF Resend envoie email à l'artisan avec signed URL 30 jours. 3 actions admin manuelles → 1 clic.

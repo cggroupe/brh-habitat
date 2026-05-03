@@ -23,6 +23,11 @@ export interface CommissionInvoiceRow {
   paid_at: string | null
   reconciled_at: string | null
   notes: string | null
+  // Phase 13.6.7.2 — PDF + email tracking
+  pdf_path: string | null
+  pdf_uploaded_at: string | null
+  email_sent_at: string | null
+  email_resend_id: string | null
   created_at: string
   updated_at: string
 }
@@ -158,6 +163,9 @@ export const adminCommissionsApi = {
     return { path }
   },
 
+  /**
+   * Phase 13.6.7.3 — Bulk progress callback type pour envoi en série.
+   */
   /**
    * Phase 13.6.7.2 — Envoie la facture à l'artisan par email Resend (signed URL 30j).
    */

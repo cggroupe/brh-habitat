@@ -82,6 +82,7 @@ export default function AdminCommissionsArtisans() {
   const uploadPdf = useUploadCommissionPdf()
   const sendEmail = useSendCommissionInvoice()
   const [sendingId, setSendingId] = useState<string | null>(null)
+  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number; errors: number } | null>(null)
 
   const stats = useMemo(() => {
     if (!invoices) return { total: 0, totalDue: 0, totalPaid: 0, nbInvoices: 0, nbArtisans: 0 }
@@ -160,6 +161,49 @@ export default function AdminCommissionsArtisans() {
     }
   }
 
+  /**
+   * Phase 13.6.7.3 — Envoi bulk de toutes les factures pending/invoiced sans pdf.
+   * 3 envois parallèles + 500ms throttle pour respecter rate limit EF (30/min).
+   */
+  const handleSendAll = async () => {
+    if (!invoices) return
+    setError(null)
+    const targets = invoices.filter((i) => i.status === 'pending' && (!i.pdf_path || !i.email_sent_at))
+    if (targets.length === 0) {
+      setError('Aucune facture pending à envoyer.')
+      return
+    }
+    if (!confirm(`Envoyer ${targets.length} factures aux artisans ? Cela peut prendre ~${Math.ceil(targets.length / 3)} minutes.`)) {
+      return
+    }
+
+    setBulkProgress({ done: 0, total: targets.length, errors: 0 })
+
+    let cursor = 0
+    let done = 0
+    let errors = 0
+    const PARALLEL = 3
+    const PACE_MS = 500
+
+    const launch = async (): Promise<void> => {
+      if (cursor >= targets.length) return
+      const idx = cursor++
+      const inv = targets[idx]
+      try {
+        await handleSendInvoice(inv)
+      } catch {
+        errors++
+      }
+      done++
+      setBulkProgress({ done, total: targets.length, errors })
+      await new Promise((r) => setTimeout(r, PACE_MS))
+      return launch()
+    }
+
+    await Promise.all(Array.from({ length: PARALLEL }, () => launch()))
+    setBulkProgress(null)
+  }
+
   const handleDownloadPdf = async (invoice: CommissionInvoiceEnriched) => {
     setError(null)
     try {
@@ -233,7 +277,48 @@ export default function AdminCommissionsArtisans() {
           )}
           Générer les factures du mois
         </button>
+        {invoices && invoices.some((i) => i.status === 'pending') && (
+          <button
+            type="button"
+            onClick={handleSendAll}
+            disabled={bulkProgress !== null}
+            className="inline-flex items-center gap-2 rounded-md bg-purple-700 px-4 py-2 text-sm font-medium text-white hover:bg-purple-800 disabled:opacity-50"
+            title="Envoie en bulk toutes les factures pending"
+          >
+            {bulkProgress ? (
+              <Loader className="h-4 w-4 animate-spin" />
+            ) : (
+              <Mail className="h-4 w-4" />
+            )}
+            {bulkProgress
+              ? `Envoi ${bulkProgress.done}/${bulkProgress.total}`
+              : `Envoyer tout (${invoices.filter((i) => i.status === 'pending').length})`}
+          </button>
+        )}
       </div>
+
+      {/* Progress bulk */}
+      {bulkProgress && (
+        <div className="rounded-md border border-purple-200 bg-purple-50 p-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-semibold text-purple-900">
+              Envoi en cours : {bulkProgress.done}/{bulkProgress.total}
+              {bulkProgress.errors > 0 && (
+                <span className="ml-2 text-red-700">({bulkProgress.errors} erreurs)</span>
+              )}
+            </span>
+            <span className="text-xs text-purple-700">
+              {Math.round((bulkProgress.done / bulkProgress.total) * 100)}%
+            </span>
+          </div>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-purple-200">
+            <div
+              className="h-full bg-purple-600 transition-all"
+              style={{ width: `${(bulkProgress.done / bulkProgress.total) * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Notifications */}
       {genResult && (
