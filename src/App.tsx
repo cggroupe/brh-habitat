@@ -73,9 +73,8 @@ const ProSocial = lazy(() => import('@/pages/pro/ProSocial'))
 const ProQRCode = lazy(() => import('@/pages/pro/ProQRCode'))
 const AdminPublications = lazy(() => import('@/pages/admin/AdminPublications'))
 const ProVendeurs = lazy(() => import('@/pages/pro/ProVendeurs'))
-const ProAssistant = lazy(() => import('@/pages/pro/ProAssistant'))
-const ProChiffrage = lazy(() => import('@/pages/pro/ProChiffrage'))
-const ProChiffrages = lazy(() => import('@/pages/pro/ProChiffrages'))
+// Phase R3 — ProAssistant / ProChiffrage / ProChiffrages fusionnés dans ProIA.
+// Les fichiers legacy sont conservés temporairement (suppression en R7 cleanup).
 const ProTeamStats = lazy(() => import('@/pages/pro/ProTeamStats'))
 const ProRapport = lazy(() => import('@/pages/pro/ProRapport'))
 const ProAuditsList = lazy(() => import('@/pages/pro/ProAuditsList'))
@@ -88,6 +87,8 @@ const ProAbonnement = lazy(() => import('@/pages/pro/ProAbonnement'))
 const ProMarketplaceArtisans = lazy(() => import('@/pages/pro/ProMarketplaceArtisans'))
 const ProMesLeadsArtisans = lazy(() => import('@/pages/pro/ProMesLeadsArtisans'))
 const ProTerrain = lazy(() => import('@/pages/pro/ProTerrain'))
+const ProIA = lazy(() => import('@/pages/pro/ProIA'))
+const ProIAHistorique = lazy(() => import('@/pages/pro/ProIAHistorique'))
 const ArtisanDashboard = lazy(() => import('@/pages/artisan/ArtisanDashboard'))
 const ArtisanOnboarding = lazy(() => import('@/pages/artisan/ArtisanOnboarding'))
 const ArtisanFactures = lazy(() => import('@/pages/artisan/ArtisanFactures'))
@@ -216,9 +217,8 @@ export default function App() {
                 <Route path="/pro/reseaux-sociaux" element={<FeatureRoute feature="socialMediaPosts"><ProSocial /></FeatureRoute>} />
                 <Route path="/pro/qrcode" element={<FeatureRoute feature="qrCodeGeneration"><ProQRCode /></FeatureRoute>} />
                 <Route path="/pro/vendeurs" element={<FeatureRoute feature="recruitmentPyramid"><ProVendeurs /></FeatureRoute>} />
-                <Route path="/pro/assistant" element={<FeatureRoute feature="aiAssistantTechnique"><ProAssistant /></FeatureRoute>} />
-                <Route path="/pro/chiffrage" element={<FeatureRoute feature="aiChiffrage"><ProChiffrage /></FeatureRoute>} />
-                <Route path="/pro/chiffrages" element={<FeatureRoute feature="aiChiffrage"><ProChiffrages /></FeatureRoute>} />
+                {/* Phase R3 — routes /pro/assistant + /pro/chiffrage + /pro/chiffrages
+                    déplacées en redirects 301 plus bas (vers /pro/ia unifié). */}
                 <Route path="/pro/stats-equipe" element={<FeatureRoute feature="teamStats"><ProTeamStats /></FeatureRoute>} />
                 <Route path="/pro/rapport" element={<FeatureRoute feature="monthlyPdfReport"><ProRapport /></FeatureRoute>} />
                 <Route path="/pro/audits" element={<ProAuditsList />} />
@@ -232,6 +232,12 @@ export default function App() {
                 <Route path="/pro/marketplace-artisans" element={<ProMarketplaceArtisans />} />
                 <Route path="/pro/mes-leads-artisans" element={<ProMesLeadsArtisans />} />
                 <Route path="/pro/terrain" element={<ProTerrain />} />
+                <Route path="/pro/ia" element={<FeatureRoute feature="aiChiffrage"><ProIA /></FeatureRoute>} />
+                <Route path="/pro/ia/historique" element={<FeatureRoute feature="aiChiffrage"><ProIAHistorique /></FeatureRoute>} />
+                {/* Phase R3 — Redirects 301 routes legacy → /pro/ia */}
+                <Route path="/pro/chiffrage" element={<Navigate to="/pro/ia?mode=chiffrage" replace />} />
+                <Route path="/pro/chiffrages" element={<Navigate to="/pro/ia/historique" replace />} />
+                <Route path="/pro/assistant" element={<Navigate to="/pro/ia?mode=dtu" replace />} />
               </Route>
             </Route>
 
