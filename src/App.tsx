@@ -87,6 +87,7 @@ const ProAnalytics = lazy(() => import('@/pages/pro/ProAnalytics'))
 const ProAbonnement = lazy(() => import('@/pages/pro/ProAbonnement'))
 const ProMarketplaceArtisans = lazy(() => import('@/pages/pro/ProMarketplaceArtisans'))
 const ProMesLeadsArtisans = lazy(() => import('@/pages/pro/ProMesLeadsArtisans'))
+const ProTerrain = lazy(() => import('@/pages/pro/ProTerrain'))
 const ArtisanDashboard = lazy(() => import('@/pages/artisan/ArtisanDashboard'))
 const ArtisanOnboarding = lazy(() => import('@/pages/artisan/ArtisanOnboarding'))
 const ArtisanFactures = lazy(() => import('@/pages/artisan/ArtisanFactures'))
@@ -230,6 +231,7 @@ export default function App() {
                 <Route path="/pro/abonnement" element={<ProAbonnement />} />
                 <Route path="/pro/marketplace-artisans" element={<ProMarketplaceArtisans />} />
                 <Route path="/pro/mes-leads-artisans" element={<ProMesLeadsArtisans />} />
+                <Route path="/pro/terrain" element={<ProTerrain />} />
               </Route>
             </Route>
 
