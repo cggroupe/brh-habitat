@@ -10,7 +10,6 @@ import {
   Share2,
   UserPlus,
   Sparkles,
-  Calculator,
   FileText,
   Award,
   HelpCircle,
@@ -42,10 +41,9 @@ const partNavOutils: NavItemDef[] = [
   { to: '/particulier/simulateur', label: 'Simulateur', icon: Link2, feature: 'simulationLinks' },
   { to: '/particulier/reseaux-sociaux', label: 'Reseaux sociaux', icon: Share2, feature: 'socialMediaPosts' },
   { to: '/particulier/vendeurs', label: 'Vendeurs', icon: UserPlus, feature: 'recruitmentPyramid' },
-  { to: '/particulier/chiffrage', label: 'Chiffrage IA', icon: Calculator, feature: 'aiChiffrage' },
-  { to: '/particulier/chiffrages', label: 'Mes chiffrages', icon: FileText, feature: 'aiChiffrage' },
+  { to: '/particulier/ia', label: 'IA Batiment', icon: Sparkles, feature: 'aiChiffrage' },
+  { to: '/particulier/ia/historique', label: 'Historique IA', icon: FileText, feature: 'aiChiffrage' },
   { to: '/particulier/badges', label: 'Badges', icon: Award, feature: 'badgesGamification' },
-  { to: '/particulier/assistant', label: 'IA Batiment', icon: Sparkles, feature: 'aiAssistantTechnique' },
 ]
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>

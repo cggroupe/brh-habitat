@@ -76,8 +76,8 @@ const ProSocial = lazy(() => import('@/pages/pro/ProSocial'))
 const ProQRCode = lazy(() => import('@/pages/pro/ProQRCode'))
 const AdminPublications = lazy(() => import('@/pages/admin/AdminPublications'))
 const ProVendeurs = lazy(() => import('@/pages/pro/ProVendeurs'))
-// Phase R3 — ProAssistant / ProChiffrage / ProChiffrages fusionnés dans ProIA.
-// Les fichiers legacy sont conservés temporairement (suppression en R7 cleanup).
+// Phase R3 — ProAssistant / ProChiffrage / ProChiffrages fusionnés dans ProIA (Phase R3),
+// fichiers legacy supprimés en Phase R7. Les anciennes URLs redirectent en 301.
 const ProTeamStats = lazy(() => import('@/pages/pro/ProTeamStats'))
 const ProRapport = lazy(() => import('@/pages/pro/ProRapport'))
 const ProAuditsList = lazy(() => import('@/pages/pro/ProAuditsList'))
@@ -114,9 +114,9 @@ const PartMessages = lazy(() => import('@/pages/particulier/PartMessages'))
 const PartSocial = lazy(() => import('@/pages/particulier/PartSocial'))
 const PartSimulation = lazy(() => import('@/pages/particulier/PartSimulation'))
 const PartVendeurs = lazy(() => import('@/pages/particulier/PartVendeurs'))
-const PartAssistant = lazy(() => import('@/pages/particulier/PartAssistant'))
-const PartChiffrage = lazy(() => import('@/pages/particulier/PartChiffrage'))
-const PartChiffrages = lazy(() => import('@/pages/particulier/PartChiffrages'))
+// Phase R7 — PartAssistant / PartChiffrage / PartChiffrages fusionnés dans PartIA.
+const PartIA = lazy(() => import('@/pages/particulier/PartIA'))
+const PartIAHistorique = lazy(() => import('@/pages/particulier/PartIAHistorique'))
 const PartBadges = lazy(() => import('@/pages/particulier/PartBadges'))
 const PartStatutFiscal = lazy(() => import('@/pages/particulier/PartStatutFiscal'))
 // PostLoginRedirect supprimee - les pages Login/Register naviguent directement selon le role
@@ -272,9 +272,12 @@ export default function App() {
                 <Route path="/particulier/reseaux-sociaux" element={<FeatureRoute feature="socialMediaPosts"><PartSocial /></FeatureRoute>} />
                 <Route path="/particulier/simulateur" element={<FeatureRoute feature="simulationLinks"><PartSimulation /></FeatureRoute>} />
                 <Route path="/particulier/vendeurs" element={<FeatureRoute feature="recruitmentPyramid"><PartVendeurs /></FeatureRoute>} />
-                <Route path="/particulier/assistant" element={<FeatureRoute feature="aiAssistantTechnique"><PartAssistant /></FeatureRoute>} />
-                <Route path="/particulier/chiffrage" element={<FeatureRoute feature="aiChiffrage"><PartChiffrage /></FeatureRoute>} />
-                <Route path="/particulier/chiffrages" element={<FeatureRoute feature="aiChiffrage"><PartChiffrages /></FeatureRoute>} />
+                {/* Phase R7 — IA particulier unifiée + redirects 301 */}
+                <Route path="/particulier/ia" element={<FeatureRoute feature="aiChiffrage"><PartIA /></FeatureRoute>} />
+                <Route path="/particulier/ia/historique" element={<FeatureRoute feature="aiChiffrage"><PartIAHistorique /></FeatureRoute>} />
+                <Route path="/particulier/assistant" element={<Navigate to="/particulier/ia?mode=dtu" replace />} />
+                <Route path="/particulier/chiffrage" element={<Navigate to="/particulier/ia?mode=chiffrage" replace />} />
+                <Route path="/particulier/chiffrages" element={<Navigate to="/particulier/ia/historique" replace />} />
                 <Route path="/particulier/badges" element={<FeatureRoute feature="badgesGamification"><PartBadges /></FeatureRoute>} />
                 <Route path="/particulier/profil" element={<ProfilPage />} />
               </Route>
