@@ -23,6 +23,28 @@ Fallback : `<Suspense fallback={<PageLoader />}>`.
 
 **Impact** : bundle initial ~250KB gzipped (vs ~1.5MB si bundle unique).
 
+### 1.b — Manual chunks vendeur (Phase 21, 2026-05-03)
+
+`vite.config.ts` extrait les bibliothèques lourdes en chunks **partagés** entre
+les pages qui les utilisent → cache navigateur réutilisé.
+
+| Chunk | Poids min | gzipped | Pages consommatrices |
+|-------|-----------|---------|----------------------|
+| `vendor` (react/react-dom/react-router) | 35 KB | 12.6 KB | Toutes |
+| `query` (Tanstack Query) | 36 KB | 10.8 KB | Toutes |
+| `supabase` | 194 KB | 51.6 KB | Toutes |
+| `validation` (zod) | 64 KB | 17.3 KB | Toutes |
+| `react-pdf` | 1.5 MB | 516 KB | Factures + audits PDF (lazy) |
+| `charts` (recharts) | 373 KB | 110.8 KB | `/pro/analytics` (lazy) |
+| `leaflet` | 159 KB | 46.6 KB | `/pro/prospects-carte`, `/admin/prospects` |
+| `markdown` | 156 KB | 47.5 KB | `/articles/*`, `/assistant` |
+| `archive` (jszip) | 97 KB | 29.9 KB | Bulk export courriers (Phase 13.3) |
+
+**Gains observés** :
+- ProAnalytics : 388 KB → **15 KB** (recharts maintenant en chunk partagé)
+- ArticlePage : 183 KB → **27 KB** (markdown maintenant en chunk partagé)
+- Navigation entre 2 articles : 0 download supplémentaire (chunk markdown déjà cache)
+
 ### 2. React Query — staleTime différencié
 
 | Ressource | staleTime | Justification |

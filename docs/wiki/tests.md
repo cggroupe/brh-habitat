@@ -3,16 +3,17 @@
 > Source : `package.json` + inspection `src/test/` (si existe) + audit ARCHITECTURE.md.
 > **Dernière mesure** : 2026-04-23.
 
-## État actuel (2026-05-03)
+## État actuel (2026-05-03 — Phase 22)
 
-**Vitest (unitaires + intégration)** : ✅ **264 tests passants** (15 fichiers).
-**Playwright (E2E)** : ✅ **infra installée + 3 smoke tests** depuis Phase 19.
+**Vitest (unitaires + intégration)** : ✅ **298 tests passants** (17 fichiers).
+**Playwright (E2E)** : ✅ **infra installée + 3 smoke tests + CI GH Actions** (Phase 19 + 20).
 **RLS / triggers / EFs auth-flow** : ❌ pas encore couverts (roadmap Phase 1-5 ci-dessous).
 
 ### Ce qui est couvert
 - DPE Engine (computeDpe, zones climatiques, MPR ampleur, chauffage, bâti, finals)
 - Multi-tenant config (chargement BRH / IDF / PACA, helpers region)
-- Lib pure (tenant-region, dpe-engine fixtures)
+- Lib pure : `referral` (13 tests), `tenant-region` (9 tests)
+- Marketplace artisans : `haversineKm`, `proximityFactor`, `matchArtisansForGeste`, `findProspectsForArtisan` (21 tests)
 
 ### Ce qui ne l'est pas (roadmap)
 
@@ -270,3 +271,5 @@ Avant chaque déploiement, Philippe teste manuellement :
 
 - **2026-04-23** : Création (audit wiki Karpathy v2). Honnêteté sur absence tests + roadmap.
 - **2026-05-03** : Phase 19 — Playwright installé + 3 smoke tests + Vitest passe à 264 tests (15 fichiers).
+- **2026-05-03** : Phase 20 — CI GitHub Actions (`.github/workflows/ci.yml`) lance lint + tsc + Vitest + Playwright sur push.
+- **2026-05-03** : Phase 22 — tests pure functions referral + match-artisans, Vitest passe à **298 tests** (17 fichiers).

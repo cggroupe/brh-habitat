@@ -33,3 +33,8 @@ screenshots/
 scripts/.env.screenshots
 scripts/.seed-credentials.json
 data/
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/

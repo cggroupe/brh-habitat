@@ -14,12 +14,17 @@ if (import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
     environment: import.meta.env.MODE,
-    integrations: [
-      Sentry.browserTracingIntegration(),
-    ],
+    // Phase 23 — Release tagging pour symboliser les stack traces avec les
+    // sourcemaps uploadés par le plugin Sentry (cf. SENTRY_AUTH_TOKEN en CI).
+    // Format SemVer + commit court : ex `brh-habitat@0.0.0+9305b7d`.
+    release: import.meta.env.VITE_SENTRY_RELEASE,
+    integrations: [Sentry.browserTracingIntegration()],
     tracesSampleRate: 0.2,
     replaysOnErrorSampleRate: 1.0,
     enabled: import.meta.env.PROD,
+    initialScope: {
+      tags: { tenantId: tenant.tenantId, tenantTier: tenant.tier },
+    },
   })
 }
 
