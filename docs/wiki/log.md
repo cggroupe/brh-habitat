@@ -5,6 +5,29 @@
 
 ---
 
+## 2026-05-03 — R10b + R18 : tracking marketplace + seed agences cloud
+
+**Mini-itération de finition** post-R12, pour rendre la boucle terrain immédiatement utilisable.
+
+### R10b — Tracking dans Marketplace artisans
+- `ProMarketplaceArtisans.tsx` : ajout boutons "+ Logger visite" + "Historique" sur chaque card artisan
+- `<LogVisitModal>` câblé avec target_type='artisan' + lat/lng pré-remplis
+- `<VisitHistoryList compact>` togglable inline sous la card (1 click = ouvre/ferme)
+- Visible uniquement si l'utilisateur a une `companyId` (donc commercial pro, pas user solo)
+
+### R18 — Seed démo agences Bretagne
+- Script `scripts/seed-agences-bretagne.sql` : 12 agences fictives réparties sur les 4 départements bretons (29, 22, 35, 56)
+- SIRET `70000001XXXXXX` (format valide mais hors annuaire SIRENE → identifiables comme test)
+- Coordonnées approximatives centre-ville de chaque commune
+- Mix de status pour la démo : 2 partenaires · 4 contactées · 5 prospects · 1 refusée
+- Idempotent (`ON CONFLICT (siret) DO NOTHING`)
+- **Appliqué en cloud** : `INSERT 0 12` confirmé, breakdown vérifié
+
+### Status
+✅ DONE — la page `/pro/terrain` affiche maintenant les 12 agences sur la map dès l'ouverture, et la marketplace artisans permet de logger une visite directement depuis chaque card.
+
+---
+
 ## 2026-05-03 — Refonte R9 → R12 : Boucle terrain fermée + audit RLS cloud + a11y
 
 **Suite directe de la refonte R1→R8.** Quatre phases qui ferment le système tracking terrain (sans agences à afficher et sans intégration aux fiches existantes, R2 était joli mais inutile) et auditent le tout.

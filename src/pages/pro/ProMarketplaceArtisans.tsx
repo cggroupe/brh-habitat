@@ -23,6 +23,10 @@ import {
   Award,
 } from 'lucide-react'
 import { useArtisansList } from '@/hooks/queries/artisans-rge'
+import { useMyMembership } from '@/hooks/queries/membership'
+import { LogVisitModal } from '@/components/terrain/LogVisitModal'
+import { VisitHistoryList } from '@/components/terrain/VisitHistoryList'
+import { Plus, ClipboardList } from 'lucide-react'
 import type { GesteId } from '@/lib/dpe-engine/marketplace'
 
 const GESTES_LABELS: Record<GesteId, string> = {
@@ -52,6 +56,9 @@ export default function ProMarketplaceArtisans() {
   const [geste, setGeste] = useState<GesteId | ''>('')
   const [dept, setDept] = useState<'22' | '29' | '35' | '56' | ''>('')
   const [showFilters, setShowFilters] = useState(true)
+  const [logVisitFor, setLogVisitFor] = useState<{ id: string; label: string; lat: number | null; lng: number | null } | null>(null)
+  const [historyFor, setHistoryFor] = useState<string | null>(null)
+  const { data: membership } = useMyMembership()
 
   const { data: artisans, isLoading } = useArtisansList({
     geste: geste || undefined,
@@ -272,11 +279,63 @@ export default function ProMarketplaceArtisans() {
                     <Globe className="h-3 w-3" /> Site web
                   </a>
                 )}
+                {membership?.companyId ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLogVisitFor({
+                          id: a.id,
+                          label: `${a.nom_entreprise} (${a.code_postal ?? ''} ${a.commune ?? ''})`.trim(),
+                          lat: a.latitude,
+                          lng: a.longitude,
+                        })
+                      }
+                      className="inline-flex items-center gap-1 rounded bg-primary/10 px-2 py-1 text-primary hover:bg-primary/20"
+                    >
+                      <Plus className="h-3 w-3" /> Logger visite
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setHistoryFor((id) => (id === a.id ? null : a.id))}
+                      className="inline-flex items-center gap-1 rounded bg-gray-100 px-2 py-1 text-gray-900 hover:bg-gray-200"
+                      aria-expanded={historyFor === a.id}
+                    >
+                      <ClipboardList className="h-3 w-3" /> Historique
+                    </button>
+                  </>
+                ) : null}
               </div>
+
+              {historyFor === a.id ? (
+                <div className="mt-3 border-t border-gray-100 pt-3">
+                  <VisitHistoryList
+                    targetType="artisan"
+                    targetId={a.id}
+                    companyId={membership?.companyId}
+                    compact
+                  />
+                </div>
+              ) : null}
             </div>
           ))}
         </div>
       )}
+
+      {/* Modal "Logger visite" depuis card artisan */}
+      {logVisitFor && membership?.companyId ? (
+        <LogVisitModal
+          open={!!logVisitFor}
+          onClose={() => setLogVisitFor(null)}
+          companyId={membership.companyId}
+          targetType="artisan"
+          targetId={logVisitFor.id}
+          targetLabel={logVisitFor.label}
+          defaultLat={logVisitFor.lat}
+          defaultLng={logVisitFor.lng}
+          onSuccess={() => setLogVisitFor(null)}
+        />
+      ) : null}
     </div>
   )
 }
