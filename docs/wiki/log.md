@@ -5,6 +5,66 @@
 
 ---
 
+## 2026-05-03 — Refonte R9 → R12 : Boucle terrain fermée + audit RLS cloud + a11y
+
+**Suite directe de la refonte R1→R8.** Quatre phases qui ferment le système tracking terrain (sans agences à afficher et sans intégration aux fiches existantes, R2 était joli mais inutile) et auditent le tout.
+
+### R9 — Admin agences immo (`/admin/agences-immo`)
+- Page CRUD MVP : table avec filtres (search, dept, status), modal création/édition 16 champs (SIRET, contact, géo, carte T Hoguet, status, notes), suppression
+- RLS admin uniquement (déjà en place migration R1)
+- Lien menu AdminShell entre Partenaires et Prospects
+- **Pourquoi** : sans alimentation manuelle, `/pro/terrain` n'a aucune agence à afficher avant Phase 16
+
+### R10 — Intégration tracking dans fiches existantes
+- `<VisitHistoryList target_type target_id>` : timeline visites pour une cible (compact ou full)
+- `<TrackingPanel>` : drop-in qui combine ContactButtons + bouton "Logger visite" + VisitHistoryList, scope automatique via `useMyMembership`
+- Intégré dans `ProProspectDetail.tsx` — chaque fiche prospect affiche désormais "Suivi commercial" en bas
+- **À faire en R10b plus tard** : Marketplace artisans + admin agences (pas critique MVP)
+
+### R11 — Audit RLS post-migration R1 (cloud)
+- Script `scripts/verify-r1-rls.sh` : exécute 8 vérifications via `psql` direct
+  - 3 tables présentes ✅
+  - Colonne `permissions JSONB` ajoutée ✅
+  - Helper `brh_user_can` SECURITY DEFINER ✅
+  - 5 policies `field_visits` (select_company / insert_own / update_own / delete_owner_or_author / admin_all) ✅
+  - 2 policies `agences_immo` (select_pro_admin / admin_all) ✅
+  - RLS activée sur les 2 tables ✅
+  - 5 indexes field_visits (geo, company_target, company_status, employee_completed, pkey) ✅
+  - Tests fonctionnels : NULL → FALSE, unknown user → FALSE ✅
+- Réutilise `BRH_SUPABASE_DB_PASSWORD` posé dans `/opt/stack/.env` (R1 push)
+
+### R12 — Accessibilité WCAG 2.1 AA
+- ProShell accordéons : `aria-controls` + `id` sur sous-menus, `role="group"`, `aria-label`, `focus:ring-2 focus:ring-white/40` visible au clavier, **Escape** ferme un groupe ouvert, ChevronDown `aria-hidden`
+- LogVisitModal : `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, **Escape** ferme la modale via window keydown
+- Reste à faire (R12b futur) : focus trap complet dans modal, navigation clavier dans drawer mobile, audit Lighthouse a11y
+
+### Conformité 14 règles BRH
+- Toutes respectées (pas de DDL touché — migration R1 déjà appliquée)
+- Règle #5 `if (error) throw error` : agences-immo.ts, field-visits.ts respectent
+- Règle #9 EF rate-limit : aucune EF touchée
+
+### Tests
+- Vitest : 311 / 311 (inchangé — pas de tests unitaires sur composants UI cette fois)
+- Lint : clean
+- TS strict : clean
+- Audit RLS cloud : tout présent et fonctionnel
+
+### Commits
+- `43afb37` R9 — Admin /admin/agences-immo
+- `~ R10` — Integration tracking sur fiche prospect
+- `7756781` R11 + R12 — Audit RLS + a11y menu/modal
+
+### Status
+✅ DONE — la refonte UX complète R1 → R12 est terminée. SaaS BRH désormais en posture finale :
+- 6 portails homogènes
+- IA unifiée pro + particulier (1 page, 3 modes)
+- Permissions employé granulaires JSONB + helper SQL miroir
+- Tracking commercial terrain bouclé (DB → page map → CRUD admin → intégration fiche prospect → historique par cible)
+- Menu pro 14 → 8 entrées avec accordéons accessibles WCAG
+- Audit RLS cloud prouve que tout est en place
+
+---
+
 ## 2026-05-03 — Refonte UX complète R1 → R8 : 6 portails homogènes + IA unifiée + tracking terrain
 
 **Refonte structurelle Option C demandée par Philippe** ("revoir l'entièreté de la structure, c'est un peu brouillon"). 7 phases code livrées (R1 à R7) + audit final (R8). Migration DB pushée en cloud, 8 commits propres sur `feature/dpe-engine`.
