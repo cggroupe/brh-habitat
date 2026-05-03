@@ -5,6 +5,92 @@
 
 ---
 
+## 2026-05-03 — Phase 16.0.7 + 16.0.8 + 16.0.9 : pipeline complet pour démo avocat
+
+**Suite directe de Phase 16.0.1-6.** Pipeline end-to-end fonctionnel : onboarding agence → tier → charte signée → portail agence → Stripe (preview-safe) → audit aléatoire mensuel + DPIA light prête pour relecture avocat.
+
+### Phase 16.0.7 — Onboarding `/inscription/agence`
+- **Page publique multi-step** (5 étapes) : SIRET → SIRENE → représentant → choix tier → charte → signature
+- **`src/lib/charte-agence.ts`** : template Markdown v1.0 paramétrable (raison sociale, signataire, tier, prix, quota) + générateur `generateCharteContent()` qui produit le contenu snapshot stocké dans `brh_partner_contracts`
+- 3 cases à cocher consents (terms / data / communications)
+- **MVP** : `status='active'` direct (pas d'email 2FA car Resend pas activé). Préparé pour ajout `pending_email` + token quand RESEND_API_KEY dispo
+- Création atomique : `auth.signUp` + `brh_agences_immo` + `brh_partner_contracts` + `brh_agence_subscriptions`
+- Redirect `/agence` après 2 s
+
+### Phase 16.0.8 — Migration DB + Stripe preview-safe
+- **Migration `20260705100000_brh_phase16_subs_audit.sql`** (poussée cloud) :
+  - `brh_agence_subscriptions` (4 paliers : discovery 0€/5 leads, standard 390€/30, premium 990€/100, expert 2490€/illimité)
+  - Trigger `brh_agence_subs_set_quota` qui auto-remplit `monthly_lead_quota` selon le tier
+  - **Helper SQL `brh_grant_lead_claim(agence_id, prospect_id)`** — claim atomique avec `FOR UPDATE` + vérif quota + `UNIQUE INDEX` anti-doublon. Lève exception si quota dépassé. Transaction-safe.
+  - Helper `brh_reset_agence_monthly_quotas()` — reset compteurs le 1er du mois (à brancher pg_cron)
+- **API + hooks** : `agence-subscriptions.ts` + `useMyAgenceSubscription` + `useClaimLeadAtomic`
+- **EF `agence-checkout`** (preview-safe) : crée Stripe Checkout, retourne 503 si `STRIPE_SECRET_KEY` absent
+
+### Phase 16.0.9 — Audit aléatoire mensuel
+- **Migration** (incluse dans 20260705) :
+  - `brh_agence_audits` (sample 5 % leads contactés, token réponse anonyme, 5 valeurs feedback : correct/intrusive/not_contacted/interested/complaint)
+  - Helper SQL `brh_generate_monthly_audits(audit_month)` — sample idempotent + `ON CONFLICT DO NOTHING`
+- **EF `monthly-audit-agencies`** (preview-safe) : génère audits + tente envoi emails Resend
+- **Auth** : header `x-brh-admin-token` requis (réutilise `BRH_ADMIN_KEY` du `.env`)
+- **MVP limit** : pas d'email proprio envoyé (la table `brh_dpe_prospects` ne contient pas l'email du proprio actuellement). Audits créés en DB pour traitement manuel admin BRH. Phase 16.x future ajoutera `brh_proprietaires` avec contacts vérifiés.
+
+### Pages agence complètes
+- **`/agence`** dashboard (livré 16.0.6)
+- **`/agence/score-vente`** : tableau opportunités score ≥ 60 + bouton "Claim ce lead" (RPC atomique). Marque "Déjà claim" si un autre membre a claim. Affichage quota mensuel + alerte quota bas
+- **`/agence/leads`** : leads actifs + historique. Logger tentative (5 outcomes), libérer manuellement, blacklist auto à 2 tentatives sans intéressement. Charte rappel en bas.
+- **`/agence/abonnement`** : 4 tier cards + change tier (MVP = update direct, prod = Stripe Checkout via EF)
+- **`/agence/profil`** : fiche agence read-only + relecture charte signée snapshot
+
+### DPIA light Phase 16
+- **`docs/legal/DPIA-light-Phase16.md`** (350+ lignes) — préparé pour avocat
+- 8 sections : description du traitement, données collectées, base légale, droits des personnes, mesures de sécurité, risques résiduels, délais d'obligations, validation
+- Confirme modèle Hoguet "A" (pas de carte T BRH), base légale = intérêt légitime (Art. 6.1.f)
+- 4 risques résiduels documentés avec atténuations
+- Liste des actions à faire (DPO, registre Art. 30, contrats sous-traitance)
+
+### Pour démo avocat — checklist du parcours fonctionnel
+
+1. ✅ Page publique `/inscription/agence` (multi-step + signature)
+2. ✅ Charte Markdown générée dynamiquement avec données réelles agence
+3. ✅ Création atomique : profile + agence + contrat + subscription
+4. ✅ Auto-redirect `/agence` après signature
+5. ✅ Dashboard agence avec KPI + rappel charte
+6. ✅ Page Score Vente avec claim atomique (UNIQUE INDEX anti-doublon)
+7. ✅ Page Mes leads avec logger tentatives + libération
+8. ✅ Page Abonnement avec changement tier
+9. ✅ Page Profil avec relecture charte signée
+10. ✅ DPIA light document prêt à relecture
+11. ✅ Page publique `/opt-out` RGPD Art. 21
+12. ✅ Admin `/admin/agences-immo` CRUD + `/admin/score-vente` + audits cloud
+
+### Métriques
+| | Avant 16.0.7 | Après |
+|---|---|---|
+| Tables BRH | 85 | **87** (+brh_agence_subscriptions, +brh_agence_audits) |
+| Edge Functions | 12 | **14** (+agence-checkout, +monthly-audit-agencies) |
+| Pages portail agence | 1 | **5** |
+| Tests Vitest | 353 | **353** (pas de nouveaux tests UI) |
+| Migrations | 47 | **48** |
+
+### Conformité 14 règles BRH
+- ✅ Règle #5 `if (error) throw error` partout
+- ✅ Règle #8 pas de `USING (true)` (sauf optout_insert_anon documenté)
+- ✅ Règle #9 EF rate-limit (agence-checkout 10/min, opt-out déjà fait)
+- ✅ Règle #11 TIMESTAMPTZ partout
+- ✅ Règle #12 `SET search_path = ''` sur les 4 nouveaux helpers SQL
+
+### Pré-requis avant ouverture publique aux agences
+- 🔴 **Avocat valide template charte + DPIA** (1 500 € one-shot)
+- 🟡 Activer `STRIPE_SECRET_KEY` + `STRIPE_PRICE_AGENCE_*` Supabase env (paiement réel)
+- 🟡 Déployer EFs `agence-checkout` + `monthly-audit-agencies` (besoin SUPABASE_ACCESS_TOKEN)
+- 🟡 Phase 16.x future : table `brh_proprietaires` avec emails pour audit aléatoire fonctionnel
+- 🟡 Brancher pg_cron sur `brh_reset_agence_monthly_quotas()` daily + `brh_release_expired_assignments()` daily
+
+### Status
+✅ DONE — Phase 16.0.7+8+9 livrée. Pipeline démo prêt pour Philippe → avocat → validation/améliorations.
+
+---
+
 ## 2026-05-03 — Phase 16.0 : Score Vente Agences Immo (modèle Hoguet "A")
 
 **Lancement de la phase la plus monétisable du SaaS BRH** : leads scorés pour agences immobilières bretonnes. Modèle Hoguet "A" (vendeur de fiches d'opportunité, pas de transaction directe → pas de carte T requise). Validation business par Philippe : DPIA reportée à post-lancement (compromis pragmatique), charte auto-générée par RAG juridique avec signature simple eIDAS.

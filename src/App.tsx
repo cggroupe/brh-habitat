@@ -40,6 +40,7 @@ const PartenairesPage = lazy(() => import('@/pages/public/PartenairesPage'))
 const AssistantPage = lazy(() => import('@/pages/public/AssistantPage'))
 const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'))
 const OptOutPage = lazy(() => import('@/pages/public/OptOutPage'))
+const InscriptionAgencePage = lazy(() => import('@/pages/public/InscriptionAgencePage'))
 
 // Lazy loaded pages — Dashboard (user)
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'))
@@ -105,6 +106,10 @@ const ArtisanAgenda = lazy(() => import('@/pages/artisan/ArtisanAgenda'))
 const ArtisanProfil = lazy(() => import('@/pages/artisan/ArtisanProfil'))
 const ArtisanMessages = lazy(() => import('@/pages/artisan/ArtisanMessages'))
 const AgenceDashboard = lazy(() => import('@/pages/agence/AgenceDashboard'))
+const AgenceLeads = lazy(() => import('@/pages/agence/AgenceLeads'))
+const AgenceScoreVente = lazy(() => import('@/pages/agence/AgenceScoreVente'))
+const AgenceAbonnement = lazy(() => import('@/pages/agence/AgenceAbonnement'))
+const AgenceProfil = lazy(() => import('@/pages/agence/AgenceProfil'))
 
 // Phase 17 — PWA install prompt (non-lazy, léger)
 import { InstallPwaPrompt } from '@/components/pwa/InstallPwaPrompt'
@@ -177,6 +182,7 @@ export default function App() {
               <Route path="/mentions-legales" element={<MentionsLegalesPage />} />
               <Route path="/politique-de-confidentialite" element={<PolitiqueConfidentialitePage />} />
               <Route path="/opt-out" element={<OptOutPage />} />
+              <Route path="/inscription/agence" element={<InscriptionAgencePage />} />
             </Route>
 
             {/* Authenticated user routes */}
@@ -211,7 +217,10 @@ export default function App() {
             <Route element={<AgenceGuard />}>
               <Route element={<AgenceShell />}>
                 <Route path="/agence" element={<AgenceDashboard />} />
-                {/* Pages futures : /agence/leads, /agence/score-vente, /agence/abonnement, /agence/profil */}
+                <Route path="/agence/leads" element={<AgenceLeads />} />
+                <Route path="/agence/score-vente" element={<AgenceScoreVente />} />
+                <Route path="/agence/abonnement" element={<AgenceAbonnement />} />
+                <Route path="/agence/profil" element={<AgenceProfil />} />
               </Route>
             </Route>
 
