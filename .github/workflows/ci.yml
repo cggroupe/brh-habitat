@@ -37,6 +37,13 @@ jobs:
 
       - name: Vitest (unit + integration)
         run: npm run test
+        env:
+          # Stubs : tests Vitest n'exécutent aucun appel réseau Supabase
+          # (env: 'node', les modules supabase sont chargés mais jamais appelés
+          # en HTTP). Ces stubs permettent à createClient() de s'instancier
+          # sans throw "supabaseUrl is required".
+          VITE_SUPABASE_URL: 'https://ci-stub.supabase.co'
+          VITE_SUPABASE_ANON_KEY: 'ci-stub-anon-key'
 
   e2e-smoke:
     name: Playwright smoke tests
