@@ -32,6 +32,7 @@ import {
   Map,
   Target,
   ShoppingBag,
+  ClipboardCheck,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -82,18 +83,12 @@ const NAV: NavEntry[] = [
     ],
   },
   { to: '/pro/terrain', label: 'Terrain', icon: Map },
-  {
-    id: 'ia',
-    label: 'IA Bâtiment',
-    icon: Sparkles,
-    defaultTo: '/pro/ia',
-    children: [
-      { to: '/pro/ia?mode=chiffrage', label: 'Chiffrage', icon: Sparkles, feature: 'aiChiffrage' },
-      { to: '/pro/ia?mode=dtu', label: 'Conseil DTU', icon: Sparkles, feature: 'aiAssistantTechnique' },
-      { to: '/pro/ia?mode=courrier', label: 'Courrier prospect', icon: Sparkles },
-      { to: '/pro/ia/historique', label: 'Historique', icon: Sparkles, feature: 'aiChiffrage' },
-    ],
-  },
+  // IA unifiée : un seul lien — le sélecteur de mode (Chiffrage/DTU/Courrier)
+  // + l'historique sont DANS la page /pro/ia (Phase R3 + correction 2026-05-04).
+  { to: '/pro/ia', label: 'IA Bâtiment', icon: Sparkles, feature: 'aiChiffrage' },
+  // Audits DPE 3CL : Pro RGE génère un audit officiel à partir de l'adresse + caractéristiques.
+  // C'est l'équivalent BRH de "simulation Cap Rénov+".
+  { to: '/pro/audits', label: 'Audits DPE', icon: ClipboardCheck },
   {
     id: 'equipe',
     label: 'Équipe & Réseau',
@@ -195,18 +190,19 @@ export default function ProShell() {
           </p>
         </div>
 
-        {/* User block */}
+        {/* User block + cloche notifications visibles immédiatement */}
         {user && (
           <div className="flex items-center gap-3 px-4 mb-5">
             <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm shrink-0">
               {user.full_name.charAt(0).toUpperCase()}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-white truncate">{user.full_name}</p>
               <p className="text-[10px] text-green-100/60 uppercase tracking-wider">
                 Partenaire Pro
               </p>
             </div>
+            <NotificationBell />
           </div>
         )}
 
@@ -292,10 +288,6 @@ export default function ProShell() {
 
         {/* Bottom section */}
         <div className="mt-4 flex flex-col gap-3 px-1">
-          <div className="flex justify-start px-3">
-            <NotificationBell />
-          </div>
-
           <div className="bg-white/10 p-4 rounded-xl border border-white/5">
             <div className="flex items-center gap-2 mb-1">
               <HelpCircle size={14} className="text-green-100/70" />

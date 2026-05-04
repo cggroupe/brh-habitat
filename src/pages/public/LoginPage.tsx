@@ -23,6 +23,34 @@ const ROLE_PORTAL: Record<string, string> = {
   user: '/tableau-de-bord',
 }
 
+/**
+ * Détecte les memberships externes au champ profile.role :
+ *   - artisan_rge (Phase R4)  → /artisan
+ *   - agence_immo (Phase 16)  → /agence
+ * Retourne le path à utiliser, ou null si aucune membership détectée
+ * (auquel cas on fallback sur ROLE_PORTAL[role]).
+ */
+async function detectMembershipPortal(userId: string): Promise<string | null> {
+  // Vérification artisan en premier (plus probable de coexister)
+  const [{ data: artisan }, { data: agence }] = await Promise.all([
+    supabase
+      .from('brh_artisans_rge')
+      .select('id')
+      .eq('profile_id', userId)
+      .maybeSingle(),
+    supabase
+      .from('brh_partner_contracts')
+      .select('id')
+      .eq('signer_profile_id', userId)
+      .eq('partner_type', 'agence_immo')
+      .eq('status', 'active')
+      .maybeSingle(),
+  ])
+  if (artisan) return '/artisan'
+  if (agence) return '/agence'
+  return null
+}
+
 export default function LoginPage() {
   const navigate = useNavigate()
   const setUser = useAppStore((s) => s.setUser)
@@ -61,7 +89,10 @@ export default function LoginPage() {
         avatar_url: profile.avatar_url ?? undefined,
       })
 
-      navigate(ROLE_PORTAL[profile.role] ?? '/tableau-de-bord', { replace: true })
+      // Priorité aux memberships (artisan/agence) sur le profile.role
+      const membershipPath = await detectMembershipPortal(profile.id)
+      const target = membershipPath ?? ROLE_PORTAL[profile.role] ?? '/tableau-de-bord'
+      navigate(target, { replace: true })
     } catch (err) {
       logError('LoginPage:submit', err)
       setError('Une erreur inattendue s\'est produite.')
