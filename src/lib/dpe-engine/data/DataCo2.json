@@ -1,0 +1,38 @@
+{
+  "_meta": {
+    "source": "fra/datas/dataEnergies/DataCo2.as",
+    "description": "Coefficients de conversion énergie → CO2 (kg CO2 / kWh) par énergie et usage",
+    "functions": ["getCoefConvCO2ByEnergieEtUsage(energie, usage)", "getCoefConvCO2ByTypeUsagePV(usage)"],
+    "unit": "kg CO2 / kWh"
+  },
+  "usages": ["CHAUFFAGE", "ECS", "RAFRAICHISSEMENT", "ECLAIRAGE", "AUXILIAIRE", "APPAREILS"],
+  "coefConvCO2": {
+    "GAZ_NAT": 0.227,
+    "PROPANE": 0.272,
+    "FIOUL": 0.324,
+    "BUCHES": 0.03,
+    "GRANULE": 0.03,
+    "RESEAU_CHALEUR": 0.162,
+    "ELECTRICITE": {
+      "CHAUFFAGE": 0.079,
+      "ECS": 0.065,
+      "RAFRAICHISSEMENT": 0.064,
+      "ECLAIRAGE": 0.069,
+      "AUXILIAIRE": 0.064,
+      "APPAREILS": 0.059
+    }
+  },
+  "coefConvCO2_PV": {
+    "_note": "Mapping TypeUsagePV → coef CO2 électricité",
+    "CHAUFFAGE": 0.079,
+    "ECS": 0.065,
+    "REFROIDISSEMENT": 0.064,
+    "ECLAIRAGE": 0.069,
+    "CHAUFFAGE_GENERATEUR": 0.064,
+    "ECS_GENERATEUR": 0.064,
+    "AUX_VENTILATION": 0.064,
+    "AUX_DISTRIBUTION": 0.064,
+    "AUTRES": 0.059
+  },
+  "coefKgCO2_km": 0.193
+}

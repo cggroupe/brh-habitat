@@ -1,0 +1,108 @@
+{
+  "_meta": {
+    "source": "fra/datas/dataEcs/DataEcs.as",
+    "description": "Données ECS : coefs de pertes ballon (Cr), rendements générateur (Rpn), pertes veille (Pveil), pertes statiques (Qp0), facteurs solaires ECS (Fecs), COP CESI/PAC ECS"
+  },
+  "Cr": {
+    "_meta": {
+      "description": "Constante de pertes du ballon de stockage ECS",
+      "structure": "[orientation HORIZONTAL/VERTICAL] = [par indexVs] OU [VERTICAL][labelNF] = [par indexVs]",
+      "indexVs_seuils": [
+        {"index": 0, "Vs_max": 100},
+        {"index": 1, "Vs_max": 200},
+        {"index": 2, "Vs_max": 300},
+        {"index": 3, "Vs_min": 300}
+      ]
+    },
+    "values": {
+      "HORIZONTAL": [0.39, 0.33, 0.3, 0.3],
+      "VERTICAL": {
+        "INCONNU": [0.32, 0.23, 0.22, 0.22],
+        "ECS_NF_2_ETOILES": [0.27, 0.22, 0.2, 0.18],
+        "ECS_NF_3_ETOILES": [0.25, 0.2, 0.18, 0.16]
+      }
+    }
+  },
+  "Rpn": {
+    "_meta": {
+      "description": "Rendement nominal Pn (%) — fonction de type [INSTANTANE/ACCUMULATION/CONDENSATION] × année × indexPn",
+      "indexPn_seuils": [{"index": 0, "Pn_max_kW": 10}, {"index": 1, "Pn_min_kW": 10}],
+      "annee_brackets": [0, 1981, 1990, 2001, 2015]
+    },
+    "values": {
+      "INSTANTANE": {
+        "0": [70, 70],
+        "1981": [75, 75],
+        "1990": [81, 82],
+        "2001": [82, 84],
+        "2015": [82, 84]
+      },
+      "ACCUMULATION": {
+        "0": [81],
+        "1990": [84],
+        "2001": [84]
+      },
+      "CONDENSATION": [98]
+    }
+  },
+  "Pveil": {
+    "_meta": "Puissance de veille (W). Structure idem Rpn",
+    "values": {
+      "INSTANTANE": {
+        "0": [150], "1981": [120], "1990": [120], "2001": [100], "2015": [0]
+      },
+      "ACCUMULATION": {
+        "0": [200], "1990": [150], "2001": [150]
+      },
+      "CONDENSATION": [0]
+    }
+  },
+  "Qp0": {
+    "_meta": "Pertes statiques (W). [type][annee] = [par indexPn]",
+    "values": {
+      "INSTANTANE": {
+        "0": [4, 4], "1981": [2, 2], "1990": [1.2, 1.2], "2001": [1, 1], "2015": [1, 0.6]
+      },
+      "ACCUMULATION": {
+        "0": [1.5]
+      }
+    }
+  },
+  "Fecs": {
+    "_meta": {
+      "description": "Facteur solaire ECS par zone climatique × type d'installation",
+      "structure": "[zoneClim] = [age_plus_de_5_ans, age_moins_de_5_ans, ssc]",
+      "indices": ["non SSC, age >= 5 ans (index 0)", "non SSC, age < 5 ans (index 1)", "SSC (index 2)"]
+    },
+    "values": {
+      "H1A": [0.49, 0.63, 0.87],
+      "H1B": [0.5, 0.64, 0.88],
+      "H1C": [0.53, 0.68, 0.9],
+      "H2A": [0.51, 0.66, 0.9],
+      "H2B": [0.54, 0.69, 0.91],
+      "H2C": [0.58, 0.74, 0.95],
+      "H2D": [0.61, 0.77, 0.96],
+      "H3": [0.64, 0.8, 0.98]
+    }
+  },
+  "Cop": {
+    "_meta": {
+      "description": "COP CESI/PAC ECS — uniquement H1A (utilisé pour H1A/H1B/H1C/H2*) ou H3",
+      "indexAnnee": [
+        {"index": 0, "annee_max": 2010},
+        {"index": 1, "annee_min": 2010, "annee_max": 2015},
+        {"index": 2, "annee_min": 2015}
+      ]
+    },
+    "values": {
+      "H1A": {
+        "CHAUFFE_EAU": [2, 2.2, 2.5],
+        "PAC": [2, 2.1, 2.3]
+      },
+      "H3": {
+        "CHAUFFE_EAU": [2.3, 2.5, 2.8],
+        "PAC": [2.3, 2.4, 2.6]
+      }
+    }
+  }
+}

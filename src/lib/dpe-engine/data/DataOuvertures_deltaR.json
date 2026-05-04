@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "source": "fra/datas/dataOuvertures/DataOuvertures.as:1108-1127",
+    "description": "Résistance additionnelle (ΔR) en m².K/W pour les fermetures/volets fenêtres",
+    "function": "get_deltaR(typeOccultation)"
+  },
+  "deltaR": {
+    "aucun volet": 0,
+    "volets ajoures": 0.08,
+    "volets pleins anciens": 0.19,
+    "volets pleins récents": 0.25,
+    "volets roulants aluminium": 0.15,
+    "volets roulants PVC ou bois (tablier ≤ 12 mm)": 0.19,
+    "volets roulants PVC ou bois (tablier > 12 mm)": 0.25,
+    "volets battants PVC ou bois (tablier ≤ 22 mm)": 0.19,
+    "volets battants PVC ou bois (tablier > 22 mm)": 0.25,
+    "persienne coulissante (tablier ≤ 22 mm)": 0.19,
+    "persienne coulissante (tablier > 22 mm)": 0.25,
+    "volets ou fermetures isolés sans ajours": 0.25,
+    "fermeture à lames orientables": 0.08,
+    "volets battants ajours fixes": 0.08,
+    "volet sans ajours en position déployée": 0.15,
+    "stores interieurs": 0.08,
+    "stores exterieurs": 0.08,
+    "volets roulants PVC": 0.15,
+    "volets battants PVC ou bois": 0.19
+  }
+}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, Send, CheckCircle } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
@@ -58,6 +58,13 @@ export default function PartParrainageNew() {
   })
   const [errors, setErrors] = useState<FormErrors>({})
   const [submitted, setSubmitted] = useState(false)
+  const navigateTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  useEffect(() => {
+    return () => {
+      if (navigateTimeoutRef.current) clearTimeout(navigateTimeoutRef.current)
+    }
+  }, [])
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = e.target
@@ -99,7 +106,7 @@ export default function PartParrainageNew() {
     })
 
     setSubmitted(true)
-    setTimeout(() => navigate('/particulier/parrainages'), 2000)
+    navigateTimeoutRef.current = setTimeout(() => navigate('/particulier/parrainages'), 2000)
   }
 
   if (submitted) {

@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "source": "fra/datas/dataParois/DataPlancherBas.as",
+    "description": "Coefficients U des planchers bas : par composant (Upb0) et par période réglementaire×zone (Upb)",
+    "Upb_index_periodes": [
+      {"index": 0, "max_year": 1974},
+      {"index": 1, "max_year": 1977},
+      {"index": 2, "max_year": 1982, "if_joule": true},
+      {"index": 3, "max_year": 1982, "if_joule": false},
+      {"index": 4, "max_year": 1988, "if_joule": true},
+      {"index": 5, "max_year": 1988, "if_joule": false},
+      {"index": 6, "max_year": 2000, "if_joule": true},
+      {"index": 7, "max_year": 2000, "if_joule": false},
+      {"index": 8, "max_year": 2005},
+      {"index": 9, "max_year": 2012},
+      {"index": 10, "comment": "> 2012"}
+    ]
+  },
+  "Upb0_byComposant": {
+    "PLANCHER_BOIS": 1.45,
+    "DALLE_BETON": 2,
+    "PLANCHER_HOURDIS": 0.45,
+    "PLANCHER_VOUTE": 0.8,
+    "PLANCHER_ENTRE_SOLIVE_BOIS": 1.1,
+    "PLANCHER_BARDEAUX_REMPLISSAGE": 1.1,
+    "PLANCHER_SUR_SOLIVE_BOIS": 1.6,
+    "PLANCHER_ENTRE_SOLIVE_METALLIQUE": 1.45,
+    "PLANCHER_SUR_SOLIVE_METALLIQUE": 1.6,
+    "VOUTAIN_SUR_SOLIVE_METALLIQUE": 1.75,
+    "PLANCHER_LOURD": 2
+  },
+  "Upb0_constants": {
+    "JSP": 2,
+    "lambdaIsolantDefault": 0.042,
+    "UpbNu_max": 2.5
+  },
+  "Upb_reglementaire": {
+    "H1": [2, 0.9, 0.8, 0.9, 0.55, 0.8, 0.55, 0.5, 0.3, 0.27, 0.23],
+    "H2": [2, 0.95, 0.84, 0.95, 0.58, 0.74, 0.58, 0.63, 0.3, 0.27, 0.23],
+    "H3": [2, 1, 0.89, 1, 0.78, 0.89, 0.5, 0.56, 0.47, 0.4, 0.25]
+  }
+}

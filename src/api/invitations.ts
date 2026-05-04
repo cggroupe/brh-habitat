@@ -1,6 +1,5 @@
 import { supabase } from '@/lib/supabase'
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string
+import { edgeFunctionUrl } from '@/lib/config'
 
 export interface CompanyInvitationRow {
   id: string
@@ -29,7 +28,7 @@ export async function createInvitation(email: string, memberRole: 'member' | 'ow
   const token = session?.access_token
   if (!token) throw new Error('Session Supabase introuvable. Reconnectez-vous.')
 
-  const resp = await fetch(`${SUPABASE_URL}/functions/v1/company-invite`, {
+  const resp = await fetch(edgeFunctionUrl('company-invite'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ email, member_role: memberRole }),

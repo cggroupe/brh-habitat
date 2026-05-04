@@ -1,0 +1,61 @@
+# BRH Habitat
+
+> Plateforme SaaS multi-portails pour la rénovation habitat en Bretagne (Bretagne Rénovation Habitat). 5 portails (public, dashboard user, admin, pro partenaires, particulier), plateforme d'affiliation multi-niveaux, IA BTP chiffrage, carnet santé habitat.
+
+**Stack** : React 19.2 + TypeScript 5.9 strict + Vite 7.3 + Tailwind 4.2 + Supabase + Clerk + Zustand 5 + React Query 5.99 + Zod 4.3.
+**Score santé** : 9.8/10 (audit v7 — 2026-04-14).
+**URL production** : https://www.renovation-brh.fr
+
+## Docs (priorité lecture pour agents IA)
+
+- [index](docs/wiki/index.md): Catalogue du wiki + 14 règles anti-bug + TL;DR
+- [architecture-snapshot](docs/wiki/architecture-snapshot.md): Stack, 119 pages, 5 portails, 4 guards, 30 tables, score santé
+- [data-model](docs/wiki/data-model.md): 30 tables `brh_*`, 20 fonctions SQL, 142 policies RLS, 6 buckets Storage, ERD Mermaid
+- [edge-functions-reference](docs/wiki/edge-functions-reference.md): 11 Edge Functions (ai-proxy, Clerk bridge, SIRET, invitations, emails)
+- [hooks-reference](docs/wiki/hooks-reference.md): 15 hooks React Query + 25 API modules Zod-validated
+- [migrations-audit](docs/wiki/migrations-audit.md): 37 migrations en 8 phases (02/2026 → 04/2026)
+
+## Guides features
+
+- [partner-platform](docs/wiki/partner-platform.md): Plateforme partenaires pro (companies, prospects, quotes, commissions multi-niveaux cascade)
+- [viral-features](docs/wiki/viral-features.md): Features virales A1-A11 (simulation partagée, code court, leaderboard, cashback, QR)
+- [chiffrage-ia](docs/wiki/chiffrage-ia.md): IA BTP via ai-proxy (OpenAI) + chiffrage-prices + génération PDF
+- [tenant-multitenancy](docs/wiki/tenant-multitenancy.md): TenantContext, 18 feature flags, 3 tiers (starter/pro/enterprise)
+- [health-carnet](docs/wiki/health-carnet.md): Carnet santé habitat (health_records, work_history, home_documents)
+- [diagnostic-engine](docs/wiki/diagnostic-engine.md): Moteur diagnostic multi-étapes + renovation-plan + aides-engine
+
+## Qualité & ops
+
+- [security-status](docs/wiki/security-status.md): Statut findings sécurité audits v4→v8 (tous critiques corrigés)
+- [performance](docs/wiki/performance.md): SW cache v3, Sentry, staleTime, 65 lazy imports, monitoring
+- [tests](docs/wiki/tests.md): Absence tests automatisés (honnête) + roadmap Vitest/Playwright
+- [playbooks](docs/wiki/playbooks.md): 10 playbooks (RLS debug, Clerk flow, migrations, commissions cascade)
+
+## Méta
+
+- [karpathy-pattern-setup](docs/wiki/karpathy-pattern-setup.md): Règles d'usage wiki (lire AVANT, mettre à jour APRÈS)
+- [log](docs/wiki/log.md): Journal append-only des modifications
+
+## Sources immuables (raw)
+
+- [raw/README](docs/wiki/raw/README.md): Pointeurs vers migrations SQL, audits, configs (sources de vérité vs wiki générée)
+
+## Optional
+
+- [CLAUDE.md](CLAUDE.md): Instructions projet pour Claude Code
+- [ARCHITECTURE.md](ARCHITECTURE.md): Audit architecture v7 (Chaos Monkey)
+- [PARTNER-PLATFORM.md](PARTNER-PLATFORM.md): Blueprint initial plateforme partenaires
+
+## Règles critiques pour modifier le code
+
+1. **Architecture first** : questions + architecture AVANT de coder
+2. **Toujours invalider `['dashboard', 'stats']`** après mutations
+3. **INTEGER cents** pour montants (jamais NUMERIC/FLOAT)
+4. **Scoper localStorage** par tenant : `${tenantId}-xxx`
+5. **Zod validation** sur réponses Supabase (jamais `as unknown as`)
+6. **RLS** activée sur toute table + SECURITY DEFINER pour helpers (éviter recursion)
+7. **Rate limiting** obligatoire sur Edge Functions (pattern `ai-proxy`)
+8. **`SET search_path = ''`** sur fonctions SECURITY DEFINER
+9. **Jamais push/deploy** sans accord explicite Philippe Gagnon (hook PreToolUse actif)
+
+Voir [CLAUDE.md](CLAUDE.md) pour la liste complète des 14 règles anti-bug.

@@ -11,13 +11,19 @@ import AuthGuard from '@/components/auth/AuthGuard'
 import AdminGuard from '@/components/auth/AdminGuard'
 import ProGuard from '@/components/auth/ProGuard'
 import ParticulierGuard from '@/components/auth/ParticulierGuard'
+import ArtisanGuard from '@/components/auth/ArtisanGuard'
+import ArtisanShell from '@/components/layout/ArtisanShell'
+import AgenceGuard from '@/components/auth/AgenceGuard'
+import AgenceShell from '@/components/layout/AgenceShell'
 import { FeatureRoute } from '@/components/shared/FeatureGate'
+import { PermissionRoute } from '@/components/auth/PermissionRoute'
 
 // Eagerly loaded (above the fold)
 import HomePage from '@/pages/public/HomePage'
 
 // Lazy loaded pages — Public
 const DiagnosticPage = lazy(() => import('@/pages/public/DiagnosticPage'))
+const DiagnosticExpressPage = lazy(() => import('@/pages/public/DiagnosticExpressPage'))
 const DiagnosticResultsPage = lazy(() => import('@/pages/public/DiagnosticResultsPage'))
 const ArticlesPage = lazy(() => import('@/pages/public/ArticlesPage'))
 const ArticlePage = lazy(() => import('@/pages/public/ArticlePage'))
@@ -33,6 +39,8 @@ const PolitiqueConfidentialitePage = lazy(() => import('@/pages/public/Politique
 const PartenairesPage = lazy(() => import('@/pages/public/PartenairesPage'))
 const AssistantPage = lazy(() => import('@/pages/public/AssistantPage'))
 const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'))
+const OptOutPage = lazy(() => import('@/pages/public/OptOutPage'))
+const InscriptionAgencePage = lazy(() => import('@/pages/public/InscriptionAgencePage'))
 
 // Lazy loaded pages — Dashboard (user)
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'))
@@ -53,7 +61,14 @@ const AdminMessages = lazy(() => import('@/pages/admin/AdminMessages'))
 const AdminArticles = lazy(() => import('@/pages/admin/AdminArticles'))
 const AdminUtilisateurs = lazy(() => import('@/pages/admin/AdminUtilisateurs'))
 const AdminPartenaires = lazy(() => import('@/pages/admin/AdminPartenaires'))
+const AdminAgencesImmo = lazy(() => import('@/pages/admin/AdminAgencesImmo'))
+const AdminScoreVente = lazy(() => import('@/pages/admin/AdminScoreVente'))
+const AdminOptOutRequests = lazy(() => import('@/pages/admin/AdminOptOutRequests'))
+const AdminPartnerContracts = lazy(() => import('@/pages/admin/AdminPartnerContracts'))
+const AdminAgenceAudits = lazy(() => import('@/pages/admin/AdminAgenceAudits'))
+const AdminLeadAssignments = lazy(() => import('@/pages/admin/AdminLeadAssignments'))
 const AdminProspects = lazy(() => import('@/pages/admin/AdminProspects'))
+const AdminCommissionsArtisans = lazy(() => import('@/pages/admin/AdminCommissionsArtisans'))
 const AdminCommissions = lazy(() => import('@/pages/admin/AdminCommissions'))
 const AdminCatalogue = lazy(() => import('@/pages/admin/AdminCatalogue'))
 const AdminParametres = lazy(() => import('@/pages/admin/AdminParametres'))
@@ -71,11 +86,38 @@ const ProSocial = lazy(() => import('@/pages/pro/ProSocial'))
 const ProQRCode = lazy(() => import('@/pages/pro/ProQRCode'))
 const AdminPublications = lazy(() => import('@/pages/admin/AdminPublications'))
 const ProVendeurs = lazy(() => import('@/pages/pro/ProVendeurs'))
-const ProAssistant = lazy(() => import('@/pages/pro/ProAssistant'))
-const ProChiffrage = lazy(() => import('@/pages/pro/ProChiffrage'))
-const ProChiffrages = lazy(() => import('@/pages/pro/ProChiffrages'))
+// Phase R3 — ProAssistant / ProChiffrage / ProChiffrages fusionnés dans ProIA (Phase R3),
+// fichiers legacy supprimés en Phase R7. Les anciennes URLs redirectent en 301.
 const ProTeamStats = lazy(() => import('@/pages/pro/ProTeamStats'))
 const ProRapport = lazy(() => import('@/pages/pro/ProRapport'))
+const ProAuditsList = lazy(() => import('@/pages/pro/ProAuditsList'))
+const ProAuditEditor = lazy(() => import('@/pages/pro/ProAuditEditor'))
+const ProAuditResults = lazy(() => import('@/pages/pro/ProAuditResults'))
+const ProProspectsBretagne = lazy(() => import('@/pages/pro/ProProspectsBretagne'))
+const ProProspectsCarte = lazy(() => import('@/pages/pro/ProProspectsCarte'))
+const ProAnalytics = lazy(() => import('@/pages/pro/ProAnalytics'))
+const ProAbonnement = lazy(() => import('@/pages/pro/ProAbonnement'))
+const ProMarketplaceArtisans = lazy(() => import('@/pages/pro/ProMarketplaceArtisans'))
+const ProMesLeadsArtisans = lazy(() => import('@/pages/pro/ProMesLeadsArtisans'))
+const ProTerrain = lazy(() => import('@/pages/pro/ProTerrain'))
+const ProIA = lazy(() => import('@/pages/pro/ProIA'))
+const ProIAHistorique = lazy(() => import('@/pages/pro/ProIAHistorique'))
+const ArtisanDashboard = lazy(() => import('@/pages/artisan/ArtisanDashboard'))
+const ArtisanOnboarding = lazy(() => import('@/pages/artisan/ArtisanOnboarding'))
+const ArtisanFactures = lazy(() => import('@/pages/artisan/ArtisanFactures'))
+const ArtisanMissions = lazy(() => import('@/pages/artisan/ArtisanMissions'))
+const ArtisanAgenda = lazy(() => import('@/pages/artisan/ArtisanAgenda'))
+const ArtisanProfil = lazy(() => import('@/pages/artisan/ArtisanProfil'))
+const ArtisanMessages = lazy(() => import('@/pages/artisan/ArtisanMessages'))
+const AgenceDashboard = lazy(() => import('@/pages/agence/AgenceDashboard'))
+const AgenceLeads = lazy(() => import('@/pages/agence/AgenceLeads'))
+const AgenceScoreVente = lazy(() => import('@/pages/agence/AgenceScoreVente'))
+const AgenceAbonnement = lazy(() => import('@/pages/agence/AgenceAbonnement'))
+const AgenceProfil = lazy(() => import('@/pages/agence/AgenceProfil'))
+
+// Phase 17 — PWA install prompt (non-lazy, léger)
+import { InstallPwaPrompt } from '@/components/pwa/InstallPwaPrompt'
+const AuditView = lazy(() => import('@/pages/AuditView'))
 
 // Lazy loaded pages — Particulier
 const PartDashboard = lazy(() => import('@/pages/particulier/PartDashboard'))
@@ -87,9 +129,9 @@ const PartMessages = lazy(() => import('@/pages/particulier/PartMessages'))
 const PartSocial = lazy(() => import('@/pages/particulier/PartSocial'))
 const PartSimulation = lazy(() => import('@/pages/particulier/PartSimulation'))
 const PartVendeurs = lazy(() => import('@/pages/particulier/PartVendeurs'))
-const PartAssistant = lazy(() => import('@/pages/particulier/PartAssistant'))
-const PartChiffrage = lazy(() => import('@/pages/particulier/PartChiffrage'))
-const PartChiffrages = lazy(() => import('@/pages/particulier/PartChiffrages'))
+// Phase R7 — PartAssistant / PartChiffrage / PartChiffrages fusionnés dans PartIA.
+const PartIA = lazy(() => import('@/pages/particulier/PartIA'))
+const PartIAHistorique = lazy(() => import('@/pages/particulier/PartIAHistorique'))
 const PartBadges = lazy(() => import('@/pages/particulier/PartBadges'))
 const PartStatutFiscal = lazy(() => import('@/pages/particulier/PartStatutFiscal'))
 // PostLoginRedirect supprimee - les pages Login/Register naviguent directement selon le role
@@ -117,6 +159,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <InstallPwaPrompt />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Public routes */}
@@ -124,6 +167,9 @@ export default function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/diagnostic" element={<DiagnosticPage />} />
+              <Route path="/diagnostic-express" element={<DiagnosticExpressPage />} />
+              {/* Phase 13.6.5 — Magic link onboarding artisan (public, magic link Supabase) */}
+              <Route path="/artisan/onboarding/:token" element={<ArtisanOnboarding />} />
               <Route path="/diagnostic/resultats/local" element={<DiagnosticResultsPage />} />
               <Route path="/diagnostic/resultats/:id" element={<DiagnosticResultsPage />} />
               <Route path="/articles" element={<ArticlesPage />} />
@@ -139,6 +185,8 @@ export default function App() {
               <Route path="/assistant" element={<AssistantPage />} />
               <Route path="/mentions-legales" element={<MentionsLegalesPage />} />
               <Route path="/politique-de-confidentialite" element={<PolitiqueConfidentialitePage />} />
+              <Route path="/opt-out" element={<OptOutPage />} />
+              <Route path="/inscription/agence" element={<InscriptionAgencePage />} />
             </Route>
 
             {/* Authenticated user routes */}
@@ -151,6 +199,32 @@ export default function App() {
                 <Route path="/mes-dossiers/:id" element={<DossierDetail />} />
                 <Route path="/mes-rdv" element={<MesRdv />} />
                 <Route path="/profil" element={<ProfilPage />} />
+                <Route path="/audit-energetique/:id" element={<AuditView />} />
+              </Route>
+            </Route>
+
+            {/* Phase R4 — Portail artisan elevé (ArtisanGuard + ArtisanShell) */}
+            <Route element={<ArtisanGuard />}>
+              <Route element={<ArtisanShell />}>
+                <Route path="/artisan" element={<ArtisanDashboard />} />
+                <Route path="/artisan/missions" element={<ArtisanMissions />} />
+                <Route path="/artisan/agenda" element={<ArtisanAgenda />} />
+                <Route path="/artisan/factures" element={<ArtisanFactures />} />
+                <Route path="/artisan/profil" element={<ArtisanProfil />} />
+                <Route path="/artisan/messages" element={<ArtisanMessages />} />
+                {/* Redirect legacy /artisan/dashboard → /artisan */}
+                <Route path="/artisan/dashboard" element={<Navigate to="/artisan" replace />} />
+              </Route>
+            </Route>
+
+            {/* Phase 16.0.6 — Portail agence immobilière (AgenceGuard + AgenceShell) */}
+            <Route element={<AgenceGuard />}>
+              <Route element={<AgenceShell />}>
+                <Route path="/agence" element={<AgenceDashboard />} />
+                <Route path="/agence/leads" element={<AgenceLeads />} />
+                <Route path="/agence/score-vente" element={<AgenceScoreVente />} />
+                <Route path="/agence/abonnement" element={<AgenceAbonnement />} />
+                <Route path="/agence/profil" element={<AgenceProfil />} />
               </Route>
             </Route>
 
@@ -166,7 +240,14 @@ export default function App() {
                 <Route path="/admin/articles" element={<AdminArticles />} />
                 <Route path="/admin/utilisateurs" element={<AdminUtilisateurs />} />
                 <Route path="/admin/partenaires" element={<AdminPartenaires />} />
+                <Route path="/admin/agences-immo" element={<AdminAgencesImmo />} />
+                <Route path="/admin/score-vente" element={<AdminScoreVente />} />
+                <Route path="/admin/opt-out-requests" element={<AdminOptOutRequests />} />
+                <Route path="/admin/partner-contracts" element={<AdminPartnerContracts />} />
+                <Route path="/admin/agence-audits" element={<AdminAgenceAudits />} />
+                <Route path="/admin/lead-assignments" element={<AdminLeadAssignments />} />
                 <Route path="/admin/prospects" element={<AdminProspects />} />
+                <Route path="/admin/commissions-artisans" element={<AdminCommissionsArtisans />} />
                 <Route path="/admin/commissions" element={<AdminCommissions />} />
                 <Route path="/admin/catalogue" element={<AdminCatalogue />} />
                 <Route path="/admin/parametres" element={<AdminParametres />} />
@@ -181,18 +262,34 @@ export default function App() {
                 <Route path="/pro/prospects" element={<ProProspects />} />
                 <Route path="/pro/prospects/nouveau" element={<ProProspectNew />} />
                 <Route path="/pro/prospects/:id" element={<ProProspectDetail />} />
-                <Route path="/pro/commissions" element={<ProCommissions />} />
+                <Route path="/pro/commissions" element={<PermissionRoute permission="canViewFinance"><ProCommissions /></PermissionRoute>} />
                 <Route path="/pro/equipe" element={<ProEquipe />} />
                 <Route path="/pro/messages" element={<ProMessages />} />
                 <Route path="/pro/profil" element={<ProProfil />} />
                 <Route path="/pro/reseaux-sociaux" element={<FeatureRoute feature="socialMediaPosts"><ProSocial /></FeatureRoute>} />
                 <Route path="/pro/qrcode" element={<FeatureRoute feature="qrCodeGeneration"><ProQRCode /></FeatureRoute>} />
                 <Route path="/pro/vendeurs" element={<FeatureRoute feature="recruitmentPyramid"><ProVendeurs /></FeatureRoute>} />
-                <Route path="/pro/assistant" element={<FeatureRoute feature="aiAssistantTechnique"><ProAssistant /></FeatureRoute>} />
-                <Route path="/pro/chiffrage" element={<FeatureRoute feature="aiChiffrage"><ProChiffrage /></FeatureRoute>} />
-                <Route path="/pro/chiffrages" element={<FeatureRoute feature="aiChiffrage"><ProChiffrages /></FeatureRoute>} />
+                {/* Phase R3 — routes /pro/assistant + /pro/chiffrage + /pro/chiffrages
+                    déplacées en redirects 301 plus bas (vers /pro/ia unifié). */}
                 <Route path="/pro/stats-equipe" element={<FeatureRoute feature="teamStats"><ProTeamStats /></FeatureRoute>} />
-                <Route path="/pro/rapport" element={<FeatureRoute feature="monthlyPdfReport"><ProRapport /></FeatureRoute>} />
+                <Route path="/pro/rapport" element={<PermissionRoute permission="canViewFinance"><FeatureRoute feature="monthlyPdfReport"><ProRapport /></FeatureRoute></PermissionRoute>} />
+                <Route path="/pro/audits" element={<ProAuditsList />} />
+                <Route path="/pro/audits/nouveau" element={<ProAuditEditor />} />
+                <Route path="/pro/audits/:id" element={<ProAuditEditor />} />
+                <Route path="/pro/audits/:id/results" element={<ProAuditResults />} />
+                <Route path="/pro/prospects-bretagne" element={<ProProspectsBretagne />} />
+                <Route path="/pro/prospects-carte" element={<ProProspectsCarte />} />
+                <Route path="/pro/analytics" element={<PermissionRoute permission="canViewFinance"><ProAnalytics /></PermissionRoute>} />
+                <Route path="/pro/abonnement" element={<PermissionRoute permission="canViewFinance"><ProAbonnement /></PermissionRoute>} />
+                <Route path="/pro/marketplace-artisans" element={<ProMarketplaceArtisans />} />
+                <Route path="/pro/mes-leads-artisans" element={<PermissionRoute permission="canViewFinance"><ProMesLeadsArtisans /></PermissionRoute>} />
+                <Route path="/pro/terrain" element={<ProTerrain />} />
+                <Route path="/pro/ia" element={<FeatureRoute feature="aiChiffrage"><ProIA /></FeatureRoute>} />
+                <Route path="/pro/ia/historique" element={<FeatureRoute feature="aiChiffrage"><ProIAHistorique /></FeatureRoute>} />
+                {/* Phase R3 — Redirects 301 routes legacy → /pro/ia */}
+                <Route path="/pro/chiffrage" element={<Navigate to="/pro/ia?mode=chiffrage" replace />} />
+                <Route path="/pro/chiffrages" element={<Navigate to="/pro/ia/historique" replace />} />
+                <Route path="/pro/assistant" element={<Navigate to="/pro/ia?mode=dtu" replace />} />
               </Route>
             </Route>
 
@@ -209,9 +306,12 @@ export default function App() {
                 <Route path="/particulier/reseaux-sociaux" element={<FeatureRoute feature="socialMediaPosts"><PartSocial /></FeatureRoute>} />
                 <Route path="/particulier/simulateur" element={<FeatureRoute feature="simulationLinks"><PartSimulation /></FeatureRoute>} />
                 <Route path="/particulier/vendeurs" element={<FeatureRoute feature="recruitmentPyramid"><PartVendeurs /></FeatureRoute>} />
-                <Route path="/particulier/assistant" element={<FeatureRoute feature="aiAssistantTechnique"><PartAssistant /></FeatureRoute>} />
-                <Route path="/particulier/chiffrage" element={<FeatureRoute feature="aiChiffrage"><PartChiffrage /></FeatureRoute>} />
-                <Route path="/particulier/chiffrages" element={<FeatureRoute feature="aiChiffrage"><PartChiffrages /></FeatureRoute>} />
+                {/* Phase R7 — IA particulier unifiée + redirects 301 */}
+                <Route path="/particulier/ia" element={<FeatureRoute feature="aiChiffrage"><PartIA /></FeatureRoute>} />
+                <Route path="/particulier/ia/historique" element={<FeatureRoute feature="aiChiffrage"><PartIAHistorique /></FeatureRoute>} />
+                <Route path="/particulier/assistant" element={<Navigate to="/particulier/ia?mode=dtu" replace />} />
+                <Route path="/particulier/chiffrage" element={<Navigate to="/particulier/ia?mode=chiffrage" replace />} />
+                <Route path="/particulier/chiffrages" element={<Navigate to="/particulier/ia/historique" replace />} />
                 <Route path="/particulier/badges" element={<FeatureRoute feature="badgesGamification"><PartBadges /></FeatureRoute>} />
                 <Route path="/particulier/profil" element={<ProfilPage />} />
               </Route>

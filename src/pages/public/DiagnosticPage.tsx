@@ -143,7 +143,7 @@ export default function DiagnosticPage() {
             equipment: equipment as Record<string, unknown>,
             symptoms: symptoms as Record<string, string[]>,
             current_step: 5,
-            results: results as unknown as Record<string, unknown>,
+            results: JSON.parse(JSON.stringify(results)) as Record<string, unknown>,
             status: 'pending' as const,
             referral_code: referralCode ?? undefined,
           })
@@ -172,7 +172,7 @@ export default function DiagnosticPage() {
         contact_name: '',
         contact_phone: '',
         contact_email: '',
-        results: results as unknown as Record<string, unknown>,
+        results: JSON.parse(JSON.stringify(results)) as Record<string, unknown>,
         status: 'pending' as const,
         admin_notes: null,
         referral_code: referralCode ?? null,

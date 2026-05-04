@@ -219,3 +219,171 @@ export const sendMessageSchema = z.object({
 
 export type CreateThreadParams = z.infer<typeof createThreadSchema>
 export type SendMessageParams = z.infer<typeof sendMessageSchema>
+
+// ---------------------------------------------------------------------------
+// DPE Engine — AuditInputs + Audit (Phase 3 DPE Engine)
+// ---------------------------------------------------------------------------
+
+const periodeConstructionSchema = z.enum([
+  'avant_1948',
+  '1948-1974',
+  '1975-1977',
+  '1978-1982',
+  '1983-1988',
+  '1989-2000',
+  '2001-2005',
+  '2006-2012',
+  'apres_2013',
+])
+
+const inertieSchema = z.enum(['LEGERE', 'LOURDE', 'moyenne', 'tres_lourde', 'age_recent'])
+
+const typeBatimentSchema = z.enum(['maison', 'appartement', 'immeuble'])
+
+const ventilationSchema = z.enum([
+  'naturelle',
+  'vmc_sf_auto_avant_1982',
+  'vmc_sf_auto_1982_2000',
+  'vmc_sf_auto_apres_2000',
+  'vmc_sf_hygro_a',
+  'vmc_sf_hygro_b_avant_2012',
+  'vmc_sf_hygro_b_apres_2012',
+  'vmc_double_flux_sans_recup',
+  'vmc_double_flux_avec_recup',
+  'vmc_gaz',
+])
+
+const paroiInputSchema = z.object({
+  type: z.enum(['mur', 'plancher_bas', 'plancher_haut', 'toiture']),
+  surface: z.number().positive(),
+  orientation: z.enum(['nord', 'est', 'sud', 'ouest', 'horizontal']).optional(),
+  adjacence: z.string().optional(),
+  materiau: z.string().optional(),
+  isolation: z.object({
+    type: z.enum(['iti', 'ite', 'iti_ite', 'sans']).optional(),
+    epaisseur: z.number().nonnegative().optional(),
+    lambda: z.number().positive().optional(),
+    annee: z.number().int().optional(),
+  }).optional(),
+})
+
+const ouvertureInputSchema = z.object({
+  type: z.enum(['fenetre', 'porte', 'baie_vitree', 'porte_fenetre', 'velux']),
+  surface: z.number().positive(),
+  orientation: z.enum(['nord', 'est', 'sud', 'ouest', 'horizontal']).optional(),
+  menuiserie: z.enum(['pvc', 'bois', 'alu', 'metal']).optional(),
+  vitrage: z.enum(['simple', 'double', 'triple', 'survitrage', 'double_fenetre']).optional(),
+  vir: z.boolean().optional(),
+  volet: z.enum(['sans', 'persienne', 'volet_ext_isolant', 'volet_battant_bois']).optional(),
+  pose: z.enum(['tunnel', 'nu_interieur', 'nu_exterieur']).optional(),
+})
+
+export const auditInputsSchema = z.object({
+  geo: z.object({
+    codeInsee: z.string().regex(/^(\d{5}|2[AB]\d{3}|97\d{3})$/),
+    altitude: z.number().nonnegative().optional(),
+    zone: z.enum(['H1A', 'H1B', 'H1C', 'H2A', 'H2B', 'H2C', 'H2D', 'H3']).optional(),
+  }),
+  bati: z.object({
+    surfaceHabitable: z.number().positive(),
+    volume: z.number().positive(),
+    hauteurSousPlafond: z.number().positive().optional(),
+    nombreNiveaux: z.number().int().positive().optional(),
+    periodeConstruction: periodeConstructionSchema,
+    inertie: inertieSchema,
+    typeBatiment: typeBatimentSchema,
+    parois: z.array(paroiInputSchema).min(1),
+    ouvertures: z.array(ouvertureInputSchema),
+    pontsThermiques: z.array(z.object({ type: z.string(), longueur: z.number() })).optional(),
+  }),
+  equipements: z.object({
+    chauffage: z.object({
+      generateur: z.string(),
+      emetteur: z.string().optional(),
+      energie: z.string().optional(),
+      anneeInstallation: z.number().int().optional(),
+      scopRenseigne: z.number().positive().optional(),
+      regulation: z.boolean().optional(),
+    }),
+    ecs: z.object({
+      generateur: z.enum(['electrique', 'gaz', 'fioul', 'bois', 'cet', 'reseau_chaleur', 'solaire_thermique']),
+      stockageL: z.number().nonnegative().optional(),
+      energie: z.string().optional(),
+      anneeInstallation: z.number().int().optional(),
+    }),
+    ventilation: ventilationSchema,
+    climatisation: z.object({
+      seer: z.number().positive().optional(),
+      surfaceClim: z.number().nonnegative().optional(),
+    }).optional(),
+    photovoltaique: z.object({
+      surface: z.number().positive().optional(),
+      puissance: z.number().positive().optional(),
+      inclinaison: z.number().optional(),
+      orientation: z.string().optional(),
+    }).optional(),
+  }),
+  comportement: z.enum(['conventionnel', 'depensier', 'personnalise']).optional(),
+  foyer: z.object({
+    nbAdultes: z.number().int().nonnegative().optional(),
+    nbEnfants: z.number().int().nonnegative().optional(),
+    revenuFiscalReference: z.number().nonnegative().optional(),
+    decileMpr: z.enum(['bleu', 'jaune', 'violet', 'rose']).optional(),
+  }).optional(),
+})
+
+const etiquetteSchema = z.enum(['A', 'B', 'C', 'D', 'E', 'F', 'G'])
+
+export const dpeResultSchema = z.object({
+  cepKwhEpM2An: z.number(),
+  gesKgCo2M2An: z.number(),
+  etiquetteEnergie: etiquetteSchema,
+  etiquetteClimat: etiquetteSchema,
+  etiquetteDpe: etiquetteSchema,
+  consoEfTotaleKwhAn: z.number(),
+  parPoste: z.object({
+    chauffage: z.number(),
+    ecs: z.number(),
+    eclairage: z.number(),
+    auxiliaires: z.number(),
+    refroidissement: z.number(),
+  }),
+  deperditions: z.object({
+    parois: z.number(),
+    ouvertures: z.number(),
+    pontsThermiques: z.number(),
+    renouvellementAir: z.number(),
+    total: z.number(),
+    ubat: z.number(),
+  }),
+  hypotheses: z.object({
+    zoneClimatique: z.string(),
+    altitude: z.number(),
+    nadeq: z.number(),
+    moteurVersion: z.string(),
+  }),
+})
+
+export const auditRowSchema = z.object({
+  id: uuid,
+  diagnostic_id: optionalUuid,
+  user_id: optionalUuid,
+  pro_user_id: optionalUuid,
+  home_id: optionalUuid,
+  inputs: z.unknown(), // validé séparément si besoin
+  results: z.unknown(),
+  cep_kwh_ep_m2_an: z.number().nullable(),
+  ges_kg_co2_m2_an: z.number().nullable(),
+  etiquette_energie: etiquetteSchema.nullable(),
+  etiquette_climat: etiquetteSchema.nullable(),
+  status: z.enum(['draft', 'submitted', 'archived']),
+  pdf_url: optionalString,
+  xml_ademe_url: optionalString,
+  finalized_at: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+}).passthrough()
+
+export type AuditInputsValidated = z.infer<typeof auditInputsSchema>
+export type AuditRow = z.infer<typeof auditRowSchema>
+export type DpeResultValidated = z.infer<typeof dpeResultSchema>

@@ -1,0 +1,7 @@
+{
+  "_meta": {
+    "source": "fra/datas/dataENR/DataENR.as",
+    "description": "Constante ENR (énergie renouvelable) — un seul scalaire dans cette classe"
+  },
+  "TauxENR": 2.58
+}

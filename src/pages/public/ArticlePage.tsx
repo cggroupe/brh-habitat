@@ -132,7 +132,7 @@ export default function ArticlePage() {
 
       <ArticleRelatedSection related={related} articlesSEO={articlesSEO} />
 
-      {/* JSON-LD Structured Data */}
+      {/* JSON-LD Structured Data — '<' echappe en < pour empecher la fermeture de </script> via donnee admin */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -149,7 +149,7 @@ export default function ArticlePage() {
               '@type': 'WebPage',
               '@id': `https://renovation-brh.fr/articles/${article.slug}`,
             },
-          }),
+          }).replace(/</g, '\\u003c'),
         }}
       />
     </div>

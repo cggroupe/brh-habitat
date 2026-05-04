@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "source": "fra/datas/dataOuvertures/DataOuvertures.as:385-396, 1457",
+    "description": "Coefficient Ud des portes (W/m².K)",
+    "structure": "_Ud[isolationPorte (true/false)][typeHuisserie][typeVitrage] = [..valeurs par typePourcentagePorteVitree]",
+    "logique_get_Ud": [
+      "Si isolationPorte=true → Ud = 1.5 (constant)",
+      "Sinon → indexer par huisserie (PVC alias BOIS) et type de vitrage de porte"
+    ]
+  },
+  "Ud": {
+    "isolation_porte_true": 1.5,
+    "isolation_porte_false": {
+      "_note": "Valeurs = [pleine_ou_vitree_inf30%, vitree_sup30%]",
+      "bois": {
+        "pleine": [3.5],
+        "simple vitrage": [4, 4.5],
+        "double vitrage": [3.3, 3.3]
+      },
+      "pvc": {
+        "_alias": "= bois (référence partagée)",
+        "pleine": [3.5],
+        "simple vitrage": [4, 4.5],
+        "double vitrage": [3.3, 3.3]
+      },
+      "alu": {
+        "pleine": [5.8],
+        "simple vitrage": [5.8, 5.8],
+        "double vitrage": [5.5, 4.8]
+      }
+    }
+  }
+}

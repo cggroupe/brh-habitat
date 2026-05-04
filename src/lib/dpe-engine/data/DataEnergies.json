@@ -1,0 +1,16 @@
+{
+  "_meta": {
+    "source": "fra/datas/dataEnergies/DataEnergies.as",
+    "description": "Coefficient de conversion énergie finale → énergie primaire (EP)",
+    "function": "getCoefConvEPByEnergie(energie)"
+  },
+  "coefConvEP": {
+    "FIOUL": 1,
+    "GAZ_NAT": 1,
+    "PROPANE": 1,
+    "BUCHES": 1,
+    "GRANULE": 1,
+    "ELECTRICITE": 1.9,
+    "RESEAU_CHALEUR": 1
+  }
+}

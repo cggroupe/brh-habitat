@@ -1,0 +1,80 @@
+/**
+ * Phase 16.0.3 — API Score Vente.
+ *
+ * Lecture du cache `brh_score_vente_v1`. Les calculs/recalculs en batch
+ * sont gérés par un script ops séparé (à venir : `scripts/score-vente/batch.ts`).
+ */
+import { supabase } from '@/lib/supabase'
+import type { ScoreVenteSegment } from '@/lib/dpe-engine/score-vente'
+
+export interface ScoreVenteRow {
+  prospect_id: number
+  score: number | null
+  segment: ScoreVenteSegment | null
+  rules_breakdown: Record<string, number>
+  proba_6m: number | null
+  algo_version: string
+  computed_at: string
+  /** Joint depuis brh_dpe_prospects (subset) */
+  prospect: {
+    id: number
+    commune: string | null
+    code_postal: string | null
+    departement: string | null
+    etiquette_dpe: string | null
+    surface_habitable: number | null
+  } | null
+}
+
+export interface ListScoreVenteFilters {
+  segment?: ScoreVenteSegment
+  departement?: string
+  minScore?: number
+  search?: string
+  limit?: number
+}
+
+export const scoreVenteApi = {
+  async list(filters: ListScoreVenteFilters = {}): Promise<ScoreVenteRow[]> {
+    const limit = Math.min(filters.limit ?? 200, 1000)
+    let q = supabase
+      .from('brh_score_vente_v1')
+      .select(
+        'prospect_id, score, segment, rules_breakdown, proba_6m, algo_version, computed_at, prospect:brh_dpe_prospects!inner(id, commune, code_postal, departement, etiquette_dpe, surface_habitable)',
+      )
+      .order('score', { ascending: false, nullsFirst: false })
+      .limit(limit)
+
+    if (filters.segment) q = q.eq('segment', filters.segment)
+    if (filters.minScore != null) q = q.gte('score', filters.minScore)
+    if (filters.departement) {
+      q = q.eq('prospect.departement', filters.departement)
+    }
+    if (filters.search) {
+      const safe = filters.search.replace(/[%_]/g, '\\$&')
+      q = q.ilike('prospect.commune', `%${safe}%`)
+    }
+
+    const { data, error } = await q
+    if (error) throw error
+    return (data ?? []) as unknown as ScoreVenteRow[]
+  },
+
+  /** Stats agrégées : nombre par segment. */
+  async stats(): Promise<Record<ScoreVenteSegment, number>> {
+    const segments: ScoreVenteSegment[] = ['tres_chaud', 'chaud', 'tiede', 'froid']
+    const counts = await Promise.all(
+      segments.map((seg) =>
+        supabase
+          .from('brh_score_vente_v1')
+          .select('prospect_id', { count: 'exact', head: true })
+          .eq('segment', seg)
+          .then((res) => res.count ?? 0),
+      ),
+    )
+    return Object.fromEntries(segments.map((s, i) => [s, counts[i]])) as Record<
+      ScoreVenteSegment,
+      number
+    >
+  },
+}

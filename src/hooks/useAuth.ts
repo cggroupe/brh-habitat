@@ -51,6 +51,7 @@ export function useAuth() {
   const queryClient = useQueryClient()
   const initRef = useRef(false)
   const [isInitialized, setIsInitialized] = useState(() => !!useAppStore.getState().user)
+  const [authError, setAuthError] = useState<string | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -67,8 +68,11 @@ export function useAuth() {
           if (mounted && profile) setUser(profileToUser(profile))
           else if (mounted && !profile) setUser(null)
         }
-      } catch {
-        if (mounted && !useAppStore.getState().user) setUser(null)
+      } catch (err) {
+        if (mounted) {
+          setAuthError(err instanceof Error ? err.message : 'Auth error')
+          if (!useAppStore.getState().user) setUser(null)
+        }
       } finally {
         if (mounted) setIsInitialized(true)
       }
@@ -76,21 +80,18 @@ export function useAuth() {
 
     void validateSession()
 
+    // onAuthStateChange ne charge plus le profil — il gère uniquement SIGNED_OUT.
+    // Le chargement du profil est la responsabilité des flux de login explicites
+    // (LoginPage, RegisterProPage, JoinCompanyPage) conformément à la règle CLAUDE.md.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event) => {
         if (!mounted) return
-        if (event === 'SIGNED_OUT' || !session) {
+        if (event === 'SIGNED_OUT') {
           setUser(null)
           initRef.current = false
-          return
         }
-        if (session.user) {
-          const current = useAppStore.getState().user
-          if (!current || current.id !== session.user.id) {
-            const profile = await fetchProfile(session.user.id)
-            if (mounted && profile) setUser(profileToUser(profile))
-          }
-        }
+        // Pour tous les autres événements (SIGNED_IN, TOKEN_REFRESHED, etc.),
+        // le profil est déjà chargé par le flux de login — rien à faire ici.
       },
     )
 
@@ -114,7 +115,7 @@ export function useAuth() {
   return {
     user,
     loading,
-    error: null,
+    error: authError,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
     signOut,
