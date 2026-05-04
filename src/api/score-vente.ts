@@ -88,6 +88,26 @@ export const scoreVenteApi = {
     return (data ?? []) as unknown as ScoreVenteRow[]
   },
 
+  /** Charge l'étude complète d'un prospect (scenarios, aides, isolation, DVF) via EF agence-prospect-study. */
+  async fetchProspectStudy(prospectId: number): Promise<unknown> {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) throw new Error('Non authentifié')
+    const { edgeFunctionUrl } = await import('@/lib/config')
+    const res = await fetch(edgeFunctionUrl('agence-prospect-study'), {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ prospectId }),
+    })
+    if (!res.ok) {
+      const t = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
+      throw new Error(t.error ?? 'Erreur étude prospect')
+    }
+    return await res.json()
+  },
+
   /** Stats agrégées : nombre par segment. */
   async stats(): Promise<Record<ScoreVenteSegment, number>> {
     const segments: ScoreVenteSegment[] = ['tres_chaud', 'chaud', 'tiede', 'froid']
