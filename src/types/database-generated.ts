@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.1"
-  }
   public: {
     Tables: {
       brh_affiliates: {
@@ -61,6 +56,224 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      brh_agence_audits: {
+        Row: {
+          agence_id: string
+          assignment_id: string
+          audit_month: string
+          contact_email: string | null
+          created_at: string
+          email_resend_id: string | null
+          email_sent_at: string | null
+          feedback: string | null
+          feedback_message: string | null
+          id: string
+          prospect_id: number
+          response_at: string | null
+          response_token: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          agence_id: string
+          assignment_id: string
+          audit_month: string
+          contact_email?: string | null
+          created_at?: string
+          email_resend_id?: string | null
+          email_sent_at?: string | null
+          feedback?: string | null
+          feedback_message?: string | null
+          id?: string
+          prospect_id: number
+          response_at?: string | null
+          response_token?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          agence_id?: string
+          assignment_id?: string
+          audit_month?: string
+          contact_email?: string | null
+          created_at?: string
+          email_resend_id?: string | null
+          email_sent_at?: string | null
+          feedback?: string | null
+          feedback_message?: string | null
+          id?: string
+          prospect_id?: number
+          response_at?: string | null
+          response_token?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_agence_audits_agence_id_fkey"
+            columns: ["agence_id"]
+            isOneToOne: false
+            referencedRelation: "brh_agences_immo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_agence_audits_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "brh_lead_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_agence_audits_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "brh_dpe_prospects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_agence_audits_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brh_agence_subscriptions: {
+        Row: {
+          agence_id: string
+          created_at: string
+          current_month_claims: number
+          current_period_end: string
+          current_period_start: string
+          id: string
+          monthly_lead_quota: number | null
+          signer_profile_id: string | null
+          stripe_customer_id: string | null
+          stripe_status: string | null
+          stripe_subscription_id: string | null
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          agence_id: string
+          created_at?: string
+          current_month_claims?: number
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          monthly_lead_quota?: number | null
+          signer_profile_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_status?: string | null
+          stripe_subscription_id?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Update: {
+          agence_id?: string
+          created_at?: string
+          current_month_claims?: number
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          monthly_lead_quota?: number | null
+          signer_profile_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_status?: string | null
+          stripe_subscription_id?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_agence_subscriptions_agence_id_fkey"
+            columns: ["agence_id"]
+            isOneToOne: true
+            referencedRelation: "brh_agences_immo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_agence_subscriptions_signer_profile_id_fkey"
+            columns: ["signer_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brh_agences_immo: {
+        Row: {
+          adresse: string | null
+          carte_t_numero: string | null
+          carte_t_validite: string | null
+          code_insee: string | null
+          code_postal: string | null
+          commune: string | null
+          created_at: string
+          departement: string | null
+          email: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          notes: string | null
+          raison_sociale: string
+          representant: string | null
+          siret: string | null
+          site_web: string | null
+          status: string
+          telephone: string | null
+          updated_at: string
+        }
+        Insert: {
+          adresse?: string | null
+          carte_t_numero?: string | null
+          carte_t_validite?: string | null
+          code_insee?: string | null
+          code_postal?: string | null
+          commune?: string | null
+          created_at?: string
+          departement?: string | null
+          email?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          notes?: string | null
+          raison_sociale: string
+          representant?: string | null
+          siret?: string | null
+          site_web?: string | null
+          status?: string
+          telephone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          adresse?: string | null
+          carte_t_numero?: string | null
+          carte_t_validite?: string | null
+          code_insee?: string | null
+          code_postal?: string | null
+          commune?: string | null
+          created_at?: string
+          departement?: string | null
+          email?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          notes?: string | null
+          raison_sociale?: string
+          representant?: string | null
+          siret?: string | null
+          site_web?: string | null
+          status?: string
+          telephone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       brh_aides_locales: {
         Row: {
@@ -272,6 +485,256 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      brh_artisan_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          artisan_id: string
+          created_at: string
+          created_by: string | null
+          email_to: string
+          expires_at: string
+          id: string
+          message_personnel: string | null
+          sent_at: string | null
+          status: string
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          artisan_id: string
+          created_at?: string
+          created_by?: string | null
+          email_to: string
+          expires_at?: string
+          id?: string
+          message_personnel?: string | null
+          sent_at?: string | null
+          status?: string
+          token: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          artisan_id?: string
+          created_at?: string
+          created_by?: string | null
+          email_to?: string
+          expires_at?: string
+          id?: string
+          message_personnel?: string | null
+          sent_at?: string | null
+          status?: string
+          token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_artisan_invitations_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_artisan_invitations_artisan_id_fkey"
+            columns: ["artisan_id"]
+            isOneToOne: false
+            referencedRelation: "brh_artisans_rge"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_artisan_invitations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brh_artisan_leads: {
+        Row: {
+          actual_chantier_ttc_eur: number | null
+          artisan_id: string
+          commission_paid_at: string | null
+          commission_paid_eur: number | null
+          completed_at: string | null
+          created_at: string
+          estimated_chantier_ttc_eur: number | null
+          expected_commission_eur: number | null
+          geste: string
+          id: string
+          prospect_id: number
+          recommended_by: string | null
+          responded_at: string | null
+          signed_at: string | null
+          status: string
+          status_reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          actual_chantier_ttc_eur?: number | null
+          artisan_id: string
+          commission_paid_at?: string | null
+          commission_paid_eur?: number | null
+          completed_at?: string | null
+          created_at?: string
+          estimated_chantier_ttc_eur?: number | null
+          expected_commission_eur?: number | null
+          geste: string
+          id?: string
+          prospect_id: number
+          recommended_by?: string | null
+          responded_at?: string | null
+          signed_at?: string | null
+          status?: string
+          status_reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actual_chantier_ttc_eur?: number | null
+          artisan_id?: string
+          commission_paid_at?: string | null
+          commission_paid_eur?: number | null
+          completed_at?: string | null
+          created_at?: string
+          estimated_chantier_ttc_eur?: number | null
+          expected_commission_eur?: number | null
+          geste?: string
+          id?: string
+          prospect_id?: number
+          recommended_by?: string | null
+          responded_at?: string | null
+          signed_at?: string | null
+          status?: string
+          status_reason?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_artisan_leads_artisan_id_fkey"
+            columns: ["artisan_id"]
+            isOneToOne: false
+            referencedRelation: "brh_artisans_rge"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_artisan_leads_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "brh_dpe_prospects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_artisan_leads_recommended_by_fkey"
+            columns: ["recommended_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brh_artisans_rge: {
+        Row: {
+          adresse: string | null
+          code_insee: string
+          code_postal: string | null
+          commune: string | null
+          created_at: string
+          departement: string | null
+          email: string | null
+          geste_specialites: string[]
+          id: string
+          last_verified_at: string | null
+          latitude: number | null
+          longitude: number | null
+          marketplace_active: boolean
+          marketplace_premium: boolean
+          nom_entreprise: string
+          nombre_chantiers_brh: number
+          nombre_chantiers_lifetime: number
+          profile_id: string | null
+          representant: string | null
+          rge_certifications: Json | null
+          score_qualite: number | null
+          siret: string
+          site_web: string | null
+          source: string | null
+          taux_conversion_brh: number | null
+          telephone: string | null
+          updated_at: string
+        }
+        Insert: {
+          adresse?: string | null
+          code_insee: string
+          code_postal?: string | null
+          commune?: string | null
+          created_at?: string
+          departement?: string | null
+          email?: string | null
+          geste_specialites?: string[]
+          id?: string
+          last_verified_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          marketplace_active?: boolean
+          marketplace_premium?: boolean
+          nom_entreprise: string
+          nombre_chantiers_brh?: number
+          nombre_chantiers_lifetime?: number
+          profile_id?: string | null
+          representant?: string | null
+          rge_certifications?: Json | null
+          score_qualite?: number | null
+          siret: string
+          site_web?: string | null
+          source?: string | null
+          taux_conversion_brh?: number | null
+          telephone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          adresse?: string | null
+          code_insee?: string
+          code_postal?: string | null
+          commune?: string | null
+          created_at?: string
+          departement?: string | null
+          email?: string | null
+          geste_specialites?: string[]
+          id?: string
+          last_verified_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          marketplace_active?: boolean
+          marketplace_premium?: boolean
+          nom_entreprise?: string
+          nombre_chantiers_brh?: number
+          nombre_chantiers_lifetime?: number
+          profile_id?: string | null
+          representant?: string | null
+          rge_certifications?: Json | null
+          score_qualite?: number | null
+          siret?: string
+          site_web?: string | null
+          source?: string | null
+          taux_conversion_brh?: number | null
+          telephone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_artisans_rge_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       brh_audit_emails: {
         Row: {
@@ -696,6 +1159,122 @@ export type Database = {
           },
         ]
       }
+      brh_commission_invoices: {
+        Row: {
+          artisan_id: string
+          commission_pct: number
+          created_at: string
+          email_resend_id: string | null
+          email_sent_at: string | null
+          id: string
+          invoiced_at: string | null
+          nb_leads_completed: number
+          notes: string | null
+          paid_at: string | null
+          pdf_path: string | null
+          pdf_uploaded_at: string | null
+          period_month: number
+          period_year: number
+          reconciled_at: string | null
+          status: string
+          stripe_invoice_id: string | null
+          stripe_payment_intent_id: string | null
+          total_chantiers_ttc_eur: number
+          total_commission_due_eur: number
+          updated_at: string
+        }
+        Insert: {
+          artisan_id: string
+          commission_pct?: number
+          created_at?: string
+          email_resend_id?: string | null
+          email_sent_at?: string | null
+          id?: string
+          invoiced_at?: string | null
+          nb_leads_completed?: number
+          notes?: string | null
+          paid_at?: string | null
+          pdf_path?: string | null
+          pdf_uploaded_at?: string | null
+          period_month: number
+          period_year: number
+          reconciled_at?: string | null
+          status?: string
+          stripe_invoice_id?: string | null
+          stripe_payment_intent_id?: string | null
+          total_chantiers_ttc_eur?: number
+          total_commission_due_eur: number
+          updated_at?: string
+        }
+        Update: {
+          artisan_id?: string
+          commission_pct?: number
+          created_at?: string
+          email_resend_id?: string | null
+          email_sent_at?: string | null
+          id?: string
+          invoiced_at?: string | null
+          nb_leads_completed?: number
+          notes?: string | null
+          paid_at?: string | null
+          pdf_path?: string | null
+          pdf_uploaded_at?: string | null
+          period_month?: number
+          period_year?: number
+          reconciled_at?: string | null
+          status?: string
+          stripe_invoice_id?: string | null
+          stripe_payment_intent_id?: string | null
+          total_chantiers_ttc_eur?: number
+          total_commission_due_eur?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_commission_invoices_artisan_id_fkey"
+            columns: ["artisan_id"]
+            isOneToOne: false
+            referencedRelation: "brh_artisans_rge"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brh_commission_lead_links: {
+        Row: {
+          chantier_ttc_eur: number
+          commission_eur: number
+          invoice_id: string
+          lead_id: string
+        }
+        Insert: {
+          chantier_ttc_eur: number
+          commission_eur: number
+          invoice_id: string
+          lead_id: string
+        }
+        Update: {
+          chantier_ttc_eur?: number
+          commission_eur?: number
+          invoice_id?: string
+          lead_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_commission_lead_links_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "brh_commission_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_commission_lead_links_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "brh_artisan_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brh_companies: {
         Row: {
           address: string | null
@@ -859,6 +1438,7 @@ export type Database = {
           id: string
           joined_at: string | null
           member_role: string | null
+          permissions: Json
           profile_id: string | null
         }
         Insert: {
@@ -866,6 +1446,7 @@ export type Database = {
           id?: string
           joined_at?: string | null
           member_role?: string | null
+          permissions?: Json
           profile_id?: string | null
         }
         Update: {
@@ -873,6 +1454,7 @@ export type Database = {
           id?: string
           joined_at?: string | null
           member_role?: string | null
+          permissions?: Json
           profile_id?: string | null
         }
         Relationships: [
@@ -928,6 +1510,42 @@ export type Database = {
           sujet?: string | null
           telephone?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      brh_cron_runs: {
+        Row: {
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          invoices_created: number | null
+          job_name: string
+          metadata: Json | null
+          started_at: string
+          status: string
+          total_commission_eur: number | null
+        }
+        Insert: {
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          invoices_created?: number | null
+          job_name: string
+          metadata?: Json | null
+          started_at?: string
+          status?: string
+          total_commission_eur?: number | null
+        }
+        Update: {
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          invoices_created?: number | null
+          job_name?: string
+          metadata?: Json | null
+          started_at?: string
+          status?: string
+          total_commission_eur?: number | null
         }
         Relationships: []
       }
@@ -1536,6 +2154,7 @@ export type Database = {
       }
       brh_dpe_prospects: {
         Row: {
+          abf_required: boolean
           adresse: string | null
           adresse_ban: string | null
           aides_barem_date: string | null
@@ -1571,19 +2190,23 @@ export type Database = {
           dpe_saut_s3: Json | null
           dvf_date: string | null
           dvf_distance_m: number | null
+          dvf_mutation_24m: boolean
           dvf_nature: string | null
           dvf_prix: number | null
           dvf_prix_m2: number | null
           dvf_surface: number | null
           dvf_type: string | null
+          enedis_kwh_logt: number | null
           energie_chauffage: string | null
           energie_ecs: string | null
           enriched: boolean | null
           etiquette_dpe: string | null
           etiquette_ges: string | null
+          has_pv_36kw: boolean
           hauteur_sous_plafond: number | null
           id: number
           imported_at: string
+          iris_code: string | null
           isolation_enveloppe: string | null
           isolation_menuiseries: string | null
           isolation_murs: string | null
@@ -1611,6 +2234,10 @@ export type Database = {
           rnb_id: string | null
           rnb_status: string | null
           score_prospect: number | null
+          score_v2: number | null
+          score_v2_calculated_at: string | null
+          score_v2_detail: Json | null
+          score_v2_segment: string | null
           statut: string | null
           surface_habitable: number | null
           type_batiment: string | null
@@ -1620,6 +2247,7 @@ export type Database = {
           ubat: number | null
         }
         Insert: {
+          abf_required?: boolean
           adresse?: string | null
           adresse_ban?: string | null
           aides_barem_date?: string | null
@@ -1655,19 +2283,23 @@ export type Database = {
           dpe_saut_s3?: Json | null
           dvf_date?: string | null
           dvf_distance_m?: number | null
+          dvf_mutation_24m?: boolean
           dvf_nature?: string | null
           dvf_prix?: number | null
           dvf_prix_m2?: number | null
           dvf_surface?: number | null
           dvf_type?: string | null
+          enedis_kwh_logt?: number | null
           energie_chauffage?: string | null
           energie_ecs?: string | null
           enriched?: boolean | null
           etiquette_dpe?: string | null
           etiquette_ges?: string | null
+          has_pv_36kw?: boolean
           hauteur_sous_plafond?: number | null
           id?: number
           imported_at?: string
+          iris_code?: string | null
           isolation_enveloppe?: string | null
           isolation_menuiseries?: string | null
           isolation_murs?: string | null
@@ -1695,6 +2327,10 @@ export type Database = {
           rnb_id?: string | null
           rnb_status?: string | null
           score_prospect?: number | null
+          score_v2?: number | null
+          score_v2_calculated_at?: string | null
+          score_v2_detail?: Json | null
+          score_v2_segment?: string | null
           statut?: string | null
           surface_habitable?: number | null
           type_batiment?: string | null
@@ -1704,6 +2340,7 @@ export type Database = {
           ubat?: number | null
         }
         Update: {
+          abf_required?: boolean
           adresse?: string | null
           adresse_ban?: string | null
           aides_barem_date?: string | null
@@ -1739,19 +2376,23 @@ export type Database = {
           dpe_saut_s3?: Json | null
           dvf_date?: string | null
           dvf_distance_m?: number | null
+          dvf_mutation_24m?: boolean
           dvf_nature?: string | null
           dvf_prix?: number | null
           dvf_prix_m2?: number | null
           dvf_surface?: number | null
           dvf_type?: string | null
+          enedis_kwh_logt?: number | null
           energie_chauffage?: string | null
           energie_ecs?: string | null
           enriched?: boolean | null
           etiquette_dpe?: string | null
           etiquette_ges?: string | null
+          has_pv_36kw?: boolean
           hauteur_sous_plafond?: number | null
           id?: number
           imported_at?: string
+          iris_code?: string | null
           isolation_enveloppe?: string | null
           isolation_menuiseries?: string | null
           isolation_murs?: string | null
@@ -1779,6 +2420,10 @@ export type Database = {
           rnb_id?: string | null
           rnb_status?: string | null
           score_prospect?: number | null
+          score_v2?: number | null
+          score_v2_calculated_at?: string | null
+          score_v2_detail?: Json | null
+          score_v2_segment?: string | null
           statut?: string | null
           surface_habitable?: number | null
           type_batiment?: string | null
@@ -2694,6 +3339,261 @@ export type Database = {
         }
         Relationships: []
       }
+      brh_ext_aides_anil: {
+        Row: {
+          code_geo: string
+          conditions: string | null
+          geste_concerne: string[] | null
+          id: string
+          montant_max_eur: number | null
+          niveau: string
+          nom_aide: string
+          organisme: string | null
+          scraped_at: string
+          url_source: string | null
+        }
+        Insert: {
+          code_geo: string
+          conditions?: string | null
+          geste_concerne?: string[] | null
+          id?: string
+          montant_max_eur?: number | null
+          niveau: string
+          nom_aide: string
+          organisme?: string | null
+          scraped_at?: string
+          url_source?: string | null
+        }
+        Update: {
+          code_geo?: string
+          conditions?: string | null
+          geste_concerne?: string[] | null
+          id?: string
+          montant_max_eur?: number | null
+          niveau?: string
+          nom_aide?: string
+          organisme?: string | null
+          scraped_at?: string
+          url_source?: string | null
+        }
+        Relationships: []
+      }
+      brh_ext_cache: {
+        Row: {
+          cache_key: string
+          fetched_at: string
+          id: string
+          payload: Json
+          source: string
+          ttl_seconds: number
+        }
+        Insert: {
+          cache_key: string
+          fetched_at?: string
+          id?: string
+          payload: Json
+          source: string
+          ttl_seconds?: number
+        }
+        Update: {
+          cache_key?: string
+          fetched_at?: string
+          id?: string
+          payload?: Json
+          source?: string
+          ttl_seconds?: number
+        }
+        Relationships: []
+      }
+      brh_ext_commune: {
+        Row: {
+          delta_dju_2050: number | null
+          dju_18_normal: number | null
+          dvf_last_refresh: string | null
+          fetched_at: string
+          insee: string
+          nb_dp_logements_existants_12m: number | null
+          nb_rge_isolation: number | null
+          nb_rge_pac: number | null
+          opah_active: boolean
+          opah_fin_validite: string | null
+          opah_operateur: string | null
+          opah_type: string | null
+          ppri_present: boolean
+          prix_m2_growth_3y: number | null
+          prix_m2_median_3y: number | null
+          radon_categorie: number | null
+          rga_alea: string | null
+          sismique_zone: number | null
+          sitadel2_last_refresh: string | null
+          station_dju_id: string | null
+          tx_vacance_struct: number | null
+        }
+        Insert: {
+          delta_dju_2050?: number | null
+          dju_18_normal?: number | null
+          dvf_last_refresh?: string | null
+          fetched_at?: string
+          insee: string
+          nb_dp_logements_existants_12m?: number | null
+          nb_rge_isolation?: number | null
+          nb_rge_pac?: number | null
+          opah_active?: boolean
+          opah_fin_validite?: string | null
+          opah_operateur?: string | null
+          opah_type?: string | null
+          ppri_present?: boolean
+          prix_m2_growth_3y?: number | null
+          prix_m2_median_3y?: number | null
+          radon_categorie?: number | null
+          rga_alea?: string | null
+          sismique_zone?: number | null
+          sitadel2_last_refresh?: string | null
+          station_dju_id?: string | null
+          tx_vacance_struct?: number | null
+        }
+        Update: {
+          delta_dju_2050?: number | null
+          dju_18_normal?: number | null
+          dvf_last_refresh?: string | null
+          fetched_at?: string
+          insee?: string
+          nb_dp_logements_existants_12m?: number | null
+          nb_rge_isolation?: number | null
+          nb_rge_pac?: number | null
+          opah_active?: boolean
+          opah_fin_validite?: string | null
+          opah_operateur?: string | null
+          opah_type?: string | null
+          ppri_present?: boolean
+          prix_m2_growth_3y?: number | null
+          prix_m2_median_3y?: number | null
+          radon_categorie?: number | null
+          rga_alea?: string | null
+          sismique_zone?: number | null
+          sitadel2_last_refresh?: string | null
+          station_dju_id?: string | null
+          tx_vacance_struct?: number | null
+        }
+        Relationships: []
+      }
+      brh_ext_iris: {
+        Row: {
+          commune_insee: string
+          conso_gaz_mwh_an: number | null
+          conso_resid_kwh_an: number | null
+          couleur_mpr: string | null
+          d121: number | null
+          d921: number | null
+          decile_estime: number | null
+          fetched_at: string
+          iris_code: string
+          med21: number | null
+          pdl_gaz_resid: number | null
+          thermosens_kwh_dj: number | null
+          tx_avant_1975: number | null
+          tx_proprio: number | null
+        }
+        Insert: {
+          commune_insee: string
+          conso_gaz_mwh_an?: number | null
+          conso_resid_kwh_an?: number | null
+          couleur_mpr?: string | null
+          d121?: number | null
+          d921?: number | null
+          decile_estime?: number | null
+          fetched_at?: string
+          iris_code: string
+          med21?: number | null
+          pdl_gaz_resid?: number | null
+          thermosens_kwh_dj?: number | null
+          tx_avant_1975?: number | null
+          tx_proprio?: number | null
+        }
+        Update: {
+          commune_insee?: string
+          conso_gaz_mwh_an?: number | null
+          conso_resid_kwh_an?: number | null
+          couleur_mpr?: string | null
+          d121?: number | null
+          d921?: number | null
+          decile_estime?: number | null
+          fetched_at?: string
+          iris_code?: string
+          med21?: number | null
+          pdl_gaz_resid?: number | null
+          thermosens_kwh_dj?: number | null
+          tx_avant_1975?: number | null
+          tx_proprio?: number | null
+        }
+        Relationships: []
+      }
+      brh_field_visits: {
+        Row: {
+          company_id: string
+          completed_at: string | null
+          created_at: string
+          employee_id: string
+          id: string
+          lat: number | null
+          lng: number | null
+          notes: string | null
+          scheduled_at: string | null
+          status: string
+          target_id: string
+          target_type: string
+          updated_at: string
+          visit_type: string
+        }
+        Insert: {
+          company_id: string
+          completed_at?: string | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          notes?: string | null
+          scheduled_at?: string | null
+          status?: string
+          target_id: string
+          target_type: string
+          updated_at?: string
+          visit_type: string
+        }
+        Update: {
+          company_id?: string
+          completed_at?: string | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          notes?: string | null
+          scheduled_at?: string | null
+          status?: string
+          target_id?: string
+          target_type?: string
+          updated_at?: string
+          visit_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_field_visits_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "brh_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_field_visits_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brh_health_records: {
         Row: {
           assessed_at: string | null
@@ -2854,6 +3754,63 @@ export type Database = {
         }
         Relationships: []
       }
+      brh_lead_assignments: {
+        Row: {
+          agence_id: string
+          claimed_at: string
+          contact_attempts: number
+          expires_at: string
+          id: string
+          last_attempt_at: string | null
+          last_attempt_outcome: string | null
+          notes: string | null
+          prospect_id: number
+          released_at: string | null
+          status: string
+        }
+        Insert: {
+          agence_id: string
+          claimed_at?: string
+          contact_attempts?: number
+          expires_at?: string
+          id?: string
+          last_attempt_at?: string | null
+          last_attempt_outcome?: string | null
+          notes?: string | null
+          prospect_id: number
+          released_at?: string | null
+          status?: string
+        }
+        Update: {
+          agence_id?: string
+          claimed_at?: string
+          contact_attempts?: number
+          expires_at?: string
+          id?: string
+          last_attempt_at?: string | null
+          last_attempt_outcome?: string | null
+          notes?: string | null
+          prospect_id?: number
+          released_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_lead_assignments_agence_id_fkey"
+            columns: ["agence_id"]
+            isOneToOne: false
+            referencedRelation: "brh_agences_immo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_lead_assignments_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "brh_dpe_prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brh_message_threads: {
         Row: {
           created_at: string | null
@@ -2987,6 +3944,191 @@ export type Database = {
           },
         ]
       }
+      brh_optout_requests: {
+        Row: {
+          adresse: string | null
+          code_insee: string | null
+          code_postal: string | null
+          commune: string | null
+          created_at: string
+          deadline: string
+          email: string
+          id: string
+          matched_prospect_id: number | null
+          message: string | null
+          processed_at: string | null
+          processed_by: string | null
+          processing_notes: string | null
+          request_type: string
+          source_ip: unknown
+          source_user_agent: string | null
+          status: string
+        }
+        Insert: {
+          adresse?: string | null
+          code_insee?: string | null
+          code_postal?: string | null
+          commune?: string | null
+          created_at?: string
+          deadline?: string
+          email: string
+          id?: string
+          matched_prospect_id?: number | null
+          message?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          processing_notes?: string | null
+          request_type?: string
+          source_ip?: unknown
+          source_user_agent?: string | null
+          status?: string
+        }
+        Update: {
+          adresse?: string | null
+          code_insee?: string | null
+          code_postal?: string | null
+          commune?: string | null
+          created_at?: string
+          deadline?: string
+          email?: string
+          id?: string
+          matched_prospect_id?: number | null
+          message?: string | null
+          processed_at?: string | null
+          processed_by?: string | null
+          processing_notes?: string | null
+          request_type?: string
+          source_ip?: unknown
+          source_user_agent?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_optout_requests_matched_prospect_id_fkey"
+            columns: ["matched_prospect_id"]
+            isOneToOne: false
+            referencedRelation: "brh_dpe_prospects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_optout_requests_processed_by_fkey"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brh_partner_contracts: {
+        Row: {
+          agence_id: string | null
+          artisan_id: string | null
+          company_id: string | null
+          consent_communications: boolean
+          consent_data: boolean
+          consent_terms: boolean
+          contract_content: string
+          created_at: string
+          email_confirmation_token: string | null
+          email_confirmed_at: string | null
+          id: string
+          partner_type: string
+          revoked_at: string | null
+          revoked_reason: string | null
+          signature_ip: unknown
+          signature_user_agent: string | null
+          signed_at: string
+          signer_email: string
+          signer_full_name: string
+          signer_profile_id: string | null
+          signer_role: string | null
+          status: string
+          template_version: string
+          updated_at: string
+        }
+        Insert: {
+          agence_id?: string | null
+          artisan_id?: string | null
+          company_id?: string | null
+          consent_communications?: boolean
+          consent_data?: boolean
+          consent_terms?: boolean
+          contract_content: string
+          created_at?: string
+          email_confirmation_token?: string | null
+          email_confirmed_at?: string | null
+          id?: string
+          partner_type: string
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          signature_ip?: unknown
+          signature_user_agent?: string | null
+          signed_at?: string
+          signer_email: string
+          signer_full_name: string
+          signer_profile_id?: string | null
+          signer_role?: string | null
+          status?: string
+          template_version?: string
+          updated_at?: string
+        }
+        Update: {
+          agence_id?: string | null
+          artisan_id?: string | null
+          company_id?: string | null
+          consent_communications?: boolean
+          consent_data?: boolean
+          consent_terms?: boolean
+          contract_content?: string
+          created_at?: string
+          email_confirmation_token?: string | null
+          email_confirmed_at?: string | null
+          id?: string
+          partner_type?: string
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          signature_ip?: unknown
+          signature_user_agent?: string | null
+          signed_at?: string
+          signer_email?: string
+          signer_full_name?: string
+          signer_profile_id?: string | null
+          signer_role?: string | null
+          status?: string
+          template_version?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_partner_contracts_agence_id_fkey"
+            columns: ["agence_id"]
+            isOneToOne: false
+            referencedRelation: "brh_agences_immo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_partner_contracts_artisan_id_fkey"
+            columns: ["artisan_id"]
+            isOneToOne: false
+            referencedRelation: "brh_artisans_rge"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_partner_contracts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "brh_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_partner_contracts_signer_profile_id_fkey"
+            columns: ["signer_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brh_platform_settings: {
         Row: {
           admin_emails: string[] | null
@@ -3097,6 +4239,68 @@ export type Database = {
           },
         ]
       }
+      brh_pro_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          canceled_at: string | null
+          created_at: string
+          current_period_end: string
+          current_period_start: string
+          id: string
+          letters_used_this_period: number
+          profile_id: string
+          quota_letters_per_month: number
+          stripe_customer_id: string | null
+          stripe_price_id: string | null
+          stripe_status: string | null
+          stripe_subscription_id: string | null
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          canceled_at?: string | null
+          created_at?: string
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          letters_used_this_period?: number
+          profile_id: string
+          quota_letters_per_month?: number
+          stripe_customer_id?: string | null
+          stripe_price_id?: string | null
+          stripe_status?: string | null
+          stripe_subscription_id?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          canceled_at?: string | null
+          created_at?: string
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          letters_used_this_period?: number
+          profile_id?: string
+          quota_letters_per_month?: number
+          stripe_customer_id?: string | null
+          stripe_price_id?: string | null
+          stripe_status?: string | null
+          stripe_subscription_id?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_pro_subscriptions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brh_prospect_files: {
         Row: {
           created_at: string | null
@@ -3144,6 +4348,93 @@ export type Database = {
             columns: ["uploaded_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brh_prospect_letters: {
+        Row: {
+          body_md: string
+          cache_creation_tokens: number | null
+          cache_read_tokens: number | null
+          created_at: string
+          generated_by: string
+          generation_duration_ms: number | null
+          greeting: string | null
+          id: string
+          input_tokens: number | null
+          model_used: string
+          output_tokens: number | null
+          prospect_id: number
+          score_v2_at_generation: number | null
+          segment_at_generation: string | null
+          sent_at: string | null
+          sent_via: string | null
+          signature: string | null
+          signaux_used: Json | null
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          body_md: string
+          cache_creation_tokens?: number | null
+          cache_read_tokens?: number | null
+          created_at?: string
+          generated_by: string
+          generation_duration_ms?: number | null
+          greeting?: string | null
+          id?: string
+          input_tokens?: number | null
+          model_used?: string
+          output_tokens?: number | null
+          prospect_id: number
+          score_v2_at_generation?: number | null
+          segment_at_generation?: string | null
+          sent_at?: string | null
+          sent_via?: string | null
+          signature?: string | null
+          signaux_used?: Json | null
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          body_md?: string
+          cache_creation_tokens?: number | null
+          cache_read_tokens?: number | null
+          created_at?: string
+          generated_by?: string
+          generation_duration_ms?: number | null
+          greeting?: string | null
+          id?: string
+          input_tokens?: number | null
+          model_used?: string
+          output_tokens?: number | null
+          prospect_id?: number
+          score_v2_at_generation?: number | null
+          segment_at_generation?: string | null
+          sent_at?: string | null
+          sent_via?: string | null
+          signature?: string | null
+          signaux_used?: Json | null
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_prospect_letters_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brh_prospect_letters_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "brh_dpe_prospects"
             referencedColumns: ["id"]
           },
         ]
@@ -3491,6 +4782,47 @@ export type Database = {
         }
         Relationships: []
       }
+      brh_score_vente_v1: {
+        Row: {
+          algo_version: string
+          computed_at: string
+          proba_6m: number | null
+          prospect_id: number
+          rules_breakdown: Json | null
+          score: number | null
+          segment: string | null
+          updated_at: string
+        }
+        Insert: {
+          algo_version?: string
+          computed_at?: string
+          proba_6m?: number | null
+          prospect_id: number
+          rules_breakdown?: Json | null
+          score?: number | null
+          segment?: string | null
+          updated_at?: string
+        }
+        Update: {
+          algo_version?: string
+          computed_at?: string
+          proba_6m?: number | null
+          prospect_id?: number
+          rules_breakdown?: Json | null
+          score?: number | null
+          segment?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_score_vente_v1_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: true
+            referencedRelation: "brh_dpe_prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brh_simulation_leads: {
         Row: {
           affiliate_id: string | null
@@ -3813,6 +5145,83 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      brh_artisan_invite_accept: {
+        Args: { p_token: string; p_user_id: string }
+        Returns: {
+          artisan_id: string
+          message: string
+          success: boolean
+        }[]
+      }
+      brh_artisan_respond_lead: {
+        Args: {
+          p_action: string
+          p_actual_chantier_eur?: number
+          p_lead_id: string
+          p_reason?: string
+        }
+        Returns: {
+          message: string
+          new_status: string
+          success: boolean
+        }[]
+      }
+      brh_consume_letter_quota: {
+        Args: { p_profile_id: string }
+        Returns: {
+          allowed: boolean
+          period_end: string
+          quota: number
+          tier: string
+          used: number
+        }[]
+      }
+      brh_cron_generate_previous_month_commissions: {
+        Args: never
+        Returns: {
+          invoices_created: number
+          total_commission_eur: number
+        }[]
+      }
+      brh_cron_generate_with_audit: { Args: never; Returns: string }
+      brh_ext_decile_to_couleur_mpr: {
+        Args: { decile: number }
+        Returns: string
+      }
+      brh_gen_artisan_token: { Args: never; Returns: string }
+      brh_generate_commission_invoices: {
+        Args: { p_default_pct?: number; p_month: number; p_year: number }
+        Returns: {
+          artisan_id: string
+          commission_eur: number
+          invoice_id: string
+          is_new: boolean
+          nb_leads: number
+          total_eur: number
+        }[]
+      }
+      brh_generate_monthly_audits: {
+        Args: { p_audit_month: string }
+        Returns: number
+      }
+      brh_grant_lead_claim: {
+        Args: { p_agence_id: string; p_prospect_id: number }
+        Returns: string
+      }
+      brh_mark_commission_paid: {
+        Args: { p_invoice_id: string; p_stripe_payment_intent?: string }
+        Returns: boolean
+      }
+      brh_release_expired_assignments: { Args: never; Returns: number }
+      brh_reset_agence_monthly_quotas: { Args: never; Returns: number }
+      brh_update_artisan_score: {
+        Args: { p_artisan_id: string }
+        Returns: undefined
+      }
+      brh_user_can: {
+        Args: { p_perm_key: string; p_user_id: string }
+        Returns: boolean
+      }
       find_profile_by_email: {
         Args: { search_email: string }
         Returns: {
@@ -4025,3 +5434,4 @@ export const Constants = {
     Enums: {},
   },
 } as const
+

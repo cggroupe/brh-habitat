@@ -17,6 +17,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.96.0'
 import { jwtVerify, createRemoteJWKSet } from 'https://esm.sh/jose@5.9.0'
 import { getCorsHeaders } from '../_shared/cors.ts'
+import { checkRateLimit } from '../_shared/rate-limit.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -28,6 +29,15 @@ Deno.serve(async (req) => {
   const cors = getCorsHeaders(req)
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405, headers: cors })
+
+  // Rate limit : 10 / IP / minute (auth bridge — sensible)
+  const rl = checkRateLimit(req, 'bridge-signin', { maxRequests: 10, windowSeconds: 60 })
+  if (!rl.allowed) {
+    return new Response(JSON.stringify({ error: 'Trop de tentatives, réessayez dans une minute' }), {
+      status: 429,
+      headers: { ...cors, ...rl.headers, 'Content-Type': 'application/json' },
+    })
+  }
 
   if (!SUPABASE_URL || !SERVICE_KEY || !CLERK_ISSUER || !JWKS) {
     return new Response(JSON.stringify({ error: 'Config manquante (CLERK_ISSUER_URL / SERVICE_KEY)' }), {

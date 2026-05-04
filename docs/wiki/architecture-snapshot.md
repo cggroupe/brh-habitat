@@ -1,26 +1,26 @@
-# BRH Habitat — Snapshot architecture (2026-04-23)
+# BRH Habitat — Snapshot architecture (2026-05-04)
 
 > Source : `ARCHITECTURE.md` (audit v7 du 2026-04-14) + inspection directe du code.
-> **Dernière mesure** : 2026-04-23.
+> **Dernière mesure** : 2026-05-04 (post Refonte R1-R12 + Phase 16.0.1-9 + audit admin).
 
-## Chiffres-clés (mesurés 2026-04-23 — audit croisé)
+## Chiffres-clés (mesurés 2026-05-04 — re-mesure post-refonte/Phase16)
 
 | Dimension | Valeur exacte | Vérification |
 |-----------|---------------|--------------|
-| Pages | **119** (.tsx dans src/pages/) | `find src/pages -name "*.tsx" \| wc -l` |
-| Composants | **39** (.tsx dans src/components/) | `find src/components -name "*.tsx" \| wc -l` |
-| Hooks | **15** fichiers (4 base + 11 queries) | `find src/hooks -name "*.ts" \| wc -l` = 16 dont `queries.ts` config |
-| API modules | **25** (src/api/) | `ls src/api/ \| wc -l` |
+| Pages | **150** (.tsx dans src/pages/) | `find src/pages -name "*.tsx" \| wc -l` |
+| Composants | **67** (.tsx dans src/components/) | `find src/components -name "*.tsx" \| wc -l` |
+| Hooks | **15+** fichiers (4 base + 11+ queries) | `find src/hooks -name "*.ts" \| wc -l` |
+| API modules | **25+** (src/api/) | `ls src/api/ \| wc -l` |
 | Stores Zustand | **2** | `appStore`, `diagnosticStore` |
-| Routes React | **70** (path= dans App.tsx) | `grep -c "path=" src/App.tsx` |
-| Migrations | **37** (supabase/migrations/*.sql) | 2026-02-27 → 2026-04-23 |
-| Tables DB | **30** (30 `brh_*` + 1 `profiles`) | `grep "CREATE TABLE" migrations/*.sql \| sort -u` |
-| Fonctions SQL | **20** | `grep "CREATE.*FUNCTION" migrations/*.sql \| sort -u` |
-| Triggers | **23** (6 métier + 15 updated_at + 2 autres) | `grep "CREATE TRIGGER" migrations/*.sql` |
-| Policies RLS | **142** | `grep -c "CREATE POLICY"` |
-| Edge Functions | **11** (+`_shared`) | `ls -d supabase/functions/*/ \| grep -v _shared` |
+| Routes React | **80+** (path= dans App.tsx) | `grep -c "path=" src/App.tsx` |
+| Migrations | **56** (supabase/migrations/*.sql) | 2026-02-27 → 2026-05-03 (Phase16 + Refonte R1) |
+| Tables DB | **78+** (`brh_*` + 1 `profiles`) | post Phase 16 + R1 (audit-agences/lead-assignments/optout/contracts/agences-immo/field-visits/score-vente/agence-subscriptions/audits) |
+| Fonctions SQL | **28+** | + brh_user_can, brh_grant_lead_claim, brh_release_expired_assignments, brh_generate_monthly_audits, brh_reset_agence_monthly_quotas, brh_generate_commission_invoices, etc. |
+| Triggers | **30+** | post Phase 13.6.7 commission cascade + R1 |
+| Policies RLS | **160+** | post Phase 16 + R1 (estimation) |
+| Edge Functions | **29** (+`_shared`) | `ls -d supabase/functions/*/ \| grep -v _shared` |
 | Storage buckets | **6** | company-logos, home-documents, message-attachments, prospect-files, rewards-catalog, social-screenshots |
-| Guards | **4** | AdminGuard, AuthGuard, ParticulierGuard, ProGuard |
+| Guards | **6** | AdminGuard, AuthGuard, ParticulierGuard, ProGuard, ArtisanGuard (R4), AgenceGuard (Phase 16.0.6) |
 | Feature gates utilisés dans App.tsx | **10** (via `<FeatureRoute>`) | `grep -oE 'feature="[a-z]+"' src/App.tsx \| sort -u` |
 | Feature flags définis | **18** | Dans `src/config/tier-presets.ts` |
 | Score santé | **9.8/10** (audit v7) | ARCHITECTURE.md |

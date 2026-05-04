@@ -5,6 +5,58 @@
 
 ---
 
+## 2026-05-04 — Audit complet 3 surfaces (BRH app + simulateur 8915 + map 8899) + 4 fixes P0/P2
+
+**Contexte** : audit demandé par Philippe sur tout ce qui a été livré ces derniers jours (R1-R12 + Phase 16.0.1-9 + audit admin). Trois agents Explore en parallèle + vérification directe. Tests : 353/353, TS strict clean, ESLint clean.
+
+### Findings (par sévérité)
+
+**🔴 Bugs réels confirmés (3)**
+1. **Règle anti-bug #2 violée** — 5 colonnes monétaires NUMERIC au lieu d'INTEGER cents dans les commissions :
+   - `20260615100000_brh_artisans_rge.sql:80` — `expected_commission_eur NUMERIC(10,2)`
+   - `20260630100000_brh_commission_invoices.sql:26-27,67` — 3 colonnes NUMERIC
+   - `20260702100000_brh_commission_cron.sql:21,85` — `total_commission_eur NUMERIC(12,2)`
+   - **Action en attente** : décision Philippe (migration de conversion vs exception documentée). Touche du code financier déployé.
+2. **Route orpheline `/admin/commissions-artisans`** — page routée mais absente du menu AdminShell. ✅ **CORRIGÉ** (entrée ajoutée).
+3. **EF `bridge-signin` sans rate limit** — auth bridge Clerk→Supabase exposé brute force. ✅ **CORRIGÉ** (10/IP/min).
+
+**🟡 Dette technique**
+- 27 occurrences `as unknown as` (règle #4) liées à `supabase` non typé. ✅ **PARTIELLEMENT CORRIGÉ** : `database-generated.ts` régénéré (4027→5437 lignes, +20 tables/RPC Phase16+R1). `supabaseTyped` couvre désormais toutes les tables. À terme : remplacer `supabase` par `supabaseTyped` partout.
+- Triplication prospects DPE (PG local 8915 + JSON statique 8899 + Supabase) — ADR-010 sunset Phase 6.3 toujours pending.
+- Simulateur 8915 : DNS+SSL en attente (`simulateur.renovation-brh.fr` ne résout pas).
+- UFW expose 8895/8899/8915 à *Anywhere* — bypass Nginx possible. Marqué *temporaire*.
+
+**🟦 Wiki drift** ✅ **CORRIGÉ**
+- `architecture-snapshot.md` : 119→150 pages, 37→56 migrations, 11→29 EF, 30→78+ tables, 4→6 guards
+- 71 warnings restants (tables/EF Phase16+R1 à documenter dans data-model.md + edge-functions-reference.md) — travail wiki à part
+
+**Faux positifs identifiés**
+- `setTimeout` ReseauPage:58 (handler synchrone, pas useEffect)
+- `setTimeout` ProAuditEditor:196 (cleanup `clearTimeout` ligne 227 présent)
+- `verify-siret`, `auto-email`, `monthly-audit-agencies` : ont bien rate limit
+
+### Fixes livrés (4 commits locaux à venir)
+
+1. `feat(security): bridge-signin rate limit 10/IP/min` ([supabase/functions/bridge-signin/index.ts](../../supabase/functions/bridge-signin/index.ts))
+2. `feat(admin): AdminCommissionsArtisans dans menu AdminShell` ([src/components/layout/AdminShell.tsx](../../src/components/layout/AdminShell.tsx)) — labels disambigués "Commissions vendeurs" / "Commissions artisans"
+3. `chore(types): régénération database-generated.ts (+20 tables/RPC Phase16+R1)` ([src/types/database-generated.ts](../../src/types/database-generated.ts))
+4. `docs(wiki): MAJ chiffres-clés architecture-snapshot.md (post Phase16+Refonte)` ([docs/wiki/architecture-snapshot.md](architecture-snapshot.md))
+
+### Tests post-fixes
+- TS strict : ✅ clean
+- ESLint : ✅ clean
+- Vitest : ✅ **353 / 353** (inchangé)
+- verify-wiki.sh --strict : 3 erreurs → **0 erreurs** (warnings = tables/EFs à raffiner)
+
+### Pré-requis avant déploiement EF
+- Redéployer `bridge-signin` après merge (rate limit à activer côté cloud)
+- Pas de `supabase functions deploy` automatique (règle "JAMAIS deploy sans accord")
+
+### Status
+✅ DONE — fixes P0 (sécu) + P2 (UX admin) + dette types Supabase. Décision en attente : commissions cents (P1 financier).
+
+---
+
 ## 2026-05-03 — Audit admin Phase 16 : 4 pages management + subscription panel
 
 **Audit fait à la demande de Philippe** : "vérifier que l'admin a bien accès au management de toutes les nouvelles fonctionnalités". Constat : 5 manques identifiés sur les nouvelles tables Phase 16 + Refonte. 4 pages créées + 1 panel intégré au modal agence.
