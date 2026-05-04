@@ -1,17 +1,17 @@
 /**
  * Phase 16.0.6 — Shell portail agence immobilière.
- *
- * Sidebar dédiée 5 entrées : Accueil / Mes leads / Score Vente / Abonnement / Profil.
- * Branding distinct (gradient bleu pour différencier du vert pro classique BRH).
+ * Refonte design 2026-05-04 : sortie du tout-bleu placeholder, accent
+ * orange/rouge thématique (segments very_hot/hot du Score Vente).
  */
 import { NavLink, Outlet } from 'react-router-dom'
 import {
   LayoutDashboard,
   ClipboardList,
-  TrendingUp,
+  Flame,
   CreditCard,
   Building2,
   LogOut,
+  ShieldCheck,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -20,8 +20,8 @@ import { supabase } from '@/lib/supabase'
 
 const AGENCE_NAV = [
   { to: '/agence', label: 'Accueil', icon: LayoutDashboard, end: true },
+  { to: '/agence/score-vente', label: 'Score Vente', icon: Flame },
   { to: '/agence/leads', label: 'Mes leads', icon: ClipboardList },
-  { to: '/agence/score-vente', label: 'Score Vente', icon: TrendingUp },
   { to: '/agence/abonnement', label: 'Abonnement', icon: CreditCard },
   { to: '/agence/profil', label: 'Mon agence', icon: Building2 },
 ]
@@ -35,22 +35,35 @@ export default function AgenceShell() {
   }
 
   return (
-    <div className="min-h-screen flex bg-background">
-      {/* Sidebar desktop — gradient bleu pour distinguer du vert pro BRH */}
-      <aside
-        className="hidden lg:flex flex-col w-64 sticky top-0 h-screen text-white"
-        style={{
-          background: 'linear-gradient(180deg, #1d4ed8 0%, #1e3a8a 100%)',
-        }}
-      >
-        <div className="p-6 border-b border-white/10">
-          <p className="text-xs uppercase text-blue-200/70 tracking-wide">Espace agence</p>
-          <p className="font-display text-lg truncate">
+    <div className="min-h-screen flex bg-slate-50">
+      {/* Sidebar desktop — slate dark + accent orange */}
+      <aside className="hidden lg:flex flex-col w-64 sticky top-0 h-screen bg-slate-900 text-white">
+        {/* Brand block */}
+        <div className="px-5 py-6 border-b border-white/5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
+              <Flame size={16} className="text-white" />
+            </div>
+            <span className="text-[10px] uppercase tracking-widest text-orange-300/80 font-bold">
+              Espace agence
+            </span>
+          </div>
+          <p className="font-display text-base truncate text-white/95">
             {user?.full_name ?? 'Agence partenaire'}
           </p>
+          <p className="text-[11px] text-slate-400 mt-0.5 truncate">{user?.email}</p>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-4 px-3">
+        {/* Bell visible direct dans le header (mieux que tout en bas) */}
+        <div className="px-5 py-3 border-b border-white/5 flex items-center justify-between">
+          <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+            Activité
+          </span>
+          <NotificationBell />
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto py-3 px-3">
           {AGENCE_NAV.map((item) => (
             <NavLink
               key={item.to}
@@ -59,43 +72,50 @@ export default function AgenceShell() {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition mb-0.5 ${
                   isActive
-                    ? 'bg-white/15 text-white font-medium'
-                    : 'text-blue-100/80 hover:bg-white/10 hover:text-white'
+                    ? 'bg-gradient-to-r from-orange-500/20 to-red-500/10 text-white font-semibold border-l-2 border-orange-400'
+                    : 'text-slate-300 hover:bg-white/5 hover:text-white'
                 }`
               }
             >
-              <item.icon size={18} />
+              <item.icon size={17} />
               {item.label}
             </NavLink>
           ))}
         </nav>
 
-        <div className="p-3 border-t border-white/10 bg-white/5">
-          <p className="text-[10px] uppercase tracking-wider text-blue-200/60 px-2 mb-2">
-            Modèle Hoguet "A"
-          </p>
-          <p className="text-[10px] text-blue-100/70 px-2 mb-3 leading-relaxed">
-            Vous accédez à des fiches d'opportunité scorées, pas à des
-            transactions. Contact direct sous votre responsabilité, dans le
-            respect de la charte signée.
-          </p>
+        {/* Footer : badge Hoguet + logout */}
+        <div className="p-3 border-t border-white/5">
+          <div className="bg-white/5 border border-white/5 rounded-lg p-3 mb-2">
+            <div className="flex items-center gap-2 mb-1.5">
+              <ShieldCheck size={14} className="text-emerald-400" />
+              <p className="text-[11px] font-semibold text-emerald-300">
+                Modèle Hoguet « A »
+              </p>
+            </div>
+            <p className="text-[10px] text-slate-400 leading-relaxed">
+              Vous recevez des fiches d'opportunité scorées (pas de transaction
+              directe). Contact sous votre charte.
+            </p>
+          </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-blue-100 hover:bg-white/10"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-white/5 hover:text-white transition"
           >
-            <LogOut size={18} />
+            <LogOut size={16} />
             Se déconnecter
           </button>
         </div>
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="lg:hidden bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
-          <p className="font-display text-lg">Espace agence</p>
-          <NotificationBell />
-        </header>
-
-        <header className="hidden lg:flex bg-white border-b border-gray-100 px-6 py-3 items-center justify-end sticky top-0 z-30">
+        {/* Header mobile */}
+        <header className="lg:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+              <Flame size={14} className="text-white" />
+            </div>
+            <p className="font-display text-base">Espace agence</p>
+          </div>
           <NotificationBell />
         </header>
 

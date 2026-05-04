@@ -23,6 +23,10 @@ export interface ScoreVenteRow {
     departement: string | null
     etiquette_dpe: string | null
     surface_habitable: number | null
+    latitude: number | null
+    longitude: number | null
+    annee_construction: number | null
+    type_batiment: string | null
   } | null
 }
 
@@ -40,7 +44,7 @@ export const scoreVenteApi = {
     let q = supabase
       .from('brh_score_vente_v1')
       .select(
-        'prospect_id, score, segment, rules_breakdown, proba_6m, algo_version, computed_at, prospect:brh_dpe_prospects!inner(id, commune, code_postal, departement, etiquette_dpe, surface_habitable)',
+        'prospect_id, score, segment, rules_breakdown, proba_6m, algo_version, computed_at, prospect:brh_dpe_prospects!inner(id, commune, code_postal, departement, etiquette_dpe, surface_habitable, latitude, longitude, annee_construction, type_batiment)',
       )
       .order('score', { ascending: false, nullsFirst: false })
       .limit(limit)

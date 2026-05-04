@@ -12,6 +12,7 @@ import {
   XCircle,
   Phone,
   AlertTriangle,
+  Flame,
 } from 'lucide-react'
 import { useMyAgenceMembership } from '@/hooks/queries/agence-membership'
 import {
@@ -30,11 +31,11 @@ const STATUS_LABELS: Record<AssignmentStatus, string> = {
 }
 
 const STATUS_COLORS: Record<AssignmentStatus, string> = {
-  active: 'bg-blue-100 text-blue-800',
-  contacted: 'bg-emerald-100 text-emerald-800',
-  expired: 'bg-gray-100 text-gray-600',
-  released: 'bg-gray-100 text-gray-600',
-  blacklisted: 'bg-red-100 text-red-800',
+  active: 'bg-orange-100 text-orange-800 border border-orange-200',
+  contacted: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+  expired: 'bg-slate-100 text-slate-600 border border-slate-200',
+  released: 'bg-slate-100 text-slate-600 border border-slate-200',
+  blacklisted: 'bg-red-100 text-red-800 border border-red-200',
 }
 
 const OUTCOME_LABELS: Record<ContactOutcome, string> = {
@@ -71,25 +72,35 @@ export default function AgenceLeads() {
   return (
     <div className="p-6 lg:p-10 max-w-6xl mx-auto space-y-6">
       <header>
-        <h1 className="text-2xl font-display flex items-center gap-2">
-          <ClipboardList className="text-blue-600" size={24} />
-          Mes leads
-        </h1>
-        <p className="text-sm text-gray-600">
-          {active.length} actifs · {past.length} historique · max 2 tentatives par lead
-        </p>
+        <div className="flex items-center gap-3 mb-1">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-md">
+            <ClipboardList size={20} className="text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-display tracking-tight">Mes leads</h1>
+            <p className="text-sm text-slate-500">
+              {active.length} actifs · {past.length} historique · max 2 tentatives par lead
+            </p>
+          </div>
+        </div>
       </header>
 
       {isLoading ? (
         <div className="p-12 flex justify-center">
-          <Loader className="animate-spin text-blue-600" />
+          <Loader className="animate-spin text-orange-500" />
         </div>
       ) : active.length === 0 ? (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-8 text-center">
-          <ClipboardList className="mx-auto mb-3 text-blue-400" size={32} />
-          <p className="text-blue-900 font-medium">Aucun lead actif pour le moment.</p>
-          <p className="text-sm text-blue-700 mt-1">
-            Allez dans <a href="/agence/score-vente" className="underline">Score Vente</a> pour claim de nouvelles opportunités.
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center">
+          <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-orange-50 flex items-center justify-center">
+            <Flame size={20} className="text-orange-500" />
+          </div>
+          <p className="text-slate-800 font-semibold">Aucun lead actif pour le moment</p>
+          <p className="text-sm text-slate-500 mt-1">
+            Explorez le{' '}
+            <a href="/agence/score-vente" className="text-orange-600 hover:text-orange-700 font-semibold underline">
+              Score Vente
+            </a>{' '}
+            pour claim de nouvelles opportunités.
           </p>
         </div>
       ) : (
@@ -150,7 +161,7 @@ export default function AgenceLeads() {
                         <button
                           onClick={() => handleLogAttempt(lead.id)}
                           disabled={logAttemptMut.isPending}
-                          className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+                          className="px-3 py-1 bg-gradient-to-br from-orange-500 to-red-600 text-white rounded text-sm hover:from-orange-600 hover:to-red-700 disabled:opacity-50"
                         >
                           Enregistrer
                         </button>
@@ -166,7 +177,7 @@ export default function AgenceLeads() {
                         <button
                           onClick={() => setLogFor(lead.id)}
                           disabled={lead.contact_attempts >= 2}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-md hover:from-orange-600 hover:to-red-700 disabled:opacity-50"
                         >
                           <Phone size={12} /> Logger une tentative
                         </button>
