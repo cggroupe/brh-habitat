@@ -15,18 +15,33 @@ export interface ScoreVenteRow {
   proba_6m: number | null
   algo_version: string
   computed_at: string
-  /** Joint depuis brh_dpe_prospects (subset) */
+  /** Joint depuis brh_dpe_prospects — données DPE complètes pour la fiche */
   prospect: {
     id: number
+    adresse: string | null
+    adresse_ban: string | null
     commune: string | null
     code_postal: string | null
     departement: string | null
-    etiquette_dpe: string | null
-    surface_habitable: number | null
     latitude: number | null
     longitude: number | null
-    annee_construction: number | null
     type_batiment: string | null
+    periode_construction: string | null
+    annee_construction: number | null
+    surface_habitable: number | null
+    etiquette_dpe: string | null
+    etiquette_ges: string | null
+    conso_m2_ep: number | null
+    cout_energie_annuel: number | null
+    cout_chauffage: number | null
+    cout_ecs: number | null
+    energie_chauffage: string | null
+    energie_ecs: string | null
+    isolation_enveloppe: string | null
+    isolation_murs: string | null
+    isolation_toiture_detail: string | null
+    type_ventilation: string | null
+    date_dpe: string | null
   } | null
 }
 
@@ -44,7 +59,16 @@ export const scoreVenteApi = {
     let q = supabase
       .from('brh_score_vente_v1')
       .select(
-        'prospect_id, score, segment, rules_breakdown, proba_6m, algo_version, computed_at, prospect:brh_dpe_prospects!inner(id, commune, code_postal, departement, etiquette_dpe, surface_habitable, latitude, longitude, annee_construction, type_batiment)',
+        `prospect_id, score, segment, rules_breakdown, proba_6m, algo_version, computed_at,
+         prospect:brh_dpe_prospects!inner(
+           id, adresse, adresse_ban, commune, code_postal, departement, latitude, longitude,
+           type_batiment, periode_construction, annee_construction, surface_habitable,
+           etiquette_dpe, etiquette_ges, conso_m2_ep,
+           cout_energie_annuel, cout_chauffage, cout_ecs,
+           energie_chauffage, energie_ecs,
+           isolation_enveloppe, isolation_murs, isolation_toiture_detail,
+           type_ventilation, date_dpe
+         )`,
       )
       .order('score', { ascending: false, nullsFirst: false })
       .limit(limit)
