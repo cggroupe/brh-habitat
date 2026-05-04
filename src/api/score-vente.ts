@@ -88,24 +88,20 @@ export const scoreVenteApi = {
     return (data ?? []) as unknown as ScoreVenteRow[]
   },
 
-  /** Charge l'étude complète d'un prospect (scenarios, aides, isolation, DVF) via EF agence-prospect-study. */
+  /** Charge l'étude complète d'un prospect depuis le cache brh_prospect_studies.
+   *  Le cache est alimenté par scripts/cache-prospect-studies.ts (cron VPS).
+   *  Pas d'EF nécessaire — la table est protégée par RLS pour pro/admin/agence active. */
   async fetchProspectStudy(prospectId: number): Promise<unknown> {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) throw new Error('Non authentifié')
-    const { edgeFunctionUrl } = await import('@/lib/config')
-    const res = await fetch(edgeFunctionUrl('agence-prospect-study'), {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ prospectId }),
-    })
-    if (!res.ok) {
-      const t = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
-      throw new Error(t.error ?? 'Erreur étude prospect')
+    const { data, error } = await supabase
+      .from('brh_prospect_studies')
+      .select('study_json, fetched_at')
+      .eq('prospect_id', prospectId)
+      .maybeSingle()
+    if (error) throw error
+    if (!data?.study_json) {
+      throw new Error('Étude indisponible pour ce prospect (cache non encore alimenté)')
     }
-    return await res.json()
+    return data.study_json
   },
 
   /** Stats agrégées : nombre par segment. */
