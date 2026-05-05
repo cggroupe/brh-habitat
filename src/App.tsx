@@ -121,6 +121,8 @@ const AgenceSimulateur = lazy(() => import('@/pages/agence/AgenceSimulateur'))
 const AgenceSocial = lazy(() => import('@/pages/agence/AgenceSocial'))
 const AgenceParrainage = lazy(() => import('@/pages/agence/AgenceParrainage'))
 const AgenceEquipe = lazy(() => import('@/pages/agence/AgenceEquipe'))
+const AgenceQRCode = lazy(() => import('@/pages/agence/AgenceQRCode'))
+const AgenceVitrinePage = lazy(() => import('@/pages/public/AgenceVitrinePage'))
 
 // Phase 17 — PWA install prompt (non-lazy, léger)
 import { InstallPwaPrompt } from '@/components/pwa/InstallPwaPrompt'
@@ -194,6 +196,7 @@ export default function App() {
               <Route path="/politique-de-confidentialite" element={<PolitiqueConfidentialitePage />} />
               <Route path="/opt-out" element={<OptOutPage />} />
               <Route path="/inscription/agence" element={<InscriptionAgencePage />} />
+              <Route path="/a/:agenceId" element={<AgenceVitrinePage />} />
             </Route>
 
             {/* Authenticated user routes */}
@@ -236,6 +239,7 @@ export default function App() {
                 <Route path="/agence/reseaux-sociaux" element={<AgenceSocial />} />
                 <Route path="/agence/parrainage" element={<AgenceParrainage />} />
                 <Route path="/agence/equipe" element={<AgenceEquipe />} />
+                <Route path="/agence/qr-code" element={<AgenceQRCode />} />
                 <Route path="/agence/abonnement" element={<AgenceAbonnement />} />
                 <Route path="/agence/profil" element={<AgenceProfil />} />
               </Route>

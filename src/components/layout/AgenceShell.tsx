@@ -18,6 +18,7 @@ import {
   Share2,
   Network,
   Users,
+  QrCode,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -33,6 +34,7 @@ const AGENCE_NAV = [
   { to: '/agence/reseaux-sociaux', label: 'Réseaux sociaux', icon: Share2 },
   { to: '/agence/parrainage', label: 'Mon réseau', icon: Network },
   { to: '/agence/equipe', label: 'Mon équipe', icon: Users },
+  { to: '/agence/qr-code', label: 'QR Code', icon: QrCode },
   { to: '/agence/progression', label: 'Ma progression', icon: Award },
   { to: '/agence/abonnement', label: 'Abonnement', icon: CreditCard },
   { to: '/agence/profil', label: 'Mon agence', icon: Building2 },

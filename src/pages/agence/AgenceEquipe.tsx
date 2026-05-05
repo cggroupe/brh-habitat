@@ -32,7 +32,6 @@ import {
   AGENCE_PERMISSION_DEFS,
   DEFAULT_EMPLOYEE_PERMISSIONS,
   type AgenceMemberPermissions,
-  type AgencePermission,
 } from '@/types/agence-permissions'
 
 function getInitials(name: string | null | undefined): string {

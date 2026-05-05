@@ -62,7 +62,7 @@
 - Sidebar agence 9 → 10 entrées (icône Network — "Mon réseau").
 - ON CONFLICT DO NOTHING sur la commission (idempotent).
 
-#### 7. Mes employés agence — permissions JSONB (commit en cours)
+#### 7. Mes employés agence — permissions JSONB (commit b409aa2)
 - Migration `brh_agence_members` : table équipe agence (signer + employees), permissions JSONB miroir de `brh_company_members`.
 - Trigger `brh_agence_signer_to_member` : auto-ajoute le signer comme `member_role='signer'` quand un partner_contract agence devient `active`. Seed historique inclus.
 - 3 helpers SECURITY DEFINER (search_path='') : `brh_user_has_agence_access()`, `brh_user_belongs_to_agence(agence_id)`, `brh_user_is_signer_of_agence(agence_id)`. Remplacent progressivement `brh_user_is_active_agence_signer` dans les RLS.
@@ -72,6 +72,15 @@
 - Page `/agence/equipe` : liste membres avec badges signer/employé, toggles permissions inline, modal invitation par email d'un compte BRH existant, retrait avec confirmation.
 - Sidebar agence 10 → 11 entrées (icône Users — "Mon équipe").
 - Anti-bug : #5 throw, #6 guards, #8 pas de USING(true), #11 TIMESTAMPTZ, #12 search_path=''.
+
+#### 8. QR code agence personnalisé + vitrine publique (commit en cours)
+- Migration `20260706170000_brh_agence_public_vitrine.sql` : RPC SECURITY DEFINER `brh_get_public_agence(p_agence_id)` — expose uniquement `raison_sociale / commune / departement / code_postal / site_web` pour status='partenaire' avec charte active. Aucune fuite SIRET / contacts internes.
+- Composant `AgenceQRCodeCard.tsx` (branding orange/rouge) — QR via api.qrserver.com, download canvas haute résolution, fallback CORS direct. Pas de dépendance npm ajoutée.
+- Page `/agence/qr-code` : 2 modes radio "Vitrine prospect" (URL `/a/<id>`) ou "Recrutement agences" (URL `/inscription/agence?ref=<id>` réutilise Step 6), preview QR + copy URL + download PNG + tips impression.
+- Page publique `/a/:agenceId` (sans guard) : hero dégradé slate, fiche agence, CTA "Demander ma simulation" → `/contact?agence=<id>`, 3 cards avantages (DPE / chiffrage / aides), lien site web si renseigné. RPC public via Supabase.rpc.
+- CSP : déjà OK (`img-src 'self' data: blob: https:` couvre api.qrserver.com).
+- Sidebar agence 11 → 12 entrées (icône QrCode).
+- Anti-bug : #5 throw, #6 public route OK (lecture seule via RPC SECURITY DEFINER), #11 TIMESTAMPTZ N/A (lecture), #12 search_path=''.
 
 ### 14 règles anti-bug respectées
 
@@ -91,7 +100,7 @@
 ### Status restant Phase 16.1
 - ✅ Recrutement nouvelles agences (Step 6, commit 57a532a — modèle 1-niveau, 100 € HT/charte)
 - ✅ Mes employés agence (Step 7 — permissions JSONB granulaires, 5 permissions, RLS élargie)
-- ❌ QR code agence personnalisé (vitrine, cartes visite — Priorité 4)
+- ✅ QR code agence personnalisé (Step 8 — 2 modes vitrine/parrainage, page publique `/a/:id`)
 - ❌ Messages agence (chat BRH / artisans assignés — Priorité 5)
 
 ---
