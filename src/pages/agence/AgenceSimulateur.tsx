@@ -1,5 +1,5 @@
 /**
- * Phase 16.1 — Simulateur Cap Rénov BRH dédié au portail agence.
+ * Phase 16.1 — Simulateur énergétique BRH dédié au portail agence.
  *
  * Permet de saisir N'IMPORTE QUELLE adresse (même pas dans nos 60k F/G)
  * et d'obtenir une étude virtuelle complète via BDNB CSTB :
@@ -142,7 +142,7 @@ export default function AgenceSimulateur() {
           <Sparkles size={28} className="text-white" />
         </div>
         <h1 className="text-3xl font-display tracking-tight text-slate-900">
-          Simulateur Cap Rénov
+          Simulateur énergétique BRH
         </h1>
         <p className="text-sm text-slate-600 mt-2 max-w-xl mx-auto">
           Étudiez n'importe quelle adresse de Bretagne ou saisissez les caractéristiques

@@ -34,6 +34,7 @@ import {
   RotateCcw,
 } from 'lucide-react'
 import { computeDpe } from '@/lib/dpe-engine'
+import { computeAllScenarios, type ScenarioComputed } from '@/lib/dpe-engine/variantes'
 import type {
   AuditInputs,
   PeriodeConstruction,
@@ -44,6 +45,8 @@ import type {
   DpeResult,
 } from '@/lib/dpe-engine/types'
 import { DpeLabelGauge } from '@/components/audit/DpeLabelGauge'
+import { StudyReport } from './StudyReport'
+import { Printer } from 'lucide-react'
 
 type FormState = {
   codeInsee: string
@@ -239,7 +242,7 @@ export default function ManualWizard() {
           {step === 3 && <Step3Isolation form={form} set={set} />}
           {step === 4 && <Step4Ouvertures form={form} set={set} />}
           {step === 5 && <Step5Equipements form={form} set={set} />}
-          {step === 6 && <Step6Synthese form={form} preview={livePreview} />}
+          {step === 6 && <Step6Synthese form={form} preview={livePreview} inputs={inputs} />}
 
           {/* Nav */}
           <div className="flex items-center justify-between gap-2 pt-3">
@@ -833,7 +836,32 @@ function Step5Equipements({ form, set }: StepProps) {
   )
 }
 
-function Step6Synthese({ form, preview }: { form: FormState; preview: DpeResult | null }) {
+function Step6Synthese({
+  form,
+  preview,
+  inputs,
+}: {
+  form: FormState
+  preview: DpeResult | null
+  inputs: AuditInputs
+}) {
+  const [showReport, setShowReport] = useState(false)
+
+  // Calcul des 3 scénarios chiffrés (geste seul / bouquet / rénovation BBC)
+  const scenarios: ScenarioComputed[] = useMemo(() => {
+    if (!preview) return []
+    try {
+      const all = computeAllScenarios(inputs, preview)
+      // On garde 3 scénarios pertinents : isolation_combles + enveloppe_iti + isolation_pac
+      const ids = ['isolation_combles', 'enveloppe_iti', 'isolation_pac']
+      return ids
+        .map((id) => all.find((s) => s.template.id === id))
+        .filter((s): s is ScenarioComputed => !!s)
+    } catch {
+      return []
+    }
+  }, [inputs, preview])
+
   if (!preview) {
     return (
       <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
@@ -843,18 +871,27 @@ function Step6Synthese({ form, preview }: { form: FormState; preview: DpeResult 
     )
   }
 
+  const scenarioLabels: Record<string, { title: string; subtitle: string }> = {
+    isolation_combles: { title: 'Geste seul', subtitle: 'Isolation combles 300mm' },
+    enveloppe_iti: { title: 'Bouquet enveloppe', subtitle: 'Murs + combles + plancher bas' },
+    isolation_pac: {
+      title: 'Rénovation globale',
+      subtitle: 'Enveloppe + PAC air/eau + ECS thermo.',
+    },
+  }
+
   return (
     <div className="space-y-4">
       <StepHeader
         icon={<CheckCircle2 className="text-emerald-600" size={20} />}
         title="Synthèse de la simulation"
-        subtitle="Vérifiez les données + estimation finale"
+        subtitle="DPE estimé · 3 scénarios chiffrés · rapport imprimable"
       />
 
       {/* Big DPE result */}
       <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 text-white text-center">
         <p className="text-xs uppercase tracking-wider text-emerald-300 font-bold mb-2">
-          DPE estimé
+          DPE estimé — état actuel
         </p>
         <p className="text-7xl font-bold my-2">{preview.etiquetteDpe}</p>
         <p className="text-sm text-slate-300">
@@ -862,38 +899,157 @@ function Step6Synthese({ form, preview }: { form: FormState; preview: DpeResult 
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <SummaryCard label="Type" value={form.typeBatiment} />
-        <SummaryCard label="Période" value={form.periodeConstruction} />
-        <SummaryCard label="Surface" value={`${form.surfaceHabitable} m²`} />
-        <SummaryCard label="Niveaux" value={String(form.nombreNiveaux)} />
-        <SummaryCard label="Murs" value={form.isolationMurs} />
-        <SummaryCard label="Toiture" value={form.isolationToiture} />
-        <SummaryCard label="Vitrage" value={form.vitrage} />
-        <SummaryCard label="Chauffage" value={form.chauffageGenerateur.replace(/_/g, ' ')} />
-        <SummaryCard label="ECS" value={form.ecsGenerateur} />
-        <SummaryCard label="Ventilation" value={form.ventilation.replace(/_/g, ' ')} />
+      {/* 3 scénarios chiffrés */}
+      {scenarios.length > 0 ? (
+        <div>
+          <h3 className="text-sm font-bold text-slate-700 mb-2">3 scénarios de rénovation</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {scenarios.map((sc) => {
+              const labels = scenarioLabels[sc.template.id] ?? {
+                title: sc.template.label,
+                subtitle: sc.template.description,
+              }
+              const reste = Math.max(0, sc.coutTtcEuros - sc.aidesEuros.total)
+              const gainPct =
+                preview.cepKwhEpM2An > 0
+                  ? Math.round(
+                      ((preview.cepKwhEpM2An - sc.result.cepKwhEpM2An) /
+                        preview.cepKwhEpM2An) *
+                        100,
+                    )
+                  : 0
+              return (
+                <div
+                  key={sc.template.id}
+                  className="bg-white border-2 border-slate-200 rounded-xl p-4 space-y-2"
+                >
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="font-bold text-slate-800 text-sm">{labels.title}</p>
+                    <span className="text-[10px] uppercase tracking-wider bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">
+                      −{gainPct}%
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-snug">{labels.subtitle}</p>
+                  <div className="flex items-center justify-center gap-2 py-2">
+                    <span className="text-[10px] text-slate-500">Avant</span>
+                    <span
+                      className="inline-block w-7 h-7 rounded-md text-white font-bold text-sm flex items-center justify-center"
+                      style={{ background: dpeBg(preview.etiquetteDpe) }}
+                    >
+                      {preview.etiquetteDpe}
+                    </span>
+                    <span className="text-slate-400">→</span>
+                    <span
+                      className="inline-block w-7 h-7 rounded-md text-white font-bold text-sm flex items-center justify-center"
+                      style={{ background: dpeBg(sc.result.etiquetteDpe) }}
+                    >
+                      {sc.result.etiquetteDpe}
+                    </span>
+                    <span className="text-[10px] text-slate-500">Après</span>
+                  </div>
+                  <div className="space-y-1 text-xs pt-2 border-t border-slate-100">
+                    <div className="flex justify-between">
+                      <span className="text-slate-600">Coût TTC</span>
+                      <span className="font-bold text-blue-700 tabular-nums">
+                        {Math.round(sc.coutTtcEuros).toLocaleString('fr-FR')} €
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-600">Aides estimées</span>
+                      <span className="font-bold text-emerald-700 tabular-nums">
+                        −{Math.round(sc.aidesEuros.total).toLocaleString('fr-FR')} €
+                      </span>
+                    </div>
+                    <div className="flex justify-between pt-1 border-t border-dashed border-slate-200 text-sm">
+                      <span className="font-bold text-slate-700">Reste à charge</span>
+                      <span className="font-bold text-[#0a5e2a] tabular-nums">
+                        {Math.round(reste).toLocaleString('fr-FR')} €
+                      </span>
+                    </div>
+                    {sc.payback.paybackAnnees != null && sc.payback.paybackAnnees > 0 && sc.payback.paybackAnnees < 99 ? (
+                      <p className="text-[11px] text-slate-500 pt-1">
+                        Retour sur invest. : ~{Math.round(sc.payback.paybackAnnees)} ans
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Récap caractéristiques */}
+      <div>
+        <h3 className="text-sm font-bold text-slate-700 mb-2">Récap des caractéristiques</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <SummaryCard label="Type" value={form.typeBatiment} />
+          <SummaryCard label="Période" value={form.periodeConstruction} />
+          <SummaryCard label="Surface" value={`${form.surfaceHabitable} m²`} />
+          <SummaryCard label="Niveaux" value={String(form.nombreNiveaux)} />
+          <SummaryCard label="Murs" value={form.isolationMurs} />
+          <SummaryCard label="Toiture" value={form.isolationToiture} />
+          <SummaryCard label="Vitrage" value={form.vitrage} />
+          <SummaryCard
+            label="Chauffage"
+            value={form.chauffageGenerateur.replace(/_/g, ' ')}
+          />
+          <SummaryCard label="ECS" value={form.ecsGenerateur} />
+          <SummaryCard label="Ventilation" value={form.ventilation.replace(/_/g, ' ')} />
+        </div>
       </div>
+
+      {/* Bouton imprimer rapport */}
+      <button
+        type="button"
+        onClick={() => setShowReport(true)}
+        className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-br from-blue-600 to-indigo-700 text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg transition"
+      >
+        <Printer size={16} />
+        Générer le rapport complet imprimable
+      </button>
 
       <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-xs text-emerald-900">
         <p className="font-bold mb-2">🎯 Et maintenant ?</p>
         <ul className="space-y-1 text-emerald-800 leading-snug">
           <li>
-            <strong>Pour partager avec le client</strong> : capture d'écran de cette synthèse +
-            l'étiquette DPE estimée
+            <strong>Imprimer le rapport</strong> ci-dessus → PDF complet à donner au client
           </li>
           <li>
-            <strong>Pour un audit officiel signé</strong> : cliquer "Demander un audit RGE"
-            ci-dessous (commission agence 5 % HT si chantier signé)
+            <strong>Comparer post-travaux</strong> : revenez à l'étape 3 et changez l'isolation
+            pour voir la nouvelle étiquette
           </li>
           <li>
-            <strong>Pour comparer post-travaux</strong> : revenez à l'étape 3 et changez
-            l'isolation (sans → ITE 200mm = saut de 2 classes)
+            <strong>Audit officiel signé</strong> : bouton ci-dessous (commission 5 % HT si
+            chantier signé)
           </li>
         </ul>
       </div>
+
+      {/* Modal rapport imprimable */}
+      {showReport ? (
+        <StudyReport
+          form={form}
+          preview={preview}
+          scenarios={scenarios}
+          onClose={() => setShowReport(false)}
+        />
+      ) : null}
     </div>
   )
+}
+
+function dpeBg(letter: string): string {
+  const colors: Record<string, string> = {
+    A: '#00a651',
+    B: '#50b748',
+    C: '#aed136',
+    D: '#fbe600',
+    E: '#f7a823',
+    F: '#e87a30',
+    G: '#d11919',
+  }
+  return colors[letter] ?? '#888'
 }
 
 // =============================================================================

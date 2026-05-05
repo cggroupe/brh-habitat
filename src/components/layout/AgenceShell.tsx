@@ -23,7 +23,7 @@ import { supabase } from '@/lib/supabase'
 
 const AGENCE_NAV = [
   { to: '/agence', label: 'Accueil', icon: LayoutDashboard, end: true },
-  { to: '/agence/simulateur', label: 'Simulateur Cap Rénov', icon: Sparkles },
+  { to: '/agence/simulateur', label: 'Simulateur énergétique', icon: Sparkles },
   { to: '/agence/score-vente', label: 'Score Vente', icon: Flame },
   { to: '/agence/leads', label: 'Mes leads', icon: ClipboardList },
   { to: '/agence/contributions', label: 'Apporter prospect', icon: Handshake },
