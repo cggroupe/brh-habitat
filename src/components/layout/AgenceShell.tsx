@@ -12,6 +12,8 @@ import {
   Building2,
   LogOut,
   ShieldCheck,
+  Handshake,
+  Award,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -22,6 +24,8 @@ const AGENCE_NAV = [
   { to: '/agence', label: 'Accueil', icon: LayoutDashboard, end: true },
   { to: '/agence/score-vente', label: 'Score Vente', icon: Flame },
   { to: '/agence/leads', label: 'Mes leads', icon: ClipboardList },
+  { to: '/agence/contributions', label: 'Apporter prospect', icon: Handshake },
+  { to: '/agence/progression', label: 'Ma progression', icon: Award },
   { to: '/agence/abonnement', label: 'Abonnement', icon: CreditCard },
   { to: '/agence/profil', label: 'Mon agence', icon: Building2 },
 ]

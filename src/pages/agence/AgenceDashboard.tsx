@@ -14,6 +14,8 @@ import {
   AlertCircle,
   ShieldCheck,
   Eye,
+  Award,
+  Handshake,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useMyAgenceMembership } from '@/hooks/queries/agence-membership'
@@ -24,6 +26,8 @@ import {
 import { useScoreVenteStats } from '@/hooks/queries/score-vente'
 import { useMyAgenceSubscription } from '@/hooks/queries/agence-subscriptions'
 import { TIER_LABELS } from '@/api/agence-subscriptions'
+import { useMyProgression } from '@/hooks/queries/agence-contributions'
+import { TIER_LABELS_FR, TIER_THRESHOLDS } from '@/api/agence-contributions'
 
 export default function AgenceDashboard() {
   const { user } = useAuth()
@@ -32,6 +36,7 @@ export default function AgenceDashboard() {
   const { data: stats } = useScoreVenteStats()
   const { data: subscription } = useMyAgenceSubscription()
   const { data: recentClaims = [] } = useLeadAssignments({ limit: 3 })
+  const { data: progression } = useMyProgression(membership?.agenceId)
 
   const tresChaud = stats?.tres_chaud ?? 0
   const chaud = stats?.chaud ?? 0
@@ -188,6 +193,76 @@ export default function AgenceDashboard() {
           ) : null}
         </div>
       </div>
+
+      {/* Widget progression affiliation */}
+      {progression ? (
+        <div className="bg-gradient-to-br from-emerald-50 via-white to-amber-50 rounded-2xl border border-emerald-200 p-5">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
+                <Award size={16} className="text-white" />
+              </div>
+              <div>
+                <p className="font-bold text-slate-800">
+                  Palier {TIER_LABELS_FR[progression.tier]}
+                </p>
+                <p className="text-[11px] text-slate-500">
+                  {progression.chantiers_signes} chantiers signés ·{' '}
+                  {progression.bonus_leads_unlocked} leads bonus débloqués
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/agence/progression"
+              className="text-xs text-emerald-700 hover:text-emerald-900 font-semibold inline-flex items-center gap-1"
+            >
+              Voir <ArrowRight size={12} />
+            </Link>
+          </div>
+
+          {TIER_THRESHOLDS[progression.tier].next_chantiers ? (
+            <>
+              <div className="h-2 bg-white rounded-full overflow-hidden border border-emerald-100">
+                <div
+                  className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600"
+                  style={{
+                    width: `${Math.min(
+                      100,
+                      Math.round(
+                        (progression.chantiers_signes /
+                          TIER_THRESHOLDS[progression.tier].next_chantiers!) *
+                          100,
+                      ),
+                    )}%`,
+                  }}
+                />
+              </div>
+              <p className="text-[11px] text-emerald-700 mt-2">
+                {TIER_THRESHOLDS[progression.tier].next_chantiers! -
+                  progression.chantiers_signes}{' '}
+                chantier(s) signé(s) restant pour passer{' '}
+                <strong>
+                  {
+                    TIER_LABELS_FR[
+                      TIER_THRESHOLDS[progression.tier]
+                        .next as keyof typeof TIER_LABELS_FR
+                    ]
+                  }
+                </strong>
+                .
+              </p>
+            </>
+          ) : null}
+
+          <Link
+            to="/agence/contributions"
+            className="mt-3 inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gradient-to-br from-emerald-500 to-emerald-700 text-white text-sm font-bold rounded-lg shadow hover:shadow-md transition"
+          >
+            <Handshake size={14} />
+            Apporter un prospect travaux (+5 % commission)
+          </Link>
+        </div>
+      ) : null}
 
       {/* Recent claims */}
       <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
