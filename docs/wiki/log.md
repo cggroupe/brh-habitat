@@ -82,11 +82,17 @@
 - Sidebar agence 11 → 12 entrées (icône QrCode).
 - Anti-bug : #5 throw, #6 public route OK (lecture seule via RPC SECURITY DEFINER), #11 TIMESTAMPTZ N/A (lecture), #12 search_path=''.
 
-#### 9. Messagerie agence ↔ BRH (commit en cours)
+#### 9. Messagerie agence ↔ BRH (commit 5eb8784)
 - Migration `20260706180000_brh_agence_messaging.sql` : étend la CHECK constraint `participant_type` de `brh_message_threads` pour inclure `'agence'` et `'artisan'` (préparation future). Pas de nouvelles tables — réutilise toute l'infrastructure existante (Realtime + storage attachments + RLS `participant_id = auth.uid()`).
 - Update `MessageParticipantType` (src/types/partner.ts) + Zod schemas (createThreadSchema + brhMessageThreadRowSchema) + signatures TS (partner-messages.ts, MessagesPage.tsx).
 - Page `/agence/messages` : oneliner réutilisant `MessagesPage` partagé (déjà utilisé par Pro et Particulier). 0 duplication de code UI.
-- Threads agence visibles côté admin via `/admin/messages` existant (RLS admin déjà OK).
+- ⚠️ Note : aucune UI admin actuelle pour lire les threads (gap pré-existant — vaut aussi pour Pro et Particulier). Admin lit pour V1 via dashboard Supabase. À créer en Phase 17 : page `/admin/messagerie` consommant `get_my_threads_enriched` côté admin.
+
+#### 10. Audit post-Step 5 + corrections P0/P1 (commit en cours)
+- 🔴 **P0 corrigé** — `useMyAgenceMembership` étendu : retourne aussi les employés via fallback `brh_agence_members`. Sans ce fix, AgenceGuard bloquait les employés invités → portail inaccessible. Ajout du champ `role: 'signer' | 'employee'` dans l'interface AgenceMembership.
+- 🔴 **P0 corrigé** — `AgenceEquipe.isSigner` utilise désormais `membership?.role === 'signer'` (avant: `!!membership` qui validait aussi les employés → ils auraient pu inviter d'autres employés en théorie, bloqué côté SQL mais incohérent UI).
+- 🟡 **P1 corrigé** — Migration `20260706190000` : ajoute colonne `referred_by_agence_id` sur `brh_contacts` + index partiel. ContactForm capture `?agence=<uuid>` (regex UUID v4) + bandeau orange "Vous arrivez d'une agence partenaire" + envoie le champ à `useCreateContact`. Ferme la boucle QR vitrine → lead attribué.
+- TS strict ✓ ESLint ✓ Tests 353/353 ✓.
 - Sidebar agence 12 → 13 entrées (icône MessageCircle).
 - Anti-bug : aucun changement RLS (les policies existantes couvrent), #5 throw partout, #11 TIMESTAMPTZ déjà respecté.
 

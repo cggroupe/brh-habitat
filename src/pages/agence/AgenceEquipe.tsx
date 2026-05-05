@@ -47,7 +47,7 @@ export default function AgenceEquipe() {
   const { user } = useAuth()
   const { data: membership } = useMyAgenceMembership()
   const agenceId = membership?.agenceId
-  const isSigner = !!membership
+  const isSigner = membership?.role === 'signer'
 
   const { data: members = [], isLoading } = useAgenceMembers(agenceId)
   const invite = useInviteAgenceEmployee(agenceId)

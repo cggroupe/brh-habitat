@@ -1,6 +1,6 @@
 import { logError } from '@/lib/error'
-import { useState, useEffect } from 'react'
-import { Send, CheckCircle } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { Send, CheckCircle, Building2 } from 'lucide-react'
 import { useCreateContact } from '@/hooks/queries'
 
 type Sujet =
@@ -37,6 +37,14 @@ export function ContactForm() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [cooldownUntil, setCooldownUntil] = useState<number | null>(null)
   const createContact = useCreateContact()
+
+  // Phase 16.1 — capture ?agence=<uuid> (vitrine QR) pour attribuer le lead.
+  const referredByAgenceId = useMemo(() => {
+    if (typeof window === 'undefined') return null
+    const params = new URLSearchParams(window.location.search)
+    const ref = params.get('agence')
+    return ref && /^[0-9a-f-]{36}$/i.test(ref) ? ref : null
+  }, [])
 
   const [now, setNow] = useState(() => Date.now())
 
@@ -86,6 +94,7 @@ export function ContactForm() {
         message: form.message.trim(),
         status: 'nouveau',
         admin_notes: null,
+        referred_by_agence_id: referredByAgenceId,
       })
 
       setCooldownUntil(Date.now() + 30_000)
@@ -111,6 +120,19 @@ export function ContactForm() {
             Remplissez le formulaire ci-dessous, nous vous repondons sous 24h.
           </p>
         </div>
+
+        {referredByAgenceId && !submitted && (
+          <div className="mb-6 flex items-start gap-3 bg-orange-50 border border-orange-200 rounded-xl px-4 py-3">
+            <Building2 size={16} className="text-orange-600 shrink-0 mt-0.5" />
+            <div className="text-xs text-orange-800">
+              <p className="font-bold">Vous arrivez d'une agence partenaire</p>
+              <p className="mt-0.5">
+                Votre demande sera transmise à BRH Habitat et associée à votre agence
+                d'origine pour un traitement prioritaire.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Success state */}
         {submitted ? (

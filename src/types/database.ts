@@ -126,6 +126,8 @@ export interface BrhContactRow {
   message: string
   status: ContactStatus
   admin_notes: string | null
+  /** Phase 16.1 — agence d'origine si lead arrivé via vitrine QR /a/:id. */
+  referred_by_agence_id: string | null
   created_at: string
   updated_at: string
 }
