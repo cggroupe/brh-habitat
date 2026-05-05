@@ -43,6 +43,7 @@ export default function AgenceSimulateur() {
   const [addr, setAddr] = useState('')
   const [suggestions, setSuggestions] = useState<BanFeature[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [searchingAddr, setSearchingAddr] = useState(false)
   const [study, setStudy] = useState<ProspectStudy | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -56,23 +57,30 @@ export default function AgenceSimulateur() {
   function handleAddrInput(value: string) {
     setAddr(value)
     if (debounceRef.current) window.clearTimeout(debounceRef.current)
-    if (value.length < 4) {
+    if (value.length < 2) {
       setSuggestions([])
       setShowSuggestions(false)
+      setSearchingAddr(false)
       return
     }
+    setSearchingAddr(true)
     debounceRef.current = window.setTimeout(async () => {
       try {
         const r = await fetch(
           `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(value)}&limit=8&autocomplete=1`,
         )
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
         const data = await r.json()
         setSuggestions((data.features ?? []) as BanFeature[])
         setShowSuggestions(true)
-      } catch {
+      } catch (err) {
+        console.error('BAN autocomplete failed', err)
         setSuggestions([])
+        setShowSuggestions(true) // afficher "aucun résultat"
+      } finally {
+        setSearchingAddr(false)
       }
-    }, 220)
+    }, 200)
   }
 
   async function runStudy(f: BanFeature) {
@@ -141,29 +149,41 @@ export default function AgenceSimulateur() {
           type="text"
           value={addr}
           onChange={(e) => handleAddrInput(e.target.value)}
-          onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+          onFocus={() => addr.length >= 2 && setShowSuggestions(true)}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
           placeholder="Tapez l'adresse — ex: 12 rue de la Paix, Rennes"
-          className="w-full pl-11 pr-4 py-4 border-2 border-slate-200 rounded-2xl text-base focus:outline-none focus:border-[#0a5e2a] focus:ring-4 focus:ring-[#0a5e2a]/15 shadow-sm"
+          className="w-full pl-11 pr-12 py-4 border-2 border-slate-200 rounded-2xl text-base focus:outline-none focus:border-[#0a5e2a] focus:ring-4 focus:ring-[#0a5e2a]/15 shadow-sm"
         />
+        {searchingAddr ? (
+          <Loader
+            size={18}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0a5e2a] animate-spin"
+          />
+        ) : null}
 
-        {showSuggestions && suggestions.length > 0 ? (
+        {showSuggestions ? (
           <ul className="absolute top-full mt-1 left-0 right-0 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden z-50 max-h-96 overflow-y-auto">
-            {suggestions.map((f, i) => (
-              <li
-                key={i}
-                onMouseDown={(e) => {
-                  e.preventDefault()
-                  void runStudy(f)
-                }}
-                className="px-4 py-3 text-sm cursor-pointer hover:bg-emerald-50 border-b border-slate-50 last:border-0"
-              >
-                <p className="text-slate-800 font-medium">{f.properties.label}</p>
-                {f.properties.context ? (
-                  <p className="text-[11px] text-slate-500 mt-0.5">{f.properties.context}</p>
-                ) : null}
+            {suggestions.length > 0 ? (
+              suggestions.map((f, i) => (
+                <li
+                  key={i}
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    void runStudy(f)
+                  }}
+                  className="px-4 py-3 text-sm cursor-pointer hover:bg-emerald-50 border-b border-slate-50 last:border-0"
+                >
+                  <p className="text-slate-800 font-medium">{f.properties.label}</p>
+                  {f.properties.context ? (
+                    <p className="text-[11px] text-slate-500 mt-0.5">{f.properties.context}</p>
+                  ) : null}
+                </li>
+              ))
+            ) : !searchingAddr && addr.length >= 2 ? (
+              <li className="px-4 py-3 text-sm text-slate-500 italic">
+                Aucune adresse trouvée — tapez plus précisément
               </li>
-            ))}
+            ) : null}
           </ul>
         ) : null}
       </div>

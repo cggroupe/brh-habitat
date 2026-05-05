@@ -101,6 +101,7 @@ export default function AgenceScoreVente() {
   const [addr, setAddr] = useState('')
   const [suggestions, setSuggestions] = useState<BanFeature[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [searchingAddr, setSearchingAddr] = useState(false)
   const debounceRef = useRef<number | null>(null)
 
   // Détail prospect
@@ -154,24 +155,31 @@ export default function AgenceScoreVente() {
   function handleAddrInput(value: string) {
     setAddr(value)
     if (debounceRef.current) window.clearTimeout(debounceRef.current)
-    if (value.length < 4) {
+    if (value.length < 2) {
       setSuggestions([])
       setShowSuggestions(false)
+      setSearchingAddr(false)
       return
     }
+    setSearchingAddr(true)
     debounceRef.current = window.setTimeout(async () => {
       try {
         const r = await fetch(
-          `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(value)}&limit=6&autocomplete=1`,
+          `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(value)}&limit=8&autocomplete=1`,
         )
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
         const data = await r.json()
         const features = (data.features ?? []) as BanFeature[]
         setSuggestions(features)
         setShowSuggestions(true)
-      } catch {
+      } catch (err) {
+        console.error('BAN autocomplete failed', err)
         setSuggestions([])
+        setShowSuggestions(true)
+      } finally {
+        setSearchingAddr(false)
       }
-    }, 220)
+    }, 200)
   }
 
   async function pickSuggestion(f: BanFeature) {
@@ -276,35 +284,48 @@ export default function AgenceScoreVente() {
             type="text"
             value={addr}
             onChange={(e) => handleAddrInput(e.target.value)}
-            onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+            onFocus={() => addr.length >= 2 && setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             placeholder="Rechercher une adresse — ex : 12 rue de la Paix, Rennes"
             className="w-full px-4 py-2 pr-10 border border-slate-200 rounded-full text-sm focus:outline-none focus:border-[#0a5e2a] focus:ring-2 focus:ring-[#0a5e2a]/15"
           />
-          <button
-            type="button"
-            className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-[#0a5e2a] text-white flex items-center justify-center"
-            aria-label="Rechercher"
-          >
-            <Search size={14} />
-          </button>
-          {showSuggestions && suggestions.length > 0 ? (
+          {searchingAddr ? (
+            <Loader
+              size={14}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#0a5e2a] animate-spin"
+            />
+          ) : (
+            <button
+              type="button"
+              className="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-[#0a5e2a] text-white flex items-center justify-center"
+              aria-label="Rechercher"
+            >
+              <Search size={14} />
+            </button>
+          )}
+          {showSuggestions ? (
             <ul className="absolute top-full mt-1 left-0 right-0 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden z-[2000]">
-              {suggestions.map((f, i) => (
-                <li
-                  key={i}
-                  onMouseDown={(e) => {
-                    e.preventDefault()
-                    pickSuggestion(f)
-                  }}
-                  className="px-4 py-2.5 text-sm cursor-pointer hover:bg-slate-50 border-b border-slate-50 last:border-0"
-                >
-                  <p className="text-slate-800">{f.properties.label}</p>
-                  {f.properties.context ? (
-                    <p className="text-[11px] text-slate-500">{f.properties.context}</p>
-                  ) : null}
+              {suggestions.length > 0 ? (
+                suggestions.map((f, i) => (
+                  <li
+                    key={i}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      void pickSuggestion(f)
+                    }}
+                    className="px-4 py-2.5 text-sm cursor-pointer hover:bg-slate-50 border-b border-slate-50 last:border-0"
+                  >
+                    <p className="text-slate-800">{f.properties.label}</p>
+                    {f.properties.context ? (
+                      <p className="text-[11px] text-slate-500">{f.properties.context}</p>
+                    ) : null}
+                  </li>
+                ))
+              ) : !searchingAddr && addr.length >= 2 ? (
+                <li className="px-4 py-2.5 text-sm text-slate-500 italic">
+                  Aucune adresse trouvée
                 </li>
-              ))}
+              ) : null}
             </ul>
           ) : null}
         </div>
