@@ -12,11 +12,15 @@
  * Calcul live via computeDpe (TS pure) à chaque changement de step.
  * Réutilise le moteur DPE 3CL de src/lib/dpe-engine/ (calque CapRénov+).
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
   Home,
+  Search,
+  Wand2,
+  CheckCheck,
+  AlertCircle,
   Building2,
   Building,
   Calendar,
@@ -35,6 +39,7 @@ import {
 } from 'lucide-react'
 import { computeDpe } from '@/lib/dpe-engine'
 import { computeAllScenarios, type ScenarioComputed } from '@/lib/dpe-engine/variantes'
+import { scoreVenteApi } from '@/api/score-vente'
 import type {
   AuditInputs,
   PeriodeConstruction,
@@ -149,6 +154,112 @@ function formToInputs(f: FormState): AuditInputs {
   }
 }
 
+// =============================================================================
+// MAPPING BDNB CSTB → FormState (pré-remplissage)
+// =============================================================================
+
+function mapPeriode(annee: number | null | undefined): PeriodeConstruction {
+  if (!annee || annee < 1900) return '1948-1974'
+  if (annee < 1948) return 'avant_1948'
+  if (annee <= 1974) return '1948-1974'
+  if (annee <= 1977) return '1975-1977'
+  if (annee <= 1982) return '1978-1982'
+  if (annee <= 1988) return '1983-1988'
+  if (annee <= 2000) return '1989-2000'
+  if (annee <= 2005) return '2001-2005'
+  if (annee <= 2012) return '2006-2012'
+  return 'apres_2013'
+}
+
+function mapTypeBatiment(t: string | null | undefined): TypeBatiment {
+  if (!t) return 'maison'
+  const lower = t.toLowerCase()
+  if (lower.includes('immeuble') || lower.includes('collectif')) return 'immeuble'
+  if (lower.includes('appart')) return 'appartement'
+  return 'maison'
+}
+
+function mapChauffage(t: string | null | undefined): GenerateurChauffage {
+  if (!t) return 'chaudiere_gaz_standard'
+  const lower = t.toLowerCase()
+  if (lower.includes('électr') || lower.includes('elec')) return 'effet_joule_direct'
+  if (lower.includes('fioul')) return 'chaudiere_fioul'
+  if (lower.includes('gaz')) return 'chaudiere_gaz_standard'
+  if (lower.includes('bois') || lower.includes('granul')) return 'chaudiere_bois_buche'
+  if (lower.includes('pac') || lower.includes('pompe')) return 'pac_air_eau'
+  if (lower.includes('reseau') || lower.includes('chaleur')) return 'reseau_chaleur'
+  return 'chaudiere_gaz_standard'
+}
+
+interface PrefillResult {
+  source: 'BDNB CSTB' | 'BAN seul'
+  fields: string[]
+  partial: Partial<FormState>
+}
+
+interface VirtualPayload {
+  found?: boolean
+  logement?: {
+    type?: string | null
+    surface_m2?: number | null
+    annee_construction?: number | null
+    type_chauffage?: string | null
+  }
+  dpe?: {
+    actuel?: string
+  }
+}
+
+function mapBdnbToForm(
+  payload: VirtualPayload,
+  citycode: string | null,
+  postcode: string | null,
+): PrefillResult {
+  const filled: string[] = []
+  const partial: Partial<FormState> = {}
+
+  // Code INSEE — toujours dispo via citycode BAN
+  if (citycode) {
+    partial.codeInsee = citycode
+    filled.push('Code INSEE')
+  } else if (postcode) {
+    partial.codeInsee = postcode
+    filled.push('Code postal (fallback)')
+  }
+
+  const logement = payload.logement
+  const found = payload.found && logement
+
+  if (found && logement) {
+    if (logement.surface_m2) {
+      partial.surfaceHabitable = Math.round(logement.surface_m2)
+      filled.push(`Surface (${partial.surfaceHabitable} m²)`)
+    }
+    if (logement.annee_construction) {
+      partial.periodeConstruction = mapPeriode(logement.annee_construction)
+      filled.push(`Période (${partial.periodeConstruction})`)
+    }
+    if (logement.type) {
+      partial.typeBatiment = mapTypeBatiment(logement.type)
+      filled.push(`Type (${partial.typeBatiment})`)
+    }
+    if (logement.type_chauffage) {
+      partial.chauffageGenerateur = mapChauffage(logement.type_chauffage)
+      filled.push(`Chauffage (${partial.chauffageGenerateur.replace(/_/g, ' ')})`)
+    }
+  }
+
+  return {
+    source: found ? 'BDNB CSTB' : 'BAN seul',
+    fields: filled,
+    partial,
+  }
+}
+
+// =============================================================================
+// STEPPER
+// =============================================================================
+
 const STEPS = [
   { id: 1, title: 'Logement', icon: Home },
   { id: 2, title: 'Localisation', icon: MapPin },
@@ -158,10 +269,25 @@ const STEPS = [
   { id: 6, title: 'Synthèse', icon: CheckCircle2 },
 ] as const
 
+interface BanFeat {
+  properties: { label: string; context?: string; postcode?: string; citycode?: string }
+  geometry: { coordinates: [number, number] }
+}
+
 export default function ManualWizard() {
   const [step, setStep] = useState(1)
   const [form, setForm] = useState<FormState>(DEFAULT_FORM)
   const [livePreview, setLivePreview] = useState<DpeResult | null>(null)
+
+  // Pré-remplissage adresse
+  const [addr, setAddr] = useState('')
+  const [suggestions, setSuggestions] = useState<BanFeat[]>([])
+  const [showSug, setShowSug] = useState(false)
+  const [searching, setSearching] = useState(false)
+  const [prefilling, setPrefilling] = useState(false)
+  const [prefillResult, setPrefillResult] = useState<PrefillResult | null>(null)
+  const [prefillError, setPrefillError] = useState<string | null>(null)
+  const debRef = useRef<number | null>(null)
 
   const inputs = useMemo(() => formToInputs(form), [form])
   useEffect(() => {
@@ -178,10 +304,190 @@ export default function ManualWizard() {
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }))
 
+  // Search BAN
+  function handleAddrInput(value: string) {
+    setAddr(value)
+    setPrefillError(null)
+    if (debRef.current) window.clearTimeout(debRef.current)
+    if (value.length < 2) {
+      setSuggestions([])
+      setShowSug(false)
+      setSearching(false)
+      return
+    }
+    setSearching(true)
+    debRef.current = window.setTimeout(async () => {
+      try {
+        const r = await fetch(
+          `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(value)}&limit=6&autocomplete=1`,
+        )
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        const data = await r.json()
+        setSuggestions((data.features ?? []) as BanFeat[])
+        setShowSug(true)
+      } catch (err) {
+        console.error('BAN failed', err)
+        setSuggestions([])
+        setShowSug(true)
+        setPrefillError('Connexion API adresse échouée — vide cache (Cmd+Shift+R)')
+      } finally {
+        setSearching(false)
+      }
+    }, 200)
+  }
+
+  async function handlePrefill(f: BanFeat) {
+    setAddr(f.properties.label)
+    setShowSug(false)
+    setPrefilling(true)
+    setPrefillError(null)
+    setPrefillResult(null)
+    const [lng, lat] = f.geometry.coordinates
+    const cp = f.properties.postcode ?? null
+    const citycode = f.properties.citycode ?? null
+
+    try {
+      let payload: VirtualPayload = { found: false }
+      try {
+        payload = (await scoreVenteApi.fetchVirtualStudy({
+          q: f.properties.label,
+          lat,
+          lng,
+          cp: cp ?? '',
+          foyer: 2,
+          rfr: 30000,
+        })) as VirtualPayload
+      } catch {
+        // BDNB peut ne pas avoir le bâtiment → on continue avec citycode seul
+      }
+
+      const result = mapBdnbToForm(payload, citycode, cp)
+      setForm((cur) => ({ ...cur, ...result.partial }))
+      setPrefillResult(result)
+    } catch (err) {
+      setPrefillError(
+        err instanceof Error
+          ? `Pré-remplissage impossible : ${err.message}`
+          : 'Pré-remplissage impossible',
+      )
+    } finally {
+      setPrefilling(false)
+    }
+  }
+
   const progressPct = Math.round((step / STEPS.length) * 100)
 
   return (
     <div className="space-y-5">
+      {/* Pré-remplissage adresse */}
+      <div className="bg-gradient-to-br from-emerald-50 to-blue-50 rounded-2xl border-2 border-emerald-200 p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Wand2 size={16} className="text-emerald-600" />
+          <p className="text-sm font-bold text-slate-800">
+            Pré-remplir avec les données du secteur
+          </p>
+          <span className="ml-auto text-[10px] uppercase tracking-wider bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">
+            optionnel
+          </span>
+        </div>
+        <p className="text-[11px] text-slate-600 mb-3 leading-snug">
+          Saisissez l'adresse du bien — on récupère automatiquement <strong>code INSEE</strong>{' '}
+          (zone climatique) + <strong>surface</strong>, <strong>période</strong>,{' '}
+          <strong>type bâti</strong> et <strong>chauffage</strong> via BDNB CSTB et cadastre RNB
+          quand disponibles. Vous ajustez ensuite ce qui n'est pas connu.
+        </p>
+
+        <div className="relative">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+          />
+          <input
+            type="text"
+            value={addr}
+            onChange={(e) => handleAddrInput(e.target.value)}
+            onFocus={() => addr.length >= 2 && setShowSug(true)}
+            onBlur={() => setTimeout(() => setShowSug(false), 200)}
+            placeholder="ex : 5 rue de Siam 29200 Brest"
+            className="w-full pl-9 pr-10 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+          />
+          {searching || prefilling ? (
+            <Loader
+              size={14}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 animate-spin"
+            />
+          ) : null}
+
+          {showSug ? (
+            <ul className="absolute top-full mt-1 left-0 right-0 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden z-50 max-h-72 overflow-y-auto">
+              {suggestions.length > 0 ? (
+                suggestions.map((f, i) => (
+                  <li
+                    key={i}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      void handlePrefill(f)
+                    }}
+                    className="px-4 py-2.5 text-sm cursor-pointer hover:bg-emerald-50 border-b border-slate-50 last:border-0"
+                  >
+                    <p className="text-slate-800 font-medium">{f.properties.label}</p>
+                    {f.properties.context ? (
+                      <p className="text-[10px] text-slate-500">{f.properties.context}</p>
+                    ) : null}
+                  </li>
+                ))
+              ) : prefillError ? (
+                <li className="px-4 py-3 text-sm text-red-700 bg-red-50">
+                  <p className="font-bold">⚠ Erreur réseau</p>
+                  <p>{prefillError}</p>
+                </li>
+              ) : !searching && addr.length >= 2 ? (
+                <li className="px-4 py-3 text-sm text-slate-500 italic">
+                  Aucune adresse trouvée
+                </li>
+              ) : null}
+            </ul>
+          ) : null}
+        </div>
+
+        {prefillResult ? (
+          <div
+            className={`mt-3 rounded-lg p-3 text-xs ${
+              prefillResult.source === 'BDNB CSTB'
+                ? 'bg-emerald-100 border border-emerald-200 text-emerald-900'
+                : 'bg-amber-50 border border-amber-200 text-amber-900'
+            }`}
+          >
+            <div className="flex items-start gap-2">
+              {prefillResult.source === 'BDNB CSTB' ? (
+                <CheckCheck size={14} className="mt-0.5 shrink-0" />
+              ) : (
+                <AlertCircle size={14} className="mt-0.5 shrink-0" />
+              )}
+              <div className="flex-1">
+                <p className="font-bold mb-1">
+                  Source : {prefillResult.source}
+                  {prefillResult.source === 'BAN seul'
+                    ? ' (bâtiment pas dans BDNB)'
+                    : ''}
+                </p>
+                {prefillResult.fields.length > 0 ? (
+                  <p>
+                    Champs pré-remplis :{' '}
+                    <strong>{prefillResult.fields.join(' · ')}</strong>
+                  </p>
+                ) : (
+                  <p>Aucune donnée trouvée — saisissez tout manuellement.</p>
+                )}
+                <p className="mt-1 italic opacity-80">
+                  Vérifiez et ajustez si besoin dans les étapes ci-dessous.
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </div>
+
       {/* Stepper */}
       <div className="bg-white rounded-2xl border border-slate-200 p-4">
         <div className="flex items-center justify-between mb-3">
