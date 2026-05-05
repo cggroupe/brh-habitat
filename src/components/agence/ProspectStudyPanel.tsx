@@ -15,7 +15,8 @@
  *   - + Spécifique agence : footer "Claim ce lead"
  */
 import { useMemo, useState } from 'react'
-import { X, MapPin, Lock, AlertTriangle } from 'lucide-react'
+import { X, MapPin, Lock, AlertTriangle, AlertOctagon, Phone, Mail } from 'lucide-react'
+import { useProspectEnrichment } from '@/hooks/queries/enrichment'
 
 type Decile = 'bleu' | 'jaune' | 'violet' | 'rose'
 
@@ -47,6 +48,7 @@ type AidesGeste = {
 
 export type ProspectStudy = {
   id: number
+  iris_code?: string | null
   adresse: string | null
   adresse_ban: string | null
   code_postal: string | null
@@ -193,7 +195,27 @@ export function ProspectStudyPanel({
   const [rfr, setRfr] = useState(30000)
   const [recomputed, setRecomputed] = useState(false)
 
-  const decile = useMemo(() => decileFromIncome(rfr, foyer), [rfr, foyer])
+  // Enrichissement IRIS / commune / artisans / aides locales (non bloquant)
+  const enrichmentInput = useMemo(
+    () => ({
+      irisCode: d.iris_code ?? null,
+      codePostal: d.code_postal,
+      lat: d.latitude,
+      lng: d.longitude,
+      departement: d.departement,
+      gestesPrioritaires: d.dpe_saut_s2?.gestes ?? [],
+    }),
+    [d.iris_code, d.code_postal, d.latitude, d.longitude, d.departement, d.dpe_saut_s2],
+  )
+  const { data: enrichment } = useProspectEnrichment(enrichmentInput)
+
+  const decile = useMemo(() => {
+    // Auto-decile via IRIS quand RFR pas encore touché
+    if (!recomputed && enrichment?.iris?.couleur_mpr) {
+      return enrichment.iris.couleur_mpr
+    }
+    return decileFromIncome(rfr, foyer)
+  }, [rfr, foyer, recomputed, enrichment])
 
   const scenarios = useMemo<Record<'s1' | 's2' | 's3', Scenario>>(
     () => ({
@@ -576,6 +598,218 @@ export function ProspectStudyPanel({
           </Section>
 
           {/* Itinéraire */}
+          {/* === NOUVELLES SECTIONS ENRICHISSEMENT === */}
+
+          {/* Contexte socio-économique IRIS */}
+          {enrichment?.iris ? (
+            <Section title="Contexte socio-économique du quartier">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-3 space-y-1.5">
+                {enrichment.iris.med21 ? (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-700">Revenu médian commune</span>
+                    <span className="font-bold text-indigo-700">
+                      {Math.round(enrichment.iris.med21).toLocaleString('fr-FR')} € / an
+                    </span>
+                  </div>
+                ) : null}
+                {enrichment.iris.couleur_mpr ? (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-700">Catégorie MPR estimée</span>
+                    <span className="font-bold text-indigo-700">
+                      {DECILE_LABELS[enrichment.iris.couleur_mpr]} ({enrichment.iris.couleur_mpr})
+                    </span>
+                  </div>
+                ) : null}
+                {enrichment.iris.tx_proprio != null ? (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-700">Taux propriétaires</span>
+                    <span className="font-medium text-slate-800">
+                      {Math.round(enrichment.iris.tx_proprio * 100)} %
+                    </span>
+                  </div>
+                ) : null}
+                {enrichment.iris.tx_avant_1975 != null ? (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-700">Logements pré-1975 (cible rénovation)</span>
+                    <span className="font-medium text-slate-800">
+                      {Math.round(enrichment.iris.tx_avant_1975 * 100)} %
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">
+                Source : INSEE Filosofi 2021 · IRIS {enrichment.iris.iris_code}
+              </p>
+            </Section>
+          ) : null}
+
+          {/* Risques & dispositifs commune (Géorisques + OPAH) */}
+          {enrichment?.commune ? (
+            <Section title="Risques & dispositifs commune">
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                {enrichment.commune.radon_categorie != null ? (
+                  <Tag
+                    icon={<AlertOctagon size={12} />}
+                    label="Radon"
+                    value={`Catégorie ${enrichment.commune.radon_categorie}/3`}
+                    danger={enrichment.commune.radon_categorie === 3}
+                  />
+                ) : null}
+                {enrichment.commune.rga_alea ? (
+                  <Tag
+                    icon={<AlertOctagon size={12} />}
+                    label="Argile"
+                    value={enrichment.commune.rga_alea}
+                    danger={enrichment.commune.rga_alea === 'fort'}
+                  />
+                ) : null}
+                {enrichment.commune.ppri_present ? (
+                  <Tag
+                    icon={<AlertOctagon size={12} />}
+                    label="PPRI"
+                    value="Inondation"
+                    danger
+                  />
+                ) : null}
+                {enrichment.commune.sismique_zone != null && enrichment.commune.sismique_zone > 0 ? (
+                  <Tag
+                    icon={<AlertOctagon size={12} />}
+                    label="Sismique"
+                    value={`Zone ${enrichment.commune.sismique_zone}`}
+                  />
+                ) : null}
+              </div>
+              {enrichment.commune.opah_active ? (
+                <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 text-xs">
+                  <p className="font-bold text-emerald-900 mb-0.5">
+                    🌟 OPAH active — {enrichment.commune.opah_type ?? 'Programme local'}
+                  </p>
+                  <p className="text-emerald-700">
+                    Opérateur : {enrichment.commune.opah_operateur ?? '—'}
+                    {enrichment.commune.opah_fin_validite
+                      ? ` · Jusqu'au ${new Date(
+                          enrichment.commune.opah_fin_validite,
+                        ).toLocaleDateString('fr-FR')}`
+                      : ''}
+                  </p>
+                </div>
+              ) : null}
+              {enrichment.commune.tx_vacance_struct != null && enrichment.commune.tx_vacance_struct > 0.05 ? (
+                <p className="text-[11px] text-amber-700 mt-2">
+                  ⚠ Taux vacance structurelle : {Math.round(enrichment.commune.tx_vacance_struct * 100)} %
+                  (signal marché tendu)
+                </p>
+              ) : null}
+            </Section>
+          ) : null}
+
+          {/* Artisans RGE proches */}
+          {enrichment?.artisans_proches && enrichment.artisans_proches.length > 0 ? (
+            <Section title="Artisans RGE proches du bien">
+              <ul className="space-y-2">
+                {enrichment.artisans_proches.map((a) => (
+                  <li
+                    key={a.id}
+                    className="bg-slate-50 rounded-lg p-3 border border-slate-100"
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-slate-800 text-sm truncate">
+                          {a.nom_entreprise}
+                        </p>
+                        <p className="text-[11px] text-slate-500">
+                          {a.commune}
+                          {a.code_postal ? ` (${a.code_postal})` : ''} · à {a.distance_km.toFixed(1)} km
+                        </p>
+                      </div>
+                      <span className="shrink-0 text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">
+                        RGE
+                      </span>
+                    </div>
+                    {a.geste_specialites.length > 0 ? (
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {a.geste_specialites.slice(0, 4).map((g) => (
+                          <span
+                            key={g}
+                            className="text-[10px] bg-white border border-slate-200 text-slate-600 px-1.5 py-0.5 rounded"
+                          >
+                            {g.replace(/_/g, ' ')}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                    <div className="flex gap-2 text-xs">
+                      {a.telephone ? (
+                        <a
+                          href={`tel:${a.telephone}`}
+                          className="inline-flex items-center gap-1 text-blue-700 hover:text-blue-900"
+                        >
+                          <Phone size={11} />
+                          {a.telephone}
+                        </a>
+                      ) : null}
+                      {a.email ? (
+                        <a
+                          href={`mailto:${a.email}`}
+                          className="inline-flex items-center gap-1 text-blue-700 hover:text-blue-900 truncate"
+                        >
+                          <Mail size={11} />
+                          {a.email}
+                        </a>
+                      ) : null}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-[10px] text-slate-400 mt-2">
+                Source : registre RGE France-rénov · {enrichment.artisans_proches.length} suggestions filtrées par dept + spécialités
+              </p>
+            </Section>
+          ) : null}
+
+          {/* Aides locales Bretagne */}
+          {enrichment?.aides_locales && enrichment.aides_locales.length > 0 ? (
+            <Section title="Aides locales Bretagne (cumulables MPR/CEE)">
+              <ul className="space-y-1.5">
+                {enrichment.aides_locales.slice(0, 6).map((aide) => (
+                  <li
+                    key={aide.id}
+                    className="bg-amber-50 border border-amber-200 rounded-lg p-2 text-xs"
+                  >
+                    <div className="flex items-baseline justify-between gap-2">
+                      <p className="font-bold text-amber-900 truncate flex-1">
+                        {aide.programme}
+                      </p>
+                      {aide.forfait_euros ? (
+                        <span className="font-mono font-bold text-amber-700 whitespace-nowrap">
+                          {aide.forfait_euros.toLocaleString('fr-FR')} €
+                        </span>
+                      ) : aide.taux_pct ? (
+                        <span className="font-mono font-bold text-amber-700 whitespace-nowrap">
+                          {aide.taux_pct} %
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="text-[10px] text-slate-600">
+                      {aide.organisme} · geste {aide.geste_id.replace(/_/g, ' ')}
+                      {aide.plafond_euros ? ` · plafond ${aide.plafond_euros.toLocaleString('fr-FR')} €` : ''}
+                    </p>
+                    {aide.url_officielle ? (
+                      <a
+                        href={aide.url_officielle}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-amber-700 hover:underline"
+                      >
+                        Plus d'infos →
+                      </a>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          ) : null}
+
           <Section title="Itinéraire vers le logement">
             <div className="grid grid-cols-2 gap-2">
               <a
@@ -650,6 +884,32 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       </h2>
       {children}
     </section>
+  )
+}
+
+function Tag({
+  icon,
+  label,
+  value,
+  danger,
+}: {
+  icon: React.ReactNode
+  label: string
+  value: string
+  danger?: boolean
+}) {
+  return (
+    <div
+      className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs ${
+        danger
+          ? 'bg-red-50 border border-red-200 text-red-800'
+          : 'bg-slate-50 border border-slate-200 text-slate-700'
+      }`}
+    >
+      {icon}
+      <span className="font-semibold">{label}</span>
+      <span className="ml-auto">{value}</span>
+    </div>
   )
 }
 

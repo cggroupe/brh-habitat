@@ -191,7 +191,13 @@ export default function AgenceScoreVente() {
     setFlyTarget({ center: coords, zoom: 17 })
     try {
       const data = (await scoreVenteApi.fetchProspectStudy(prospectId)) as ProspectStudy
-      setStudy(data)
+      // Merge iris_code de la row markers (le simulateur ne le renvoie pas)
+      const row = markerRows.find((r) => r.prospect_id === prospectId)
+      const enrichedStudy: ProspectStudy = {
+        ...data,
+        iris_code: row?.prospect?.iris_code ?? null,
+      }
+      setStudy(enrichedStudy)
     } catch (err) {
       setStudyError(err instanceof Error ? err.message : 'Erreur étude')
     } finally {

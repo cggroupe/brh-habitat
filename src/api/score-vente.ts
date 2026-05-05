@@ -18,6 +18,7 @@ export interface ScoreVenteRow {
   /** Joint depuis brh_dpe_prospects — données DPE complètes pour la fiche */
   prospect: {
     id: number
+    iris_code: string | null
     adresse: string | null
     adresse_ban: string | null
     commune: string | null
@@ -62,6 +63,7 @@ export const scoreVenteApi = {
         `prospect_id, score, segment, rules_breakdown, proba_6m, algo_version, computed_at,
          prospect:brh_dpe_prospects!inner(
            id, adresse, adresse_ban, commune, code_postal, departement, latitude, longitude,
+           iris_code,
            type_batiment, periode_construction, annee_construction, surface_habitable,
            etiquette_dpe, etiquette_ges, conso_m2_ep,
            cout_energie_annuel, cout_chauffage, cout_ecs,
