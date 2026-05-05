@@ -36,10 +36,10 @@ interface BanFeature {
 }
 
 const EXAMPLES = [
-  '12 rue de la Paix, Rennes',
-  '5 rue de Siam, Brest',
-  '8 place Sadi-Carnot, Saint-Brieuc',
-  '20 rue du Mené, Vannes',
+  '12 rue de la Paix 35000 Rennes',
+  '5 rue de Siam 29200 Brest',
+  '8 place du Général de Gaulle 22000 Saint-Brieuc',
+  '20 rue Thiers 56000 Vannes',
 ]
 
 export default function AgenceSimulateur() {
@@ -48,6 +48,7 @@ export default function AgenceSimulateur() {
   const [suggestions, setSuggestions] = useState<BanFeature[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [searchingAddr, setSearchingAddr] = useState(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
   const [study, setStudy] = useState<ProspectStudy | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -60,6 +61,7 @@ export default function AgenceSimulateur() {
 
   function handleAddrInput(value: string) {
     setAddr(value)
+    setSearchError(null)
     if (debounceRef.current) window.clearTimeout(debounceRef.current)
     if (value.length < 2) {
       setSuggestions([])
@@ -75,12 +77,17 @@ export default function AgenceSimulateur() {
         )
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         const data = await r.json()
-        setSuggestions((data.features ?? []) as BanFeature[])
+        const features = (data.features ?? []) as BanFeature[]
+        setSuggestions(features)
         setShowSuggestions(true)
+        setSearchError(null)
       } catch (err) {
         console.error('BAN autocomplete failed', err)
         setSuggestions([])
-        setShowSuggestions(true) // afficher "aucun résultat"
+        setShowSuggestions(true)
+        setSearchError(
+          'Connexion à l\'API adresse bloquée — vide le cache navigateur (Cmd+Shift+R sur Mac, Ctrl+F5 sur PC) puis réessaie.',
+        )
       } finally {
         setSearchingAddr(false)
       }
@@ -124,6 +131,8 @@ export default function AgenceSimulateur() {
 
   function tryExample(label: string) {
     handleAddrInput(label)
+    // Focus l'input pour montrer la dropdown immédiatement
+    setTimeout(() => inputRef.current?.focus(), 50)
   }
 
   return (
@@ -175,6 +184,7 @@ export default function AgenceSimulateur() {
         <AddressMode
           addr={addr}
           searchingAddr={searchingAddr}
+          searchError={searchError}
           inputRef={inputRef}
           handleAddrInput={handleAddrInput}
           showSuggestions={showSuggestions}
@@ -210,6 +220,7 @@ export default function AgenceSimulateur() {
 interface AddressModeProps {
   addr: string
   searchingAddr: boolean
+  searchError: string | null
   inputRef: React.RefObject<HTMLInputElement | null>
   handleAddrInput: (v: string) => void
   showSuggestions: boolean
@@ -225,6 +236,7 @@ interface AddressModeProps {
 function AddressMode({
   addr,
   searchingAddr,
+  searchError,
   inputRef,
   handleAddrInput,
   showSuggestions,
@@ -279,6 +291,11 @@ function AddressMode({
                   ) : null}
                 </li>
               ))
+            ) : searchError ? (
+              <li className="px-4 py-3 text-sm text-red-700 bg-red-50">
+                <p className="font-bold mb-1">⚠ Erreur réseau</p>
+                <p>{searchError}</p>
+              </li>
             ) : !searchingAddr && addr.length >= 2 ? (
               <li className="px-4 py-3 text-sm text-slate-500 italic">
                 Aucune adresse trouvée — tapez plus précisément
