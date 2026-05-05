@@ -55,6 +55,7 @@
 | [audit-retard-phases-mai-2026.md](audit-retard-phases-mai-2026.md) | 🚨 **Audit 02/05** — État réel des phases : 8 phases code livrées le 01/05 (11.1→11.2.1, 12 XML ADEME, 13/13.3/13.5, 14, 15) pendant production docs Phase 11.0/12.0. Conflit numérotation résolu, plan Phase 16 révisé |
 | [tenant-multitenancy.md](tenant-multitenancy.md#phase-15-tier-dynamique-par-utilisateur-stripe-saas) | ⭐ **Phase 15** — Tier dynamique pro RGE (Free/Pro 49€/Expert 149€) avec quota courriers IA mensuel + Stripe Checkout + webhook auto-sync. Distinct du pricing agences immo Phase 12. |
 | [log.md#2026-05-02-phase-13-6-marketplace-artisans-rge-bretons-network-effect](log.md#2026-05-02--phase-136--marketplace-artisans-rge-bretons-network-effect) | ⭐ **Phase 13.6** — Marketplace artisans RGE bretons : matching prospect ↔ artisan local (Haversine + score qualité), 2 tables `brh_artisans_*`, page `/pro/marketplace-artisans`, commission 5-10 % chantier signé, network effect SaaS |
+| [agence-portal-status.md](agence-portal-status.md) | ⭐ **Phase 16.1 (05/05)** — Portail agence enrichi 13 entrées · 5 boucles fonctionnelles end-to-end (parrainage, vitrine QR, social, équipe, messagerie) · 6 nouvelles tables · 8 helpers SECURITY DEFINER · 5 permissions JSONB · ⏳ admin BRH = session dédiée à venir (8 pages /admin/* à créer) |
 
 ### Partie 3 — Qualité & opérations
 

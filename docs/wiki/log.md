@@ -116,6 +116,38 @@
 - ✅ Mes employés agence (Step 7 — permissions JSONB granulaires, 5 permissions, RLS élargie)
 - ✅ QR code agence personnalisé (Step 8 — 2 modes vitrine/parrainage, page publique `/a/:id`)
 - ✅ Messages agence ↔ BRH (Step 9 — réutilise infra messagerie + Realtime, 0 duplication)
+- ✅ Audit complet post-livraison + 2 fixes (P0 employees access, P1 contact attribution)
+
+### 📋 Session admin BRH dédiée à venir (Phase 16.2)
+
+**Voir page wiki dédiée** : [agence-portal-status.md § Reste à faire côté admin BRH](agence-portal-status.md#4--reste-à-faire-côté-admin-brh-session-dédiée-à-venir)
+
+8 pages admin à créer + 3 EF + dette technique. Estimation ~30-40h.
+
+**Priorité 1 — Lecture leads attribués**
+- `/admin/leads-agences` (filtre `referred_by_agence_id IS NOT NULL`)
+- Étendre `/admin/contacts` (colonne origine agence + filtre)
+
+**Priorité 2 — Messagerie admin**
+- `/admin/messagerie` (gap pré-existant : aussi pour Pro/Particulier)
+- Nouvel RPC `get_admin_threads_enriched()` + filtre par participant_type
+
+**Priorité 3 — Validation & supervision**
+- `/admin/agence-contributions`, `/admin/agence-referrals`, `/admin/agence-simulations`
+
+**Priorité 4 — Visualisation flotte**
+- `/admin/carte-agences`, `/admin/equipes-agences`
+
+**Priorité 5 — EF notifications**
+- `notify-new-lead-agence`, `notify-commission-validated`, `monthly-recap-agence`
+
+**Priorité 6 — Dette**
+- 5 colonnes NUMERIC commissions invoices (règle #2)
+- Régénérer `database-generated.ts`
+- Étendre RLS `brh_agence_referral_commissions` + `brh_agence_subscriptions` aux employés
+
+### Plan de test self-serve Philippe
+Voir [agence-portal-status.md § Test plan pour Philippe](agence-portal-status.md#5-test-plan-pour-philippe) — checklist exhaustive 30+ étapes (signer + vitrine + parrainage + contact + employé).
 
 ---
 
