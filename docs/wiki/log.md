@@ -5,6 +5,78 @@
 
 ---
 
+## 2026-05-05 — Phase 16.1 : portail agence enrichi (étape par étape)
+
+**Contexte** : Philippe demande de combler le gap fonctionnel entre le portail Pro (complet) et le portail Agence (initial Phase 16.0.6). Topo établi → 9 étapes prévues, livrées progressivement avec rigueur (wiki Karpathy + 14 règles anti-bug + tests 353/353 à chaque commit).
+
+### Sessions livrées (en ordre chronologique)
+
+#### 1. Système d'affiliation contributions (commit 06a4b66)
+- Migration `brh_agence_contributions` + `brh_agence_progression` + trigger SQL recompute auto
+- 4 paliers : bronze (0 chantiers signés / 5 leads/mois) → silver (3/30) → gold (10/100) → platinum (25/illimité)
+- Pages : `/agence/contributions` (form complet + RGPD consent), `/agence/progression` (ladder)
+- Dashboard widget progression
+- Sidebar étendue 5 → 7 entrées
+
+#### 2. Simulateur énergétique BRH (renommé depuis "Cap Rénov" — marque déposée tiers)
+- Page `/agence/simulateur` — 2 tabs : adresse rapide BAN + saisie manuelle
+- Wizard manual 6 étapes guidé avec cards visuelles, progress bar gradient
+- Live preview DPE temps réel via `computeDpe()` TS pure
+- 3 scénarios chiffrés (geste seul / bouquet / global) via `computeAllScenarios()`
+- StudyReport print-friendly A4 (Cmd+P → PDF)
+- Pré-remplissage adresse BAN → BDNB CSTB → mapping FormState (citycode, surface, période, type, chauffage)
+- Fix bug `bdnb.py:93` (5 placeholders, 3 args → IndexError) + restart simulateur 8915
+- Fix CSP : ajout `api-adresse.data.gouv.fr` dans connect-src
+- Fix bug map à hauteur 0 (h-screen + flex parent) avec MapInvalidator
+
+#### 3. Sauvegarde simulations + reprise depuis Mes leads (commit 1977c0e)
+- Migration `brh_agence_simulations` (inputs JSONB + result + scenarios + lien lead/prospect)
+- API + hooks list / listForLead / getById / create / delete
+- Wizard étape 6 : bouton "Sauvegarder cette simulation" + modal titre/adresse/notes
+- AgenceLeads : bouton "Simuler" sur chaque card → ouvre wizard pré-rempli (?leadId=xxx)
+- ProspectStudyPanel : section "Simulations sauvegardées" en footer + bouton "Faire une simulation pour ce lead"
+- Query params `?simId=xxx` pour rouvrir une simulation existante
+
+#### 4. Réseaux sociaux agence + récompense leads (commit 02f3fe0)
+- Migration `brh_agence_social_posts` avec trigger SQL crédit auto
+- Page `/agence/reseaux-sociaux` : 5 plateformes (FB/IG/LI/TikTok/Google), récompenses différenciées
+- +5 leads (FB/IG/LI), +8 leads TikTok (vidéo), +3 leads Google
+- Plafond 2 publications validées/mois → max +10 leads bonus mensuel
+- Trigger `brh_agence_social_reward_trigger` (BEFORE UPDATE) : status → 'validee' = UPSERT
+  brh_agence_progression.bonus_leads_unlocked + reward_leads
+- Sidebar agence 8 → 9 entrées
+
+#### 5. Page admin validation posts sociaux (commit en cours)
+- Page `/admin/agence-social-posts` (AdminGuard)
+- 4 KPI cards : total / en attente / validées / leads crédités
+- Filtres status + boutons Valider/Refuser inline
+- Modal motif refus
+- Validation déclenche le trigger SQL → leads bonus crédités auto à l'agence
+- Sidebar AdminShell 19 → 20 entrées
+
+### 14 règles anti-bug respectées
+
+- ✅ #5 `if (error) throw error` partout
+- ✅ #6 AgenceGuard + AdminGuard sur toutes les nouvelles routes
+- ✅ #8 pas de `USING (true)` (RLS scopée par charte agence)
+- ✅ #11 TIMESTAMPTZ partout
+- ✅ #12 `SET search_path = ''` sur tous les helpers SECURITY DEFINER
+
+### Tests/qualité à chaque commit
+- TS strict : ✅ clean
+- ESLint : ✅ clean
+- Vitest : ✅ 353 / 353
+- CI Github : ✅ vert
+- Vercel Production deploy : ✅ auto à chaque push main
+
+### Status restant Phase 16.1
+- ❌ Recrutement nouvelles agences (multi-niveaux pyramidal — Priorité 2)
+- ❌ Mes employés agence (permissions JSONB granulaires — Priorité 3)
+- ❌ QR code agence personnalisé (vitrine, cartes visite — Priorité 4)
+- ❌ Messages agence (chat BRH / artisans assignés — Priorité 5)
+
+---
+
 ## 2026-05-04 — Audit complet 3 surfaces (BRH app + simulateur 8915 + map 8899) + 4 fixes P0/P2
 
 **Contexte** : audit demandé par Philippe sur tout ce qui a été livré ces derniers jours (R1-R12 + Phase 16.0.1-9 + audit admin). Trois agents Explore en parallèle + vérification directe. Tests : 353/353, TS strict clean, ESLint clean.

@@ -43,6 +43,7 @@ const adminNavItems = [
   { to: '/admin/lead-assignments', label: 'Claims agences', icon: ClipboardList },
   { to: '/admin/agence-audits', label: 'Audits agences', icon: ShieldAlert },
   { to: '/admin/partner-contracts', label: 'Chartes signées', icon: FileText },
+  { to: '/admin/agence-social-posts', label: 'Posts sociaux agence', icon: Share2 },
   { to: '/admin/opt-out-requests', label: 'Demandes RGPD', icon: Shield },
   { to: '/admin/prospects', label: 'Prospects', icon: UserPlus },
   { to: '/admin/commissions', label: 'Commissions vendeurs', icon: Euro },

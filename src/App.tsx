@@ -64,6 +64,7 @@ const AdminPartenaires = lazy(() => import('@/pages/admin/AdminPartenaires'))
 const AdminAgencesImmo = lazy(() => import('@/pages/admin/AdminAgencesImmo'))
 const AdminScoreVente = lazy(() => import('@/pages/admin/AdminScoreVente'))
 const AdminOptOutRequests = lazy(() => import('@/pages/admin/AdminOptOutRequests'))
+const AdminAgenceSocialPosts = lazy(() => import('@/pages/admin/AdminAgenceSocialPosts'))
 const AdminPartnerContracts = lazy(() => import('@/pages/admin/AdminPartnerContracts'))
 const AdminAgenceAudits = lazy(() => import('@/pages/admin/AdminAgenceAudits'))
 const AdminLeadAssignments = lazy(() => import('@/pages/admin/AdminLeadAssignments'))
@@ -251,6 +252,7 @@ export default function App() {
                 <Route path="/admin/agences-immo" element={<AdminAgencesImmo />} />
                 <Route path="/admin/score-vente" element={<AdminScoreVente />} />
                 <Route path="/admin/opt-out-requests" element={<AdminOptOutRequests />} />
+                <Route path="/admin/agence-social-posts" element={<AdminAgenceSocialPosts />} />
                 <Route path="/admin/partner-contracts" element={<AdminPartnerContracts />} />
                 <Route path="/admin/agence-audits" element={<AdminAgenceAudits />} />
                 <Route path="/admin/lead-assignments" element={<AdminLeadAssignments />} />
