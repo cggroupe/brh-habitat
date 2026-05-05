@@ -1,8 +1,9 @@
 /**
  * Phase 16.0.6 — Page `/agence/leads` : leads claim par l'agence courante.
  *
- * Liste les assignments actifs + permet de déclarer une tentative de contact
- * + libérer un lead (si pas pertinent). Affiche aussi historique contacted.
+ * Refonte 2026-05-05 : click card → ouvre ProspectStudyPanel (DPE + scénarios
+ * + aides + simulation + IRIS + artisans RGE + aides locales). Footer adapté
+ * pour log tentative / libérer (pas claim, déjà claim).
  */
 import { useState } from 'react'
 import {
@@ -13,6 +14,9 @@ import {
   Phone,
   AlertTriangle,
   Flame,
+  MapPin,
+  ChevronRight,
+  Search,
 } from 'lucide-react'
 import { useMyAgenceMembership } from '@/hooks/queries/agence-membership'
 import {
@@ -20,10 +24,12 @@ import {
   useLogAttempt,
   useReleaseLead,
 } from '@/hooks/queries/lead-assignments'
-import type { ContactOutcome, AssignmentStatus } from '@/api/lead-assignments'
+import { scoreVenteApi } from '@/api/score-vente'
+import type { ContactOutcome, AssignmentStatus, LeadAssignment } from '@/api/lead-assignments'
+import { ProspectStudyPanel, type ProspectStudy } from '@/components/agence/ProspectStudyPanel'
 
 const STATUS_LABELS: Record<AssignmentStatus, string> = {
-  active: 'Active',
+  active: 'À traiter',
   contacted: 'Contactée',
   expired: 'Expirée',
   released: 'Libérée',
@@ -47,26 +53,95 @@ const OUTCOME_LABELS: Record<ContactOutcome, string> = {
   wrong_address: 'Mauvaise adresse',
 }
 
+const DPE_BG: Record<string, string> = {
+  F: 'bg-orange-500 text-white',
+  G: 'bg-red-600 text-white',
+}
+
 export default function AgenceLeads() {
   const { data: membership } = useMyAgenceMembership()
   const { data: leads = [], isLoading } = useLeadAssignments({
     agenceId: membership?.agenceId,
     includeReleased: true,
+    withProspect: true,
   })
   const logAttemptMut = useLogAttempt()
   const releaseMut = useReleaseLead()
 
-  const [logFor, setLogFor] = useState<string | null>(null)
+  // Détail prospect ouvert
+  const [selectedLead, setSelectedLead] = useState<LeadAssignment | null>(null)
+  const [study, setStudy] = useState<ProspectStudy | null>(null)
+  const [loadingStudy, setLoadingStudy] = useState(false)
+  const [studyError, setStudyError] = useState<string | null>(null)
+
+  // Form log attempt (inline dans le panel)
+  const [logOpen, setLogOpen] = useState(false)
   const [outcome, setOutcome] = useState<ContactOutcome>('no_answer')
   const [notes, setNotes] = useState('')
 
-  const active = leads.filter((l) => l.status === 'active' || l.status === 'contacted')
-  const past = leads.filter((l) => !['active', 'contacted'].includes(l.status))
+  // Recherche locale
+  const [search, setSearch] = useState('')
 
-  async function handleLogAttempt(id: string) {
-    await logAttemptMut.mutateAsync({ id, outcome, notes })
-    setLogFor(null)
+  // Timestamp stable pour les calculs de jours restants (évite Date.now() dans render)
+  const [now] = useState(() => Date.now())
+
+  const filteredLeads = leads.filter((l) => {
+    if (!search.trim()) return true
+    const q = search.toLowerCase()
+    return (
+      l.prospect?.adresse_ban?.toLowerCase().includes(q) ||
+      l.prospect?.commune?.toLowerCase().includes(q) ||
+      l.prospect?.code_postal?.includes(q) ||
+      String(l.prospect_id).includes(q)
+    )
+  })
+
+  const active = filteredLeads.filter(
+    (l) => l.status === 'active' || l.status === 'contacted',
+  )
+  const past = filteredLeads.filter(
+    (l) => !['active', 'contacted'].includes(l.status),
+  )
+
+  async function openStudy(lead: LeadAssignment) {
+    setSelectedLead(lead)
+    setStudyError(null)
+    setLogOpen(false)
     setNotes('')
+    setLoadingStudy(true)
+    try {
+      const data = (await scoreVenteApi.fetchProspectStudy(lead.prospect_id)) as ProspectStudy
+      const enriched: ProspectStudy = {
+        ...data,
+        iris_code: lead.prospect?.iris_code ?? null,
+      }
+      setStudy(enriched)
+    } catch (err) {
+      setStudyError(err instanceof Error ? err.message : 'Erreur étude')
+    } finally {
+      setLoadingStudy(false)
+    }
+  }
+
+  function closeStudy() {
+    setSelectedLead(null)
+    setStudy(null)
+    setStudyError(null)
+    setLogOpen(false)
+  }
+
+  async function handleLogAttempt() {
+    if (!selectedLead) return
+    await logAttemptMut.mutateAsync({ id: selectedLead.id, outcome, notes })
+    setLogOpen(false)
+    setNotes('')
+  }
+
+  async function handleRelease() {
+    if (!selectedLead) return
+    if (!confirm('Libérer ce lead ? Il pourra être claim par une autre agence.')) return
+    await releaseMut.mutateAsync(selectedLead.id)
+    closeStudy()
   }
 
   return (
@@ -85,11 +160,23 @@ export default function AgenceLeads() {
         </div>
       </header>
 
+      {/* Search */}
+      <div className="relative">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher par adresse, commune, code postal…"
+          className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
+        />
+      </div>
+
       {isLoading ? (
         <div className="p-12 flex justify-center">
           <Loader className="animate-spin text-orange-500" />
         </div>
-      ) : active.length === 0 ? (
+      ) : active.length === 0 && past.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center">
           <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-orange-50 flex items-center justify-center">
             <Flame size={20} className="text-orange-500" />
@@ -97,140 +184,272 @@ export default function AgenceLeads() {
           <p className="text-slate-800 font-semibold">Aucun lead actif pour le moment</p>
           <p className="text-sm text-slate-500 mt-1">
             Explorez le{' '}
-            <a href="/agence/score-vente" className="text-orange-600 hover:text-orange-700 font-semibold underline">
+            <a
+              href="/agence/score-vente"
+              className="text-orange-600 hover:text-orange-700 font-semibold underline"
+            >
               Score Vente
             </a>{' '}
             pour claim de nouvelles opportunités.
           </p>
         </div>
       ) : (
-        <section className="space-y-2">
-          <h2 className="text-sm uppercase tracking-wide text-gray-500 font-semibold">
-            Leads actifs
-          </h2>
-          {active.map((lead) => {
-            const expiresOn = new Date(lead.expires_at).toLocaleDateString('fr-FR')
-            return (
-              <article
-                key={lead.id}
-                className="bg-white rounded-xl border border-slate-100 p-4 space-y-2"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium">Prospect #{lead.prospect_id}</p>
-                    <p className="text-xs text-gray-500">
-                      Claim le {new Date(lead.claimed_at).toLocaleDateString('fr-FR')} ·
-                      Expire le {expiresOn}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Tentatives : {lead.contact_attempts} / 2
-                    </p>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded text-xs ${STATUS_COLORS[lead.status]}`}>
-                    {STATUS_LABELS[lead.status]}
-                  </span>
-                </div>
+        <>
+          {active.length > 0 ? (
+            <section>
+              <h2 className="text-sm uppercase tracking-wider text-slate-500 font-bold mb-3">
+                Leads actifs ({active.length})
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {active.map((lead) => (
+                  <LeadCard
+                    key={lead.id}
+                    lead={lead}
+                    onClick={() => openStudy(lead)}
+                    now={now}
+                  />
+                ))}
+              </div>
+            </section>
+          ) : null}
 
-                {lead.last_attempt_outcome ? (
-                  <p className="text-xs bg-gray-50 rounded px-2 py-1">
-                    Dernière tentative : <strong>{OUTCOME_LABELS[lead.last_attempt_outcome]}</strong>
-                    {lead.notes ? ` · ${lead.notes}` : ''}
-                  </p>
-                ) : null}
-
-                {lead.status === 'active' ? (
-                  <div className="flex flex-wrap gap-2">
-                    {logFor === lead.id ? (
-                      <div className="flex flex-wrap gap-2 items-end w-full bg-gray-50 p-3 rounded-lg">
-                        <select
-                          value={outcome}
-                          onChange={(e) => setOutcome(e.target.value as ContactOutcome)}
-                          className="px-2 py-1 border border-gray-300 rounded text-sm"
-                        >
-                          {Object.entries(OUTCOME_LABELS).map(([k, v]) => (
-                            <option key={k} value={k}>{v}</option>
-                          ))}
-                        </select>
-                        <input
-                          type="text"
-                          value={notes}
-                          onChange={(e) => setNotes(e.target.value)}
-                          placeholder="Notes (optionnel)"
-                          className="flex-1 min-w-[150px] px-2 py-1 border border-gray-300 rounded text-sm"
-                        />
-                        <button
-                          onClick={() => handleLogAttempt(lead.id)}
-                          disabled={logAttemptMut.isPending}
-                          className="px-3 py-1 bg-gradient-to-br from-orange-500 to-red-600 text-white rounded text-sm hover:from-orange-600 hover:to-red-700 disabled:opacity-50"
-                        >
-                          Enregistrer
-                        </button>
-                        <button
-                          onClick={() => setLogFor(null)}
-                          className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50"
-                        >
-                          Annuler
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => setLogFor(lead.id)}
-                          disabled={lead.contact_attempts >= 2}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-md hover:from-orange-600 hover:to-red-700 disabled:opacity-50"
-                        >
-                          <Phone size={12} /> Logger une tentative
-                        </button>
-                        <button
-                          onClick={() => releaseMut.mutate(lead.id)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs border border-gray-300 rounded-md hover:bg-gray-50"
-                        >
-                          <XCircle size={12} /> Libérer
-                        </button>
-                      </>
-                    )}
-                  </div>
-                ) : lead.status === 'contacted' ? (
-                  <p className="inline-flex items-center gap-1 text-xs text-emerald-700">
-                    <CheckCircle2 size={12} /> Lead transformé en contact intéressé
-                  </p>
-                ) : null}
-              </article>
-            )
-          })}
-        </section>
+          {past.length > 0 ? (
+            <section>
+              <h2 className="text-sm uppercase tracking-wider text-slate-500 font-bold mb-3">
+                Historique ({past.length})
+              </h2>
+              <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-100">
+                {past.slice(0, 30).map((lead) => (
+                  <button
+                    key={lead.id}
+                    type="button"
+                    onClick={() => openStudy(lead)}
+                    className="w-full p-3 text-sm flex items-center justify-between hover:bg-slate-50 transition text-left"
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span
+                        className={`px-2 py-0.5 rounded text-xs shrink-0 ${STATUS_COLORS[lead.status]}`}
+                      >
+                        {STATUS_LABELS[lead.status]}
+                      </span>
+                      <span className="truncate text-slate-700">
+                        {lead.prospect?.adresse_ban ?? `Prospect #${lead.prospect_id}`}
+                      </span>
+                    </div>
+                    <span className="text-xs text-slate-500 shrink-0 ml-2">
+                      {lead.released_at
+                        ? new Date(lead.released_at).toLocaleDateString('fr-FR')
+                        : new Date(lead.claimed_at).toLocaleDateString('fr-FR')}
+                    </span>
+                    <ChevronRight size={14} className="text-slate-300 ml-1 shrink-0" />
+                  </button>
+                ))}
+              </div>
+            </section>
+          ) : null}
+        </>
       )}
 
-      {past.length > 0 ? (
-        <section>
-          <h2 className="text-sm uppercase tracking-wide text-gray-500 font-semibold mb-2">
-            Historique ({past.length})
-          </h2>
-          <div className="bg-white rounded-xl border border-slate-100 divide-y">
-            {past.slice(0, 20).map((lead) => (
-              <div key={lead.id} className="p-3 text-sm flex items-center justify-between">
-                <div>
-                  <span className={`px-2 py-0.5 rounded text-xs mr-2 ${STATUS_COLORS[lead.status]}`}>
-                    {STATUS_LABELS[lead.status]}
-                  </span>
-                  Prospect #{lead.prospect_id}
-                </div>
-                <span className="text-xs text-gray-500">
-                  {lead.released_at
-                    ? new Date(lead.released_at).toLocaleDateString('fr-FR')
-                    : new Date(lead.claimed_at).toLocaleDateString('fr-FR')}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
+      {/* Charte rappel */}
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 flex items-start gap-2">
         <AlertTriangle size={14} className="shrink-0 mt-0.5" />
         Charte : maximum 2 tentatives par lead. Au-delà sans intéressement, le lead
         est blacklisté automatiquement (frequency cap RGPD).
       </div>
+
+      {/* Slide-in panel d'étude */}
+      {loadingStudy ? (
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl p-5 flex items-center gap-3">
+            <Loader className="animate-spin text-orange-500" />
+            <span className="text-sm font-medium text-slate-700">Chargement de l'étude…</span>
+          </div>
+        </div>
+      ) : null}
+
+      {studyError && selectedLead ? (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[1100] max-w-md bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700 shadow-md">
+          {studyError}
+          {' — Étude pas encore en cache (batch en cours, attendre quelques minutes).'}
+          <button
+            type="button"
+            onClick={closeStudy}
+            className="ml-2 text-red-700 hover:text-red-900 font-bold"
+          >
+            ×
+          </button>
+        </div>
+      ) : null}
+
+      {study && selectedLead ? (
+        <ProspectStudyPanel
+          study={study}
+          onClose={closeStudy}
+          onClaim={() => {}}
+          alreadyClaimed
+          quotaExhausted={false}
+          isClaiming={false}
+          customFooter={
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className={`px-2 py-1 rounded font-semibold ${STATUS_COLORS[selectedLead.status]}`}>
+                  {STATUS_LABELS[selectedLead.status]}
+                </span>
+                <span className="text-slate-500">
+                  {selectedLead.contact_attempts}/2 tentatives ·
+                  Expire le {new Date(selectedLead.expires_at).toLocaleDateString('fr-FR')}
+                </span>
+              </div>
+
+              {selectedLead.last_attempt_outcome ? (
+                <div className="bg-slate-50 rounded-md p-2 text-xs text-slate-700">
+                  Dernière tentative :{' '}
+                  <strong>{OUTCOME_LABELS[selectedLead.last_attempt_outcome]}</strong>
+                  {selectedLead.notes ? ` · ${selectedLead.notes}` : ''}
+                </div>
+              ) : null}
+
+              {selectedLead.status === 'contacted' ? (
+                <div className="flex items-center gap-2 text-emerald-700 text-sm py-2">
+                  <CheckCircle2 size={16} />
+                  Lead transformé en contact intéressé
+                </div>
+              ) : selectedLead.status === 'active' ? (
+                <>
+                  {logOpen ? (
+                    <div className="bg-slate-50 rounded-lg p-3 space-y-2 border border-slate-200">
+                      <select
+                        value={outcome}
+                        onChange={(e) => setOutcome(e.target.value as ContactOutcome)}
+                        className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm"
+                      >
+                        {Object.entries(OUTCOME_LABELS).map(([k, v]) => (
+                          <option key={k} value={k}>
+                            {v}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        type="text"
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="Notes (optionnel)"
+                        className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void handleLogAttempt()}
+                          disabled={logAttemptMut.isPending}
+                          className="flex-1 px-3 py-2 bg-gradient-to-br from-orange-500 to-red-600 text-white text-xs font-bold rounded-md hover:shadow-md disabled:opacity-50 transition"
+                        >
+                          {logAttemptMut.isPending ? '…' : 'Enregistrer'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setLogOpen(false)}
+                          className="px-3 py-2 border border-slate-300 text-xs rounded-md hover:bg-slate-50"
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setLogOpen(true)}
+                        disabled={selectedLead.contact_attempts >= 2}
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs bg-gradient-to-br from-orange-500 to-red-600 text-white font-bold rounded-md hover:shadow-md disabled:opacity-50 transition"
+                      >
+                        <Phone size={12} /> Logger une tentative
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleRelease()}
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs border border-slate-300 rounded-md hover:bg-slate-50"
+                      >
+                        <XCircle size={12} /> Libérer le lead
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : null}
+            </div>
+          }
+        />
+      ) : null}
     </div>
+  )
+}
+
+function daysUntil(iso: string, now: number): number {
+  return Math.ceil((new Date(iso).getTime() - now) / (1000 * 60 * 60 * 24))
+}
+
+function LeadCard({
+  lead,
+  onClick,
+  now,
+}: {
+  lead: LeadAssignment
+  onClick: () => void
+  now: number
+}) {
+  const p = lead.prospect
+  const adresse = p?.adresse_ban ?? p?.adresse ?? `Prospect #${lead.prospect_id}`
+  const dpeBg = p?.etiquette_dpe ? DPE_BG[p.etiquette_dpe] : 'bg-slate-300 text-slate-700'
+  const expiresIn = daysUntil(lead.expires_at, now)
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="bg-white rounded-xl border border-slate-200 p-4 text-left hover:border-orange-400 hover:shadow-md transition group"
+    >
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <div className="min-w-0 flex-1">
+          <p className="font-bold text-slate-800 text-sm flex items-center gap-1 truncate">
+            <MapPin size={12} className="shrink-0 text-slate-400" />
+            <span className="truncate">{adresse}</span>
+          </p>
+          {p?.commune ? (
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              {p.code_postal} {p.commune}
+              {p.surface_habitable ? ` · ${p.surface_habitable} m²` : ''}
+              {p.annee_construction ? ` · ${p.annee_construction}` : ''}
+            </p>
+          ) : null}
+        </div>
+        {p?.etiquette_dpe ? (
+          <span
+            className={`shrink-0 w-7 h-7 rounded-md flex items-center justify-center font-bold text-sm ${dpeBg}`}
+          >
+            {p.etiquette_dpe}
+          </span>
+        ) : null}
+      </div>
+
+      <div className="flex items-center justify-between gap-2 mt-3">
+        <span className={`px-2 py-0.5 rounded text-xs ${STATUS_COLORS[lead.status]}`}>
+          {STATUS_LABELS[lead.status]}
+        </span>
+        <span className="text-[11px] text-slate-500">
+          {lead.contact_attempts}/2 tentatives · expire J+{expiresIn}
+        </span>
+      </div>
+
+      {lead.last_attempt_outcome ? (
+        <p className="text-[11px] text-slate-600 bg-slate-50 rounded px-2 py-1 mt-2 truncate">
+          Dernière : {OUTCOME_LABELS[lead.last_attempt_outcome]}
+          {lead.notes ? ` — ${lead.notes}` : ''}
+        </p>
+      ) : null}
+
+      <div className="flex items-center text-orange-600 text-[11px] font-semibold mt-2 group-hover:translate-x-0.5 transition">
+        Voir l'étude complète
+        <ChevronRight size={12} className="ml-0.5" />
+      </div>
+    </button>
   )
 }

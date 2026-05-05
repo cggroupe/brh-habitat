@@ -38,6 +38,22 @@ export interface LeadAssignment {
   claimed_at: string
   expires_at: string
   released_at: string | null
+  /** Joint optionnel depuis brh_dpe_prospects pour afficher l'adresse réelle. */
+  prospect?: {
+    id: number
+    iris_code: string | null
+    adresse_ban: string | null
+    adresse: string | null
+    commune: string | null
+    code_postal: string | null
+    departement: string | null
+    etiquette_dpe: string | null
+    surface_habitable: number | null
+    annee_construction: number | null
+    type_batiment: string | null
+    latitude: number | null
+    longitude: number | null
+  } | null
 }
 
 export interface ListAssignmentsFilters {
@@ -47,14 +63,19 @@ export interface ListAssignmentsFilters {
   /** Inclure expirés (default false : seulement active + contacted). */
   includeReleased?: boolean
   limit?: number
+  /** Joint embed brh_dpe_prospects pour afficher adresse réelle. */
+  withProspect?: boolean
 }
 
 export const leadAssignmentsApi = {
   async list(filters: ListAssignmentsFilters = {}): Promise<LeadAssignment[]> {
     const limit = Math.min(filters.limit ?? 200, 1000)
+    const select = filters.withProspect
+      ? `*, prospect:brh_dpe_prospects(id, iris_code, adresse_ban, adresse, commune, code_postal, departement, etiquette_dpe, surface_habitable, annee_construction, type_batiment, latitude, longitude)`
+      : '*'
     let q = supabase
       .from('brh_lead_assignments')
-      .select('*')
+      .select(select)
       .order('claimed_at', { ascending: false })
       .limit(limit)
 
@@ -65,7 +86,7 @@ export const leadAssignmentsApi = {
 
     const { data, error } = await q
     if (error) throw error
-    return (data ?? []) as LeadAssignment[]
+    return (data ?? []) as unknown as LeadAssignment[]
   },
 
   /**

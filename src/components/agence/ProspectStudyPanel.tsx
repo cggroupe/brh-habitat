@@ -180,6 +180,8 @@ interface Props {
   alreadyClaimed: boolean
   quotaExhausted: boolean
   isClaiming: boolean
+  /** Footer custom pour remplacer le bouton "Claim" (utilisé par /agence/leads). */
+  customFooter?: React.ReactNode
 }
 
 export function ProspectStudyPanel({
@@ -189,6 +191,7 @@ export function ProspectStudyPanel({
   alreadyClaimed,
   quotaExhausted,
   isClaiming,
+  customFooter,
 }: Props) {
   const [scenario, setScenario] = useState<'s1' | 's2' | 's3'>('s2')
   const [foyer, setFoyer] = useState(2)
@@ -837,9 +840,11 @@ export function ProspectStudyPanel({
           </p>
         </div>
 
-        {/* Sticky footer claim */}
+        {/* Sticky footer */}
         <footer className="sticky bottom-0 bg-white border-t border-slate-200 p-4 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
-          {alreadyClaimed ? (
+          {customFooter ? (
+            customFooter
+          ) : alreadyClaimed ? (
             <div className="flex items-center gap-2 text-slate-500 text-sm">
               <Lock size={16} />
               Lead déjà réservé
