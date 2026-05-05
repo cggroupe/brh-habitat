@@ -14,13 +14,16 @@
  * "combien je peux gagner si je rénove avant de vendre ?".
  */
 import { useEffect, useRef, useState } from 'react'
-import { Search, Loader, Sparkles, Lightbulb, AlertCircle } from 'lucide-react'
+import { Search, Loader, Sparkles, Lightbulb, AlertCircle, Wand2, Sliders } from 'lucide-react'
 import { scoreVenteApi } from '@/api/score-vente'
 import { virtualToProspectStudy } from '@/lib/virtual-to-study'
 import {
   ProspectStudyPanel,
   type ProspectStudy,
 } from '@/components/agence/ProspectStudyPanel'
+import ManualWizard from '@/components/agence/ManualWizard'
+
+type SimMode = 'address' | 'manual'
 
 interface BanFeature {
   properties: {
@@ -40,6 +43,7 @@ const EXAMPLES = [
 ]
 
 export default function AgenceSimulateur() {
+  const [mode, setMode] = useState<SimMode>('address')
   const [addr, setAddr] = useState('')
   const [suggestions, setSuggestions] = useState<BanFeature[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -123,7 +127,7 @@ export default function AgenceSimulateur() {
   }
 
   return (
-    <div className="p-6 lg:p-10 max-w-3xl mx-auto space-y-6">
+    <div className={`p-6 lg:p-10 ${mode === 'manual' ? 'max-w-6xl' : 'max-w-3xl'} mx-auto space-y-6`}>
       <header className="text-center">
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#0a5e2a] to-[#16a34a] mb-4 shadow-lg">
           <Sparkles size={28} className="text-white" />
@@ -132,12 +136,108 @@ export default function AgenceSimulateur() {
           Simulateur Cap Rénov
         </h1>
         <p className="text-sm text-slate-600 mt-2 max-w-xl mx-auto">
-          Étudiez n'importe quelle adresse de Bretagne — DPE estimé via BDNB CSTB,
-          3 scénarios de rénovation, travaux chiffrés, aides MPR + CEE par décile,
-          artisans RGE proches.
+          Étudiez n'importe quelle adresse de Bretagne ou saisissez les caractéristiques
+          précises avec votre client en RDV — calcul DPE temps réel.
         </p>
       </header>
 
+      {/* Tabs mode */}
+      <div className="flex bg-slate-100 rounded-xl p-1 max-w-md mx-auto">
+        <button
+          type="button"
+          onClick={() => setMode('address')}
+          className={`flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-semibold transition ${
+            mode === 'address'
+              ? 'bg-white text-[#0a5e2a] shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Wand2 size={14} />
+          Adresse rapide
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode('manual')}
+          className={`flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-semibold transition ${
+            mode === 'manual'
+              ? 'bg-white text-[#0a5e2a] shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Sliders size={14} />
+          Saisie manuelle (RDV)
+        </button>
+      </div>
+
+      {mode === 'manual' ? (
+        <ManualWizard />
+      ) : (
+        <AddressMode
+          addr={addr}
+          searchingAddr={searchingAddr}
+          inputRef={inputRef}
+          handleAddrInput={handleAddrInput}
+          showSuggestions={showSuggestions}
+          setShowSuggestions={setShowSuggestions}
+          suggestions={suggestions}
+          runStudy={runStudy}
+          tryExample={tryExample}
+          loading={loading}
+          error={error}
+          study={study}
+        />
+      )}
+
+      {/* Slide-in panel quand étude prête */}
+      {study ? (
+        <ProspectStudyPanel
+          study={study}
+          onClose={() => {
+            setStudy(null)
+            setAddr('')
+            inputRef.current?.focus()
+          }}
+          onClaim={() => {}}
+          alreadyClaimed={false}
+          quotaExhausted={false}
+          isClaiming={false}
+        />
+      ) : null}
+    </div>
+  )
+}
+
+interface AddressModeProps {
+  addr: string
+  searchingAddr: boolean
+  inputRef: React.RefObject<HTMLInputElement | null>
+  handleAddrInput: (v: string) => void
+  showSuggestions: boolean
+  setShowSuggestions: (v: boolean) => void
+  suggestions: BanFeature[]
+  runStudy: (f: BanFeature) => Promise<void>
+  tryExample: (label: string) => void
+  loading: boolean
+  error: string | null
+  study: ProspectStudy | null
+}
+
+function AddressMode({
+  addr,
+  searchingAddr,
+  inputRef,
+  handleAddrInput,
+  showSuggestions,
+  setShowSuggestions,
+  suggestions,
+  runStudy,
+  tryExample,
+  loading,
+  error,
+  study,
+}: AddressModeProps) {
+  return (
+    <>
       {/* Search box */}
       <div className="relative">
         <Search
@@ -287,22 +387,6 @@ export default function AgenceSimulateur() {
           </p>
         </div>
       ) : null}
-
-      {/* Slide-in panel quand étude prête */}
-      {study ? (
-        <ProspectStudyPanel
-          study={study}
-          onClose={() => {
-            setStudy(null)
-            setAddr('')
-            inputRef.current?.focus()
-          }}
-          onClaim={() => {}}
-          alreadyClaimed={false}
-          quotaExhausted={false}
-          isClaiming={false}
-        />
-      ) : null}
-    </div>
+    </>
   )
 }
