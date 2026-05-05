@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Handshake,
   Award,
+  Sparkles,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -22,6 +23,7 @@ import { supabase } from '@/lib/supabase'
 
 const AGENCE_NAV = [
   { to: '/agence', label: 'Accueil', icon: LayoutDashboard, end: true },
+  { to: '/agence/simulateur', label: 'Simulateur Cap Rénov', icon: Sparkles },
   { to: '/agence/score-vente', label: 'Score Vente', icon: Flame },
   { to: '/agence/leads', label: 'Mes leads', icon: ClipboardList },
   { to: '/agence/contributions', label: 'Apporter prospect', icon: Handshake },
