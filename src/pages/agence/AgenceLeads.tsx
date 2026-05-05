@@ -6,6 +6,7 @@
  * pour log tentative / libérer (pas claim, déjà claim).
  */
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   ClipboardList,
   Loader,
@@ -17,6 +18,8 @@ import {
   MapPin,
   ChevronRight,
   Search,
+  Calculator,
+  FileText,
 } from 'lucide-react'
 import { useMyAgenceMembership } from '@/hooks/queries/agence-membership'
 import {
@@ -27,6 +30,7 @@ import {
 import { scoreVenteApi } from '@/api/score-vente'
 import type { ContactOutcome, AssignmentStatus, LeadAssignment } from '@/api/lead-assignments'
 import { ProspectStudyPanel, type ProspectStudy } from '@/components/agence/ProspectStudyPanel'
+import { useSimulationsForLead } from '@/hooks/queries/agence-simulations'
 
 const STATUS_LABELS: Record<AssignmentStatus, string> = {
   active: 'À traiter',
@@ -291,7 +295,16 @@ export default function AgenceLeads() {
           isClaiming={false}
           customFooter={
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
+              <SimulationsSection leadId={selectedLead.id} />
+              <Link
+                to={`/agence/simulateur?leadId=${selectedLead.id}`}
+                className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-br from-emerald-600 to-emerald-700 text-white text-xs font-bold rounded-lg shadow hover:shadow-md"
+              >
+                <Calculator size={12} />
+                Faire une simulation pour ce lead
+              </Link>
+
+              <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
                 <span className={`px-2 py-1 rounded font-semibold ${STATUS_COLORS[selectedLead.status]}`}>
                   {STATUS_LABELS[selectedLead.status]}
                 </span>
@@ -446,10 +459,55 @@ function LeadCard({
         </p>
       ) : null}
 
-      <div className="flex items-center text-orange-600 text-[11px] font-semibold mt-2 group-hover:translate-x-0.5 transition">
-        Voir l'étude complète
-        <ChevronRight size={12} className="ml-0.5" />
+      <div className="flex items-center justify-between gap-2 mt-3 pt-2 border-t border-slate-100">
+        <span className="text-orange-600 text-[11px] font-semibold inline-flex items-center group-hover:translate-x-0.5 transition">
+          Voir l'étude
+          <ChevronRight size={12} className="ml-0.5" />
+        </span>
+        <Link
+          to={`/agence/simulateur?leadId=${lead.id}`}
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[11px] font-semibold rounded border border-emerald-200"
+        >
+          <Calculator size={11} />
+          Simuler
+        </Link>
       </div>
     </button>
+  )
+}
+
+function SimulationsSection({ leadId }: { leadId: string }) {
+  const { data: sims = [] } = useSimulationsForLead(leadId)
+  if (sims.length === 0) return null
+  return (
+    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5">
+      <p className="text-[11px] font-bold text-emerald-900 mb-1.5 flex items-center gap-1">
+        <FileText size={11} />
+        Simulations sauvegardées ({sims.length})
+      </p>
+      <ul className="space-y-1">
+        {sims.slice(0, 3).map((s) => (
+          <li key={s.id}>
+            <Link
+              to={`/agence/simulateur?simId=${s.id}`}
+              className="flex items-center justify-between gap-2 px-2 py-1 bg-white rounded border border-emerald-100 hover:border-emerald-300 transition text-xs"
+            >
+              <span className="truncate text-slate-800 font-medium">{s.titre}</span>
+              <span className="flex items-center gap-1.5 shrink-0">
+                {s.etiquette_dpe ? (
+                  <span className="px-1.5 py-0.5 bg-slate-800 text-white text-[10px] font-bold rounded">
+                    {s.etiquette_dpe}
+                  </span>
+                ) : null}
+                <span className="text-[10px] text-slate-500">
+                  {new Date(s.created_at).toLocaleDateString('fr-FR')}
+                </span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }

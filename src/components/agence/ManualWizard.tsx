@@ -40,6 +40,8 @@ import {
 import { computeDpe } from '@/lib/dpe-engine'
 import { computeAllScenarios, type ScenarioComputed } from '@/lib/dpe-engine/variantes'
 import { scoreVenteApi } from '@/api/score-vente'
+import { useCreateSimulation } from '@/hooks/queries/agence-simulations'
+import { useMyAgenceMembership } from '@/hooks/queries/agence-membership'
 import type {
   AuditInputs,
   PeriodeConstruction,
@@ -51,7 +53,7 @@ import type {
 } from '@/lib/dpe-engine/types'
 import { DpeLabelGauge } from '@/components/audit/DpeLabelGauge'
 import { StudyReport } from './StudyReport'
-import { Printer } from 'lucide-react'
+import { Printer, Save } from 'lucide-react'
 
 type FormState = {
   codeInsee: string
@@ -274,10 +276,37 @@ interface BanFeat {
   geometry: { coordinates: [number, number] }
 }
 
-export default function ManualWizard() {
+interface ManualWizardProps {
+  /** FormState initial pour reprendre une simulation sauvegardée. */
+  initialForm?: Partial<FormState>
+  /** Adresse pré-saisie (ex : depuis une card lead). */
+  initialAddress?: { adresse: string; code_postal: string | null; commune: string | null }
+  /** Lien vers un lead pour rattacher la simulation. */
+  leadAssignmentId?: string | null
+  /** Lien vers un prospect DPE. */
+  prospectDpeId?: number | null
+}
+
+export default function ManualWizard({
+  initialForm,
+  initialAddress,
+  leadAssignmentId,
+  prospectDpeId,
+}: ManualWizardProps = {}) {
   const [step, setStep] = useState(1)
-  const [form, setForm] = useState<FormState>(DEFAULT_FORM)
+  const [form, setForm] = useState<FormState>(() => ({ ...DEFAULT_FORM, ...initialForm }))
   const [livePreview, setLivePreview] = useState<DpeResult | null>(null)
+
+  // Save simulation
+  const { data: membership } = useMyAgenceMembership()
+  const createSim = useCreateSimulation()
+  const [saveModal, setSaveModal] = useState(false)
+  const [saveTitre, setSaveTitre] = useState('')
+  const [saveNotes, setSaveNotes] = useState('')
+  const [saveDone, setSaveDone] = useState(false)
+  const [saveAdresse, setSaveAdresse] = useState(initialAddress?.adresse ?? '')
+  const [saveCodePostal, setSaveCodePostal] = useState(initialAddress?.code_postal ?? '')
+  const [saveCommune, setSaveCommune] = useState(initialAddress?.commune ?? '')
 
   // Pré-remplissage adresse
   const [addr, setAddr] = useState('')
@@ -548,7 +577,21 @@ export default function ManualWizard() {
           {step === 3 && <Step3Isolation form={form} set={set} />}
           {step === 4 && <Step4Ouvertures form={form} set={set} />}
           {step === 5 && <Step5Equipements form={form} set={set} />}
-          {step === 6 && <Step6Synthese form={form} preview={livePreview} inputs={inputs} />}
+          {step === 6 && (
+            <Step6Synthese
+              form={form}
+              preview={livePreview}
+              inputs={inputs}
+              onSave={() => {
+                setSaveTitre(
+                  initialAddress?.adresse ??
+                    `${form.codeInsee} · ${form.surfaceHabitable}m² · ${form.typeBatiment}`,
+                )
+                setSaveModal(true)
+              }}
+              saveDone={saveDone}
+            />
+          )}
 
           {/* Nav */}
           <div className="flex items-center justify-between gap-2 pt-3">
@@ -644,6 +687,130 @@ export default function ManualWizard() {
           </div>
         </div>
       </div>
+
+      {/* Modal Save simulation */}
+      {saveModal ? (
+        <div
+          className="fixed inset-0 z-[1500] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={() => setSaveModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-bold text-slate-800 mb-1">
+              Sauvegarder cette simulation
+            </h2>
+            <p className="text-xs text-slate-500 mb-4">
+              Tu pourras la retrouver dans <strong>Mes simulations</strong> et la rouvrir pour
+              l'éditer ou imprimer le rapport.
+            </p>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Titre (obligatoire)
+                </label>
+                <input
+                  type="text"
+                  value={saveTitre}
+                  onChange={(e) => setSaveTitre(e.target.value)}
+                  placeholder="ex : 12 rue de la Paix — vendeur Dupont"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Adresse
+                </label>
+                <input
+                  type="text"
+                  value={saveAdresse}
+                  onChange={(e) => setSaveAdresse(e.target.value)}
+                  placeholder="12 rue de la Paix"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  value={saveCodePostal}
+                  onChange={(e) => setSaveCodePostal(e.target.value)}
+                  placeholder="Code postal"
+                  maxLength={5}
+                  className="px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                />
+                <input
+                  type="text"
+                  value={saveCommune}
+                  onChange={(e) => setSaveCommune(e.target.value)}
+                  placeholder="Commune"
+                  className="px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Notes (optionnel)
+                </label>
+                <textarea
+                  value={saveNotes}
+                  onChange={(e) => setSaveNotes(e.target.value)}
+                  placeholder="ex : RDV avec M. Dupont — bien intéressé par PAC + ITE"
+                  rows={3}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-5">
+              <button
+                type="button"
+                onClick={() => setSaveModal(false)}
+                className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                disabled={!saveTitre || !membership?.agenceId || createSim.isPending}
+                onClick={async () => {
+                  if (!membership?.agenceId) return
+                  try {
+                    await createSim.mutateAsync({
+                      agence_id: membership.agenceId,
+                      created_by: null,
+                      lead_assignment_id: leadAssignmentId ?? null,
+                      prospect_dpe_id: prospectDpeId ?? null,
+                      titre: saveTitre,
+                      adresse: saveAdresse || null,
+                      code_postal: saveCodePostal || null,
+                      commune: saveCommune || null,
+                      code_insee: form.codeInsee || null,
+                      notes: saveNotes || null,
+                      inputs: form as unknown as Record<string, unknown>,
+                      result: livePreview as unknown as Record<string, unknown> | null,
+                      scenarios: null,
+                      etiquette_dpe: livePreview?.etiquetteDpe ?? null,
+                      cep_kwh_ep_m2_an: livePreview?.cepKwhEpM2An ?? null,
+                    })
+                    setSaveModal(false)
+                    setSaveDone(true)
+                  } catch (err) {
+                    alert(
+                      err instanceof Error
+                        ? `Erreur sauvegarde : ${err.message}`
+                        : 'Erreur sauvegarde',
+                    )
+                  }
+                }}
+                className="flex-1 px-4 py-2.5 bg-gradient-to-br from-emerald-600 to-emerald-700 text-white text-sm font-bold rounded-lg shadow hover:shadow-md disabled:opacity-50"
+              >
+                {createSim.isPending ? 'Sauvegarde…' : 'Enregistrer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -1146,10 +1313,14 @@ function Step6Synthese({
   form,
   preview,
   inputs,
+  onSave,
+  saveDone,
 }: {
   form: FormState
   preview: DpeResult | null
   inputs: AuditInputs
+  onSave: () => void
+  saveDone: boolean
 }) {
   const [showReport, setShowReport] = useState(false)
 
@@ -1305,15 +1476,35 @@ function Step6Synthese({
         </div>
       </div>
 
-      {/* Bouton imprimer rapport */}
-      <button
-        type="button"
-        onClick={() => setShowReport(true)}
-        className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-br from-blue-600 to-indigo-700 text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg transition"
-      >
-        <Printer size={16} />
-        Générer le rapport complet imprimable
-      </button>
+      {/* Boutons rapport + sauvegarder */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button
+          type="button"
+          onClick={() => setShowReport(true)}
+          className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-br from-blue-600 to-indigo-700 text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg transition"
+        >
+          <Printer size={16} />
+          Rapport imprimable
+        </button>
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={saveDone}
+          className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-br from-emerald-600 to-emerald-700 text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg disabled:opacity-50 transition"
+        >
+          {saveDone ? (
+            <>
+              <CheckCircle2 size={16} />
+              Simulation enregistrée ✓
+            </>
+          ) : (
+            <>
+              <Save size={16} />
+              Sauvegarder cette simulation
+            </>
+          )}
+        </button>
+      </div>
 
       <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-xs text-emerald-900">
         <p className="font-bold mb-2">🎯 Et maintenant ?</p>

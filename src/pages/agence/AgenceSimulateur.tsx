@@ -14,6 +14,7 @@
  * "combien je peux gagner si je rénove avant de vendre ?".
  */
 import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Search, Loader, Sparkles, Lightbulb, AlertCircle, Wand2, Sliders } from 'lucide-react'
 import { scoreVenteApi } from '@/api/score-vente'
 import { virtualToProspectStudy } from '@/lib/virtual-to-study'
@@ -22,6 +23,8 @@ import {
   type ProspectStudy,
 } from '@/components/agence/ProspectStudyPanel'
 import ManualWizard from '@/components/agence/ManualWizard'
+import { useSimulation } from '@/hooks/queries/agence-simulations'
+import { useLeadAssignments } from '@/hooks/queries/lead-assignments'
 
 type SimMode = 'address' | 'manual'
 
@@ -43,7 +46,38 @@ const EXAMPLES = [
 ]
 
 export default function AgenceSimulateur() {
-  const [mode, setMode] = useState<SimMode>('address')
+  const [searchParams] = useSearchParams()
+  const leadIdParam = searchParams.get('leadId')
+  const simIdParam = searchParams.get('simId')
+
+  // Si on arrive avec leadId ou simId → mode manuel par défaut
+  const [mode, setMode] = useState<SimMode>(
+    leadIdParam || simIdParam ? 'manual' : 'address',
+  )
+
+  // Reprise simulation existante
+  const { data: existingSim } = useSimulation(simIdParam ?? undefined)
+  // Lead lié → pré-remplir adresse
+  const { data: leads = [] } = useLeadAssignments({
+    withProspect: !!leadIdParam,
+    includeReleased: true,
+  })
+  const linkedLead = leadIdParam ? leads.find((l) => l.id === leadIdParam) : undefined
+
+  const wizardInitialForm = existingSim?.inputs as Record<string, unknown> | undefined
+  const wizardInitialAddress = linkedLead?.prospect
+    ? {
+        adresse: linkedLead.prospect.adresse_ban ?? linkedLead.prospect.adresse ?? '',
+        code_postal: linkedLead.prospect.code_postal,
+        commune: linkedLead.prospect.commune,
+      }
+    : existingSim
+    ? {
+        adresse: existingSim.adresse ?? '',
+        code_postal: existingSim.code_postal,
+        commune: existingSim.commune,
+      }
+    : undefined
   const [addr, setAddr] = useState('')
   const [suggestions, setSuggestions] = useState<BanFeature[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -179,7 +213,12 @@ export default function AgenceSimulateur() {
       </div>
 
       {mode === 'manual' ? (
-        <ManualWizard />
+        <ManualWizard
+          initialForm={wizardInitialForm as never}
+          initialAddress={wizardInitialAddress}
+          leadAssignmentId={linkedLead?.id ?? null}
+          prospectDpeId={linkedLead?.prospect?.id ?? existingSim?.prospect_dpe_id ?? null}
+        />
       ) : (
         <AddressMode
           addr={addr}
