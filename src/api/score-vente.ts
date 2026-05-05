@@ -90,9 +90,7 @@ export const scoreVenteApi = {
     return (data ?? []) as unknown as ScoreVenteRow[]
   },
 
-  /** Charge l'étude complète d'un prospect depuis le cache brh_prospect_studies.
-   *  Le cache est alimenté par scripts/cache-prospect-studies.ts (cron VPS).
-   *  Pas d'EF nécessaire — la table est protégée par RLS pour pro/admin/agence active. */
+  /** Charge l'étude complète d'un prospect depuis le cache brh_prospect_studies. */
   async fetchProspectStudy(prospectId: number): Promise<unknown> {
     const { data, error } = await supabase
       .from('brh_prospect_studies')
@@ -104,6 +102,32 @@ export const scoreVenteApi = {
       throw new Error('Étude indisponible pour ce prospect (cache non encore alimenté)')
     }
     return data.study_json
+  },
+
+  /** Étude virtuelle pour une adresse SANS DPE en base (BDNB CSTB).
+   *  Appelle l'EF dpe-express-lookup (déjà déployée pour /diagnostic-express). */
+  async fetchVirtualStudy(input: {
+    q: string
+    lat: number
+    lng: number
+    cp: string
+    foyer?: number
+    rfr?: number
+  }): Promise<unknown> {
+    const { data: { session } } = await supabase.auth.getSession()
+    const { edgeFunctionUrl } = await import('@/lib/config')
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (session) headers['Authorization'] = `Bearer ${session.access_token}`
+    const res = await fetch(edgeFunctionUrl('dpe-express-lookup'), {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(input),
+    })
+    if (!res.ok) {
+      const t = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
+      throw new Error(t.error ?? 'Étude virtuelle impossible pour cette adresse')
+    }
+    return await res.json()
   },
 
   /** Stats agrégées : nombre par segment. */

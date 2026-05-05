@@ -46,6 +46,7 @@ import { scoreVenteApi } from '@/api/score-vente'
 import type { ScoreVenteSegment } from '@/lib/dpe-engine/score-vente'
 import { HeatmapLayer } from '@/components/map/HeatmapLayer'
 import { ProspectStudyPanel, type ProspectStudy } from '@/components/agence/ProspectStudyPanel'
+import { virtualToProspectStudy } from '@/lib/virtual-to-study'
 
 const BZH_CENTER: [number, number] = [48.2, -3.0]
 const BZH_ZOOM = 8
@@ -173,15 +174,43 @@ export default function AgenceScoreVente() {
     }, 220)
   }
 
-  function pickSuggestion(f: BanFeature) {
+  async function pickSuggestion(f: BanFeature) {
     setAddr(f.properties.label)
     setShowSuggestions(false)
     const [lng, lat] = f.geometry.coordinates
     setFlyTarget({ center: [lat, lng], zoom: 17 })
-    setStudyError(
-      `Carte centrée sur ${f.properties.label}. Cliquez un marker rouge/orange proche pour voir son étude DPE complète.`,
-    )
-    setTimeout(() => setStudyError(null), 6000)
+
+    // Étude virtuelle BDNB CSTB pour cette adresse (qu'elle soit ou pas dans nos 59k F/G).
+    setStudyError(null)
+    setLoadingStudy(true)
+    try {
+      const cp = f.properties.postcode ?? ''
+      const dept = cp.slice(0, 2) || null
+      const commune = f.properties.context?.split(',')[1]?.trim() ?? null
+      const data = (await scoreVenteApi.fetchVirtualStudy({
+        q: f.properties.label,
+        lat,
+        lng,
+        cp,
+        foyer: 2,
+        rfr: 30000,
+      })) as Parameters<typeof virtualToProspectStudy>[0]
+
+      const study = virtualToProspectStudy(data, {
+        code_postal: cp || undefined,
+        commune: commune ?? undefined,
+        departement: dept ?? undefined,
+      })
+      setStudy(study)
+    } catch (err) {
+      setStudyError(
+        err instanceof Error
+          ? `Étude virtuelle impossible : ${err.message}`
+          : 'Étude virtuelle impossible pour cette adresse',
+      )
+    } finally {
+      setLoadingStudy(false)
+    }
   }
 
   // === Click marker → étude prospect ===
@@ -207,6 +236,9 @@ export default function AgenceScoreVente() {
 
   async function handleClaim() {
     if (!study || !membership?.agenceId) return
+    // Mode virtuel (id négatif) : pas de claim possible — le panel affiche déjà
+    // le bouton "Demander un audit Pro RGE" à la place du bouton claim.
+    if (study.id < 0) return
     try {
       await claimMut.mutateAsync({
         prospectId: study.id,

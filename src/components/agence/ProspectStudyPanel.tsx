@@ -198,6 +198,9 @@ export function ProspectStudyPanel({
   const [rfr, setRfr] = useState(30000)
   const [recomputed, setRecomputed] = useState(false)
 
+  // Mode virtuel : id négatif (hash batiment_groupe_id) — pas de DPE en base, étude BDNB CSTB
+  const isVirtual = d.id < 0
+
   // Enrichissement IRIS / commune / artisans / aides locales (non bloquant)
   const enrichmentInput = useMemo(
     () => ({
@@ -307,9 +310,15 @@ export function ProspectStudyPanel({
         </button>
 
         <div className="p-6 space-y-4 flex-1">
-          {/* Source badge */}
-          <span className="inline-block text-[10px] px-2 py-0.5 bg-blue-50 text-blue-700 uppercase tracking-wider font-bold rounded-full">
-            DPE ADEME officiel
+          {/* Source badge — différencié selon mode prospect (ADEME) vs virtuel (BDNB CSTB) */}
+          <span
+            className={`inline-block text-[10px] px-2 py-0.5 uppercase tracking-wider font-bold rounded-full ${
+              isVirtual
+                ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                : 'bg-blue-50 text-blue-700'
+            }`}
+          >
+            {isVirtual ? '⚡ Estimation BDNB CSTB' : 'DPE ADEME officiel'}
           </span>
 
           {/* Title + adresse */}
@@ -835,8 +844,11 @@ export function ProspectStudyPanel({
           </Section>
 
           <p className="text-[10px] text-slate-400 leading-relaxed">
-            Étude indicative. Source : DPE ADEME officiel. Barèmes MaPrimeRénov' 2026. Audit RGE
-            requis pour signature.
+            Étude indicative. Source :{' '}
+            {isVirtual
+              ? 'Reconstruction BDNB CSTB (bâtiment connu, DPE estimé via 3CL + climat 3CL local)'
+              : 'DPE ADEME officiel'}
+            . Barèmes MaPrimeRénov' 2026. Audit RGE requis pour signature officielle.
           </p>
         </div>
 
@@ -844,6 +856,30 @@ export function ProspectStudyPanel({
         <footer className="sticky bottom-0 bg-white border-t border-slate-200 p-4 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
           {customFooter ? (
             customFooter
+          ) : isVirtual ? (
+            <div className="space-y-2">
+              <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 leading-snug">
+                ⚡ Étude reconstruite BDNB CSTB (pas de DPE ADEME). Précision moyenne ±1
+                classe — pour un audit officiel signé, demander un Pro RGE BRH ci-dessous.
+              </p>
+              <a
+                href={`mailto:hello@renovation-brh.fr?subject=${encodeURIComponent(
+                  `Demande audit RGE - ${d.adresse_ban ?? d.adresse ?? 'Adresse'}`,
+                )}&body=${encodeURIComponent(
+                  `Bonjour,\n\nJe souhaite commander un audit énergétique officiel pour :\n\n` +
+                    `Adresse : ${d.adresse_ban ?? d.adresse ?? '—'}\n` +
+                    `Commune : ${d.commune ?? '—'} (${d.code_postal ?? '—'})\n` +
+                    `Surface estimée : ${d.surface_habitable ?? '—'} m²\n` +
+                    `DPE estimé BDNB : ${d.etiquette_dpe ?? '—'}\n` +
+                    `Conso estimée : ${d.conso_m2_ep ?? '—'} kWh/m²/an\n\n` +
+                    `Merci de me contacter pour planifier l'audit.\n\n` +
+                    `Cordialement,`,
+                )}`}
+                className="block w-full px-4 py-3 bg-gradient-to-br from-emerald-600 to-emerald-700 text-white text-sm font-bold rounded-lg shadow-md hover:shadow-lg text-center transition"
+              >
+                Demander un audit RGE BRH officiel
+              </a>
+            </div>
           ) : alreadyClaimed ? (
             <div className="flex items-center gap-2 text-slate-500 text-sm">
               <Lock size={16} />
