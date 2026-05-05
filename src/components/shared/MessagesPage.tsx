@@ -18,7 +18,7 @@ import type { ThreadWithLastMessage } from '@/api/partner-messages'
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB
 
 interface MessagesPageProps {
-  participantType: 'pro' | 'particulier'
+  participantType: 'pro' | 'particulier' | 'agence'
   emptySubtext?: string
 }
 

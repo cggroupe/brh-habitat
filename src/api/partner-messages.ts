@@ -18,7 +18,7 @@ export async function fetchMyThreads(userId: string): Promise<ThreadWithLastMess
     id: row.id as string,
     subject: row.subject as string,
     participant_id: row.participant_id as string | null,
-    participant_type: row.participant_type as 'pro' | 'particulier',
+    participant_type: row.participant_type as 'pro' | 'particulier' | 'agence',
     last_message_at: row.last_message_at as string,
     is_archived: row.is_archived as boolean,
     created_at: row.created_at as string,
@@ -41,7 +41,7 @@ export async function fetchThreadMessages(threadId: string): Promise<BrhMessageR
 export async function createThread(params: {
   subject: string
   participantId: string
-  participantType: 'pro' | 'particulier'
+  participantType: 'pro' | 'particulier' | 'agence'
   firstMessage: string
 }): Promise<BrhMessageThreadRow> {
   const validated = createThreadSchema.parse(params)

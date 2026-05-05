@@ -73,7 +73,7 @@
 - Sidebar agence 10 → 11 entrées (icône Users — "Mon équipe").
 - Anti-bug : #5 throw, #6 guards, #8 pas de USING(true), #11 TIMESTAMPTZ, #12 search_path=''.
 
-#### 8. QR code agence personnalisé + vitrine publique (commit en cours)
+#### 8. QR code agence personnalisé + vitrine publique (commit fe1edc4)
 - Migration `20260706170000_brh_agence_public_vitrine.sql` : RPC SECURITY DEFINER `brh_get_public_agence(p_agence_id)` — expose uniquement `raison_sociale / commune / departement / code_postal / site_web` pour status='partenaire' avec charte active. Aucune fuite SIRET / contacts internes.
 - Composant `AgenceQRCodeCard.tsx` (branding orange/rouge) — QR via api.qrserver.com, download canvas haute résolution, fallback CORS direct. Pas de dépendance npm ajoutée.
 - Page `/agence/qr-code` : 2 modes radio "Vitrine prospect" (URL `/a/<id>`) ou "Recrutement agences" (URL `/inscription/agence?ref=<id>` réutilise Step 6), preview QR + copy URL + download PNG + tips impression.
@@ -81,6 +81,14 @@
 - CSP : déjà OK (`img-src 'self' data: blob: https:` couvre api.qrserver.com).
 - Sidebar agence 11 → 12 entrées (icône QrCode).
 - Anti-bug : #5 throw, #6 public route OK (lecture seule via RPC SECURITY DEFINER), #11 TIMESTAMPTZ N/A (lecture), #12 search_path=''.
+
+#### 9. Messagerie agence ↔ BRH (commit en cours)
+- Migration `20260706180000_brh_agence_messaging.sql` : étend la CHECK constraint `participant_type` de `brh_message_threads` pour inclure `'agence'` et `'artisan'` (préparation future). Pas de nouvelles tables — réutilise toute l'infrastructure existante (Realtime + storage attachments + RLS `participant_id = auth.uid()`).
+- Update `MessageParticipantType` (src/types/partner.ts) + Zod schemas (createThreadSchema + brhMessageThreadRowSchema) + signatures TS (partner-messages.ts, MessagesPage.tsx).
+- Page `/agence/messages` : oneliner réutilisant `MessagesPage` partagé (déjà utilisé par Pro et Particulier). 0 duplication de code UI.
+- Threads agence visibles côté admin via `/admin/messages` existant (RLS admin déjà OK).
+- Sidebar agence 12 → 13 entrées (icône MessageCircle).
+- Anti-bug : aucun changement RLS (les policies existantes couvrent), #5 throw partout, #11 TIMESTAMPTZ déjà respecté.
 
 ### 14 règles anti-bug respectées
 
@@ -101,7 +109,7 @@
 - ✅ Recrutement nouvelles agences (Step 6, commit 57a532a — modèle 1-niveau, 100 € HT/charte)
 - ✅ Mes employés agence (Step 7 — permissions JSONB granulaires, 5 permissions, RLS élargie)
 - ✅ QR code agence personnalisé (Step 8 — 2 modes vitrine/parrainage, page publique `/a/:id`)
-- ❌ Messages agence (chat BRH / artisans assignés — Priorité 5)
+- ✅ Messages agence ↔ BRH (Step 9 — réutilise infra messagerie + Realtime, 0 duplication)
 
 ---
 

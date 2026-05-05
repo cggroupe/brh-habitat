@@ -108,7 +108,7 @@ export const brhMessageThreadRowSchema = z.object({
   id: z.string(),
   subject: z.string(),
   participant_id: z.string().nullable(),
-  participant_type: z.enum(['pro', 'particulier']),
+  participant_type: z.enum(['pro', 'particulier', 'agence']),
   last_message_at: z.string(),
   is_archived: z.boolean(),
   created_at: z.string(),
@@ -205,7 +205,7 @@ export type SocialPostInsert = z.infer<typeof socialPostInsertSchema>
 export const createThreadSchema = z.object({
   subject: z.string().min(1).max(200),
   participantId: uuid,
-  participantType: z.enum(['pro', 'particulier']),
+  participantType: z.enum(['pro', 'particulier', 'agence']),
   firstMessage: z.string().min(1).max(5000),
 })
 

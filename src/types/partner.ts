@@ -14,7 +14,7 @@ export type PaymentMethod = 'virement' | 'cheque'
 export type PointsTransactionType = 'parrainage' | 'bonus_mensuel' | 'bonus_annuel' | 'echange_cadeau' | 'ajustement_admin'
 export type RewardType = 'produit_physique' | 'bon_achat' | 'reduction_travaux'
 export type RewardClaimStatus = 'en_attente' | 'validee' | 'preparee' | 'envoyee' | 'refusee'
-export type MessageParticipantType = 'pro' | 'particulier'
+export type MessageParticipantType = 'pro' | 'particulier' | 'agence'
 
 // === Row types ===
 
