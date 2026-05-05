@@ -10,6 +10,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { MapContainer, TileLayer, CircleMarker, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
+
+/** Force Leaflet à recalculer sa taille après mount (sinon hauteur 0 dans flex). */
+function MapInvalidator() {
+  const map = useMap()
+  useEffect(() => {
+    const t1 = setTimeout(() => map.invalidateSize(), 0)
+    const t2 = setTimeout(() => map.invalidateSize(), 200)
+    return () => {
+      clearTimeout(t1)
+      clearTimeout(t2)
+    }
+  }, [map])
+  return null
+}
 import {
   Search,
   Menu,
@@ -74,8 +88,13 @@ export default function AgenceScoreVente() {
   const [scoreMin, setScoreMin] = useState<number>(60)
   const [showHeatmap, setShowHeatmap] = useState(true)
 
-  // Welcome
-  const [welcomeOpen, setWelcomeOpen] = useState(true)
+  // Welcome — fermé par défaut, ouvre via bouton Menu (pour ne pas masquer la map)
+  const [welcomeOpen, setWelcomeOpen] = useState(false)
+  const [onboardingDismissed, setOnboardingDismissed] = useState(() =>
+    typeof window !== 'undefined'
+      ? localStorage.getItem('agence-onboarding-dismissed') === '1'
+      : false,
+  )
 
   // Search adresse
   const [addr, setAddr] = useState('')
@@ -159,8 +178,10 @@ export default function AgenceScoreVente() {
     setShowSuggestions(false)
     const [lng, lat] = f.geometry.coordinates
     setFlyTarget({ center: [lat, lng], zoom: 17 })
-    // Mode virtuel : pour l'instant on indique simplement à l'utilisateur de cliquer un marker proche
-    // (l'EF dpe-express-lookup peut être branchée Phase 16+ pour étude virtuelle complète)
+    setStudyError(
+      `Carte centrée sur ${f.properties.label}. Cliquez un marker rouge/orange proche pour voir son étude DPE complète.`,
+    )
+    setTimeout(() => setStudyError(null), 6000)
   }
 
   // === Click marker → étude prospect ===
@@ -191,8 +212,15 @@ export default function AgenceScoreVente() {
     }
   }
 
+  function dismissOnboarding() {
+    setOnboardingDismissed(true)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('agence-onboarding-dismissed', '1')
+    }
+  }
+
   return (
-    <div className="flex flex-col h-screen">
+    <div className="h-full flex flex-col">
       {/* === Topbar === */}
       <header className="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center gap-3 shadow-sm z-[1000]">
         <div className="flex items-center gap-2 shrink-0">
@@ -291,7 +319,43 @@ export default function AgenceScoreVente() {
       </div>
 
       {/* === Map === */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative min-h-0">
+        {/* Onboarding banner (3 étapes claires) — dismissible avec localStorage */}
+        {!onboardingDismissed && rows.length > 0 ? (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[800] max-w-2xl bg-white rounded-xl shadow-xl border border-orange-200 p-4 flex items-start gap-3">
+            <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+              <Flame size={16} className="text-orange-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-slate-800 mb-1">
+                Mode d'emploi en 3 étapes
+              </p>
+              <ol className="text-[12px] text-slate-700 space-y-0.5 leading-snug">
+                <li>
+                  <b className="text-orange-600">1.</b> Filtrez les biens (département, score
+                  min) via le bouton <b>Menu</b> en haut à droite
+                </li>
+                <li>
+                  <b className="text-orange-600">2.</b> <b>Cliquez un marker</b> sur la carte →
+                  fiche complète (DPE, scénarios, aides, isolation, DVF)
+                </li>
+                <li>
+                  <b className="text-orange-600">3.</b> Bouton <b>Claim ce lead</b> en bas de
+                  la fiche → exclusivité 30j
+                </li>
+              </ol>
+            </div>
+            <button
+              type="button"
+              onClick={dismissOnboarding}
+              className="shrink-0 text-slate-400 hover:text-slate-600 p-1"
+              aria-label="Fermer le mode d'emploi"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        ) : null}
+
         {(isLoading || loadingStudy) ? (
           <div className="absolute inset-0 flex items-center justify-center z-[999] bg-white/40 backdrop-blur-sm">
             <div className="bg-white rounded-2xl shadow-xl p-5 flex items-center gap-3">
@@ -321,8 +385,9 @@ export default function AgenceScoreVente() {
           center={BZH_CENTER}
           zoom={BZH_ZOOM}
           scrollWheelZoom
-          style={{ height: '100%', width: '100%' }}
+          style={{ height: '100%', width: '100%', position: 'absolute', inset: 0 }}
         >
+          <MapInvalidator />
           <TileLayer
             attribution='&copy; OpenStreetMap'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

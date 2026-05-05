@@ -35,7 +35,7 @@ export default function AgenceShell() {
   }
 
   return (
-    <div className="min-h-screen flex bg-slate-50">
+    <div className="h-screen flex bg-slate-50 overflow-hidden">
       {/* Sidebar desktop — slate dark + accent orange */}
       <aside className="hidden lg:flex flex-col w-64 sticky top-0 h-screen bg-slate-900 text-white">
         {/* Brand block */}
@@ -107,9 +107,9 @@ export default function AgenceShell() {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Header mobile */}
-        <header className="lg:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+        <header className="lg:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30 shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-md bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
               <Flame size={14} className="text-white" />
@@ -119,7 +119,7 @@ export default function AgenceShell() {
           <NotificationBell />
         </header>
 
-        <main className="flex-1 overflow-x-hidden">
+        <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
           <Outlet />
         </main>
 
