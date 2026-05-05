@@ -46,13 +46,32 @@
   brh_agence_progression.bonus_leads_unlocked + reward_leads
 - Sidebar agence 8 → 9 entrées
 
-#### 5. Page admin validation posts sociaux (commit en cours)
+#### 5. Page admin validation posts sociaux (commit f13c14a)
 - Page `/admin/agence-social-posts` (AdminGuard)
 - 4 KPI cards : total / en attente / validées / leads crédités
 - Filtres status + boutons Valider/Refuser inline
 - Modal motif refus
 - Validation déclenche le trigger SQL → leads bonus crédités auto à l'agence
 - Sidebar AdminShell 19 → 20 entrées
+
+#### 6. Parrainage agences — recrutement 1-niveau (commit 57a532a)
+- Migration `brh_agence_referrals` : colonne `referred_by_agence_id` sur `brh_agences_immo` + table `brh_agence_referral_commissions` + trigger SQL `brh_agence_referral_commission_trigger` (AFTER INSERT/UPDATE sur `brh_partner_contracts`) qui crédite 100 € HT au parrain dès qu'une charte parrainée passe `active`.
+- Page `/agence/parrainage` : 3 KPI cards (parrainées / commissions gagnées / commission par parrainage), lien `/inscription/agence?ref=<agenceId>` + 3 boutons share (WhatsApp / Email / LinkedIn), tables agences parrainées + commissions.
+- API `agence-referrals.ts` + hooks `useMyReferralCommissions` / `useMyReferred`.
+- `InscriptionAgencePage` capture `?ref=` (regex UUID v4) → save `referred_by_agence_id` à la création de l'agence.
+- Sidebar agence 9 → 10 entrées (icône Network — "Mon réseau").
+- ON CONFLICT DO NOTHING sur la commission (idempotent).
+
+#### 7. Mes employés agence — permissions JSONB (commit en cours)
+- Migration `brh_agence_members` : table équipe agence (signer + employees), permissions JSONB miroir de `brh_company_members`.
+- Trigger `brh_agence_signer_to_member` : auto-ajoute le signer comme `member_role='signer'` quand un partner_contract agence devient `active`. Seed historique inclus.
+- 3 helpers SECURITY DEFINER (search_path='') : `brh_user_has_agence_access()`, `brh_user_belongs_to_agence(agence_id)`, `brh_user_is_signer_of_agence(agence_id)`. Remplacent progressivement `brh_user_is_active_agence_signer` dans les RLS.
+- 3 RPC SECURITY DEFINER : `brh_agence_invite_employee(email, perms)`, `brh_agence_set_member_permissions(member_id, perms)`, `brh_agence_remove_member(member_id)`. Validation : caller doit être signer actif de l'agence cible.
+- 5 permissions reconnues : `canManageLeads`, `canSimulate`, `canShareSocial`, `canViewCommissions`, `canManageTeam`.
+- Élargissement RLS SELECT : `brh_score_vente_v1`, `brh_lead_assignments` (SELECT+UPDATE), `brh_dpe_prospects`, `brh_agences_immo`, `brh_prospect_studies` → désormais visibles aux employés (pas seulement au signer).
+- Page `/agence/equipe` : liste membres avec badges signer/employé, toggles permissions inline, modal invitation par email d'un compte BRH existant, retrait avec confirmation.
+- Sidebar agence 10 → 11 entrées (icône Users — "Mon équipe").
+- Anti-bug : #5 throw, #6 guards, #8 pas de USING(true), #11 TIMESTAMPTZ, #12 search_path=''.
 
 ### 14 règles anti-bug respectées
 
@@ -70,8 +89,8 @@
 - Vercel Production deploy : ✅ auto à chaque push main
 
 ### Status restant Phase 16.1
-- ❌ Recrutement nouvelles agences (multi-niveaux pyramidal — Priorité 2)
-- ❌ Mes employés agence (permissions JSONB granulaires — Priorité 3)
+- ✅ Recrutement nouvelles agences (Step 6, commit 57a532a — modèle 1-niveau, 100 € HT/charte)
+- ✅ Mes employés agence (Step 7 — permissions JSONB granulaires, 5 permissions, RLS élargie)
 - ❌ QR code agence personnalisé (vitrine, cartes visite — Priorité 4)
 - ❌ Messages agence (chat BRH / artisans assignés — Priorité 5)
 
