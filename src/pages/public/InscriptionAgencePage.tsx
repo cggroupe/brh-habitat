@@ -11,7 +11,7 @@
  * Pour MVP démo : signature auto-active (status='active'). En prod, statut
  * pending_email + token 2FA à confirmer (Phase 16.0.7b futur).
  */
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Building2,
@@ -68,6 +68,14 @@ export default function InscriptionAgencePage() {
   const [step, setStep] = useState<Step>(1)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Lien de parrainage `?ref=<agence_id>` — récupéré au mount
+  const referrerAgenceId = useMemo(() => {
+    if (typeof window === 'undefined') return null
+    const params = new URLSearchParams(window.location.search)
+    const ref = params.get('ref')
+    return ref && /^[0-9a-f-]{36}$/i.test(ref) ? ref : null
+  }, [])
 
   const [siret, setSiret] = useState('')
   const [siretData, setSiretData] = useState<SiretData | null>(null)
@@ -161,6 +169,8 @@ export default function InscriptionAgencePage() {
       const userId = signupData.user.id
 
       // 2. Crée la fiche agence_immo (status='partenaire' immédiat car charte signée)
+      //    Si l'utilisateur est arrivé via un lien de parrainage `?ref=<agence_id>`,
+      //    on capture l'agence parrain → trigger SQL crée la commission auto.
       const { data: agence, error: agenceErr } = await supabase
         .from('brh_agences_immo')
         .insert({
@@ -174,6 +184,7 @@ export default function InscriptionAgencePage() {
           commune: siretData.commune,
           departement: siretData.departement,
           status: 'partenaire',
+          referred_by_agence_id: referrerAgenceId,
         })
         .select('id')
         .single()

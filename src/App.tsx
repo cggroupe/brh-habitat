@@ -119,6 +119,7 @@ const AgenceContributions = lazy(() => import('@/pages/agence/AgenceContribution
 const AgenceProgression = lazy(() => import('@/pages/agence/AgenceProgression'))
 const AgenceSimulateur = lazy(() => import('@/pages/agence/AgenceSimulateur'))
 const AgenceSocial = lazy(() => import('@/pages/agence/AgenceSocial'))
+const AgenceParrainage = lazy(() => import('@/pages/agence/AgenceParrainage'))
 
 // Phase 17 — PWA install prompt (non-lazy, léger)
 import { InstallPwaPrompt } from '@/components/pwa/InstallPwaPrompt'
@@ -232,6 +233,7 @@ export default function App() {
                 <Route path="/agence/contributions" element={<AgenceContributions />} />
                 <Route path="/agence/progression" element={<AgenceProgression />} />
                 <Route path="/agence/reseaux-sociaux" element={<AgenceSocial />} />
+                <Route path="/agence/parrainage" element={<AgenceParrainage />} />
                 <Route path="/agence/abonnement" element={<AgenceAbonnement />} />
                 <Route path="/agence/profil" element={<AgenceProfil />} />
               </Route>
