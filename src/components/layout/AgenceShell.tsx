@@ -15,6 +15,7 @@ import {
   Handshake,
   Award,
   Sparkles,
+  Share2,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -27,6 +28,7 @@ const AGENCE_NAV = [
   { to: '/agence/score-vente', label: 'Score Vente', icon: Flame },
   { to: '/agence/leads', label: 'Mes leads', icon: ClipboardList },
   { to: '/agence/contributions', label: 'Apporter prospect', icon: Handshake },
+  { to: '/agence/reseaux-sociaux', label: 'Réseaux sociaux', icon: Share2 },
   { to: '/agence/progression', label: 'Ma progression', icon: Award },
   { to: '/agence/abonnement', label: 'Abonnement', icon: CreditCard },
   { to: '/agence/profil', label: 'Mon agence', icon: Building2 },
