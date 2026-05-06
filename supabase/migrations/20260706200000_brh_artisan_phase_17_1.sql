@@ -528,11 +528,13 @@ CREATE OR REPLACE FUNCTION public.brh_get_public_artisan(p_artisan_id UUID)
 RETURNS TABLE (
   id UUID,
   nom_entreprise TEXT,
-  ville TEXT,
+  commune TEXT,
   code_postal CHAR(5),
   departement CHAR(2),
-  certifications JSONB,
-  score_qualite NUMERIC,
+  rge_certifications JSONB,
+  geste_specialites TEXT[],
+  score_qualite SMALLINT,
+  nombre_chantiers_brh INTEGER,
   tier TEXT
 )
 LANGUAGE sql
@@ -543,11 +545,13 @@ AS $$
   SELECT
     a.id,
     a.nom_entreprise,
-    a.ville,
+    a.commune,
     a.code_postal,
     a.departement,
-    a.certifications,
+    a.rge_certifications,
+    a.geste_specialites,
     a.score_qualite,
+    a.nombre_chantiers_brh,
     coalesce(p.tier, 'bronze')
   FROM public.brh_artisans_rge a
   LEFT JOIN public.brh_artisan_progression p ON p.artisan_id = a.id
