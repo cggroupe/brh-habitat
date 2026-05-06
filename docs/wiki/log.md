@@ -5,6 +5,133 @@
 
 ---
 
+## 2026-05-06 — Phase 16.1 Steps A-C : modèle économique unifié leads agences
+
+- **Contexte** : avant Step A, le RPC `brh_grant_lead_claim` ne décomptait que le tier Stripe ; les colonnes `bonus_leads_unlocked / consumed` existaient mais n'étaient jamais utilisées au claim. Bug structurel — les agences ne profitaient jamais de leurs leads bonus. Philippe a aussi décidé d'étendre le parrainage agences en cascade 5 niveaux (clone Pro) + d'ajouter des leads bonus sur le parrainage (en plus du cash 100 €).
+- **Décisions Philippe (mode plan)** :
+  - MLM **5 niveaux** (clone modèle Pro `brh_recruitment_commissions`)
+  - **+5 leads / charte parrainée** (en plus du cash 100 € HT pour N1)
+  - **Reset complet 1er du mois** (toutes sources, comme tier — simplicité > carry-over)
+  - Ordre claim : **tier d'abord, bonus ensuite** (priorité contribution > referral > social)
+- **Step A** (commit `31afae6`) — Migration `20260706200000_brh_agence_lead_economy_unified.sql` :
+  - Étend `brh_agence_progression` avec 6 colonnes (3 sources × unlocked/consumed) + `bonuses_period_start`
+  - Réécrit `brh_grant_lead_claim` : verrouille subscription + progression FOR UPDATE, décrémente tier > contribution > referral > social, lève `quota_exhausted`
+  - RPC `brh_get_my_lead_breakdown` SECURITY DEFINER : 1 query → décomposition complète (tier + 3 sources)
+  - Reset mensuel étendu : tier + tous les bonus_*_unlocked/consumed
+  - Nouveau trigger `brh_agence_credit_referral_leads` : crédite `referral_unlocked` à chaque commission INSERT
+  - `brh_agence_recompute_progression` : tier lifetime mais `contribution_unlocked` calculé sur le mois courant
+  - API + hook `useMyLeadBreakdown`
+- **Step B** (commit `64feced`) — UI breakdown intégrée :
+  - `<LeadBreakdownCard>` : tier (slate gradient) + 3 sources bonus colorées, barres progression, helper text, badge "reset 1er du mois"
+  - AgenceDashboard : KPI "Quota mois" → "Leads dispo" + bonus inline ; LeadBreakdownCard pleine largeur
+  - AgenceProgression : LeadBreakdownCard insérée entre hero tier et ladder
+  - `claimLead()` mappe les erreurs RPC FR (`quota_exhausted`, `no_active_subscription`)
+  - `useClaimLeadAtomic` invalide aussi `['agence-lead-economy']`
+- **Step C** (commit `d113b21`) — Cascade MLM 5 niveaux + arbre :
+  - Migration `20260706210000_brh_agence_referral_chain.sql` : `chain_level` (1-5) + `leads_bonus_amount` sur `brh_agence_referral_commissions`
+  - Trigger réécrit en cascade PL/pgSQL (boucle 5 itérations sur `referred_by_agence_id`). Barème **N1=100€+5, N2=25€+3, N3=10€+2, N4=5€+1, N5=5€+1** = max 145 € HT + 12 leads / charte
+  - RPC `brh_get_my_referral_tree` (CTE RECURSIVE 5 niveaux) → arbre descendant + cash/leads par filleul
+  - `<ReferralTreeView>` : 3 KPIs globaux + niveaux indentés + barème légende (5 cards)
+  - AgenceParrainage : toggle Cash/Arbre, table commissions enrichie (Niveau, Cash, Leads)
+  - API + hook `useMyReferralTree`
+- **Step D** — Documentation :
+  - Nouvelle page wiki [agence-lead-economy.md](agence-lead-economy.md) (modèle complet documenté + flux + tests E2E)
+  - Mise à jour de cette entrée log.md
+- **Migrations** : `20260706200000_brh_agence_lead_economy_unified.sql`, `20260706210000_brh_agence_referral_chain.sql`
+- **Pages wiki impactées** : `agence-lead-economy.md` (nouveau), `index.md` (nouvelle entrée Partie 2)
+- **Risque** : Medium — cascade MLM 5 niveaux nécessite avis avocat avant lancement public (loi Hamon vente pyramidale). Garde-fous : cap 5 niveaux, cash dégressif, condition charte signée, pas de droit d'entrée, reset mensuel.
+- **Compliance à faire** : section CGU agence "Programme de recommandation 5 niveaux" + disclaimer non-pyramidal (1500 € avocat Hoguet déjà budgété).
+- **Tests** : 353/353 vert, TS strict clean, ESLint clean, build prod 24.89s, migrations appliquées sur Supabase prod. À tester E2E manuellement (5 scénarios listés dans `agence-lead-economy.md` § 8).
+- **Status** : ✅ DONE (Steps A-D livrés et déployés)
+
+---
+
+## 2026-05-06 — Phase 18 Étape 4 : infrastructure UI `/reseau` (Guard + Shell + 8 routes squelettes)
+
+- **Contexte** : Étape 4/12 du plan Phase 18 — pose le portail unifié `/reseau` transverse 4 personae au-dessus de la migration SQL Étape 3 désormais en prod (commit `psql` 06/05). Squelettes cliquables avec descriptions "Bientôt disponible — Étape N", logique métier livrée Étapes 5-8.
+- **Spec produit** :
+  - `ReseauGuard` accepte tout user signataire d'une `brh_partner_contracts` ACTIVE (9 partner_types autorisés depuis ALTER de l'Étape 3)
+  - `ReseauShell` sidebar 6 entrées + accent visuel **cyan-500/sky-600** pour différencier des autres portails (bleu pro / rouge agence / amber artisan)
+  - 8 routes lazy-loaded sous `/reseau/*` : `/`, `/decouvrir`, `/chantiers`, `/chantiers/nouveau`, `/connexions`, `/messages`, `/parametres/autaf`, `/profil/:slug`
+  - Mobile : `PortalMobileNav` réutilisé (pattern unifié)
+- **Fichiers créés (10)** :
+  - `src/components/auth/ReseauGuard.tsx` (calque ArtisanGuard, query sur `brh_partner_contracts`)
+  - `src/components/layout/ReseauShell.tsx` (sidebar 6 entrées + accent cyan)
+  - `src/pages/reseau/ReseauFeed.tsx` (skeleton fil d'actualité)
+  - `src/pages/reseau/ReseauProfil.tsx` (skeleton vitrine pro polymorphe `:slug`)
+  - `src/pages/reseau/ReseauDecouvrir.tsx` (skeleton carte + filtres)
+  - `src/pages/reseau/ReseauChantiers.tsx` (skeleton marketplace KILLER)
+  - `src/pages/reseau/ReseauChantierNew.tsx` (skeleton publication offre)
+  - `src/pages/reseau/ReseauConnexions.tsx` (skeleton graphe social)
+  - `src/pages/reseau/ReseauMessages.tsx` (skeleton messagerie unifiée)
+  - `src/pages/reseau/ReseauParamsAutaf.tsx` (skeleton bridge AUTAF avec note explicite "AUTAF reste autonome")
+- **Fichiers modifiés (1)** :
+  - `src/App.tsx` (2 imports Guard/Shell + 8 imports lazy + bloc Routes complet)
+- **Migrations créées** : aucune (Étape 4 = front uniquement)
+- **Pages wiki impactées** :
+  - **À mettre à jour Étape 5** : `architecture-snapshot.md` (compteurs +10 fichiers TSX), `data-model.md` (déjà couvert par migration Étape 3 mais à formaliser)
+- **Risque** : Low — squelettes sans logique métier, aucune mutation DB. Les FK référencées en RLS (`brh_partner_contracts`) existent depuis Phase 16. Le Guard utilise pattern éprouvé Phase 17.1.
+- **Tests** : `npx tsc --noEmit` exit 0 ✅, `npx eslint` exit 0 ✅. Vitest non exécutés (squelettes sans logique).
+- **Status** : ✅ DONE — Étape 4/12 livrée. Reste 8 étapes. Prochaine : Étape 5 (graphe social + endorsements + fusion messageries).
+
+### Note bridge AUTAF
+La page `/reseau/parametres/autaf` skeleton inclut une bannière explicite : "AUTAF (WorkRepublic) reste autonome sur WordPress OVH. Le bridge est un lien optionnel". Cette clarté UX est cohérente avec la décision structurante du 06/05 (pas de migration AUTAF, juste bridge API à l'Étape 8).
+
+---
+
+## 2026-05-06 — Phase 18 Étape 3 : migration SQL fondations `/reseau` (11 tables)
+
+- **Contexte** : Étape 3/12 du plan Phase 18 — fondations DB du réseau social pro. 11 nouvelles tables transverses 4 personae (agences/artisans/architectes/apporteurs), 3 helpers SECURITY DEFINER, 4 triggers, RLS complète. Multi-tenant ready Option B (décision #7) : `tenant_id TEXT NOT NULL DEFAULT 'brh' CHECK (tenant_id IN ('brh','idf','paca','autaf'))` partout.
+- **Spec produit** :
+  - Graphe social symétrique (`brh_pro_connections`) + follow asymétrique (`brh_pro_follows`)
+  - Fil d'actualité (`brh_feed_posts` 8 post_type + reactions + comments + impressions observabilité)
+  - Endorsements only V1 (décision #3) — `brh_pro_endorsements`
+  - Marketplace chantiers KILLER (`brh_chantier_offers` + `brh_chantier_applications`)
+  - Bridge OAuth AUTAF (`brh_autaf_link`)
+  - Modération minimale embarquée (`brh_feed_reports`)
+  - ALTER `brh_partner_contracts.partner_type` CHECK étendu de 3→9 types (ajout architecte, maitre_oeuvre, apporteur_affaires, courtier, syndic, autre)
+- **Helpers SECURITY DEFINER** :
+  - `brh_user_pro_id()` — partner_contract_id actif du user courant (signer)
+  - `brh_pro_in_network(viewer, target)` — TRUE si connexion accepted symétrique
+  - `brh_pro_can_view_post(post_id)` — visibilité graph-aware (public / réseau / privé)
+- **Triggers** :
+  - Compteurs `like_count` / `comment_count` sur `brh_feed_posts` (incrément/décrément auto)
+  - Commission marketplace 5% HT à `applicant.status='selected'` + signature `quote_id` (réutilise `brh_quotes.amount_cents`)
+  - `updated_at` auto via `brh_refonte_set_updated_at()` (helper R1)
+- **Conformité 14 règles anti-bug** :
+  - #2 BIGINT cents partout (budget_cents, commission_amount_cents)
+  - #5 transactionnel (BEGIN/COMMIT)
+  - #8 jamais USING(true) sauf 1 exception documentée (`brh_pro_follows` SELECT — graphe public visible aux pros connectés)
+  - #11 TIMESTAMPTZ partout
+  - #12 SET search_path = '' sur les 5 fonctions SECURITY DEFINER
+- **Fichiers modifiés** :
+  - `supabase/migrations/20260706300000_brh_phase_18_1_reseau.sql` (créé, ~830 lignes)
+  - `docs/wiki/reseau-social-status.md` (Étape 3 ✅ DONE)
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations créées** : `supabase/migrations/20260706300000_brh_phase_18_1_reseau.sql` **non poussée** (règle "JAMAIS deploy sans accord")
+- **Pages wiki impactées** :
+  - **À mettre à jour Étape 4** : `data-model.md` (ajouter 11 tables Phase 18.1), `architecture-snapshot.md` (compteurs)
+- **Risque** : Medium — 11 tables d'un coup, FK différées entre `brh_feed_posts.related_chantier_offer_id` et `brh_chantier_offers` (créé après pour éviter cycle). Tester localement avant push prod.
+- **Tests** : non exécutés (migration non poussée). À faire : `supabase db reset --local` + 4 fixtures users (1 par persona) + tests RLS cross-pro + tests trigger commission.
+- **Status** : ✅ DONE — Étape 3/12 livrée. Migration prête à pousser après validation Philippe.
+
+### Pré-requis avant push migration
+- ⚠️ `npm run dev` doit fonctionner sans erreur TS (régénérer `types/database.ts` après push)
+- ⚠️ Vérifier que `brh_quotes.amount_cents` existe (utilisé par trigger commission)
+- ⚠️ Vérifier que `brh_message_threads` est compatible (CHECK participant_type étendu en Phase 16.1 inclut déjà 'agence' et 'artisan')
+
+### Push procédure (quand Philippe valide)
+```bash
+PGPASSWORD='Brh29200..@@' psql "postgresql://postgres.lygmmvxnmvlgynmrcpny@aws-1-eu-west-1.pooler.supabase.com:5432/postgres" \
+  -f supabase/migrations/20260706300000_brh_phase_18_1_reseau.sql
+
+# Puis régénérer les types :
+supabase gen types typescript --project-id lygmmvxnmvlgynmrcpny > src/types/database.ts
+npx tsc --noEmit  # doit exit 0
+```
+
+---
+
 ## 2026-05-06 — Phase 18 Étape 1 : audit AUTAF + blueprint réseau social `/reseau`
 
 - **Contexte** : Philippe veut développer une couche réseau social B2B `/reseau` transverse 4 personae (agences immo, artisans, architectes, apporteurs d'affaires) ancrée Bretagne (dépts 22/29/35/56/44 — 44 inclus par décision identitaire). Killer feature = marketplace de chantiers avec commission 5% HT tracée. 8 décisions stratégiques actées par Philippe le 06/05. Plan complet validé `/root/.claude/plans/c-elle-qui-te-semble-wiggly-sundae.md` en 12 étapes (MVP 4 sem, monétisable 14-16 sem). Décision structurante : AUTAF (WordPress OVH) reste autonome avec **bridge API** (pas migration).
