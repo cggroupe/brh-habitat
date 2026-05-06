@@ -90,11 +90,14 @@ export const agenceSubscriptionsApi = {
 
   /**
    * Claim atomique d'un lead via RPC SQL.
-   * Phase 16.1 Step A : décrémente d'abord le tier, puis bonus
-   * (contribution > referral > social). Lève `quota_exhausted` si toutes
-   * sources à zéro. Mappage erreur FR via `mapClaimError`.
+   * Phase 16.1 : décrémente tier > contribution > referral > social.
+   * Lève `quota_exhausted` si toutes sources à zéro.
+   * Retourne `{ assignmentId, consumedFrom }` pour toast UI explicite.
    */
-  async claimLead(prospectId: number, agenceId: string): Promise<string> {
+  async claimLead(
+    prospectId: number,
+    agenceId: string,
+  ): Promise<{ assignmentId: string; consumedFrom: 'tier' | 'contribution' | 'referral' | 'social' }> {
     const { data, error } = await supabase.rpc('brh_grant_lead_claim', {
       p_agence_id: agenceId,
       p_prospect_id: prospectId,
@@ -103,6 +106,10 @@ export const agenceSubscriptionsApi = {
       const { mapClaimError } = await import('./agence-lead-economy')
       throw mapClaimError(error)
     }
-    return data as string
+    const row = Array.isArray(data) ? data[0] : data
+    return {
+      assignmentId: row.assignment_id as string,
+      consumedFrom: row.consumed_from as 'tier' | 'contribution' | 'referral' | 'social',
+    }
   },
 }

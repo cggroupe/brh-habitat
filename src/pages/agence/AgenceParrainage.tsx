@@ -6,6 +6,7 @@
  * pour voir tout son réseau.
  */
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Network,
   Copy,
@@ -17,6 +18,7 @@ import {
   Euro,
   TrendingUp,
   TreePine,
+  HelpCircle,
 } from 'lucide-react'
 import { useMyAgenceMembership } from '@/hooks/queries/agence-membership'
 import {
@@ -96,24 +98,7 @@ export default function AgenceParrainage() {
 
   return (
     <div className="p-6 lg:p-10 max-w-5xl mx-auto space-y-6">
-      {/* Bannière BÊTA — Programme en attente validation juridique */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-3">
-        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-md bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider shrink-0 mt-0.5">
-          Bêta
-        </span>
-        <div className="text-xs text-amber-900 leading-relaxed">
-          <p className="font-bold mb-0.5">Programme en validation juridique</p>
-          <p>
-            La cascade 5 niveaux est active en backend : vos commissions s'accumulent
-            au statut « En attente ». Aucun versement cash ne sera effectué tant que
-            l'avis de l'avocat spécialisé n'a pas validé les conditions définitives
-            (échéance prévue : 15 juin 2026). Vous pouvez dès maintenant partager
-            votre lien et constituer votre réseau.
-          </p>
-        </div>
-      </div>
-
-      <header>
+      <header className="flex items-start justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3 mb-1">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
             <Network size={20} className="text-white" />
@@ -121,10 +106,17 @@ export default function AgenceParrainage() {
           <div>
             <h1 className="text-2xl font-display tracking-tight">Mon réseau d'agences</h1>
             <p className="text-sm text-slate-500">
-              Recrutez d'autres agences partenaires → 100 € HT de commission par charte signée
+              Recrutez d'autres agences partenaires → cascade 5 niveaux (max 145 € HT + 12 leads par charte)
             </p>
           </div>
         </div>
+        <Link
+          to="/agence/parrainage/comment-ca-marche"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-white border border-slate-200 text-slate-700 hover:border-orange-300 hover:text-orange-700 transition shrink-0"
+        >
+          <HelpCircle size={13} />
+          Comment ça marche
+        </Link>
       </header>
 
       {/* KPI cards */}

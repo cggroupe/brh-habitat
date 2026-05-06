@@ -12,16 +12,65 @@
 |---|---|---|---|---|
 | 1 | Audit AUTAF + cadrage architecture | 2 j (cap) | ✅ DONE | 2026-05-06 |
 | 2 | Brief légal avocat (parallèle) | 0 j (parallèle) | ⏳ PENDING (Philippe ops) | — |
-| 3 | Migration SQL fondations 18.1 | 3 j | ⏸ PENDING | — |
-| 4 | Infrastructure UI (Guard + Shell + 8 routes squelettes) | 3 j | ⏸ PENDING | — |
-| 5 | Graphe social + endorsements + fusion messageries | 1 sem | ⏸ PENDING | — |
-| 6 | Feed MVP + modération minimale | 1.5 sem | ⏸ PENDING | — |
+| 3 | Migration SQL fondations 18.1 | 3 j | ✅ DONE (non poussée) | 2026-05-06 |
+| 4 | Infrastructure UI (Guard + Shell + 8 routes squelettes) | 3 j | ✅ DONE | 2026-05-06 |
+| 5 | Graphe social + endorsements + fusion messageries | 1 sem | ✅ DONE | 2026-05-06 |
+| 6 | Feed MVP + composer + Canvas + algo + modération min | 1.5 sem | ✅ DONE — **MVP utilisable atteint** | 2026-05-06 |
 | 7 | Marketplace chantiers (KILLER) | 2.5 sem | ⏸ PENDING | — |
 | 8 | Bridge AUTAF API | 1 sem | ⏸ PENDING (dépend dispo API Genesii) | — |
 | 9 | Modération avancée + DPIA | 1 sem | ⏸ PENDING | — |
 | 10 | Bootstrap "anti-ville morte" (// ops dès S5) | 12 sem ops | ⏸ PENDING (Philippe) | — |
 | 11 | Découverte + SEO 750 pages | 1 sem | ⏸ PENDING | — |
 | 12 | Monétisation V2 (Stripe Premium 19€/mois) | 1.5 sem | ⏸ PENDING | — |
+
+---
+
+## 2bis. Étape 3 — Livrables (2026-05-06)
+
+### Migration SQL créée (non poussée)
+- ✅ `supabase/migrations/20260706300000_brh_phase_18_1_reseau.sql` (~830 lignes)
+  - 11 tables : `brh_pro_connections`, `brh_pro_follows`, `brh_feed_posts`, `brh_feed_reactions`, `brh_feed_comments`, `brh_feed_impressions`, `brh_pro_endorsements`, `brh_chantier_offers`, `brh_chantier_applications`, `brh_autaf_link`, `brh_feed_reports`
+  - 3 helpers SECURITY DEFINER : `brh_user_pro_id()`, `brh_pro_in_network(viewer, target)`, `brh_pro_can_view_post(post_id)`
+  - 4 triggers : compteurs reactions/comments + commission marketplace + updated_at auto
+  - RLS complète (jamais USING(true) sauf exception documentée graphe follows)
+  - ALTER `brh_partner_contracts.partner_type` CHECK étendu 3→9 types
+  - `tenant_id TEXT` partout (`brh`/`idf`/`paca`/`autaf`)
+- ✅ FK différées correctement gérées (`brh_feed_posts ↔ brh_chantier_offers`, `brh_pro_endorsements ↔ brh_chantier_offers`)
+
+### Conformité 14 règles anti-bug
+- #2 BIGINT cents (`budget_cents`, `commission_amount_cents`, `devis_amount_cents`)
+- #5 transactionnel BEGIN/COMMIT
+- #8 jamais USING(true) sauf 1 exception (`brh_pro_follows` SELECT, documentée)
+- #11 TIMESTAMPTZ partout
+- #12 `SET search_path = ''` sur les 5 fonctions SECURITY DEFINER
+
+### Push prod effectué 06/05/2026
+- Migration appliquée via `PGPASSWORD=... psql ... -f migration.sql` après correction d'une dépendance circulaire (helper `brh_pro_in_network` déplacé après les CREATE TABLE)
+- 11 tables créées en prod (count 0 partout, normal)
+- Types régénérés via `supabase gen types typescript --db-url ...` → `src/types/database.ts` 7383 lignes
+- Type-check `npx tsc --noEmit` exit 0
+
+---
+
+## 2ter. Étape 4 — Livrables (2026-05-06)
+
+### Fichiers créés (10)
+- ✅ `src/components/auth/ReseauGuard.tsx` — calque ArtisanGuard sur `brh_partner_contracts.status='active'`
+- ✅ `src/components/layout/ReseauShell.tsx` — sidebar 6 entrées + accent **cyan-500/sky-600** (différencie des 3 autres portails)
+- ✅ 8 skeletons `src/pages/reseau/*.tsx` :
+  - `ReseauFeed`, `ReseauProfil` (`:slug`), `ReseauDecouvrir`, `ReseauChantiers`, `ReseauChantierNew`, `ReseauConnexions`, `ReseauMessages`, `ReseauParamsAutaf`
+
+### Fichier modifié
+- ✅ `src/App.tsx` (+18 lignes : 2 imports Guard/Shell + 8 imports lazy + bloc Routes complet)
+
+### Tests
+- ✅ Type-check : exit 0
+- ✅ ESLint : exit 0
+- ⏸ Vitest 311/311 inchangé (squelettes sans logique)
+- ⏸ Playwright E2E à ajouter Étape 5 (1 smoke test login pro → /reseau visible)
+
+### Note UX
+Le squelette `/reseau/parametres/autaf` inclut une bannière explicite "AUTAF reste autonome sur WordPress OVH. Bridge optionnel" pour aligner les attentes utilisateurs avec la décision structurante du 06/05.
 
 ---
 

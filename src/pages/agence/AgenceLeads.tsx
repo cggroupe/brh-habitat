@@ -31,6 +31,7 @@ import { scoreVenteApi } from '@/api/score-vente'
 import type { ContactOutcome, AssignmentStatus, LeadAssignment } from '@/api/lead-assignments'
 import { ProspectStudyPanel, type ProspectStudy } from '@/components/agence/ProspectStudyPanel'
 import { useSimulationsForLead } from '@/hooks/queries/agence-simulations'
+import LeadBreakdownCard from '@/components/agence/LeadBreakdownCard'
 
 const STATUS_LABELS: Record<AssignmentStatus, string> = {
   active: 'À traiter',
@@ -163,6 +164,9 @@ export default function AgenceLeads() {
           </div>
         </div>
       </header>
+
+      {/* Décomposition leads disponibles */}
+      <LeadBreakdownCard />
 
       {/* Search */}
       <div className="relative">

@@ -108,35 +108,9 @@ COMMENT ON FUNCTION public.brh_user_pro_id() IS
   'Phase 18.1 — partner_contract_id actif du user courant. NULL si pas pro. Utilisé par toutes les RLS du portail /reseau.';
 
 -- ============================================================================
--- 2. Helper SECURITY DEFINER : brh_pro_in_network(viewer, target)
--- ----------------------------------------------------------------------------
--- TRUE si une connexion 'accepted' existe entre les 2 pros (symétrique).
+-- 2. (réservé) — voir section 5 : helpers qui dépendent des nouvelles tables
+--    sont créés APRÈS les CREATE TABLE pour éviter les dépendances circulaires.
 -- ============================================================================
-
-CREATE OR REPLACE FUNCTION public.brh_pro_in_network(p_viewer UUID, p_target UUID)
-RETURNS BOOLEAN
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = ''
-AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM public.brh_pro_connections c
-    WHERE c.status = 'accepted'
-      AND (
-        (c.requester_pro_id = p_viewer AND c.recipient_pro_id = p_target)
-        OR
-        (c.requester_pro_id = p_target AND c.recipient_pro_id = p_viewer)
-      )
-  );
-$$;
-
-GRANT EXECUTE ON FUNCTION public.brh_pro_in_network(UUID, UUID)
-  TO authenticated, service_role;
-
-COMMENT ON FUNCTION public.brh_pro_in_network(UUID, UUID) IS
-  'Phase 18.1 — TRUE si 2 pros ont une connexion accepted (symétrique).';
 
 -- ============================================================================
 -- 3. Tables — créées AVANT les RLS qui les référencent
@@ -601,11 +575,46 @@ ALTER TABLE brh_pro_endorsements
   REFERENCES brh_chantier_offers(id) ON DELETE SET NULL;
 
 -- ============================================================================
--- 5. Helper SECURITY DEFINER : brh_pro_can_view_post(post_id)
+-- 5. Helpers SECURITY DEFINER qui dépendent des nouvelles tables
 -- ----------------------------------------------------------------------------
--- Encapsule la logique de visibilité graph-aware utilisée par RLS SELECT.
+-- Ces 2 helpers référencent les tables créées en section 3 (brh_pro_connections,
+-- brh_feed_posts). Ils doivent donc être déclarés APRÈS pour éviter les
+-- dépendances circulaires.
 -- ============================================================================
 
+-- ----------------------------------------------------------------------------
+-- 5.1 brh_pro_in_network(viewer, target)
+-- TRUE si une connexion 'accepted' existe entre les 2 pros (symétrique).
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.brh_pro_in_network(p_viewer UUID, p_target UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.brh_pro_connections c
+    WHERE c.status = 'accepted'
+      AND (
+        (c.requester_pro_id = p_viewer AND c.recipient_pro_id = p_target)
+        OR
+        (c.requester_pro_id = p_target AND c.recipient_pro_id = p_viewer)
+      )
+  );
+$$;
+
+GRANT EXECUTE ON FUNCTION public.brh_pro_in_network(UUID, UUID)
+  TO authenticated, service_role;
+
+COMMENT ON FUNCTION public.brh_pro_in_network(UUID, UUID) IS
+  'Phase 18.1 — TRUE si 2 pros ont une connexion accepted (symétrique).';
+
+-- ----------------------------------------------------------------------------
+-- 5.2 brh_pro_can_view_post(post_id) — visibilité graph-aware
+-- Encapsule la logique de visibilité utilisée par RLS SELECT.
+-- ----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.brh_pro_can_view_post(p_post_id UUID)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
@@ -734,7 +743,7 @@ SET search_path = ''
 AS $$
 DECLARE
   v_offer RECORD;
-  v_quote RECORD;
+  v_quote RECORD;  -- {id, amount}
 BEGIN
   -- Cas 1 : application passe à 'selected' → snapshot commission
   IF TG_OP = 'UPDATE' AND NEW.status = 'selected' AND OLD.status <> 'selected' THEN
@@ -749,15 +758,16 @@ BEGIN
   END IF;
 
   -- Cas 2 : application reçoit un quote_id signé → calcul commission
+  -- NOTE : brh_quotes.amount est INTEGER cents (convention historique sans suffix _cents)
   IF TG_OP = 'UPDATE' AND NEW.quote_id IS NOT NULL
      AND (OLD.quote_id IS NULL OR OLD.quote_id <> NEW.quote_id) THEN
-    SELECT id, amount_cents
+    SELECT id, amount
     INTO v_quote
     FROM public.brh_quotes
     WHERE id = NEW.quote_id;
 
     IF v_quote.id IS NOT NULL AND NEW.commission_pct_snapshot IS NOT NULL THEN
-      NEW.commission_amount_cents := (v_quote.amount_cents * NEW.commission_pct_snapshot) / 100;
+      NEW.commission_amount_cents := (v_quote.amount::BIGINT * NEW.commission_pct_snapshot) / 100;
       NEW.commission_status := 'pending';
     END IF;
   END IF;

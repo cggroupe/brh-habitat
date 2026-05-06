@@ -15,6 +15,8 @@ import ArtisanGuard from '@/components/auth/ArtisanGuard'
 import ArtisanShell from '@/components/layout/ArtisanShell'
 import AgenceGuard from '@/components/auth/AgenceGuard'
 import AgenceShell from '@/components/layout/AgenceShell'
+import ReseauGuard from '@/components/auth/ReseauGuard'
+import ReseauShell from '@/components/layout/ReseauShell'
 import { FeatureRoute } from '@/components/shared/FeatureGate'
 import { PermissionRoute } from '@/components/auth/PermissionRoute'
 
@@ -118,6 +120,15 @@ const ArtisanReseau = lazy(() => import('@/pages/artisan/ArtisanReseau'))
 const ArtisanReseauxSociaux = lazy(() => import('@/pages/artisan/ArtisanReseauxSociaux'))
 const ArtisanQRCode = lazy(() => import('@/pages/artisan/ArtisanQRCode'))
 const ArtisanProgression = lazy(() => import('@/pages/artisan/ArtisanProgression'))
+// Phase 18.4 — Réseau social pro (transverse 4 personae)
+const ReseauFeed = lazy(() => import('@/pages/reseau/ReseauFeed'))
+const ReseauProfil = lazy(() => import('@/pages/reseau/ReseauProfil'))
+const ReseauDecouvrir = lazy(() => import('@/pages/reseau/ReseauDecouvrir'))
+const ReseauChantiers = lazy(() => import('@/pages/reseau/ReseauChantiers'))
+const ReseauChantierNew = lazy(() => import('@/pages/reseau/ReseauChantierNew'))
+const ReseauConnexions = lazy(() => import('@/pages/reseau/ReseauConnexions'))
+const ReseauMessages = lazy(() => import('@/pages/reseau/ReseauMessages'))
+const ReseauParamsAutaf = lazy(() => import('@/pages/reseau/ReseauParamsAutaf'))
 const AgenceDashboard = lazy(() => import('@/pages/agence/AgenceDashboard'))
 const AgenceLeads = lazy(() => import('@/pages/agence/AgenceLeads'))
 const AgenceScoreVente = lazy(() => import('@/pages/agence/AgenceScoreVente'))
@@ -128,6 +139,7 @@ const AgenceProgression = lazy(() => import('@/pages/agence/AgenceProgression'))
 const AgenceSimulateur = lazy(() => import('@/pages/agence/AgenceSimulateur'))
 const AgenceSocial = lazy(() => import('@/pages/agence/AgenceSocial'))
 const AgenceParrainage = lazy(() => import('@/pages/agence/AgenceParrainage'))
+const AgenceParrainageHowItWorks = lazy(() => import('@/pages/agence/AgenceParrainageHowItWorks'))
 const AgenceEquipe = lazy(() => import('@/pages/agence/AgenceEquipe'))
 const AgenceQRCode = lazy(() => import('@/pages/agence/AgenceQRCode'))
 const AgenceMessages = lazy(() => import('@/pages/agence/AgenceMessages'))
@@ -244,6 +256,20 @@ export default function App() {
               </Route>
             </Route>
 
+            {/* Phase 18.4 — Portail réseau social pro `/reseau` (transverse 4 personae) */}
+            <Route element={<ReseauGuard />}>
+              <Route element={<ReseauShell />}>
+                <Route path="/reseau" element={<ReseauFeed />} />
+                <Route path="/reseau/decouvrir" element={<ReseauDecouvrir />} />
+                <Route path="/reseau/chantiers" element={<ReseauChantiers />} />
+                <Route path="/reseau/chantiers/nouveau" element={<ReseauChantierNew />} />
+                <Route path="/reseau/connexions" element={<ReseauConnexions />} />
+                <Route path="/reseau/messages" element={<ReseauMessages />} />
+                <Route path="/reseau/parametres/autaf" element={<ReseauParamsAutaf />} />
+                <Route path="/reseau/profil/:slug" element={<ReseauProfil />} />
+              </Route>
+            </Route>
+
             {/* Phase 16.0.6 — Portail agence immobilière (AgenceGuard + AgenceShell) */}
             <Route element={<AgenceGuard />}>
               <Route element={<AgenceShell />}>
@@ -255,6 +281,7 @@ export default function App() {
                 <Route path="/agence/progression" element={<AgenceProgression />} />
                 <Route path="/agence/reseaux-sociaux" element={<AgenceSocial />} />
                 <Route path="/agence/parrainage" element={<AgenceParrainage />} />
+                <Route path="/agence/parrainage/comment-ca-marche" element={<AgenceParrainageHowItWorks />} />
                 <Route path="/agence/equipe" element={<AgenceEquipe />} />
                 <Route path="/agence/qr-code" element={<AgenceQRCode />} />
                 <Route path="/agence/messages" element={<AgenceMessages />} />

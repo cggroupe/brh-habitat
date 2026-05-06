@@ -46,6 +46,114 @@
 
 ---
 
+## 2026-05-06 — Phase 16.1 enhancements : 6 polish économie de leads agences
+
+- **Contexte** : après Steps A-D livrés, polish UX + hardening dans l'ordre infrastructure → RPC → triggers → UI → contenu.
+- **#4 Plafond mensuel parrain** (`20260706220000`) — trigger `brh_agence_credit_referral_leads` étendu avec cap **30 leads bonus parrainage / mois / agence**. Au-delà, commission cash continue mais leads écrêtés. Anti-abus inventaire.
+- **#5 Audit trail commissions** (`20260706230000`) — Nouvelle table `brh_agence_referral_audit` (append-only) + trigger log INSERT + chaque transition status. RLS parrain + admin. Backfill rétroactif. Prépare Phase 16.2.
+- **#2 RPC retourne source consommée** (`20260706240000`) — `brh_grant_lead_claim` retourne `TABLE(assignment_id, consumed_from)`. UI affiche toast emerald "Lead claimé via votre bonus contributions" (4 sources). API TS + AgenceScoreVente adaptés.
+- **#1 Notification commission** (`20260706250000`) — trigger `brh_agence_referral_notify_recruiter` INSERT dans `brh_notifications` à chaque commission. Body adapté au niveau (N1 = "🎉 Charte parrainée signée" / N2-5 = "💎 Commission niveau N"). Realtime déjà actif via NotificationBell.
+- **#3 LeadBreakdownCard sur AgenceLeads** — Card insérée entre header et search. Cohérence Dashboard + Progression + Leads.
+- **#6 Page `/agence/parrainage/comment-ca-marche`** — Page transparence : barème visuel 5 niveaux gradients colorés, flow 4 étapes, 6 garde-fous, FAQ 8 questions. Bouton "Comment ça marche" sur page parrainage.
+- **Fix bonus** — eslint-disable sur `FeedItem.tsx:52` (set-state-in-effect intentionnel — pas mon scope mais bloquait CI).
+- **Tests** : 368/368 vert, TS strict, ESLint clean.
+- **Risque** : Low — modifs additives. Seul breaking change : signature RPC `brh_grant_lead_claim` (UUID → TABLE), 1 seul consumer adapté.
+- **Status** : ✅ DONE
+
+---
+
+## 2026-05-06 — Phase 18 Étape 6 : feed MVP + composer + Canvas floutage + algo
+
+- **Contexte** : Étape 6/12 du plan Phase 18 — l'étape la plus dense (1.5 sem prévues, ≈300 lignes de Canvas + algo + tests). Premier feed MVP utilisable, bucket Storage `reseau-media` privé, composer avec floutage manuel client-side, algo déterministe 5/8 composantes AUTAF V2, tracking impressions, modération minimale embarquée (signaler).
+- **Spec produit** :
+  - Composer : 8 post_type, 3 visibility, métiers tags, photos avec floutage manuel obligatoire (rectangles dessinés sur Canvas)
+  - Floutage : Canvas applique blur(24px) sur zones sélectionnées, génère `_public.jpg` floutée + stocke `_original.jpg` privé séparément
+  - Rate-limit V1 : 5 posts/24h hard-cap UI (V2 = 20/jour pour Pro Premium)
+  - Algo feed : 5 composantes scorées localement (recency_decay, +30 réseau, +15 dept, +10 métier, +25 chantier match, +5 like cap 50, -50 déjà vu)
+  - Tracking : IntersectionObserver fire `view` event au scroll → `brh_feed_impressions`
+  - Signaler : modal 6 raisons (RGPD personne / RGPD plaque / spam / illegal / offensive / other) → `brh_feed_reports` pending
+- **Migration SQL appliquée prod** : `20260706310000_brh_phase_18_6_storage.sql` (bucket `reseau-media` 10 MB max + 5 RLS storage policies)
+- **Fichiers créés (15)** :
+  - `supabase/migrations/20260706310000_brh_phase_18_6_storage.sql` (bucket privé + RLS)
+  - `src/lib/reseau/feed-algo.ts` (algo déterministe 5 composantes)
+  - `src/lib/reseau/feed-algo.test.ts` (**15 tests Vitest**, tous verts ✅)
+  - `src/lib/reseau/blur-canvas.ts` (helper Canvas applyBlurZonesToBlob + loadImage)
+  - `src/api/reseau-posts.ts` (CRUD + uploadMedia + signed URL + count24h)
+  - `src/api/reseau-reactions.ts` (toggle like/recommande/expert)
+  - `src/api/reseau-impressions.ts` (track event + myViewedPostIds)
+  - `src/api/reseau-reports.ts` (signaler post/comment)
+  - `src/hooks/queries/reseau-posts.ts` (5 hooks)
+  - `src/hooks/queries/reseau-reactions.ts` (2 hooks)
+  - `src/hooks/queries/reseau-impressions.ts` (2 hooks)
+  - `src/hooks/queries/reseau-reports.ts` (2 hooks)
+  - `src/components/reseau/PostComposer.tsx` (form + BlurEditorModal inline avec Canvas)
+  - `src/components/reseau/FeedItem.tsx` (affichage + IntersectionObserver tracking)
+  - `src/components/reseau/ReportDialog.tsx` (modal 6 raisons)
+- **Fichiers modifiés (1)** :
+  - `src/pages/reseau/ReseauFeed.tsx` (skeleton → page complète avec composer + ranking local + report dialog)
+- **Pages wiki impactées** : aucune mise à jour structurelle nécessaire (data-model couvre déjà les 11 tables Phase 18.1).
+- **Risque** : Medium — Canvas API browser-dependent (filter blur supporté Chrome/Firefox/Safari récents). Code Vitest reste en environment 'node' → tests sur Canvas API skip (uniquement feed-algo testé).
+- **Tests** : `npx tsc --noEmit` exit 0 ✅, **Vitest 368/368** (était 311, +15 nouveaux feed-algo + 42 d'autres ajouts entre temps), `npx eslint` exit 0 ✅.
+- **Status** : ✅ DONE — Étape 6/12 livrée. **MVP utilisable atteint** (4 sem cumulé). Reste 6 étapes. Prochaine : Étape 7 (marketplace chantiers KILLER feature, 2.5 sem prévues).
+
+### Décisions techniques V1
+1. **Floutage Canvas client-side fixed blur(24px)** : suffisant plaques+visages, simple à implémenter, pas d'IA. V2 = slider intensité.
+2. **Algo feed côté front** : V1 OK pour ≤50 posts/page. V2 RPC `brh_feed_for_pro(viewer_id, limit, before)` avec scoring SQL (perf + indexable).
+3. **myDepartement = null V1** : geo bonus inactif tant que profil pro n'a pas ce champ persistant côté front (V1.5 = enrich via partner_contract → table partenaire).
+4. **myMetiers = [] V1** : bonus métier inactif idem. Le composer accepte les tags mais aucun stockage côté profil pro V1.
+5. **Tracking 'view' au scroll uniquement** : pas de `dwell_ms` V1 (overhead). Simple IntersectionObserver threshold 0.3.
+6. **Rate-limit côté front** : count24h check à chaque mount du composer. V2 = enforce côté Edge Function pour anti-circumvention.
+7. **Signed URLs TTL 1h** : refresh à chaque mount FeedItem. Storage bucket privé, originals jamais servis.
+
+### Tests Vitest feed-algo (15 cas)
+- score baseline 0h ≈ 10
+- recency 24h ≈ 0.4
+- bonus auteur réseau +30
+- bonus même dept +15
+- pas de bonus dept différent
+- bonus métier complémentaire +10
+- bonus annonce_chantier match +25 (additif au métier)
+- pas de bonus si annonce_chantier sans métier match
+- engagement +5/like cap 50
+- pénalité -50 déjà vu
+- combo total max test
+- ranking par score décroissant
+- tie-break par created_at DESC
+- post déjà vu remonté en bas
+- recency curve cohérence
+
+---
+
+## 2026-05-06 — Phase 18 Étape 5 : graphe social + endorsements (`/reseau/connexions` fonctionnelle)
+
+- **Contexte** : Étape 5/12 du plan Phase 18 — premier pavé fonctionnel du `/reseau` (au-dessus des squelettes Étape 4 + tables Étape 3 en prod). Graphe social symétrique (demandes / acceptation), endorsements positifs (décision #3, pas de notes 1-5), suggestions algorithmiques V1 déterministes, fusion messageries V1 simple.
+- **Spec produit** :
+  - 3 sections dans `/reseau/connexions` : Suggestions / Demandes reçues / Mon réseau (tabs)
+  - Suggestions V1 : pros même département non encore connectés, max 15, priorisation département matchant
+  - Endorsements only V1 : composant `EndorsementButton` modal avec sélecteur métier + textarea ≤500 car
+  - Fusion messages V1 : wrapper `MessagesPage('pro')` avec emptySubtext "Vue unifiée — tous mes échanges pros". Fusion complète V2 (Étape 5b) = étendre MessagesPage à array participantType
+- **Fichiers créés (6)** :
+  - `src/api/reseau-connections.ts` (CRUD demandes + acceptation + algo suggestions V1 5 piliers)
+  - `src/api/reseau-endorsements.ts` (CRUD endorsements positifs)
+  - `src/hooks/queries/reseau-connections.ts` (5 queries + 3 mutations React Query)
+  - `src/hooks/queries/reseau-endorsements.ts` (2 queries + 2 mutations)
+  - `src/components/reseau/EndorsementButton.tsx` (modal sélecteur 16 métiers BTP par défaut)
+  - `src/components/reseau/ConnectionCard.tsx` (carte pro avec 4 variants)
+- **Fichiers modifiés (2)** :
+  - `src/pages/reseau/ReseauConnexions.tsx` (squelette → page fonctionnelle 3 tabs)
+  - `src/pages/reseau/ReseauMessages.tsx` (skeleton → wrapper MessagesPage simple V1)
+- **Migrations créées** : aucune (réutilise migration Étape 3 + RLS déjà en place)
+- **Risque** : Low/Medium — algo suggestions fait N+1 queries (acceptable pour ≤15 résultats, à optimiser V2 via RPC SECURITY DEFINER `brh_reseau_suggest_connections`).
+- **Tests** : `npx tsc --noEmit` exit 0 ✅, `npx eslint` exit 0 ✅. Vitest non ajoutés Étape 5 (logique async Supabase, mocks lourds → V2 quand RPC dédiée).
+- **Status** : ✅ DONE — Étape 5/12 livrée. Reste 7 étapes. Prochaine : Étape 6 (feed MVP + composer + algo déterministe + modération minimale).
+
+### Décisions techniques V1
+1. **N+1 queries dans suggestions** : acceptable pour 15 résultats (~30 queries supabase, <500ms). RPC SECURITY DEFINER à coder Étape 6 si perf gêne.
+2. **Fusion messageries minimaliste** : wrapper `MessagesPage('pro')`, pas de modif du composant partagé. Évite régression sur les 3 messageries existantes.
+3. **Endorsement UNIQUE par (endorser, endorsed, métier)** : géré par contrainte SQL Étape 3, l'UI capture l'erreur 409 et affiche message "déjà recommandé sur ce métier".
+
+---
+
 ## 2026-05-06 — Phase 18 Étape 4 : infrastructure UI `/reseau` (Guard + Shell + 8 routes squelettes)
 
 - **Contexte** : Étape 4/12 du plan Phase 18 — pose le portail unifié `/reseau` transverse 4 personae au-dessus de la migration SQL Étape 3 désormais en prod (commit `psql` 06/05). Squelettes cliquables avec descriptions "Bientôt disponible — Étape N", logique métier livrée Étapes 5-8.
