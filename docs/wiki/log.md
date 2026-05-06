@@ -5,6 +5,43 @@
 
 ---
 
+## 2026-05-06 — Phase 17.1 : portail artisan enrichi (Step 1 + 2)
+
+- **Contexte** : Philippe met l'agence immo en pause (verrouillée pour le moment, modifs mineures à venir) et veut enrichir le portail artisan RGE pour le mettre au même niveau fonctionnel. Calque structurel sur Phase 16.1 agence avec 7 nouvelles entrées sidebar.
+- **Spec produit** :
+  - Simulateur énergétique + simulateur travaux Batichiffrage
+  - Leads (page unique 2 modes : porte-à-porte + apport prospect)
+  - Mon réseau (parrainage artisan→artisan en marketing de réseau pur)
+  - Réseaux sociaux + QR Code + Ma progression
+- **Steps livrés cette session** :
+  - **Step 1** — Infrastructure : `ArtisanShell` enrichi à 13 entrées (accent amber/casque BTP), 7 nouvelles routes lazy + skeletons cliquables avec description "Bientôt disponible — Step N"
+  - **Step 2** — Migration SQL `20260706200000_brh_artisan_phase_17_1.sql` : 6 tables `brh_artisan_*`, 1 colonne `brh_artisans_rge.referred_by_artisan_id`, 3 helpers SECURITY DEFINER (`brh_user_artisan_id`, `brh_artisan_recompute_progression`, `brh_get_public_artisan`), 3 triggers (contributions, social reward avec plafond 2/mois, referral commission 100€ HT), RLS complète conforme règles #2 #8 #11 #12, init progression bronze pour tous les artisans liés à un profil
+- **Fichiers modifiés** :
+  - `src/components/layout/ArtisanShell.tsx` (sidebar dark + amber)
+  - `src/App.tsx` (7 imports lazy + 7 routes)
+  - `src/pages/artisan/ArtisanSimulateur.tsx` (skeleton)
+  - `src/pages/artisan/ArtisanChiffrage.tsx` (skeleton)
+  - `src/pages/artisan/ArtisanLeads.tsx` (skeleton 2 modes)
+  - `src/pages/artisan/ArtisanReseau.tsx` (skeleton)
+  - `src/pages/artisan/ArtisanReseauxSociaux.tsx` (skeleton)
+  - `src/pages/artisan/ArtisanQRCode.tsx` (skeleton)
+  - `src/pages/artisan/ArtisanProgression.tsx` (skeleton)
+- **Migrations créées** : `supabase/migrations/20260706200000_brh_artisan_phase_17_1.sql` (non poussée — règle "JAMAIS deploy sans accord")
+- **Pages wiki impactées** :
+  - **Créée** : `docs/wiki/artisan-portal-status.md`
+  - **À mettre à jour** : `index.md` (référencer artisan-portal-status), `data-model.md` (ajouter 6 tables Phase 17.1), `architecture-snapshot.md` (compteurs pages/tables/migrations)
+- **Risque** : Low — skeletons sans logique métier, migration non poussée. Pattern exact du portail agence Phase 16.1 (validé en prod).
+- **Tests** : `npx tsc --noEmit` exit 0 ✅. Tests Vitest non exécutés (à lancer après steps 3-9).
+- **Status** : 🟡 PARTIEL — Steps 1+2/9 terminés. Reste Steps 3-9 à livrer + push migration Supabase (attente accord Philippe).
+
+### Reste à livrer (Steps 3-9)
+Voir [artisan-portal-status.md § 4](artisan-portal-status.md#4--reste-à-faire-steps-3-9) pour le détail.
+
+### Côté admin BRH (session dédiée plus tard)
+- `/admin/artisan-contributions`, `/admin/artisan-social-posts`, `/admin/artisan-referrals`, `/admin/artisan-simulations`
+
+---
+
 ## 2026-05-05 — Phase 16.1 : portail agence enrichi (étape par étape)
 
 **Contexte** : Philippe demande de combler le gap fonctionnel entre le portail Pro (complet) et le portail Agence (initial Phase 16.0.6). Topo établi → 9 étapes prévues, livrées progressivement avec rigueur (wiki Karpathy + 14 règles anti-bug + tests 353/353 à chaque commit).

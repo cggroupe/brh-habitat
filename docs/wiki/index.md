@@ -56,6 +56,7 @@
 | [tenant-multitenancy.md](tenant-multitenancy.md#phase-15-tier-dynamique-par-utilisateur-stripe-saas) | ⭐ **Phase 15** — Tier dynamique pro RGE (Free/Pro 49€/Expert 149€) avec quota courriers IA mensuel + Stripe Checkout + webhook auto-sync. Distinct du pricing agences immo Phase 12. |
 | [log.md#2026-05-02-phase-13-6-marketplace-artisans-rge-bretons-network-effect](log.md#2026-05-02--phase-136--marketplace-artisans-rge-bretons-network-effect) | ⭐ **Phase 13.6** — Marketplace artisans RGE bretons : matching prospect ↔ artisan local (Haversine + score qualité), 2 tables `brh_artisans_*`, page `/pro/marketplace-artisans`, commission 5-10 % chantier signé, network effect SaaS |
 | [agence-portal-status.md](agence-portal-status.md) | ⭐ **Phase 16.1 (05/05)** — Portail agence enrichi 13 entrées · 5 boucles fonctionnelles end-to-end (parrainage, vitrine QR, social, équipe, messagerie) · 6 nouvelles tables · 8 helpers SECURITY DEFINER · 5 permissions JSONB · ⏳ admin BRH = session dédiée à venir (8 pages /admin/* à créer) |
+| [artisan-portal-status.md](artisan-portal-status.md) | 🟡 **Phase 17.1 (06/05)** — Portail artisan enrichi (en cours) — Step 1 (sidebar 13 entrées + 7 skeletons cliquables) + Step 2 (migration `20260706200000` : 6 tables `brh_artisan_*`, 3 helpers SECURITY DEFINER, 3 triggers, RLS) livrés. Reste Steps 3-9 (simulateur, chiffrage Batichiffrage, leads porte-à-porte, parrainage, social, QR vitrine, progression). |
 
 ### Partie 3 — Qualité & opérations
 

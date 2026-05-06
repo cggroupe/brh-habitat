@@ -110,6 +110,14 @@ const ArtisanMissions = lazy(() => import('@/pages/artisan/ArtisanMissions'))
 const ArtisanAgenda = lazy(() => import('@/pages/artisan/ArtisanAgenda'))
 const ArtisanProfil = lazy(() => import('@/pages/artisan/ArtisanProfil'))
 const ArtisanMessages = lazy(() => import('@/pages/artisan/ArtisanMessages'))
+// Phase 17.1 — Portail artisan enrichi (skeletons cliquables)
+const ArtisanSimulateur = lazy(() => import('@/pages/artisan/ArtisanSimulateur'))
+const ArtisanChiffrage = lazy(() => import('@/pages/artisan/ArtisanChiffrage'))
+const ArtisanLeads = lazy(() => import('@/pages/artisan/ArtisanLeads'))
+const ArtisanReseau = lazy(() => import('@/pages/artisan/ArtisanReseau'))
+const ArtisanReseauxSociaux = lazy(() => import('@/pages/artisan/ArtisanReseauxSociaux'))
+const ArtisanQRCode = lazy(() => import('@/pages/artisan/ArtisanQRCode'))
+const ArtisanProgression = lazy(() => import('@/pages/artisan/ArtisanProgression'))
 const AgenceDashboard = lazy(() => import('@/pages/agence/AgenceDashboard'))
 const AgenceLeads = lazy(() => import('@/pages/agence/AgenceLeads'))
 const AgenceScoreVente = lazy(() => import('@/pages/agence/AgenceScoreVente'))
@@ -214,11 +222,19 @@ export default function App() {
               </Route>
             </Route>
 
-            {/* Phase R4 — Portail artisan elevé (ArtisanGuard + ArtisanShell) */}
+            {/* Phase R4 + Phase 17.1 — Portail artisan elevé (ArtisanGuard + ArtisanShell) */}
             <Route element={<ArtisanGuard />}>
               <Route element={<ArtisanShell />}>
                 <Route path="/artisan" element={<ArtisanDashboard />} />
                 <Route path="/artisan/missions" element={<ArtisanMissions />} />
+                {/* Phase 17.1 — 7 nouvelles entrées (skeletons cliquables) */}
+                <Route path="/artisan/simulateur" element={<ArtisanSimulateur />} />
+                <Route path="/artisan/chiffrage" element={<ArtisanChiffrage />} />
+                <Route path="/artisan/leads" element={<ArtisanLeads />} />
+                <Route path="/artisan/reseau" element={<ArtisanReseau />} />
+                <Route path="/artisan/reseaux-sociaux" element={<ArtisanReseauxSociaux />} />
+                <Route path="/artisan/qr-code" element={<ArtisanQRCode />} />
+                <Route path="/artisan/progression" element={<ArtisanProgression />} />
                 <Route path="/artisan/agenda" element={<ArtisanAgenda />} />
                 <Route path="/artisan/factures" element={<ArtisanFactures />} />
                 <Route path="/artisan/profil" element={<ArtisanProfil />} />
