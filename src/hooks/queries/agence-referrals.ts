@@ -20,3 +20,12 @@ export function useMyReferred(agenceId: string | undefined) {
     staleTime: 60_000,
   })
 }
+
+/** Phase 16.1 Step C — arbre 5 niveaux des filleuls. */
+export function useMyReferralTree() {
+  return useQuery({
+    queryKey: [...REFERRALS_KEY, 'tree'] as const,
+    queryFn: () => agenceReferralsApi.getMyReferralTree(),
+    staleTime: 60_000,
+  })
+}

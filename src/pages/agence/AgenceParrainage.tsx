@@ -1,10 +1,9 @@
 /**
  * Phase 16.1 — Page /agence/parrainage : recrutement de nouvelles agences.
  *
- * Modèle simple 1-niveau (vs pyramide multi-niveaux Pro) :
- * lien `/inscription/agence?ref=<agenceId>` partagé → si la nouvelle
- * agence signe la charte → commission 100 € HT pending pour l'agence
- * parrain (créditée auto via trigger SQL).
+ * Step C (2026-05-06) : cascade 5 niveaux activée. Niveau 1 = parrain direct
+ * 100 € + 5 leads ; barème dégressif jusqu'à niveau 5. Onglet "Mon arbre"
+ * pour voir tout son réseau.
  */
 import { useState } from 'react'
 import {
@@ -17,12 +16,14 @@ import {
   Building2,
   Euro,
   TrendingUp,
+  TreePine,
 } from 'lucide-react'
 import { useMyAgenceMembership } from '@/hooks/queries/agence-membership'
 import {
   useMyReferralCommissions,
   useMyReferred,
 } from '@/hooks/queries/agence-referrals'
+import ReferralTreeView from '@/components/agence/ReferralTreeView'
 
 const COMMISSION_PER_REF_CENTS = 10000 // 100 € HT
 
@@ -57,6 +58,7 @@ export default function AgenceParrainage() {
   const { data: referred = [] } = useMyReferred(membership?.agenceId)
 
   const [copied, setCopied] = useState(false)
+  const [view, setView] = useState<'cash' | 'tree'>('cash')
 
   const baseUrl =
     typeof window !== 'undefined' ? window.location.origin : 'https://brh-habitat.vercel.app'
@@ -197,12 +199,44 @@ export default function AgenceParrainage() {
 
         <p className="text-[11px] text-slate-500 mt-3">
           Partagez ce lien avec d'autres agences immobilières — quand elles signent leur
-          charte, vous recevez automatiquement 100 € HT en commission. Aucun plafond.
+          charte, vous recevez automatiquement 100 € HT en commission + 5 leads bonus.
+          La cascade s'étend sur 5 niveaux (vous touchez aussi sur les filleuls de vos
+          filleuls, dégressivement).
         </p>
       </section>
 
-      {/* Liste agences parrainées */}
-      <section>
+      {/* Toggle Cash & Leads / Mon arbre */}
+      <div className="inline-flex bg-slate-100 rounded-xl p-1 gap-1">
+        <button
+          type="button"
+          onClick={() => setView('cash')}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+            view === 'cash'
+              ? 'bg-white text-slate-800 shadow-sm'
+              : 'text-slate-600 hover:text-slate-800'
+          }`}
+        >
+          <Euro size={12} className="inline mr-1.5" />
+          Cash & leads
+        </button>
+        <button
+          type="button"
+          onClick={() => setView('tree')}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+            view === 'tree'
+              ? 'bg-white text-slate-800 shadow-sm'
+              : 'text-slate-600 hover:text-slate-800'
+          }`}
+        >
+          <TreePine size={12} className="inline mr-1.5" />
+          Mon arbre (5 niveaux)
+        </button>
+      </div>
+
+      {view === 'tree' ? <ReferralTreeView /> : null}
+
+      {/* Liste agences parrainées (vue cash) */}
+      {view === 'cash' && <section>
         <h2 className="text-sm uppercase tracking-wider text-slate-500 font-bold mb-3">
           Agences parrainées ({referred.length})
         </h2>
@@ -241,10 +275,10 @@ export default function AgenceParrainage() {
             ))}
           </div>
         )}
-      </section>
+      </section>}
 
-      {/* Liste commissions */}
-      <section>
+      {/* Liste commissions (vue cash) */}
+      {view === 'cash' && <section>
         <h2 className="text-sm uppercase tracking-wider text-slate-500 font-bold mb-3">
           Mes commissions ({commissions.length})
         </h2>
@@ -263,8 +297,10 @@ export default function AgenceParrainage() {
                 <tr className="text-left">
                   <th className="px-4 py-2.5">Date</th>
                   <th className="px-4 py-2.5">Agence parrainée</th>
+                  <th className="px-4 py-2.5">Niveau</th>
                   <th className="px-4 py-2.5">Statut</th>
-                  <th className="px-4 py-2.5 text-right">Montant</th>
+                  <th className="px-4 py-2.5 text-right">Cash</th>
+                  <th className="px-4 py-2.5 text-right">Leads</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -285,6 +321,11 @@ export default function AgenceParrainage() {
                       ) : null}
                     </td>
                     <td className="px-4 py-2.5">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-md text-[10px] font-bold bg-orange-100 text-orange-800 border border-orange-200">
+                        N{c.chain_level ?? 1}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5">
                       <span
                         className={`px-2 py-0.5 rounded text-xs ${STATUS_COLORS[c.status]}`}
                       >
@@ -299,13 +340,16 @@ export default function AgenceParrainage() {
                     <td className="px-4 py-2.5 text-right font-bold text-emerald-700 tabular-nums">
                       {formatEur(c.commission_amount_cents)}
                     </td>
+                    <td className="px-4 py-2.5 text-right font-bold text-orange-600 tabular-nums">
+                      +{c.leads_bonus_amount ?? 0}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-      </section>
+      </section>}
     </div>
   )
 }
