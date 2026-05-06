@@ -5,6 +5,39 @@
 
 ---
 
+## 2026-05-06 — Phase 18 Étape 1 : audit AUTAF + blueprint réseau social `/reseau`
+
+- **Contexte** : Philippe veut développer une couche réseau social B2B `/reseau` transverse 4 personae (agences immo, artisans, architectes, apporteurs d'affaires) ancrée Bretagne (dépts 22/29/35/56/44 — 44 inclus par décision identitaire). Killer feature = marketplace de chantiers avec commission 5% HT tracée. 8 décisions stratégiques actées par Philippe le 06/05. Plan complet validé `/root/.claude/plans/c-elle-qui-te-semble-wiggly-sundae.md` en 12 étapes (MVP 4 sem, monétisable 14-16 sem). Décision structurante : AUTAF (WordPress OVH) reste autonome avec **bridge API** (pas migration).
+- **Spec produit** :
+  - Portail unifié `/reseau` avec `ReseauGuard` accepte tout `brh_partner_contracts.status='active'`
+  - 11 nouvelles tables (graphe + feed + endorsements + marketplace chantiers + bridge AUTAF + modération)
+  - Algo feed V1 déterministe (5/8 composantes AUTAF V2 simplifiées : recency_decay, network_proximity, geo, métiers tags, likes)
+  - Floutage plaques+visages manuel UI Canvas client-side, 2 versions stockées
+  - Multi-tenant ready Option B : `tenant_id UUID NOT NULL` partout V1, 1 tenant `brh` actif
+- **Steps livrés cette session (Étape 1/12 capée 2 jours)** :
+  - **Audit AUTAF** : skim 4 specs prioritaires (ALGORITHM_ENGINE_V2, SCORE_XP_COINS_UNIFIE, NOTIFICATIONS_SPEC, MESSAGERIE_PRO) via agent Explore. Verdict : 8 concepts V1 + 6 V2 + 0 skip. Schéma `user_events` AUTAF V2 cloné en `brh_feed_impressions`. Notifications réduites à 12 types essentiels (in-app + email seulement V1)
+  - **Blueprint** : `docs/wiki/reseau-social-blueprint.md` (architecture cible + tableau emprunts AUTAF + 8 décisions + 11 tables + algo feed + risques + estimations)
+  - **Status** : `docs/wiki/reseau-social-status.md` (tableau livraison 12 étapes + métriques cibles + bloquants & dépendances)
+- **Fichiers modifiés** :
+  - `docs/wiki/reseau-social-blueprint.md` (créé, ~12 sections)
+  - `docs/wiki/reseau-social-status.md` (créé)
+  - `docs/wiki/index.md` (référencé les 2 nouvelles pages dans Partie 2)
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations créées** : aucune (Étape 1 = wiki uniquement, migrations Étape 3)
+- **Pages wiki impactées** :
+  - **Créées** : `reseau-social-blueprint.md`, `reseau-social-status.md`
+  - **Mises à jour** : `index.md`, `log.md`
+  - **À mettre à jour Étape 3** : `data-model.md` (ajouter 11 tables Phase 18.1), `architecture-snapshot.md` (compteurs pages/tables/migrations), `hooks-reference.md` (nouveaux hooks réseau)
+- **Risque** : Low — wiki uniquement, aucun code applicatif. Cap 2 jours respecté (1 session).
+- **Tests** : non applicable (Étape 1 = doc).
+- **Status** : ✅ DONE — Étape 1/12 livrée. Reste 11 étapes. Prochaine : Étape 3 (migration SQL fondations) après go Philippe (Étape 2 brief légal en parallèle ops).
+
+### Bloquants pour Étapes suivantes
+- **Étape 2** (parallèle) : Philippe lance brief avocat (mission Phase 16 étendue +1500€ déjà budgété)
+- **Étape 8** : confirmer dispo API AUTAF avec dev Genesii dès J-0 (endpoints OAuth + posts + chantiers + recommendations)
+
+---
+
 ## 2026-05-06 — Phase 17.1 : portail artisan enrichi (Step 1 + 2)
 
 - **Contexte** : Philippe met l'agence immo en pause (verrouillée pour le moment, modifs mineures à venir) et veut enrichir le portail artisan RGE pour le mettre au même niveau fonctionnel. Calque structurel sur Phase 16.1 agence avec 7 nouvelles entrées sidebar.

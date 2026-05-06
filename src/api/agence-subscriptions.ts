@@ -88,13 +88,21 @@ export const agenceSubscriptionsApi = {
     return data as AgenceSubscription
   },
 
-  /** Claim atomique d'un lead via RPC SQL (vérifie quota + crée assignment). */
+  /**
+   * Claim atomique d'un lead via RPC SQL.
+   * Phase 16.1 Step A : décrémente d'abord le tier, puis bonus
+   * (contribution > referral > social). Lève `quota_exhausted` si toutes
+   * sources à zéro. Mappage erreur FR via `mapClaimError`.
+   */
   async claimLead(prospectId: number, agenceId: string): Promise<string> {
     const { data, error } = await supabase.rpc('brh_grant_lead_claim', {
       p_agence_id: agenceId,
       p_prospect_id: prospectId,
     })
-    if (error) throw error
+    if (error) {
+      const { mapClaimError } = await import('./agence-lead-economy')
+      throw mapClaimError(error)
+    }
     return data as string
   },
 }

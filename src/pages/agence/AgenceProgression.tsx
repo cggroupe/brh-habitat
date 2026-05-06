@@ -20,6 +20,7 @@ import {
   TIER_BASE_QUOTA,
   type AgenceProgression,
 } from '@/api/agence-contributions'
+import LeadBreakdownCard from '@/components/agence/LeadBreakdownCard'
 
 const TIER_GRADIENTS: Record<AgenceProgression['tier'], string> = {
   bronze: 'from-amber-700 to-orange-800',
@@ -155,6 +156,9 @@ export default function AgenceProgression() {
           )}
         </div>
       </div>
+
+      {/* Décomposition leads dispo (4 sources) */}
+      <LeadBreakdownCard />
 
       {/* Ladder paliers */}
       <section>

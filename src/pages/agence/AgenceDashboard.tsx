@@ -28,6 +28,8 @@ import { useMyAgenceSubscription } from '@/hooks/queries/agence-subscriptions'
 import { TIER_LABELS } from '@/api/agence-subscriptions'
 import { useMyProgression } from '@/hooks/queries/agence-contributions'
 import { TIER_LABELS_FR, TIER_THRESHOLDS } from '@/api/agence-contributions'
+import { useMyLeadBreakdown } from '@/hooks/queries/agence-lead-economy'
+import LeadBreakdownCard from '@/components/agence/LeadBreakdownCard'
 
 export default function AgenceDashboard() {
   const { user } = useAuth()
@@ -37,18 +39,12 @@ export default function AgenceDashboard() {
   const { data: subscription } = useMyAgenceSubscription()
   const { data: recentClaims = [] } = useLeadAssignments({ limit: 3 })
   const { data: progression } = useMyProgression(membership?.agenceId)
+  const { data: breakdown } = useMyLeadBreakdown()
 
   const tresChaud = stats?.tres_chaud ?? 0
   const chaud = stats?.chaud ?? 0
-  const remaining =
-    subscription?.monthly_lead_quota === null
-      ? null
-      : (subscription?.monthly_lead_quota ?? 0) -
-        (subscription?.current_month_claims ?? 0)
-  const quotaUsedPct =
-    subscription?.monthly_lead_quota && subscription.monthly_lead_quota > 0
-      ? Math.min(100, ((subscription.current_month_claims ?? 0) / subscription.monthly_lead_quota) * 100)
-      : 0
+  const totalRemaining = breakdown?.totalRemaining ?? null
+  const bonusRemaining = breakdown?.bonusTotalRemaining ?? 0
 
   return (
     <div className="p-6 lg:p-10 max-w-6xl mx-auto space-y-6">
@@ -160,39 +156,32 @@ export default function AgenceDashboard() {
         <div className="bg-white rounded-2xl border border-slate-100 p-4">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold">
-              Quota mois
+              Leads dispo
             </p>
             <TrendingUp size={16} className="text-slate-400" />
           </div>
           <p className="text-3xl font-bold tabular-nums text-slate-900">
-            {subscription?.current_month_claims ?? 0}
-            <span className="text-base text-slate-400 font-normal">
-              {' '}
-              / {subscription?.monthly_lead_quota ?? '∞'}
-            </span>
+            {totalRemaining === null ? (
+              <span className="text-orange-500">∞</span>
+            ) : (
+              totalRemaining
+            )}
           </p>
-          <div className="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all ${
-                quotaUsedPct > 90
-                  ? 'bg-red-500'
-                  : quotaUsedPct > 70
-                  ? 'bg-amber-500'
-                  : 'bg-emerald-500'
-              }`}
-              style={{ width: `${quotaUsedPct}%` }}
-            />
-          </div>
-          {subscription ? (
+          {bonusRemaining > 0 && (
+            <p className="text-[11px] text-emerald-600 font-semibold mt-1">
+              dont +{bonusRemaining} bonus
+            </p>
+          )}
+          {subscription && bonusRemaining === 0 ? (
             <p className="text-[11px] text-slate-500 mt-1">
-              Palier {TIER_LABELS[subscription.tier]}
-              {remaining !== null && remaining <= 2 ? (
-                <span className="text-amber-600 font-semibold ml-1">⚠ Bientôt à zéro</span>
-              ) : null}
+              Forfait {TIER_LABELS[subscription.tier]}
             </p>
           ) : null}
         </div>
       </div>
+
+      {/* Décomposition complète des leads dispo (4 sources) */}
+      <LeadBreakdownCard />
 
       {/* Widget progression affiliation */}
       {progression ? (

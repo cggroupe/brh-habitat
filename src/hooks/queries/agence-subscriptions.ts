@@ -45,6 +45,7 @@ export function useClaimLeadAtomic() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: AGENCE_SUBS_KEY })
       qc.invalidateQueries({ queryKey: ['lead-assignments'] })
+      qc.invalidateQueries({ queryKey: ['agence-lead-economy'] })
     },
   })
 }
