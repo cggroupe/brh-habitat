@@ -28,6 +28,7 @@ import {
   Award,
   HardHat,
   LogOut,
+  Globe,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -43,6 +44,7 @@ interface NavItemDef {
 
 const ARTISAN_NAV: NavItemDef[] = [
   { to: '/artisan', label: 'Accueil', icon: LayoutDashboard, end: true },
+  { to: '/reseau', label: 'Réseau pro BRH', icon: Globe },
   { to: '/artisan/missions', label: 'Mes missions', icon: Briefcase },
   { to: '/artisan/simulateur', label: 'Simulateur énergétique', icon: Sparkles },
   { to: '/artisan/chiffrage', label: 'Chiffrage travaux', icon: Calculator },

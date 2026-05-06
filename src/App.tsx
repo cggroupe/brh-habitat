@@ -43,6 +43,7 @@ const AssistantPage = lazy(() => import('@/pages/public/AssistantPage'))
 const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'))
 const OptOutPage = lazy(() => import('@/pages/public/OptOutPage'))
 const InscriptionAgencePage = lazy(() => import('@/pages/public/InscriptionAgencePage'))
+const PublicProAnnuaire = lazy(() => import('@/pages/public/PublicProAnnuaire'))
 
 // Lazy loaded pages — Dashboard (user)
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'))
@@ -67,6 +68,7 @@ const AdminAgencesImmo = lazy(() => import('@/pages/admin/AdminAgencesImmo'))
 const AdminScoreVente = lazy(() => import('@/pages/admin/AdminScoreVente'))
 const AdminOptOutRequests = lazy(() => import('@/pages/admin/AdminOptOutRequests'))
 const AdminAgenceSocialPosts = lazy(() => import('@/pages/admin/AdminAgenceSocialPosts'))
+const AdminReseauModeration = lazy(() => import('@/pages/admin/AdminReseauModeration'))
 const AdminPartnerContracts = lazy(() => import('@/pages/admin/AdminPartnerContracts'))
 const AdminAgenceAudits = lazy(() => import('@/pages/admin/AdminAgenceAudits'))
 const AdminLeadAssignments = lazy(() => import('@/pages/admin/AdminLeadAssignments'))
@@ -127,6 +129,7 @@ const ReseauDecouvrir = lazy(() => import('@/pages/reseau/ReseauDecouvrir'))
 const ReseauChantiers = lazy(() => import('@/pages/reseau/ReseauChantiers'))
 const ReseauChantierNew = lazy(() => import('@/pages/reseau/ReseauChantierNew'))
 const ReseauChantierDetail = lazy(() => import('@/pages/reseau/ReseauChantierDetail'))
+const ReseauAbonnement = lazy(() => import('@/pages/reseau/ReseauAbonnement'))
 const ReseauConnexions = lazy(() => import('@/pages/reseau/ReseauConnexions'))
 const ReseauMessages = lazy(() => import('@/pages/reseau/ReseauMessages'))
 const ReseauParamsAutaf = lazy(() => import('@/pages/reseau/ReseauParamsAutaf'))
@@ -218,6 +221,8 @@ export default function App() {
               <Route path="/politique-de-confidentialite" element={<PolitiqueConfidentialitePage />} />
               <Route path="/opt-out" element={<OptOutPage />} />
               <Route path="/inscription/agence" element={<InscriptionAgencePage />} />
+              {/* Phase 18.11 — Annuaire SEO publique : 75 combos dept × métier */}
+              <Route path="/pros/:dept/:metier" element={<PublicProAnnuaire />} />
               <Route path="/a/:agenceId" element={<AgenceVitrinePage />} />
             </Route>
 
@@ -269,6 +274,7 @@ export default function App() {
                 <Route path="/reseau/messages" element={<ReseauMessages />} />
                 <Route path="/reseau/parametres/autaf" element={<ReseauParamsAutaf />} />
                 <Route path="/reseau/profil/:slug" element={<ReseauProfil />} />
+                <Route path="/reseau/abonnement" element={<ReseauAbonnement />} />
               </Route>
             </Route>
 
@@ -308,6 +314,7 @@ export default function App() {
                 <Route path="/admin/score-vente" element={<AdminScoreVente />} />
                 <Route path="/admin/opt-out-requests" element={<AdminOptOutRequests />} />
                 <Route path="/admin/agence-social-posts" element={<AdminAgenceSocialPosts />} />
+                <Route path="/admin/reseau-moderation" element={<AdminReseauModeration />} />
                 <Route path="/admin/partner-contracts" element={<AdminPartnerContracts />} />
                 <Route path="/admin/agence-audits" element={<AdminAgenceAudits />} />
                 <Route path="/admin/lead-assignments" element={<AdminLeadAssignments />} />

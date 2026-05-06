@@ -77,6 +77,113 @@
 
 ---
 
+## 2026-05-06 — Phase 18 fix UX : entrée "Réseau pro BRH" dans les 3 sidebars persona
+
+- **Contexte** : Philippe a remarqué qu'en étant connecté en tant qu'agence immo, il ne voyait aucun lien vers `/reseau` — la couche Phase 18 livrée mais inaccessible depuis les portails persona. Le `ReseauGuard` accepte tout `partner_contract` actif, mais sans lien dans les sidebars `AgenceShell`, `ArtisanShell`, `ProShell`, l'entrée du portail unifié était orpheline.
+- **Spec produit** : ajouter une entrée "Réseau pro BRH" (icône `Globe` lucide) en 2e position (après "Accueil") dans les 3 shells. Lien vers `/reseau` (le `ReseauGuard` filtre puis redirige vers `/tableau-de-bord` si pas de partner_contract actif).
+- **Fichiers modifiés (3)** :
+  - `src/components/layout/AgenceShell.tsx` (+1 import Globe + 1 entrée NAV)
+  - `src/components/layout/ArtisanShell.tsx` (+1 import Globe + 1 entrée NAV)
+  - `src/components/layout/ProShell.tsx` (+1 import Globe + 1 entrée NAV)
+- **Migrations SQL** : aucune.
+- **Risque** : None — ajout pur de liens, aucune logique métier touchée.
+- **Tests** : `npx tsc --noEmit` exit 0 ✅, `npx eslint` exit 0 ✅.
+- **Status** : ✅ DONE — UX cohérent pour les 4 personae cross-portail.
+
+### Particulier
+Le portail Particulier (`ParticulierShell`) n'a PAS le lien vers `/reseau` car les particuliers n'ont pas de `partner_contract` (le `ReseauGuard` les redirigerait). Le réseau pro reste B2B-only.
+
+---
+
+## 2026-05-06 — Phase 18 Étape 12 : monétisation V2 (Stripe Pro Premium 19€/mois)
+
+- **Contexte** : Étape 12/12 du plan Phase 18 — branche le revenu récurrent (1.5 sem prévue). 3 tiers : Free (5 posts/jour) / Premium 19€/mois (20 posts/jour + boost feed +20% + stats avancées + sans pub) / Featured 49€/mois (V2 — top recherches `/reseau/decouvrir`). Réutilise pattern Phase 15 (`create-checkout-session` + `create-portal-session` EFs existantes).
+- **Migration SQL appliquée prod** : `20260706320000_brh_phase_18_12_subscriptions.sql`
+  - Table `brh_reseau_subscriptions` (12 colonnes : tier, stripe refs, period dates, amount_cents, benefits JSONB, UNIQUE profile_id)
+  - Colonne `brh_partner_contracts.is_featured BOOLEAN` (V1 toggle admin, V2 gated par tier='featured')
+  - Helper SECURITY DEFINER `brh_user_reseau_tier()` retournant 'free'/'premium'/'featured'/'enterprise'
+  - RLS owner-only + admin
+  - Init 'free' pour tous les contrats actifs (1 row migré)
+- **Fichiers créés (5)** :
+  - `src/api/reseau-subscriptions.ts` (4 tiers + RESEAU_TIERS catalog + create checkout + portal)
+  - `src/hooks/queries/reseau-subscriptions.ts` (3 hooks : getMy + checkout + portal)
+  - `src/components/reseau/FeaturedBadge.tsx` (badge gradient cyan Premium / amber Featured)
+  - `src/pages/reseau/ReseauAbonnement.tsx` (page 3 cartes tarifs + handling success/cancel + portail Stripe)
+  - `supabase/migrations/20260706320000_brh_phase_18_12_subscriptions.sql`
+- **Fichiers modifiés (2)** :
+  - `src/App.tsx` (+1 lazy + 1 route `/reseau/abonnement`)
+  - `src/types/database.ts` (régénéré 7485 lignes, 3 occurrences `brh_reseau_subscriptions`)
+- **Pages wiki impactées** : aucune mise à jour structurelle (table couverte par migration).
+- **Risque** : Medium — l'EF `create-checkout-session` doit accepter le product `reseau_subscription` avec les price IDs Premium/Featured (à configurer côté Stripe + EF). UI capture l'erreur avec fallback explicite.
+- **Tests** : `npx tsc --noEmit` exit 0 ✅, **Vitest 390/390** (inchangé), `npx eslint` exit 0 ✅.
+- **Status** : ✅ DONE — Étape 12/12 livrée. **Phase 18 100% livrée** (sauf Étape 2 brief avocat = ops Philippe et Étape 10 bootstrap = ops Philippe).
+
+### Action requise par Philippe avant activation Stripe
+1. Créer 2 produits Stripe : "BRH Reseau Premium" (price_id récurrent 19€/mois) et "BRH Reseau Featured" (49€/mois — V2)
+2. Étendre l'EF `create-checkout-session` pour accepter `product='reseau_subscription'` + mapper `tier` → `price_id`
+3. Étendre le webhook Stripe (clerk-webhook ou EF dédiée) pour upsert `brh_reseau_subscriptions` sur événements `customer.subscription.*`
+
+### Décisions techniques V1
+1. **Réutilisation EFs existantes** (`create-checkout-session` + `create-portal-session`) au lieu d'EFs dédiées V1, évite duplication.
+2. **`is_featured` boolean toggle V1** : admin manuel V1, gated par tier V2 (refacto léger).
+3. **Cache `benefits JSONB`** : permet UI rapide sans rejoindre `RESEAU_TIERS` côté front à chaque check.
+4. **Pas de proration logic V1** : Stripe gère natif via `cancel_at_period_end`.
+
+---
+
+## 2026-05-06 — Phase 18 Étape 11 : découverte + SEO (route publique + sitemap)
+
+- **Contexte** : Étape 11/12 du plan Phase 18 (1 sem prévue). Page de découverte interne `/reseau/decouvrir` (carte Leaflet + filtres) + route publique SEO `/pros/:dept/:metier` pour 75 combinaisons indexables Google + sitemap.xml généré build-time.
+- **Spec produit** :
+  - `/reseau/decouvrir` : filtres dept (5 BRH) + partner_type (5 personae) + search nom/ville + métier libre, 2 vues (liste 2 cols / carte Leaflet centrée Bretagne), sort endorsements DESC puis name ASC
+  - `/pros/:dept/:metier` (publique, sans guard) : 75 combos × 5 dépts × 15 métiers BTP, breadcrumb, Schema.org `LocalBusiness` JSON-LD injecté pour indexation, meta title + description dynamiques
+  - Script `scripts/generate-reseau-sitemap.ts` générant 81 URLs (1 hub + 5 dept + 75 dept×métier)
+- **Fichiers créés (4)** :
+  - `src/api/reseau-discover.ts` (search avec join enrichi agences+artisans + endorsements count + filtres post-mapping + listSitemapCombinations)
+  - `src/hooks/queries/reseau-discover.ts` (1 hook `useDiscoverPros`)
+  - `src/pages/public/PublicProAnnuaire.tsx` (page SEO publique avec Schema.org JSON-LD + meta tags dynamiques)
+  - `scripts/generate-reseau-sitemap.ts` (TS standalone, output XML 81 URLs)
+- **Fichiers modifiés (2)** :
+  - `src/pages/reseau/ReseauDecouvrir.tsx` (skeleton → page complète liste/carte avec filtres)
+  - `src/App.tsx` (+1 lazy `PublicProAnnuaire` + 1 route publique `/pros/:dept/:metier`)
+- **Migrations SQL** : aucune (réutilise tables existantes).
+- **Risque** : Low — toutes les routes publiques validées par whitelist `VALID_DEPTS` × `VALID_METIERS` (404 implicite via `Navigate` si combo invalide).
+- **Tests** : `npx tsc --noEmit` exit 0 ✅, **Vitest 390/390** (inchangé), `npx eslint` exit 0 ✅.
+- **Status** : ✅ DONE — Étape 11/12 livrée.
+
+### Action SEO complète (post-livraison)
+1. `npx tsx scripts/generate-reseau-sitemap.ts > public/sitemap-reseau.xml`
+2. Référencer dans `public/robots.txt` : `Sitemap: https://www.renovation-brh.fr/sitemap-reseau.xml`
+3. Soumettre Google Search Console
+4. (V1.5) générer pages `/pros/:dept` (hub par dépt) et `/pros` (hub global)
+
+### Décisions techniques V1
+1. **SPA Vite, pas SSG** : Schema.org JSON-LD injecté côté client (Googlebot exécute JS depuis 2019). Pas idéal mais suffisant pour référencement V1. SSR/SSG en V2 si trafic le justifie (Astro ou Next migration).
+2. **Whitelist statique** : 75 combos hardcodés dans `PublicProAnnuaire.tsx` + script sitemap. V2 : extraire de la DB (combos avec ≥1 pro actif).
+3. **Filtre `metier` post-mapping côté front** : N+1 acceptable pour ≤100 résultats. V2 RPC dédiée si volume.
+
+---
+
+## 2026-05-06 — Phase 18 Étape 9 : modération admin réseau social (mode dev)
+
+- **Contexte** : Étape 9/12 du plan Phase 18 (1 sem prévue, livrée mode "dev focus" — DPIA RGPD complet reporté V2). Workflow signalements `brh_feed_reports` pending → reviewed → action_taken/dismissed avec hide_post / hide_comment / unhide. Calque pattern admin existant.
+- **Spec produit livrée** : page `/admin/reseau-moderation` avec tabs (En attente / Traités / Rejetés / Tous), badge compteur pending, cartes enrichies (raison + cible post/comment + media count), 4 actions (dismiss / hide post / hide comment / unhide), invalidation React Query croisée (modération + posts).
+- **Hors scope V1 (différé V2 audit légal)** : EF purge-user-content RGPD, export JSON portabilité, workflow ban user, validation manuelle photos floutées, modération IA Claude vision.
+- **Fichiers créés (3)** : `src/api/admin-reseau-moderation.ts` (CRUD + join enrichi), `src/hooks/queries/admin-reseau-moderation.ts` (7 hooks), `src/pages/admin/AdminReseauModeration.tsx` (page complète).
+- **Fichiers modifiés (1)** : `src/App.tsx` (+1 lazy + 1 route `/admin/reseau-moderation`).
+- **Migrations SQL** : aucune (réutilise tables Étape 3).
+- **Risque** : Low — calque pattern admin existant, RLS admin déjà en place.
+- **Tests** : tsc exit 0 ✅, **Vitest 390/390** (inchangé), eslint exit 0 ✅.
+- **Status** : ✅ DONE — Étape 9/12 livrée. Reste 3 étapes. Sidebar admin pas mise à jour V1 (à faire en session admin BRH globale Phase 16.2).
+
+### Décisions techniques V1 (mode dev)
+1. DPIA RGPD reporté V2 (décision Philippe explicite "on s'en fout du legal pour le moment")
+2. Soft-delete uniquement (`is_hidden=true`), pas de DELETE physique V1 → réversion + audit
+3. Action_taken texte libre V1, ENUM strict V2
+4. Pas d'entrée AdminShell sidebar V1, accès direct via URL
+
+---
+
 ## 2026-05-06 — Phase 18 Étape 8 : bridge AUTAF API (config V1 + recos read-only)
 
 - **Contexte** : Étape 8/12 du plan Phase 18 (1 sem prévue). Connecte BRH Habitat à AUTAF (WordPress OVH WorkRepublic) sans le migrer. Décision structurante du 06/05 : pas de refonte WordPress AUTAF, juste un **bridge API optionnel** pour enrichir les profils pro BRH des données AUTAF (recommandations read-only V1, cross-post posts/chantiers V1.5, OAuth flow V2).

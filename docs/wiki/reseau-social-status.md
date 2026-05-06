@@ -18,10 +18,10 @@
 | 6 | Feed MVP + composer + Canvas + algo + modération min | 1.5 sem | ✅ DONE — **MVP utilisable atteint** | 2026-05-06 |
 | 7 | Marketplace chantiers (KILLER) — list + map + form + detail polymorphe | 2.5 sem | ✅ DONE | 2026-05-06 |
 | 8 | Bridge AUTAF API V1 (config + recos + EF + spec) | 1 sem | ✅ DONE (V1.5 OAuth en attente Genesii) | 2026-05-06 |
-| 9 | Modération avancée + DPIA | 1 sem | ⏸ PENDING | — |
+| 9 | Modération admin (mode dev — DPIA reporté V2) | 1 sem | ✅ DONE | 2026-05-06 |
 | 10 | Bootstrap "anti-ville morte" (// ops dès S5) | 12 sem ops | ⏸ PENDING (Philippe) | — |
-| 11 | Découverte + SEO 750 pages | 1 sem | ⏸ PENDING | — |
-| 12 | Monétisation V2 (Stripe Premium 19€/mois) | 1.5 sem | ⏸ PENDING | — |
+| 11 | Découverte + SEO (75 pages dept×métier + sitemap + Schema.org) | 1 sem | ✅ DONE | 2026-05-06 |
+| 12 | Monétisation V2 (Stripe Premium 19€/mois + Featured 49€) | 1.5 sem | ✅ DONE | 2026-05-06 |
 
 ---
 
