@@ -40,7 +40,7 @@
 - **Migrations** : `20260706200000_brh_agence_lead_economy_unified.sql`, `20260706210000_brh_agence_referral_chain.sql`
 - **Pages wiki impactées** : `agence-lead-economy.md` (nouveau), `index.md` (nouvelle entrée Partie 2)
 - **Risque** : Medium — cascade MLM 5 niveaux nécessite avis avocat avant lancement public (loi Hamon vente pyramidale). Garde-fous : cap 5 niveaux, cash dégressif, condition charte signée, pas de droit d'entrée, reset mensuel.
-- **Compliance à faire** : section CGU agence "Programme de recommandation 5 niveaux" + disclaimer non-pyramidal (1500 € avocat Hoguet déjà budgété).
+- **Compliance** : ✅ Draft CGU + brief avocat livrés (`docs/legal/cgu-agence-programme-recommandation-draft.md` + `docs/legal/brief-avocat-mlm-hoguet.md`). Bannière "BÊTA — programme en validation juridique" affichée sur `/agence/parrainage` (commissions s'accumulent en backend, aucun versement cash avant validation avocat). Échéance : 15/06/2026.
 - **Tests** : 353/353 vert, TS strict clean, ESLint clean, build prod 24.89s, migrations appliquées sur Supabase prod. À tester E2E manuellement (5 scénarios listés dans `agence-lead-economy.md` § 8).
 - **Status** : ✅ DONE (Steps A-D livrés et déployés)
 

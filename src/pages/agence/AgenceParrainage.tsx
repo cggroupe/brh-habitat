@@ -96,6 +96,23 @@ export default function AgenceParrainage() {
 
   return (
     <div className="p-6 lg:p-10 max-w-5xl mx-auto space-y-6">
+      {/* Bannière BÊTA — Programme en attente validation juridique */}
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-3">
+        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-md bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider shrink-0 mt-0.5">
+          Bêta
+        </span>
+        <div className="text-xs text-amber-900 leading-relaxed">
+          <p className="font-bold mb-0.5">Programme en validation juridique</p>
+          <p>
+            La cascade 5 niveaux est active en backend : vos commissions s'accumulent
+            au statut « En attente ». Aucun versement cash ne sera effectué tant que
+            l'avis de l'avocat spécialisé n'a pas validé les conditions définitives
+            (échéance prévue : 15 juin 2026). Vous pouvez dès maintenant partager
+            votre lien et constituer votre réseau.
+          </p>
+        </div>
+      </div>
+
       <header>
         <div className="flex items-center gap-3 mb-1">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
