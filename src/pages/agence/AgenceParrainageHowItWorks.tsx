@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 
 const LEVELS = [
-  { lvl: 1, label: 'Parrain direct', cash: 100, leads: 5, color: 'from-orange-500 to-red-600' },
+  { lvl: 1, label: 'Parrain direct', cash: 100, leads: 5, color: 'from-primary to-primary-dark' },
   { lvl: 2, label: 'Grand-parrain', cash: 25, leads: 3, color: 'from-amber-500 to-orange-500' },
   { lvl: 3, label: 'Arrière-grand-parrain', cash: 10, leads: 2, color: 'from-yellow-500 to-amber-500' },
   { lvl: 4, label: 'Niveau 4', cash: 5, leads: 1, color: 'from-lime-500 to-yellow-500' },
@@ -67,7 +67,7 @@ export default function AgenceParrainageHowItWorks() {
     <div className="p-6 lg:p-10 max-w-4xl mx-auto space-y-8">
       <Link
         to="/agence/parrainage"
-        className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-orange-600 transition"
+        className="inline-flex items-center gap-1 text-sm text-text-light hover:text-primary transition"
       >
         <ArrowLeft size={14} />
         Retour à mon réseau
@@ -75,19 +75,19 @@ export default function AgenceParrainageHowItWorks() {
 
       <header>
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg shadow-primary/30">
             <Network size={22} className="text-white" />
           </div>
           <div>
-            <p className="text-[11px] uppercase tracking-widest font-bold text-orange-600 mb-0.5">
+            <p className="text-[11px] uppercase tracking-widest font-bold text-primary mb-0.5">
               Programme de recommandation
             </p>
-            <h1 className="text-3xl font-display tracking-tight">
+            <h1 className="font-display text-3xl font-bold text-text-primary tracking-tight">
               Comment ça marche ?
             </h1>
           </div>
         </div>
-        <p className="text-slate-600 leading-relaxed mt-3">
+        <p className="text-text-secondary leading-relaxed mt-3 max-w-2xl">
           Quand vous parrainez une agence et qu'elle signe sa charte BRH, vous gagnez du cash
           + des leads bonus. La cascade s'étend sur 5 niveaux : vous touchez aussi sur les
           filleuls de vos filleuls, dégressivement.
@@ -96,14 +96,14 @@ export default function AgenceParrainageHowItWorks() {
 
       {/* Barème visuel */}
       <section>
-        <h2 className="text-sm uppercase tracking-widest font-bold text-slate-500 mb-3">
+        <h2 className="text-sm uppercase tracking-widest font-bold text-text-light mb-3">
           Barème par niveau
         </h2>
         <div className="space-y-2">
           {LEVELS.map((b) => (
             <div
               key={b.lvl}
-              className="bg-white rounded-2xl border border-slate-200 p-4 flex items-center gap-4"
+              className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-4 flex items-center gap-4"
             >
               <div
                 className={`w-12 h-12 rounded-xl bg-gradient-to-br ${b.color} flex items-center justify-center shrink-0 text-white font-bold text-lg shadow-md`}
@@ -111,25 +111,25 @@ export default function AgenceParrainageHowItWorks() {
                 N{b.lvl}
               </div>
               <div className="flex-1">
-                <p className="font-bold text-slate-800">{b.label}</p>
-                <p className="text-xs text-slate-500">
+                <p className="font-bold text-text-primary">{b.label}</p>
+                <p className="text-xs text-text-light">
                   {b.lvl === 1
                     ? 'Vous parrainez directement cette agence.'
                     : `Filleul de ${b.lvl === 2 ? 'votre filleul' : `votre filleul à ${b.lvl - 1} niveau${b.lvl > 2 ? 'x' : ''}`}.`}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold text-emerald-700 tabular-nums">{b.cash} €</p>
-                <p className="text-xs text-orange-600 font-bold">+{b.leads} leads</p>
+                <p className="text-lg font-bold text-primary tabular-nums">{b.cash} €</p>
+                <p className="text-xs text-primary font-bold">+{b.leads} leads</p>
               </div>
             </div>
           ))}
         </div>
-        <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-2xl p-4 mt-3">
-          <p className="text-sm font-bold text-orange-900">
+        <div className="bg-gradient-to-br from-primary/5 to-primary-dark/5 border border-primary/20 rounded-2xl p-4 mt-3">
+          <p className="text-sm font-bold text-primary-dark">
             Total maximum par charte signée : 145 € HT cash + 12 leads bonus
           </p>
-          <p className="text-xs text-orange-800 mt-1">
+          <p className="text-xs text-primary-dark mt-1">
             Distribué entre 5 ancêtres distincts dans la chaîne. Cap absolu, jamais dépassé.
           </p>
         </div>
@@ -137,10 +137,10 @@ export default function AgenceParrainageHowItWorks() {
 
       {/* Flow visuel */}
       <section>
-        <h2 className="text-sm uppercase tracking-widest font-bold text-slate-500 mb-3">
+        <h2 className="text-sm uppercase tracking-widest font-bold text-text-light mb-3">
           Comment vous gagnez
         </h2>
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
+        <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-6 space-y-4">
           {[
             {
               icon: Network,
@@ -166,12 +166,12 @@ export default function AgenceParrainageHowItWorks() {
             const Icon = step.icon
             return (
               <div key={step.title} className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center shrink-0">
-                  <Icon size={16} className="text-orange-600" />
+                <div className="w-9 h-9 rounded-lg bg-primary/5 flex items-center justify-center shrink-0">
+                  <Icon size={16} className="text-primary" />
                 </div>
                 <div>
-                  <p className="font-bold text-slate-800 text-sm">{step.title}</p>
-                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{step.desc}</p>
+                  <p className="font-bold text-text-primary text-sm">{step.title}</p>
+                  <p className="text-xs text-text-light mt-0.5 leading-relaxed">{step.desc}</p>
                 </div>
               </div>
             )
@@ -181,10 +181,10 @@ export default function AgenceParrainageHowItWorks() {
 
       {/* Garde-fous */}
       <section>
-        <h2 className="text-sm uppercase tracking-widest font-bold text-slate-500 mb-3">
+        <h2 className="text-sm uppercase tracking-widest font-bold text-text-light mb-3">
           Garde-fous
         </h2>
-        <div className="bg-white rounded-2xl border border-slate-200 p-5">
+        <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
               { icon: Shield, label: 'Aucun droit d\'entrée — la charte BRH est gratuite' },
@@ -198,7 +198,7 @@ export default function AgenceParrainageHowItWorks() {
               return (
                 <div key={g.label} className="flex items-start gap-2.5">
                   <Icon size={14} className="text-emerald-500 shrink-0 mt-0.5" />
-                  <p className="text-xs text-slate-700">{g.label}</p>
+                  <p className="text-xs text-text-secondary">{g.label}</p>
                 </div>
               )
             })}
@@ -208,23 +208,23 @@ export default function AgenceParrainageHowItWorks() {
 
       {/* FAQ */}
       <section>
-        <h2 className="text-sm uppercase tracking-widest font-bold text-slate-500 mb-3 flex items-center gap-2">
-          <HelpCircle size={14} className="text-orange-600" />
+        <h2 className="text-sm uppercase tracking-widest font-bold text-text-light mb-3 flex items-center gap-2">
+          <HelpCircle size={14} className="text-primary" />
           Questions fréquentes
         </h2>
         <div className="space-y-2">
           {FAQ.map((item) => (
             <details
               key={item.q}
-              className="bg-white rounded-2xl border border-slate-200 group"
+              className="bg-white rounded-2xl border border-neutral-light group"
             >
-              <summary className="cursor-pointer p-4 font-bold text-sm text-slate-800 flex items-center justify-between gap-2 list-none">
+              <summary className="cursor-pointer p-4 font-bold text-sm text-text-primary flex items-center justify-between gap-2 list-none">
                 {item.q}
-                <span className="text-orange-600 group-open:rotate-45 transition-transform text-lg leading-none shrink-0">
+                <span className="text-primary group-open:rotate-45 transition-transform text-lg leading-none shrink-0">
                   +
                 </span>
               </summary>
-              <div className="px-4 pb-4 text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+              <div className="px-4 pb-4 text-sm text-text-secondary leading-relaxed border-t border-neutral-light pt-3">
                 {item.a}
               </div>
             </details>
@@ -235,7 +235,7 @@ export default function AgenceParrainageHowItWorks() {
       <div className="text-center pt-4">
         <Link
           to="/agence/parrainage"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-orange-500 to-red-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-orange-500/30 hover:-translate-y-0.5 transition-all"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-primary to-primary-dark text-white font-bold text-sm rounded-xl shadow-lg shadow-primary/30 hover:-translate-y-0.5 transition-all"
         >
           <Network size={14} />
           Retour à mon réseau d'agences

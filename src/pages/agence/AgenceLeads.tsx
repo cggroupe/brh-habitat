@@ -42,10 +42,10 @@ const STATUS_LABELS: Record<AssignmentStatus, string> = {
 }
 
 const STATUS_COLORS: Record<AssignmentStatus, string> = {
-  active: 'bg-orange-100 text-orange-800 border border-orange-200',
+  active: 'bg-primary/10 text-primary-dark border border-primary/20',
   contacted: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
-  expired: 'bg-slate-100 text-slate-600 border border-slate-200',
-  released: 'bg-slate-100 text-slate-600 border border-slate-200',
+  expired: 'bg-background text-text-secondary border border-neutral-light',
+  released: 'bg-background text-text-secondary border border-neutral-light',
   blacklisted: 'bg-red-100 text-red-800 border border-red-200',
 }
 
@@ -153,12 +153,12 @@ export default function AgenceLeads() {
     <div className="p-6 lg:p-10 max-w-6xl mx-auto space-y-6">
       <header>
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-md">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-md">
             <ClipboardList size={20} className="text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-display tracking-tight">Mes leads</h1>
-            <p className="text-sm text-slate-500">
+            <h1 className="font-display text-3xl font-bold text-text-primary tracking-tight">Mes leads</h1>
+            <p className="text-sm text-text-light">
               {active.length} actifs · {past.length} historique · max 2 tentatives par lead
             </p>
           </div>
@@ -170,31 +170,31 @@ export default function AgenceLeads() {
 
       {/* Search */}
       <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-light" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Rechercher par adresse, commune, code postal…"
-          className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
+          className="w-full pl-9 pr-3 py-2 border border-neutral-light rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
         />
       </div>
 
       {isLoading ? (
         <div className="p-12 flex justify-center">
-          <Loader className="animate-spin text-orange-500" />
+          <Loader className="animate-spin text-primary" />
         </div>
       ) : active.length === 0 && past.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-orange-50 flex items-center justify-center">
-            <Flame size={20} className="text-orange-500" />
+        <div className="bg-white border border-neutral-light rounded-2xl p-8 text-center">
+          <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-primary/5 flex items-center justify-center">
+            <Flame size={20} className="text-primary" />
           </div>
-          <p className="text-slate-800 font-semibold">Aucun lead actif pour le moment</p>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-text-primary font-semibold">Aucun lead actif pour le moment</p>
+          <p className="text-sm text-text-light mt-1">
             Explorez le{' '}
             <a
               href="/agence/score-vente"
-              className="text-orange-600 hover:text-orange-700 font-semibold underline"
+              className="text-primary hover:text-primary-dark font-semibold underline"
             >
               Score Vente
             </a>{' '}
@@ -205,7 +205,7 @@ export default function AgenceLeads() {
         <>
           {active.length > 0 ? (
             <section>
-              <h2 className="text-sm uppercase tracking-wider text-slate-500 font-bold mb-3">
+              <h2 className="text-sm uppercase tracking-wider text-text-light font-bold mb-3">
                 Leads actifs ({active.length})
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -223,16 +223,16 @@ export default function AgenceLeads() {
 
           {past.length > 0 ? (
             <section>
-              <h2 className="text-sm uppercase tracking-wider text-slate-500 font-bold mb-3">
+              <h2 className="text-sm uppercase tracking-wider text-text-light font-bold mb-3">
                 Historique ({past.length})
               </h2>
-              <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-100">
+              <div className="bg-white rounded-xl border border-neutral-light divide-y divide-neutral-light">
                 {past.slice(0, 30).map((lead) => (
                   <button
                     key={lead.id}
                     type="button"
                     onClick={() => openStudy(lead)}
-                    className="w-full p-3 text-sm flex items-center justify-between hover:bg-slate-50 transition text-left"
+                    className="w-full p-3 text-sm flex items-center justify-between hover:bg-background transition text-left"
                   >
                     <div className="flex items-center gap-2 min-w-0 flex-1">
                       <span
@@ -240,16 +240,16 @@ export default function AgenceLeads() {
                       >
                         {STATUS_LABELS[lead.status]}
                       </span>
-                      <span className="truncate text-slate-700">
+                      <span className="truncate text-text-secondary">
                         {lead.prospect?.adresse_ban ?? `Prospect #${lead.prospect_id}`}
                       </span>
                     </div>
-                    <span className="text-xs text-slate-500 shrink-0 ml-2">
+                    <span className="text-xs text-text-light shrink-0 ml-2">
                       {lead.released_at
                         ? new Date(lead.released_at).toLocaleDateString('fr-FR')
                         : new Date(lead.claimed_at).toLocaleDateString('fr-FR')}
                     </span>
-                    <ChevronRight size={14} className="text-slate-300 ml-1 shrink-0" />
+                    <ChevronRight size={14} className="text-text-light ml-1 shrink-0" />
                   </button>
                 ))}
               </div>
@@ -269,8 +269,8 @@ export default function AgenceLeads() {
       {loadingStudy ? (
         <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/30 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl p-5 flex items-center gap-3">
-            <Loader className="animate-spin text-orange-500" />
-            <span className="text-sm font-medium text-slate-700">Chargement de l'étude…</span>
+            <Loader className="animate-spin text-primary" />
+            <span className="text-sm font-medium text-text-secondary">Chargement de l'étude…</span>
           </div>
         </div>
       ) : null}
@@ -308,18 +308,18 @@ export default function AgenceLeads() {
                 Faire une simulation pour ce lead
               </Link>
 
-              <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-between text-xs pt-2 border-t border-neutral-light">
                 <span className={`px-2 py-1 rounded font-semibold ${STATUS_COLORS[selectedLead.status]}`}>
                   {STATUS_LABELS[selectedLead.status]}
                 </span>
-                <span className="text-slate-500">
+                <span className="text-text-light">
                   {selectedLead.contact_attempts}/2 tentatives ·
                   Expire le {new Date(selectedLead.expires_at).toLocaleDateString('fr-FR')}
                 </span>
               </div>
 
               {selectedLead.last_attempt_outcome ? (
-                <div className="bg-slate-50 rounded-md p-2 text-xs text-slate-700">
+                <div className="bg-background rounded-md p-2 text-xs text-text-secondary">
                   Dernière tentative :{' '}
                   <strong>{OUTCOME_LABELS[selectedLead.last_attempt_outcome]}</strong>
                   {selectedLead.notes ? ` · ${selectedLead.notes}` : ''}
@@ -334,11 +334,11 @@ export default function AgenceLeads() {
               ) : selectedLead.status === 'active' ? (
                 <>
                   {logOpen ? (
-                    <div className="bg-slate-50 rounded-lg p-3 space-y-2 border border-slate-200">
+                    <div className="bg-background rounded-lg p-3 space-y-2 border border-neutral-light">
                       <select
                         value={outcome}
                         onChange={(e) => setOutcome(e.target.value as ContactOutcome)}
-                        className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm"
+                        className="w-full px-2 py-1.5 border border-neutral-light rounded text-sm"
                       >
                         {Object.entries(OUTCOME_LABELS).map(([k, v]) => (
                           <option key={k} value={k}>
@@ -351,21 +351,21 @@ export default function AgenceLeads() {
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         placeholder="Notes (optionnel)"
-                        className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm"
+                        className="w-full px-2 py-1.5 border border-neutral-light rounded text-sm"
                       />
                       <div className="flex gap-2">
                         <button
                           type="button"
                           onClick={() => void handleLogAttempt()}
                           disabled={logAttemptMut.isPending}
-                          className="flex-1 px-3 py-2 bg-gradient-to-br from-orange-500 to-red-600 text-white text-xs font-bold rounded-md hover:shadow-md disabled:opacity-50 transition"
+                          className="flex-1 px-3 py-2 bg-gradient-to-br from-primary to-primary-dark text-white text-xs font-bold rounded-md hover:shadow-md disabled:opacity-50 transition"
                         >
                           {logAttemptMut.isPending ? '…' : 'Enregistrer'}
                         </button>
                         <button
                           type="button"
                           onClick={() => setLogOpen(false)}
-                          className="px-3 py-2 border border-slate-300 text-xs rounded-md hover:bg-slate-50"
+                          className="px-3 py-2 border border-slate-300 text-xs rounded-md hover:bg-background"
                         >
                           Annuler
                         </button>
@@ -377,14 +377,14 @@ export default function AgenceLeads() {
                         type="button"
                         onClick={() => setLogOpen(true)}
                         disabled={selectedLead.contact_attempts >= 2}
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs bg-gradient-to-br from-orange-500 to-red-600 text-white font-bold rounded-md hover:shadow-md disabled:opacity-50 transition"
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs bg-gradient-to-br from-primary to-primary-dark text-white font-bold rounded-md hover:shadow-md disabled:opacity-50 transition"
                       >
                         <Phone size={12} /> Logger une tentative
                       </button>
                       <button
                         type="button"
                         onClick={() => void handleRelease()}
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs border border-slate-300 rounded-md hover:bg-slate-50"
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs border border-slate-300 rounded-md hover:bg-background"
                       >
                         <XCircle size={12} /> Libérer le lead
                       </button>
@@ -415,23 +415,23 @@ function LeadCard({
 }) {
   const p = lead.prospect
   const adresse = p?.adresse_ban ?? p?.adresse ?? `Prospect #${lead.prospect_id}`
-  const dpeBg = p?.etiquette_dpe ? DPE_BG[p.etiquette_dpe] : 'bg-slate-300 text-slate-700'
+  const dpeBg = p?.etiquette_dpe ? DPE_BG[p.etiquette_dpe] : 'bg-slate-300 text-text-secondary'
   const expiresIn = daysUntil(lead.expires_at, now)
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="bg-white rounded-xl border border-slate-200 p-4 text-left hover:border-orange-400 hover:shadow-md transition group"
+      className="bg-white rounded-xl border border-neutral-light p-4 text-left hover:border-primary hover:shadow-md transition group"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="min-w-0 flex-1">
-          <p className="font-bold text-slate-800 text-sm flex items-center gap-1 truncate">
-            <MapPin size={12} className="shrink-0 text-slate-400" />
+          <p className="font-bold text-text-primary text-sm flex items-center gap-1 truncate">
+            <MapPin size={12} className="shrink-0 text-text-light" />
             <span className="truncate">{adresse}</span>
           </p>
           {p?.commune ? (
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-[11px] text-text-light mt-0.5">
               {p.code_postal} {p.commune}
               {p.surface_habitable ? ` · ${p.surface_habitable} m²` : ''}
               {p.annee_construction ? ` · ${p.annee_construction}` : ''}
@@ -451,20 +451,20 @@ function LeadCard({
         <span className={`px-2 py-0.5 rounded text-xs ${STATUS_COLORS[lead.status]}`}>
           {STATUS_LABELS[lead.status]}
         </span>
-        <span className="text-[11px] text-slate-500">
+        <span className="text-[11px] text-text-light">
           {lead.contact_attempts}/2 tentatives · expire J+{expiresIn}
         </span>
       </div>
 
       {lead.last_attempt_outcome ? (
-        <p className="text-[11px] text-slate-600 bg-slate-50 rounded px-2 py-1 mt-2 truncate">
+        <p className="text-[11px] text-text-secondary bg-background rounded px-2 py-1 mt-2 truncate">
           Dernière : {OUTCOME_LABELS[lead.last_attempt_outcome]}
           {lead.notes ? ` — ${lead.notes}` : ''}
         </p>
       ) : null}
 
-      <div className="flex items-center justify-between gap-2 mt-3 pt-2 border-t border-slate-100">
-        <span className="text-orange-600 text-[11px] font-semibold inline-flex items-center group-hover:translate-x-0.5 transition">
+      <div className="flex items-center justify-between gap-2 mt-3 pt-2 border-t border-neutral-light">
+        <span className="text-primary text-[11px] font-semibold inline-flex items-center group-hover:translate-x-0.5 transition">
           Voir l'étude
           <ChevronRight size={12} className="ml-0.5" />
         </span>
@@ -497,14 +497,14 @@ function SimulationsSection({ leadId }: { leadId: string }) {
               to={`/agence/simulateur?simId=${s.id}`}
               className="flex items-center justify-between gap-2 px-2 py-1 bg-white rounded border border-emerald-100 hover:border-emerald-300 transition text-xs"
             >
-              <span className="truncate text-slate-800 font-medium">{s.titre}</span>
+              <span className="truncate text-text-primary font-medium">{s.titre}</span>
               <span className="flex items-center gap-1.5 shrink-0">
                 {s.etiquette_dpe ? (
-                  <span className="px-1.5 py-0.5 bg-slate-800 text-white text-[10px] font-bold rounded">
+                  <span className="px-1.5 py-0.5 bg-deep text-white text-[10px] font-bold rounded">
                     {s.etiquette_dpe}
                   </span>
                 ) : null}
-                <span className="text-[10px] text-slate-500">
+                <span className="text-[10px] text-text-light">
                   {new Date(s.created_at).toLocaleDateString('fr-FR')}
                 </span>
               </span>

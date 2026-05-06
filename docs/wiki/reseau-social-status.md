@@ -16,8 +16,8 @@
 | 4 | Infrastructure UI (Guard + Shell + 8 routes squelettes) | 3 j | ✅ DONE | 2026-05-06 |
 | 5 | Graphe social + endorsements + fusion messageries | 1 sem | ✅ DONE | 2026-05-06 |
 | 6 | Feed MVP + composer + Canvas + algo + modération min | 1.5 sem | ✅ DONE — **MVP utilisable atteint** | 2026-05-06 |
-| 7 | Marketplace chantiers (KILLER) | 2.5 sem | ⏸ PENDING | — |
-| 8 | Bridge AUTAF API | 1 sem | ⏸ PENDING (dépend dispo API Genesii) | — |
+| 7 | Marketplace chantiers (KILLER) — list + map + form + detail polymorphe | 2.5 sem | ✅ DONE | 2026-05-06 |
+| 8 | Bridge AUTAF API V1 (config + recos + EF + spec) | 1 sem | ✅ DONE (V1.5 OAuth en attente Genesii) | 2026-05-06 |
 | 9 | Modération avancée + DPIA | 1 sem | ⏸ PENDING | — |
 | 10 | Bootstrap "anti-ville morte" (// ops dès S5) | 12 sem ops | ⏸ PENDING (Philippe) | — |
 | 11 | Découverte + SEO 750 pages | 1 sem | ⏸ PENDING | — |

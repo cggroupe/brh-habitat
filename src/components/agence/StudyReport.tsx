@@ -64,12 +64,12 @@ export function StudyReport({ form, preview, scenarios, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-[1500] bg-slate-900/80 backdrop-blur-sm overflow-y-auto print:bg-white print:overflow-visible"
+      className="fixed inset-0 z-[1500] bg-deep/80 backdrop-blur-sm overflow-y-auto print:bg-white print:overflow-visible"
       onClick={onClose}
     >
       {/* Toolbar (caché en print) */}
-      <div className="sticky top-0 z-10 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-md print:hidden">
-        <p className="text-sm font-semibold text-slate-700">
+      <div className="sticky top-0 z-10 bg-white border-b border-neutral-light px-4 py-3 flex items-center justify-between shadow-md print:hidden">
+        <p className="text-sm font-semibold text-text-secondary">
           Aperçu rapport d'étude énergétique
         </p>
         <div className="flex items-center gap-2">
@@ -84,7 +84,7 @@ export function StudyReport({ form, preview, scenarios, onClose }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center gap-1 px-3 py-2 border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50"
+            className="inline-flex items-center gap-1 px-3 py-2 border border-neutral-light text-text-secondary text-sm font-medium rounded-lg hover:bg-background"
           >
             <X size={14} />
             Fermer
@@ -105,15 +105,15 @@ export function StudyReport({ form, preview, scenarios, onClose }: Props) {
               <p className="text-[10px] uppercase tracking-widest text-[#0a5e2a] font-bold">
                 Rapport d'étude énergétique
               </p>
-              <h1 className="text-3xl font-bold text-slate-900 mt-1">BRH Habitat</h1>
-              <p className="text-xs text-slate-500 mt-1">
+              <h1 className="text-3xl font-bold text-text-primary mt-1">BRH Habitat</h1>
+              <p className="text-xs text-text-light mt-1">
                 Bretagne Rénovation Habitat — Étude virtuelle simplifiée
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-slate-500">Édité le</p>
-              <p className="text-sm font-semibold text-slate-800">{today}</p>
-              <p className="text-[10px] text-slate-400 mt-2">
+              <p className="text-xs text-text-light">Édité le</p>
+              <p className="text-sm font-semibold text-text-primary">{today}</p>
+              <p className="text-[10px] text-text-light mt-2">
                 Code INSEE : {form.codeInsee} · Altitude {form.altitude} m
               </p>
             </div>
@@ -121,12 +121,12 @@ export function StudyReport({ form, preview, scenarios, onClose }: Props) {
 
           {/* === DPE BIG ===  */}
           <section className="text-center">
-            <p className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-2">
+            <p className="text-xs uppercase tracking-wider text-text-light font-bold mb-2">
               Diagnostic de Performance Énergétique estimé
             </p>
             <div className="flex items-center justify-center gap-6 my-4">
               <div>
-                <p className="text-[10px] text-slate-500 uppercase mb-1">Énergie</p>
+                <p className="text-[10px] text-text-light uppercase mb-1">Énergie</p>
                 <span
                   className="inline-flex items-center justify-center w-20 h-20 rounded-2xl text-white font-bold text-5xl shadow-lg"
                   style={{
@@ -136,12 +136,12 @@ export function StudyReport({ form, preview, scenarios, onClose }: Props) {
                 >
                   {preview.etiquetteDpe}
                 </span>
-                <p className="text-[11px] text-slate-600 mt-2">
+                <p className="text-[11px] text-text-secondary mt-2">
                   {Math.round(preview.cepKwhEpM2An)} kWh EP/m²/an
                 </p>
               </div>
               <div>
-                <p className="text-[10px] text-slate-500 uppercase mb-1">Climat (GES)</p>
+                <p className="text-[10px] text-text-light uppercase mb-1">Climat (GES)</p>
                 <span
                   className="inline-flex items-center justify-center w-20 h-20 rounded-2xl text-white font-bold text-5xl shadow-lg"
                   style={{
@@ -151,12 +151,12 @@ export function StudyReport({ form, preview, scenarios, onClose }: Props) {
                 >
                   {preview.etiquetteClimat}
                 </span>
-                <p className="text-[11px] text-slate-600 mt-2">
+                <p className="text-[11px] text-text-secondary mt-2">
                   {preview.gesKgCo2M2An.toFixed(1)} kg CO₂/m²/an
                 </p>
               </div>
             </div>
-            <p className="text-[10px] text-slate-400 italic">
+            <p className="text-[10px] text-text-light italic">
               Zone climatique : {preview.hypotheses.zoneClimatique} · Moteur 3CL v
               {preview.hypotheses.moteurVersion}
             </p>
@@ -257,23 +257,23 @@ export function StudyReport({ form, preview, scenarios, onClose }: Props) {
                 return (
                   <div
                     key={sc.template.id}
-                    className="border-2 border-slate-200 rounded-lg p-4 print:break-inside-avoid"
+                    className="border-2 border-neutral-light rounded-lg p-4 print:break-inside-avoid"
                   >
                     <div className="flex items-baseline justify-between mb-2">
-                      <p className="font-bold text-slate-800">
+                      <p className="font-bold text-text-primary">
                         Scénario {i + 1} — {labelTitle}
                       </p>
-                      <span className="text-xs uppercase tracking-wider bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">
+                      <span className="text-xs uppercase tracking-wider bg-success/10 text-success font-bold px-2 py-0.5 rounded">
                         −{gainPct} % conso
                       </span>
                     </div>
-                    <p className="text-xs text-slate-600 mb-3">
+                    <p className="text-xs text-text-secondary mb-3">
                       {sc.template.description}
                     </p>
 
                     <div className="flex items-center gap-4 mb-3">
                       <div className="text-center">
-                        <p className="text-[10px] text-slate-500 uppercase">Avant</p>
+                        <p className="text-[10px] text-text-light uppercase">Avant</p>
                         <span
                           className="inline-block w-10 h-10 rounded-md text-white font-bold text-lg flex items-center justify-center mt-1"
                           style={{ background: DPE_BG[preview.etiquetteDpe] }}
@@ -281,9 +281,9 @@ export function StudyReport({ form, preview, scenarios, onClose }: Props) {
                           {preview.etiquetteDpe}
                         </span>
                       </div>
-                      <span className="text-2xl text-slate-400">→</span>
+                      <span className="text-2xl text-text-light">→</span>
                       <div className="text-center">
-                        <p className="text-[10px] text-slate-500 uppercase">Après</p>
+                        <p className="text-[10px] text-text-light uppercase">Après</p>
                         <span
                           className="inline-block w-10 h-10 rounded-md text-white font-bold text-lg flex items-center justify-center mt-1"
                           style={{ background: DPE_BG[sc.result.etiquetteDpe] }}
@@ -292,8 +292,8 @@ export function StudyReport({ form, preview, scenarios, onClose }: Props) {
                         </span>
                       </div>
                       <div className="ml-auto text-right text-xs">
-                        <p className="text-slate-500">Conso après</p>
-                        <p className="font-bold text-slate-800">
+                        <p className="text-text-light">Conso après</p>
+                        <p className="font-bold text-text-primary">
                           {Math.round(sc.result.cepKwhEpM2An)} kWh EP/m²/an
                         </p>
                       </div>
@@ -301,22 +301,22 @@ export function StudyReport({ form, preview, scenarios, onClose }: Props) {
 
                     <table className="w-full text-sm">
                       <tbody>
-                        <tr className="border-t border-slate-100">
-                          <td className="py-1.5 text-slate-600">Coût total TTC</td>
+                        <tr className="border-t border-neutral-light">
+                          <td className="py-1.5 text-text-secondary">Coût total TTC</td>
                           <td className="py-1.5 text-right font-bold text-blue-700 tabular-nums">
                             {Math.round(sc.coutTtcEuros).toLocaleString('fr-FR')} €
                           </td>
                         </tr>
-                        <tr className="border-t border-slate-100">
-                          <td className="py-1.5 text-slate-600">
+                        <tr className="border-t border-neutral-light">
+                          <td className="py-1.5 text-text-secondary">
                             Aides estimées (MaPrimeRénov' + CEE)
                           </td>
-                          <td className="py-1.5 text-right font-bold text-emerald-700 tabular-nums">
+                          <td className="py-1.5 text-right font-bold text-primary tabular-nums">
                             −{Math.round(sc.aidesEuros.total).toLocaleString('fr-FR')} €
                           </td>
                         </tr>
-                        <tr className="border-t-2 border-slate-300 bg-emerald-50">
-                          <td className="py-2 px-1 font-bold text-slate-800">
+                        <tr className="border-t-2 border-neutral-light bg-emerald-50">
+                          <td className="py-2 px-1 font-bold text-text-primary">
                             Reste à charge estimé
                           </td>
                           <td className="py-2 px-1 text-right font-bold text-[#0a5e2a] text-base tabular-nums">
@@ -327,10 +327,10 @@ export function StudyReport({ form, preview, scenarios, onClose }: Props) {
                         sc.payback.paybackAnnees > 0 &&
                         sc.payback.paybackAnnees < 99 ? (
                           <tr>
-                            <td className="py-1 text-[11px] text-slate-500 italic">
+                            <td className="py-1 text-[11px] text-text-light italic">
                               Retour sur investissement
                             </td>
-                            <td className="py-1 text-right text-[11px] text-slate-500 italic">
+                            <td className="py-1 text-right text-[11px] text-text-light italic">
                               ~{Math.round(sc.payback.paybackAnnees)} ans
                             </td>
                           </tr>
@@ -344,8 +344,8 @@ export function StudyReport({ form, preview, scenarios, onClose }: Props) {
           </section>
 
           {/* === FOOTER LÉGAL === */}
-          <footer className="border-t border-slate-200 pt-4 text-[10px] text-slate-500 leading-relaxed">
-            <p className="font-bold text-slate-700 mb-1">Mentions légales</p>
+          <footer className="border-t border-neutral-light pt-4 text-[10px] text-text-light leading-relaxed">
+            <p className="font-bold text-text-secondary mb-1">Mentions légales</p>
             <p>
               Étude indicative basée sur les déclarations de l'utilisateur et le moteur
               de calcul 3CL-DPE intégré BRH Habitat. Précision ±1 classe DPE par rapport
@@ -379,9 +379,9 @@ export function StudyReport({ form, preview, scenarios, onClose }: Props) {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between gap-2 border-b border-slate-100 pb-1">
-      <span className="text-slate-600">{label}</span>
-      <span className="font-semibold text-slate-800 text-right">{value}</span>
+    <div className="flex justify-between gap-2 border-b border-neutral-light pb-1">
+      <span className="text-text-secondary">{label}</span>
+      <span className="font-semibold text-text-primary text-right">{value}</span>
     </div>
   )
 }

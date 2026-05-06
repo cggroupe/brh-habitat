@@ -44,10 +44,10 @@ const STATUS_LABELS: Record<ContribStatus, string> = {
 
 const STATUS_COLORS: Record<ContribStatus, string> = {
   submitted: 'bg-blue-100 text-blue-800 border border-blue-200',
-  qualified: 'bg-amber-100 text-amber-800 border border-amber-200',
-  audit_done: 'bg-orange-100 text-orange-800 border border-orange-200',
+  qualified: 'bg-warning/10 text-warning border border-warning/20',
+  audit_done: 'bg-primary/10 text-primary-dark border border-primary/20',
   quote_signed: 'bg-purple-100 text-purple-800 border border-purple-200',
-  completed: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+  completed: 'bg-success/10 text-success border border-emerald-200',
   rejected: 'bg-red-100 text-red-800 border border-red-200',
 }
 
@@ -184,12 +184,12 @@ export default function AgenceContributions() {
     <div className="p-6 lg:p-10 max-w-6xl mx-auto space-y-6">
       <header>
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-md">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-deep to-primary-dark flex items-center justify-center shadow-md">
             <Handshake size={20} className="text-white" />
           </div>
           <div>
             <h1 className="text-2xl font-display tracking-tight">Apporter un prospect travaux</h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-text-light">
               Référez vos vendeurs intéressés par la rénovation → commission 5 % HT + débloquez leads + features
             </p>
           </div>
@@ -198,7 +198,7 @@ export default function AgenceContributions() {
 
       {/* Récap progression */}
       {progression ? (
-        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-5 text-white relative overflow-hidden">
+        <div className="bg-gradient-to-br from-deep via-primary-dark to-deep rounded-2xl p-5 text-white relative overflow-hidden">
           <div
             className="absolute top-0 right-0 w-64 h-64 rounded-full opacity-20 blur-3xl"
             style={{ background: 'radial-gradient(circle, #10b981 0%, transparent 70%)' }}
@@ -213,7 +213,7 @@ export default function AgenceContributions() {
                 {TIER_LABELS_FR[progression.tier]}
               </p>
               {remainingForNext != null && remainingForNext > 0 ? (
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-[11px] text-text-light mt-1">
                   {remainingForNext} chantiers signés pour passer{' '}
                   {tierThreshold.next ? TIER_LABELS_FR[tierThreshold.next as keyof typeof TIER_LABELS_FR] : ''}
                 </p>
@@ -222,35 +222,35 @@ export default function AgenceContributions() {
               )}
             </div>
             <div>
-              <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
+              <p className="text-[11px] uppercase tracking-wider text-text-light font-bold">
                 Contributions
               </p>
               <p className="text-2xl font-bold mt-1 tabular-nums">
                 {progression.contributions_count}
               </p>
-              <p className="text-[11px] text-slate-400 mt-1">
+              <p className="text-[11px] text-text-light mt-1">
                 dont {progression.contributions_qualified} qualifiées
               </p>
             </div>
             <div>
-              <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
+              <p className="text-[11px] uppercase tracking-wider text-text-light font-bold">
                 Chantiers signés
               </p>
               <p className="text-2xl font-bold mt-1 tabular-nums">
                 {progression.chantiers_signes}
               </p>
-              <p className="text-[11px] text-slate-400 mt-1">
+              <p className="text-[11px] text-text-light mt-1">
                 {progression.chantiers_completes} terminés
               </p>
             </div>
             <div>
-              <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
+              <p className="text-[11px] uppercase tracking-wider text-text-light font-bold">
                 Commissions
               </p>
               <p className="text-2xl font-bold mt-1 tabular-nums">
                 {formatEur(progression.total_commission_due_cents)}
               </p>
-              <p className="text-[11px] text-slate-400 mt-1">
+              <p className="text-[11px] text-text-light mt-1">
                 dont {formatEur(progression.total_commission_paid_cents)} versées
               </p>
             </div>
@@ -266,7 +266,7 @@ export default function AgenceContributions() {
             setFormOpen(true)
             setSubmitOK(false)
           }}
-          className="w-full flex items-center justify-center gap-2 px-4 py-4 bg-gradient-to-br from-emerald-500 to-emerald-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition"
+          className="w-full flex items-center justify-center gap-2 px-4 py-4 bg-gradient-to-br from-deep to-primary-dark text-white font-bold rounded-xl shadow-md hover:shadow-lg transition"
         >
           <Plus size={18} />
           Apporter un nouveau prospect travaux
@@ -274,7 +274,7 @@ export default function AgenceContributions() {
       ) : (
         <form
           onSubmit={(e) => void handleSubmit(e)}
-          className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4"
+          className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-6 space-y-4"
         >
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-display tracking-tight">Nouveau prospect travaux</h2>
@@ -284,7 +284,7 @@ export default function AgenceContributions() {
                 setFormOpen(false)
                 resetForm()
               }}
-              className="text-slate-400 hover:text-slate-600"
+              className="text-text-light hover:text-text-secondary"
             >
               <XCircle size={20} />
             </button>
@@ -298,54 +298,54 @@ export default function AgenceContributions() {
 
           {/* Adresse */}
           <fieldset>
-            <legend className="text-xs uppercase tracking-wider font-bold text-slate-500 mb-2">
+            <legend className="text-xs uppercase tracking-wider font-bold text-text-light mb-2">
               Bien
             </legend>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-3">
-                <label className="block text-xs text-slate-600 mb-1">Adresse complète *</label>
+                <label className="block text-xs text-text-secondary mb-1">Adresse complète *</label>
                 <input
                   required
                   value={adresse}
                   onChange={(e) => setAdresse(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded text-sm"
+                  className="w-full px-3 py-2 border border-neutral-light rounded text-sm"
                   placeholder="12 rue de la Paix"
                 />
               </div>
               <div>
-                <label className="block text-xs text-slate-600 mb-1">Code postal</label>
+                <label className="block text-xs text-text-secondary mb-1">Code postal</label>
                 <input
                   value={codePostal}
                   onChange={(e) => setCodePostal(e.target.value)}
                   maxLength={5}
-                  className="w-full px-3 py-2 border border-slate-200 rounded text-sm"
+                  className="w-full px-3 py-2 border border-neutral-light rounded text-sm"
                   placeholder="35000"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs text-slate-600 mb-1">Commune</label>
+                <label className="block text-xs text-text-secondary mb-1">Commune</label>
                 <input
                   value={commune}
                   onChange={(e) => setCommune(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded text-sm"
+                  className="w-full px-3 py-2 border border-neutral-light rounded text-sm"
                   placeholder="Rennes"
                 />
               </div>
               <div>
-                <label className="block text-xs text-slate-600 mb-1">Surface m²</label>
+                <label className="block text-xs text-text-secondary mb-1">Surface m²</label>
                 <input
                   type="number"
                   value={surfaceM2}
                   onChange={(e) => setSurfaceM2(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded text-sm"
+                  className="w-full px-3 py-2 border border-neutral-light rounded text-sm"
                 />
               </div>
               <div>
-                <label className="block text-xs text-slate-600 mb-1">DPE actuel</label>
+                <label className="block text-xs text-text-secondary mb-1">DPE actuel</label>
                 <select
                   value={dpeActuel}
                   onChange={(e) => setDpeActuel(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded text-sm"
+                  className="w-full px-3 py-2 border border-neutral-light rounded text-sm"
                 >
                   <option value="">—</option>
                   {['A', 'B', 'C', 'D', 'E', 'F', 'G'].map((c) => (
@@ -360,7 +360,7 @@ export default function AgenceContributions() {
 
           {/* Propriétaire */}
           <fieldset>
-            <legend className="text-xs uppercase tracking-wider font-bold text-slate-500 mb-2">
+            <legend className="text-xs uppercase tracking-wider font-bold text-text-light mb-2">
               Propriétaire
             </legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -368,30 +368,30 @@ export default function AgenceContributions() {
                 value={proprietaireNom}
                 onChange={(e) => setProprietaireNom(e.target.value)}
                 placeholder="Nom"
-                className="w-full px-3 py-2 border border-slate-200 rounded text-sm"
+                className="w-full px-3 py-2 border border-neutral-light rounded text-sm"
               />
               <input
                 value={proprietairePrenom}
                 onChange={(e) => setProprietairePrenom(e.target.value)}
                 placeholder="Prénom"
-                className="w-full px-3 py-2 border border-slate-200 rounded text-sm"
+                className="w-full px-3 py-2 border border-neutral-light rounded text-sm"
               />
               <input
                 type="tel"
                 value={proprietaireTel}
                 onChange={(e) => setProprietaireTel(e.target.value)}
                 placeholder="06 12 34 56 78"
-                className="w-full px-3 py-2 border border-slate-200 rounded text-sm"
+                className="w-full px-3 py-2 border border-neutral-light rounded text-sm"
               />
               <input
                 type="email"
                 value={proprietaireEmail}
                 onChange={(e) => setProprietaireEmail(e.target.value)}
                 placeholder="email@example.fr"
-                className="w-full px-3 py-2 border border-slate-200 rounded text-sm"
+                className="w-full px-3 py-2 border border-neutral-light rounded text-sm"
               />
             </div>
-            <label className="mt-3 flex items-start gap-2 text-xs text-slate-700">
+            <label className="mt-3 flex items-start gap-2 text-xs text-text-secondary">
               <input
                 type="checkbox"
                 checked={consent}
@@ -408,7 +408,7 @@ export default function AgenceContributions() {
 
           {/* Travaux */}
           <fieldset>
-            <legend className="text-xs uppercase tracking-wider font-bold text-slate-500 mb-2">
+            <legend className="text-xs uppercase tracking-wider font-bold text-text-light mb-2">
               Travaux envisagés
             </legend>
             <div className="flex flex-wrap gap-2">
@@ -422,7 +422,7 @@ export default function AgenceContributions() {
                     className={`px-3 py-1.5 rounded-full text-xs border transition ${
                       active
                         ? 'bg-emerald-600 border-emerald-700 text-white'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                        : 'bg-white border-neutral-light text-text-secondary hover:bg-background'
                     }`}
                   >
                     {g.label}
@@ -432,21 +432,21 @@ export default function AgenceContributions() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
               <div>
-                <label className="block text-xs text-slate-600 mb-1">Budget estimé (€ TTC)</label>
+                <label className="block text-xs text-text-secondary mb-1">Budget estimé (€ TTC)</label>
                 <input
                   type="number"
                   value={budgetEur}
                   onChange={(e) => setBudgetEur(e.target.value)}
                   placeholder="Optionnel"
-                  className="w-full px-3 py-2 border border-slate-200 rounded text-sm"
+                  className="w-full px-3 py-2 border border-neutral-light rounded text-sm"
                 />
               </div>
               <div>
-                <label className="block text-xs text-slate-600 mb-1">Urgence</label>
+                <label className="block text-xs text-text-secondary mb-1">Urgence</label>
                 <select
                   value={urgence}
                   onChange={(e) => setUrgence(e.target.value as Urgence)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded text-sm"
+                  className="w-full px-3 py-2 border border-neutral-light rounded text-sm"
                 >
                   {Object.entries(URGENCE_LABELS).map(([k, v]) => (
                     <option key={k} value={k}>
@@ -460,13 +460,13 @@ export default function AgenceContributions() {
 
           {/* Notes */}
           <div>
-            <label className="block text-xs text-slate-600 mb-1">Contexte / notes</label>
+            <label className="block text-xs text-text-secondary mb-1">Contexte / notes</label>
             <textarea
               value={contexte}
               onChange={(e) => setContexte(e.target.value)}
               placeholder="Vendeur intéressé par PAC après visite..."
               rows={2}
-              className="w-full px-3 py-2 border border-slate-200 rounded text-sm"
+              className="w-full px-3 py-2 border border-neutral-light rounded text-sm"
             />
           </div>
 
@@ -485,7 +485,7 @@ export default function AgenceContributions() {
           <button
             type="submit"
             disabled={submitMut.isPending}
-            className="w-full px-4 py-3 bg-gradient-to-br from-emerald-500 to-emerald-700 text-white font-bold rounded-lg shadow hover:shadow-lg disabled:opacity-50 transition"
+            className="w-full px-4 py-3 bg-gradient-to-br from-deep to-primary-dark text-white font-bold rounded-lg shadow hover:shadow-lg disabled:opacity-50 transition"
           >
             {submitMut.isPending ? 'Envoi…' : 'Envoyer la contribution à BRH'}
           </button>
@@ -501,7 +501,7 @@ export default function AgenceContributions() {
 
       {/* Liste contributions */}
       <section>
-        <h2 className="text-sm uppercase tracking-wider text-slate-500 font-bold mb-3">
+        <h2 className="text-sm uppercase tracking-wider text-text-light font-bold mb-3">
           Mes contributions ({contributions.length})
         </h2>
 
@@ -510,10 +510,10 @@ export default function AgenceContributions() {
             <Loader className="animate-spin text-emerald-600" />
           </div>
         ) : contributions.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-xl p-8 text-center">
-            <TrendingUp size={28} className="mx-auto mb-2 text-slate-300" />
-            <p className="text-slate-700 font-medium">Aucune contribution pour le moment</p>
-            <p className="text-xs text-slate-500 mt-1">
+          <div className="bg-white border border-neutral-light rounded-xl p-8 text-center">
+            <TrendingUp size={28} className="mx-auto mb-2 text-text-light" />
+            <p className="text-text-secondary font-medium">Aucune contribution pour le moment</p>
+            <p className="text-xs text-text-light mt-1">
               Référez votre 1er vendeur intéressé par la rénovation pour passer Bronze → Argent
               (3 chantiers signés)
             </p>
@@ -523,14 +523,14 @@ export default function AgenceContributions() {
             {contributions.map((c) => (
               <div
                 key={c.id}
-                className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition"
+                className="bg-white rounded-xl border border-neutral-light p-4 hover:shadow-sm transition"
               >
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-slate-800 truncate">
+                    <p className="font-bold text-text-primary truncate">
                       {c.adresse}
                     </p>
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-[11px] text-text-light">
                       {c.code_postal} {c.commune}
                       {c.proprietaire_nom
                         ? ` · ${c.proprietaire_prenom ?? ''} ${c.proprietaire_nom}`
@@ -546,21 +546,21 @@ export default function AgenceContributions() {
                     {c.travaux_envisages.slice(0, 4).map((g) => (
                       <span
                         key={g}
-                        className="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded"
+                        className="text-[10px] bg-background text-text-secondary px-2 py-0.5 rounded"
                       >
                         {g.replace(/_/g, ' ')}
                       </span>
                     ))}
                   </div>
                 ) : null}
-                <div className="flex items-center gap-3 text-[11px] text-slate-500">
+                <div className="flex items-center gap-3 text-[11px] text-text-light">
                   <span className="inline-flex items-center gap-1">
                     <Clock size={11} />
                     {new Date(c.created_at).toLocaleDateString('fr-FR')}
                   </span>
                   {c.urgence ? <span>· Urgence : {URGENCE_LABELS[c.urgence]}</span> : null}
                   {c.commission_amount_cents ? (
-                    <span className="ml-auto font-bold text-emerald-700">
+                    <span className="ml-auto font-bold text-primary">
                       Commission : {formatEur(c.commission_amount_cents)}
                     </span>
                   ) : c.status === 'rejected' ? (

@@ -275,7 +275,7 @@ export default function AgenceScoreVente() {
   return (
     <div className="h-full flex flex-col">
       {/* === Topbar === */}
-      <header className="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center gap-3 shadow-sm z-[1000]">
+      <header className="bg-white border-b border-neutral-light px-4 py-2.5 flex items-center gap-3 shadow-sm z-[1000]">
         <div className="flex items-center gap-2 shrink-0">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
             <Flame size={16} className="text-white" />
@@ -294,7 +294,7 @@ export default function AgenceScoreVente() {
             onFocus={() => addr.length >= 2 && setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
             placeholder="Rechercher une adresse — ex : 12 rue de la Paix, Rennes"
-            className="w-full px-4 py-2 pr-10 border border-slate-200 rounded-full text-sm focus:outline-none focus:border-[#0a5e2a] focus:ring-2 focus:ring-[#0a5e2a]/15"
+            className="w-full px-4 py-2 pr-10 border border-neutral-light rounded-full text-sm focus:outline-none focus:border-[#0a5e2a] focus:ring-2 focus:ring-[#0a5e2a]/15"
           />
           {searchingAddr ? (
             <Loader
@@ -311,7 +311,7 @@ export default function AgenceScoreVente() {
             </button>
           )}
           {showSuggestions ? (
-            <ul className="absolute top-full mt-1 left-0 right-0 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden z-[2000]">
+            <ul className="absolute top-full mt-1 left-0 right-0 bg-white rounded-xl shadow-2xl border border-neutral-light overflow-hidden z-[2000]">
               {suggestions.length > 0 ? (
                 suggestions.map((f, i) => (
                   <li
@@ -320,16 +320,16 @@ export default function AgenceScoreVente() {
                       e.preventDefault()
                       void pickSuggestion(f)
                     }}
-                    className="px-4 py-2.5 text-sm cursor-pointer hover:bg-slate-50 border-b border-slate-50 last:border-0"
+                    className="px-4 py-2.5 text-sm cursor-pointer hover:bg-background border-b border-slate-50 last:border-0"
                   >
-                    <p className="text-slate-800">{f.properties.label}</p>
+                    <p className="text-text-primary">{f.properties.label}</p>
                     {f.properties.context ? (
-                      <p className="text-[11px] text-slate-500">{f.properties.context}</p>
+                      <p className="text-[11px] text-text-light">{f.properties.context}</p>
                     ) : null}
                   </li>
                 ))
               ) : !searchingAddr && addr.length >= 2 ? (
-                <li className="px-4 py-2.5 text-sm text-slate-500 italic">
+                <li className="px-4 py-2.5 text-sm text-text-light italic">
                   Aucune adresse trouvée
                 </li>
               ) : null}
@@ -340,7 +340,7 @@ export default function AgenceScoreVente() {
         <button
           type="button"
           onClick={() => setWelcomeOpen(true)}
-          className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 border border-slate-200 rounded-full text-xs font-medium hover:bg-slate-50"
+          className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 border border-neutral-light rounded-full text-xs font-medium hover:bg-background"
         >
           <Menu size={14} />
           <span className="hidden md:inline">Menu</span>
@@ -348,7 +348,7 @@ export default function AgenceScoreVente() {
       </header>
 
       {/* === KPI bar === */}
-      <div className="bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center gap-3 text-xs overflow-x-auto whitespace-nowrap">
+      <div className="bg-background border-b border-neutral-light px-4 py-2 flex items-center gap-3 text-xs overflow-x-auto whitespace-nowrap">
         <Pill
           icon={<Flame size={11} />}
           label="Très chauds"
@@ -368,11 +368,11 @@ export default function AgenceScoreVente() {
           onClick={() => setFilterSegment(filterSegment === 'chaud' ? '' : 'chaud')}
         />
         {subscription ? (
-          <span className="ml-auto text-slate-600">
-            <span className="text-slate-500">
+          <span className="ml-auto text-text-secondary">
+            <span className="text-text-light">
               {TIER_LABELS[subscription.tier]} · ce mois
             </span>{' '}
-            <b className="text-slate-800 tabular-nums">
+            <b className="text-text-primary tabular-nums">
               {subscription.current_month_claims} / {subscription.monthly_lead_quota ?? '∞'}
             </b>
             {quotaExhausted ? (
@@ -393,10 +393,10 @@ export default function AgenceScoreVente() {
               <Flame size={16} className="text-orange-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-800 mb-1">
+              <p className="text-sm font-bold text-text-primary mb-1">
                 Mode d'emploi en 3 étapes
               </p>
-              <ol className="text-[12px] text-slate-700 space-y-0.5 leading-snug">
+              <ol className="text-[12px] text-text-secondary space-y-0.5 leading-snug">
                 <li>
                   <b className="text-orange-600">1.</b> Filtrez les biens (département, score
                   min) via le bouton <b>Menu</b> en haut à droite
@@ -414,7 +414,7 @@ export default function AgenceScoreVente() {
             <button
               type="button"
               onClick={dismissOnboarding}
-              className="shrink-0 text-slate-400 hover:text-slate-600 p-1"
+              className="shrink-0 text-text-light hover:text-text-secondary p-1"
               aria-label="Fermer le mode d'emploi"
             >
               <X size={14} />
@@ -505,19 +505,19 @@ export default function AgenceScoreVente() {
               <button
                 type="button"
                 onClick={() => setWelcomeOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-red-500 hover:text-white flex items-center justify-center transition"
+                className="w-8 h-8 rounded-full bg-background hover:bg-red-500 hover:text-white flex items-center justify-center transition"
                 aria-label="Fermer"
               >
                 ×
               </button>
             </div>
-            <p className="text-sm text-slate-600 mb-5">Deux façons d'utiliser :</p>
+            <p className="text-sm text-text-secondary mb-5">Deux façons d'utiliser :</p>
 
-            <div className="border border-slate-200 rounded-xl p-4 mb-3">
+            <div className="border border-neutral-light rounded-xl p-4 mb-3">
               <h2 className="text-base font-bold text-[#0a5e2a] mb-1">
                 1. Analyser une adresse précise
               </h2>
-              <p className="text-sm text-slate-600 mb-3">
+              <p className="text-sm text-text-secondary mb-3">
                 Tapez l'adresse en haut → on calcule DPE estimé, travaux, aides, saut de classe.
               </p>
               <button
@@ -528,22 +528,22 @@ export default function AgenceScoreVente() {
                     document.querySelector<HTMLInputElement>('input[placeholder*="adresse"]')?.focus()
                   }, 100)
                 }}
-                className="w-full py-2 px-3 bg-slate-100 text-[#0a5e2a] font-semibold text-sm rounded-lg hover:bg-slate-200 transition"
+                className="w-full py-2 px-3 bg-background text-[#0a5e2a] font-semibold text-sm rounded-lg hover:bg-neutral-light transition"
               >
                 Saisir une adresse →
               </button>
             </div>
 
-            <div className="border border-slate-200 rounded-xl p-4">
+            <div className="border border-neutral-light rounded-xl p-4">
               <h2 className="text-base font-bold text-[#0a5e2a] mb-1">
                 2. Voir les prospects F/G d'une zone
               </h2>
-              <p className="text-sm text-slate-600 mb-3">
+              <p className="text-sm text-text-secondary mb-3">
                 Filtrez par département, segment et score min. Cliquez un marker sur la carte
                 pour voir l'étude complète + claim.
               </p>
 
-              <label className="block text-xs text-slate-600 font-semibold mb-1">
+              <label className="block text-xs text-text-secondary font-semibold mb-1">
                 Département
               </label>
               <div className="flex flex-wrap gap-1.5 mb-3">
@@ -561,7 +561,7 @@ export default function AgenceScoreVente() {
                     className={`px-3 py-1 rounded-full text-xs ${
                       filterDept === d.v
                         ? 'bg-[#0a5e2a] text-white'
-                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        : 'bg-background text-text-secondary hover:bg-neutral-light'
                     }`}
                   >
                     {d.l}
@@ -569,7 +569,7 @@ export default function AgenceScoreVente() {
                 ))}
               </div>
 
-              <label className="block text-xs text-slate-600 font-semibold mb-1">
+              <label className="block text-xs text-text-secondary font-semibold mb-1">
                 Score minimum : <b>{scoreMin}</b>
               </label>
               <input
@@ -582,7 +582,7 @@ export default function AgenceScoreVente() {
                 className="w-full mb-3"
               />
 
-              <label className="flex items-center gap-2 text-xs text-slate-700 mb-3">
+              <label className="flex items-center gap-2 text-xs text-text-secondary mb-3">
                 <input
                   type="checkbox"
                   checked={showHeatmap}
@@ -599,7 +599,7 @@ export default function AgenceScoreVente() {
                 Voir les prospects sur la carte
                 <ChevronRight size={14} />
               </button>
-              <p className="text-[11px] text-slate-500 text-center mt-2">
+              <p className="text-[11px] text-text-light text-center mt-2">
                 {markerRows.length} prospect{markerRows.length > 1 ? 's' : ''} affiché
                 {markerRows.length > 1 ? 's' : ''}
               </p>
@@ -654,7 +654,7 @@ function Pill({
       className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs ${
         active
           ? 'border-orange-400 bg-amber-50 ring-2 ring-orange-200'
-          : `border-slate-200 bg-white ${color}`
+          : `border-neutral-light bg-white ${color}`
       }`}
     >
       {icon}

@@ -82,7 +82,7 @@ export default function AgenceAbonnement() {
         </p>
       </header>
 
-      <section className="bg-white rounded-2xl border border-slate-100 p-5">
+      <section className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-6">
         <p className="text-xs uppercase text-gray-500 tracking-wide">Palier actuel</p>
         <div className="flex items-baseline gap-3 mt-1">
           <h2 className="text-3xl font-display">{TIER_LABELS[subscription.tier]}</h2>

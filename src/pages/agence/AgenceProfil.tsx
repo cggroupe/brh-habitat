@@ -59,7 +59,7 @@ export default function AgenceProfil() {
         </p>
       </header>
 
-      <section className="bg-white rounded-2xl border border-slate-100 p-5 space-y-3">
+      <section className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-6 space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
           Identité
         </h2>
@@ -87,7 +87,7 @@ export default function AgenceProfil() {
       </section>
 
       {contract ? (
-        <section className="bg-white rounded-2xl border border-slate-100 p-5 space-y-3">
+        <section className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-6 space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500 flex items-center gap-2">
             <FileText size={14} /> Charte signée
           </h2>
@@ -102,7 +102,7 @@ export default function AgenceProfil() {
             <Row
               label="Statut"
               value={
-                <span className="inline-block px-2 py-0.5 rounded text-xs bg-emerald-100 text-emerald-800">
+                <span className="inline-block px-2 py-0.5 rounded text-xs bg-success/10 text-success">
                   {contract.status}
                 </span>
               }

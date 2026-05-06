@@ -235,7 +235,7 @@ export default function InscriptionAgencePage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600/10 mb-4">
             <Building2 className="text-blue-600" size={32} />
           </div>
-          <h1 className="text-3xl font-display tracking-tight">
+          <h1 className="font-display text-3xl font-bold text-text-primary tracking-tight">
             Devenir agence partenaire BRH
           </h1>
           <p className="text-gray-600 mt-2 max-w-xl mx-auto">
@@ -271,7 +271,7 @@ export default function InscriptionAgencePage() {
           ))}
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 lg:p-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-neutral-light p-6 lg:p-8">
           {/* STEP 1 — SIRET */}
           {step === 1 && (
             <div className="space-y-4">
@@ -321,7 +321,7 @@ export default function InscriptionAgencePage() {
                 <p className="font-medium text-emerald-900">
                   ✓ {siretData.raison_sociale}
                 </p>
-                <p className="text-emerald-700 text-xs">
+                <p className="text-primary text-xs">
                   {siretData.siret} · {siretData.commune} ({siretData.code_postal})
                 </p>
               </div>
@@ -435,7 +435,7 @@ export default function InscriptionAgencePage() {
                     <ul className="text-xs text-gray-700 mt-3 space-y-1">
                       {TIER_FEATURES[t].map((f) => (
                         <li key={f} className="flex items-center gap-1.5">
-                          <CheckCircle2 size={10} className="text-emerald-600 shrink-0" />
+                          <CheckCircle2 size={10} className="text-success shrink-0" />
                           {f}
                         </li>
                       ))}
@@ -514,7 +514,7 @@ export default function InscriptionAgencePage() {
           {step === 5 && (
             <div className="text-center py-8 space-y-3">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 mb-2">
-                <Sparkles className="text-emerald-600" size={32} />
+                <Sparkles className="text-success" size={32} />
               </div>
               <h2 className="text-2xl font-semibold">Bienvenue dans le réseau BRH !</h2>
               <p className="text-gray-600">

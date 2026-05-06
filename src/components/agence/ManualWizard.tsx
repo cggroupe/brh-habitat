@@ -412,14 +412,14 @@ export default function ManualWizard({
       <div className="bg-gradient-to-br from-emerald-50 to-blue-50 rounded-2xl border-2 border-emerald-200 p-4">
         <div className="flex items-center gap-2 mb-2">
           <Wand2 size={16} className="text-emerald-600" />
-          <p className="text-sm font-bold text-slate-800">
+          <p className="text-sm font-bold text-text-primary">
             Pré-remplir avec les données du secteur
           </p>
-          <span className="ml-auto text-[10px] uppercase tracking-wider bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">
+          <span className="ml-auto text-[10px] uppercase tracking-wider bg-success/10 text-success font-bold px-2 py-0.5 rounded">
             optionnel
           </span>
         </div>
-        <p className="text-[11px] text-slate-600 mb-3 leading-snug">
+        <p className="text-[11px] text-text-secondary mb-3 leading-snug">
           Saisissez l'adresse du bien — on récupère automatiquement <strong>code INSEE</strong>{' '}
           (zone climatique) + <strong>surface</strong>, <strong>période</strong>,{' '}
           <strong>type bâti</strong> et <strong>chauffage</strong> via BDNB CSTB et cadastre RNB
@@ -429,7 +429,7 @@ export default function ManualWizard({
         <div className="relative">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-light pointer-events-none"
           />
           <input
             type="text"
@@ -438,7 +438,7 @@ export default function ManualWizard({
             onFocus={() => addr.length >= 2 && setShowSug(true)}
             onBlur={() => setTimeout(() => setShowSug(false), 200)}
             placeholder="ex : 5 rue de Siam 29200 Brest"
-            className="w-full pl-9 pr-10 py-2.5 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+            className="w-full pl-9 pr-10 py-2.5 bg-white border border-neutral-light rounded-lg text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
           />
           {searching || prefilling ? (
             <Loader
@@ -448,7 +448,7 @@ export default function ManualWizard({
           ) : null}
 
           {showSug ? (
-            <ul className="absolute top-full mt-1 left-0 right-0 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden z-50 max-h-72 overflow-y-auto">
+            <ul className="absolute top-full mt-1 left-0 right-0 bg-white rounded-xl shadow-2xl border border-neutral-light overflow-hidden z-50 max-h-72 overflow-y-auto">
               {suggestions.length > 0 ? (
                 suggestions.map((f, i) => (
                   <li
@@ -459,9 +459,9 @@ export default function ManualWizard({
                     }}
                     className="px-4 py-2.5 text-sm cursor-pointer hover:bg-emerald-50 border-b border-slate-50 last:border-0"
                   >
-                    <p className="text-slate-800 font-medium">{f.properties.label}</p>
+                    <p className="text-text-primary font-medium">{f.properties.label}</p>
                     {f.properties.context ? (
-                      <p className="text-[10px] text-slate-500">{f.properties.context}</p>
+                      <p className="text-[10px] text-text-light">{f.properties.context}</p>
                     ) : null}
                   </li>
                 ))
@@ -471,7 +471,7 @@ export default function ManualWizard({
                   <p>{prefillError}</p>
                 </li>
               ) : !searching && addr.length >= 2 ? (
-                <li className="px-4 py-3 text-sm text-slate-500 italic">
+                <li className="px-4 py-3 text-sm text-text-light italic">
                   Aucune adresse trouvée
                 </li>
               ) : null}
@@ -518,14 +518,14 @@ export default function ManualWizard({
       </div>
 
       {/* Stepper */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4">
+      <div className="bg-white rounded-2xl border border-neutral-light p-4">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-xs text-slate-500 uppercase tracking-wider font-bold">
+          <p className="text-xs text-text-light uppercase tracking-wider font-bold">
             Étape {step} / {STEPS.length}
           </p>
-          <p className="text-xs text-slate-500">{progressPct} %</p>
+          <p className="text-xs text-text-light">{progressPct} %</p>
         </div>
-        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-3">
+        <div className="h-1.5 bg-background rounded-full overflow-hidden mb-3">
           <div
             className="h-full bg-gradient-to-r from-[#0a5e2a] to-[#16a34a] transition-all"
             style={{ width: `${progressPct}%` }}
@@ -550,15 +550,15 @@ export default function ManualWizard({
                     current
                       ? 'bg-[#0a5e2a] text-white shadow-md ring-4 ring-emerald-100'
                       : reached
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-slate-100 text-slate-400'
+                      ? 'bg-emerald-100 text-primary'
+                      : 'bg-background text-text-light'
                   }`}
                 >
                   <s.icon size={14} />
                 </div>
                 <span
                   className={`text-[10px] font-semibold hidden md:block ${
-                    current ? 'text-[#0a5e2a]' : 'text-slate-500'
+                    current ? 'text-[#0a5e2a]' : 'text-text-light'
                   }`}
                 >
                   {s.title}
@@ -599,7 +599,7 @@ export default function ManualWizard({
               type="button"
               onClick={() => setStep(Math.max(1, step - 1))}
               disabled={step === 1}
-              className="inline-flex items-center gap-1 px-4 py-2.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1 px-4 py-2.5 border border-neutral-light rounded-lg text-sm font-medium text-text-secondary hover:bg-background disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <ChevronLeft size={14} />
               Précédent
@@ -607,7 +607,7 @@ export default function ManualWizard({
             <button
               type="button"
               onClick={() => setForm(DEFAULT_FORM)}
-              className="text-xs text-slate-400 hover:text-slate-600 inline-flex items-center gap-1"
+              className="text-xs text-text-light hover:text-text-secondary inline-flex items-center gap-1"
             >
               <RotateCcw size={11} />
               Réinitialiser
@@ -632,7 +632,7 @@ export default function ManualWizard({
                     `Conso : ${Math.round(livePreview?.cepKwhEpM2An ?? 0)} kWh EP/m²/an\n\n` +
                     `Merci de me contacter pour planifier un audit officiel.\n\nCordialement`,
                 )}`}
-                className="inline-flex items-center gap-1 px-5 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-lg shadow hover:bg-emerald-700"
+                className="inline-flex items-center gap-1 px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-lg shadow hover:bg-primary-dark"
               >
                 Demander un audit RGE
                 <CheckCircle2 size={14} />
@@ -644,7 +644,7 @@ export default function ManualWizard({
         {/* Live preview sticky */}
         <div className="lg:col-span-1">
           <div className="sticky top-6 space-y-3">
-            <h3 className="text-xs uppercase tracking-wider font-bold text-slate-500 flex items-center gap-1">
+            <h3 className="text-xs uppercase tracking-wider font-bold text-text-light flex items-center gap-1">
               <Calculator size={12} />
               DPE estimé en temps réel
             </h3>
@@ -657,7 +657,7 @@ export default function ManualWizard({
                   type="final"
                   title="DPE estimé"
                 />
-                <div className="rounded-xl border border-slate-200 bg-white p-3 text-xs space-y-1">
+                <div className="rounded-xl border border-neutral-light bg-white p-3 text-xs space-y-1">
                   <Row label="Énergie">
                     <strong>{livePreview.etiquetteEnergie}</strong> ·{' '}
                     {Math.round(livePreview.cepKwhEpM2An)} kWh EP/m²/an
@@ -679,7 +679,7 @@ export default function ManualWizard({
                 </div>
               </>
             ) : (
-              <div className="rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-500 flex items-center gap-2">
+              <div className="rounded-xl border border-neutral-light bg-white p-3 text-xs text-text-light flex items-center gap-2">
                 <Loader size={12} className="animate-spin" />
                 Calcul…
               </div>
@@ -698,17 +698,17 @@ export default function ManualWizard({
             className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-bold text-slate-800 mb-1">
+            <h2 className="text-lg font-bold text-text-primary mb-1">
               Sauvegarder cette simulation
             </h2>
-            <p className="text-xs text-slate-500 mb-4">
+            <p className="text-xs text-text-light mb-4">
               Tu pourras la retrouver dans <strong>Mes simulations</strong> et la rouvrir pour
               l'éditer ou imprimer le rapport.
             </p>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-text-secondary mb-1">
                   Titre (obligatoire)
                 </label>
                 <input
@@ -716,11 +716,11 @@ export default function ManualWizard({
                   value={saveTitre}
                   onChange={(e) => setSaveTitre(e.target.value)}
                   placeholder="ex : 12 rue de la Paix — vendeur Dupont"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-neutral-light rounded-lg text-sm"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-text-secondary mb-1">
                   Adresse
                 </label>
                 <input
@@ -728,7 +728,7 @@ export default function ManualWizard({
                   value={saveAdresse}
                   onChange={(e) => setSaveAdresse(e.target.value)}
                   placeholder="12 rue de la Paix"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-neutral-light rounded-lg text-sm"
                 />
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -738,18 +738,18 @@ export default function ManualWizard({
                   onChange={(e) => setSaveCodePostal(e.target.value)}
                   placeholder="Code postal"
                   maxLength={5}
-                  className="px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                  className="px-3 py-2 border border-neutral-light rounded-lg text-sm"
                 />
                 <input
                   type="text"
                   value={saveCommune}
                   onChange={(e) => setSaveCommune(e.target.value)}
                   placeholder="Commune"
-                  className="px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                  className="px-3 py-2 border border-neutral-light rounded-lg text-sm"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-text-secondary mb-1">
                   Notes (optionnel)
                 </label>
                 <textarea
@@ -757,7 +757,7 @@ export default function ManualWizard({
                   onChange={(e) => setSaveNotes(e.target.value)}
                   placeholder="ex : RDV avec M. Dupont — bien intéressé par PAC + ITE"
                   rows={3}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-neutral-light rounded-lg text-sm"
                 />
               </div>
             </div>
@@ -766,7 +766,7 @@ export default function ManualWizard({
               <button
                 type="button"
                 onClick={() => setSaveModal(false)}
-                className="flex-1 px-4 py-2.5 border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50"
+                className="flex-1 px-4 py-2.5 border border-neutral-light text-text-secondary text-sm font-medium rounded-lg hover:bg-background"
               >
                 Annuler
               </button>
@@ -880,11 +880,11 @@ function Step1Logement({ form, set }: StepProps) {
             className={`px-3 py-2 rounded-lg border-2 text-center transition ${
               form.periodeConstruction === p.v
                 ? 'border-emerald-500 bg-emerald-50 shadow-sm'
-                : 'border-slate-200 bg-white hover:border-emerald-300'
+                : 'border-neutral-light bg-white hover:border-emerald-300'
             }`}
           >
-            <p className="text-xs font-bold text-slate-800">{p.label}</p>
-            <p className="text-[10px] text-slate-500">{p.sub}</p>
+            <p className="text-xs font-bold text-text-primary">{p.label}</p>
+            <p className="text-[10px] text-text-light">{p.sub}</p>
           </button>
         ))}
       </div>
@@ -964,7 +964,7 @@ function Step2Localisation({ form, set }: StepProps) {
       />
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
+          <label className="block text-xs font-semibold text-text-secondary mb-1">
             Code INSEE
           </label>
           <input
@@ -972,23 +972,23 @@ function Step2Localisation({ form, set }: StepProps) {
             value={form.codeInsee}
             onChange={(e) => set('codeInsee', e.target.value)}
             maxLength={5}
-            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm font-mono"
+            className="w-full px-3 py-2.5 border border-neutral-light rounded-lg text-sm font-mono"
           />
-          <p className="text-[10px] text-slate-500 mt-1">
+          <p className="text-[10px] text-text-light mt-1">
             Ex: 35238 (Rennes), 29019 (Brest), 22278 (St-Brieuc), 56260 (Vannes)
           </p>
         </div>
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
+          <label className="block text-xs font-semibold text-text-secondary mb-1">
             Altitude
           </label>
           <input
             type="number"
             value={form.altitude}
             onChange={(e) => set('altitude', Number(e.target.value))}
-            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm"
+            className="w-full px-3 py-2.5 border border-neutral-light rounded-lg text-sm"
           />
-          <p className="text-[10px] text-slate-500 mt-1">m au-dessus du niveau mer</p>
+          <p className="text-[10px] text-text-light mt-1">m au-dessus du niveau mer</p>
         </div>
       </div>
 
@@ -1195,24 +1195,24 @@ function Step5Equipements({ form, set }: StepProps) {
                 ? 'border-emerald-500 bg-emerald-50 shadow-sm'
                 : g.danger
                 ? 'border-red-100 bg-white hover:border-red-300'
-                : 'border-slate-200 bg-white hover:border-emerald-300'
+                : 'border-neutral-light bg-white hover:border-emerald-300'
             }`}
           >
             <span className="text-xl block">{g.icon}</span>
-            <p className="text-[11px] font-bold text-slate-800 mt-0.5">{g.label}</p>
+            <p className="text-[11px] font-bold text-text-primary mt-0.5">{g.label}</p>
           </button>
         ))}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-semibold text-slate-700 mb-1">
+          <label className="block text-xs font-semibold text-text-secondary mb-1">
             Émetteur
           </label>
           <select
             value={form.chauffageEmetteur}
             onChange={(e) => set('chauffageEmetteur', e.target.value)}
-            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm"
+            className="w-full px-3 py-2.5 border border-neutral-light rounded-lg text-sm"
           >
             <option value="radiateur_eau">Radiateur eau</option>
             <option value="plancher_chauffant">Plancher chauffant</option>
@@ -1230,7 +1230,7 @@ function Step5Equipements({ form, set }: StepProps) {
           max={2100}
         />
       </div>
-      <label className="flex items-center gap-2 text-sm text-slate-700">
+      <label className="flex items-center gap-2 text-sm text-text-secondary">
         <input
           type="checkbox"
           checked={form.chauffageRegulation}
@@ -1261,11 +1261,11 @@ function Step5Equipements({ form, set }: StepProps) {
             className={`px-2 py-2.5 rounded-lg border-2 text-center transition ${
               form.ecsGenerateur === e.v
                 ? 'border-emerald-500 bg-emerald-50 shadow-sm'
-                : 'border-slate-200 bg-white hover:border-emerald-300'
+                : 'border-neutral-light bg-white hover:border-emerald-300'
             }`}
           >
             <span className="text-xl block">{e.icon}</span>
-            <p className="text-[11px] font-bold text-slate-800 mt-0.5">{e.label}</p>
+            <p className="text-[11px] font-bold text-text-primary mt-0.5">{e.label}</p>
           </button>
         ))}
       </div>
@@ -1341,9 +1341,9 @@ function Step6Synthese({
 
   if (!preview) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+      <div className="bg-white rounded-2xl border border-neutral-light p-8 text-center">
         <Loader className="mx-auto animate-spin text-emerald-500 mb-2" />
-        <p className="text-slate-500">Calcul en cours...</p>
+        <p className="text-text-light">Calcul en cours...</p>
       </div>
     )
   }
@@ -1366,12 +1366,12 @@ function Step6Synthese({
       />
 
       {/* Big DPE result */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 text-white text-center">
+      <div className="bg-gradient-to-br from-deep via-primary-dark to-deep rounded-2xl p-6 text-white text-center">
         <p className="text-xs uppercase tracking-wider text-emerald-300 font-bold mb-2">
           DPE estimé — état actuel
         </p>
         <p className="text-7xl font-bold my-2">{preview.etiquetteDpe}</p>
-        <p className="text-sm text-slate-300">
+        <p className="text-sm text-text-light">
           {Math.round(preview.cepKwhEpM2An)} kWh EP/m²/an · GES {preview.etiquetteClimat}
         </p>
       </div>
@@ -1379,7 +1379,7 @@ function Step6Synthese({
       {/* 3 scénarios chiffrés */}
       {scenarios.length > 0 ? (
         <div>
-          <h3 className="text-sm font-bold text-slate-700 mb-2">3 scénarios de rénovation</h3>
+          <h3 className="text-sm font-bold text-text-secondary mb-2">3 scénarios de rénovation</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {scenarios.map((sc) => {
               const labels = scenarioLabels[sc.template.id] ?? {
@@ -1398,53 +1398,53 @@ function Step6Synthese({
               return (
                 <div
                   key={sc.template.id}
-                  className="bg-white border-2 border-slate-200 rounded-xl p-4 space-y-2"
+                  className="bg-white border-2 border-neutral-light rounded-xl p-4 space-y-2"
                 >
                   <div className="flex items-baseline justify-between gap-2">
-                    <p className="font-bold text-slate-800 text-sm">{labels.title}</p>
-                    <span className="text-[10px] uppercase tracking-wider bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">
+                    <p className="font-bold text-text-primary text-sm">{labels.title}</p>
+                    <span className="text-[10px] uppercase tracking-wider bg-success/10 text-success font-bold px-2 py-0.5 rounded">
                       −{gainPct}%
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-500 leading-snug">{labels.subtitle}</p>
+                  <p className="text-[11px] text-text-light leading-snug">{labels.subtitle}</p>
                   <div className="flex items-center justify-center gap-2 py-2">
-                    <span className="text-[10px] text-slate-500">Avant</span>
+                    <span className="text-[10px] text-text-light">Avant</span>
                     <span
                       className="inline-block w-7 h-7 rounded-md text-white font-bold text-sm flex items-center justify-center"
                       style={{ background: dpeBg(preview.etiquetteDpe) }}
                     >
                       {preview.etiquetteDpe}
                     </span>
-                    <span className="text-slate-400">→</span>
+                    <span className="text-text-light">→</span>
                     <span
                       className="inline-block w-7 h-7 rounded-md text-white font-bold text-sm flex items-center justify-center"
                       style={{ background: dpeBg(sc.result.etiquetteDpe) }}
                     >
                       {sc.result.etiquetteDpe}
                     </span>
-                    <span className="text-[10px] text-slate-500">Après</span>
+                    <span className="text-[10px] text-text-light">Après</span>
                   </div>
-                  <div className="space-y-1 text-xs pt-2 border-t border-slate-100">
+                  <div className="space-y-1 text-xs pt-2 border-t border-neutral-light">
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Coût TTC</span>
+                      <span className="text-text-secondary">Coût TTC</span>
                       <span className="font-bold text-blue-700 tabular-nums">
                         {Math.round(sc.coutTtcEuros).toLocaleString('fr-FR')} €
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-600">Aides estimées</span>
-                      <span className="font-bold text-emerald-700 tabular-nums">
+                      <span className="text-text-secondary">Aides estimées</span>
+                      <span className="font-bold text-primary tabular-nums">
                         −{Math.round(sc.aidesEuros.total).toLocaleString('fr-FR')} €
                       </span>
                     </div>
-                    <div className="flex justify-between pt-1 border-t border-dashed border-slate-200 text-sm">
-                      <span className="font-bold text-slate-700">Reste à charge</span>
+                    <div className="flex justify-between pt-1 border-t border-dashed border-neutral-light text-sm">
+                      <span className="font-bold text-text-secondary">Reste à charge</span>
                       <span className="font-bold text-[#0a5e2a] tabular-nums">
                         {Math.round(reste).toLocaleString('fr-FR')} €
                       </span>
                     </div>
                     {sc.payback.paybackAnnees != null && sc.payback.paybackAnnees > 0 && sc.payback.paybackAnnees < 99 ? (
-                      <p className="text-[11px] text-slate-500 pt-1">
+                      <p className="text-[11px] text-text-light pt-1">
                         Retour sur invest. : ~{Math.round(sc.payback.paybackAnnees)} ans
                       </p>
                     ) : null}
@@ -1458,7 +1458,7 @@ function Step6Synthese({
 
       {/* Récap caractéristiques */}
       <div>
-        <h3 className="text-sm font-bold text-slate-700 mb-2">Récap des caractéristiques</h3>
+        <h3 className="text-sm font-bold text-text-secondary mb-2">Récap des caractéristiques</h3>
         <div className="grid grid-cols-2 gap-3">
           <SummaryCard label="Type" value={form.typeBatiment} />
           <SummaryCard label="Période" value={form.periodeConstruction} />
@@ -1568,8 +1568,8 @@ function StepHeader({
         {icon}
       </div>
       <div>
-        <h3 className="font-bold text-slate-800">{title}</h3>
-        <p className="text-xs text-slate-500">{subtitle}</p>
+        <h3 className="font-bold text-text-primary">{title}</h3>
+        <p className="text-xs text-text-light">{subtitle}</p>
       </div>
     </div>
   )
@@ -1601,26 +1601,26 @@ function CardChoice({
           ? 'border-emerald-500 bg-emerald-50 shadow-sm ring-2 ring-emerald-100'
           : danger
           ? 'border-red-100 bg-white hover:border-red-300'
-          : 'border-slate-200 bg-white hover:border-emerald-300'
+          : 'border-neutral-light bg-white hover:border-emerald-300'
       }`}
     >
       {icon ? (
         <div
           className={`mx-auto mb-1 ${
-            active ? 'text-emerald-600' : danger ? 'text-red-500' : 'text-slate-500'
+            active ? 'text-emerald-600' : danger ? 'text-red-500' : 'text-text-light'
           }`}
         >
           {icon}
         </div>
       ) : null}
       <p
-        className={`font-bold text-slate-800 ${small ? 'text-xs' : 'text-sm'}`}
+        className={`font-bold text-text-primary ${small ? 'text-xs' : 'text-sm'}`}
       >
         {label}
       </p>
       {desc ? (
         <p
-          className={`text-slate-500 ${small ? 'text-[10px]' : 'text-[11px]'} mt-0.5`}
+          className={`text-text-light ${small ? 'text-[10px]' : 'text-[11px]'} mt-0.5`}
         >
           {desc}
         </p>
@@ -1648,7 +1648,7 @@ function NumField({
 }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-slate-700 mb-1">
+      <label className="block text-xs font-semibold text-text-secondary mb-1">
         {label}
       </label>
       <div className="relative">
@@ -1659,10 +1659,10 @@ function NumField({
           max={max}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="w-full px-3 py-2.5 pr-10 border border-slate-200 rounded-lg text-sm font-semibold tabular-nums"
+          className="w-full px-3 py-2.5 pr-10 border border-neutral-light rounded-lg text-sm font-semibold tabular-nums"
         />
         {unit ? (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-light">
             {unit}
           </span>
         ) : null}
@@ -1673,18 +1673,18 @@ function NumField({
 
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-2.5">
-      <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">
+    <div className="bg-white rounded-lg border border-neutral-light p-2.5">
+      <p className="text-[10px] uppercase tracking-wider text-text-light font-bold">
         {label}
       </p>
-      <p className="text-sm font-semibold text-slate-800 mt-0.5 capitalize">{value}</p>
+      <p className="text-sm font-semibold text-text-primary mt-0.5 capitalize">{value}</p>
     </div>
   )
 }
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex justify-between gap-2 text-slate-600">
+    <div className="flex justify-between gap-2 text-text-secondary">
       <span>{label}</span>
       <span className="text-right">{children}</span>
     </div>

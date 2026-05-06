@@ -1,5 +1,5 @@
 /**
- * Phase 16.1 — Carte QR Code agence (branding orange/rouge).
+ * Phase 16.1 — Carte QR Code agence (branding BRH vert).
  *
  * Génère un QR via api.qrserver.com (pas de dépendance npm). Permet :
  *   - téléchargement PNG haute résolution (canvas) avec header BRH + footer agence
@@ -31,13 +31,13 @@ export default function AgenceQRCodeCard({ url, label }: AgenceQRCodeCardProps) 
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     const grad = ctx.createLinearGradient(0, 0, canvas.width, headerHeight)
-    grad.addColorStop(0, '#f97316') // orange-500
-    grad.addColorStop(1, '#dc2626') // red-600
+    grad.addColorStop(0, '#1c7b1d') // primary BRH
+    grad.addColorStop(1, '#094114') // primary-dark BRH
     ctx.fillStyle = grad
     ctx.fillRect(0, 0, canvas.width, headerHeight)
 
     ctx.fillStyle = '#ffffff'
-    ctx.font = 'bold 22px sans-serif'
+    ctx.font = 'bold 22px "DM Sans", sans-serif'
     ctx.textAlign = 'center'
     ctx.fillText('BRH Habitat', canvas.width / 2, 36)
 
@@ -46,13 +46,13 @@ export default function AgenceQRCodeCard({ url, label }: AgenceQRCodeCardProps) 
     img.onload = () => {
       ctx.drawImage(img, padding, headerHeight + padding, qrSize, qrSize)
 
-      ctx.fillStyle = '#1e293b'
-      ctx.font = 'bold 16px sans-serif'
+      ctx.fillStyle = '#1b1c1c'
+      ctx.font = 'bold 16px "DM Sans", sans-serif'
       ctx.textAlign = 'center'
       ctx.fillText(label, canvas.width / 2, headerHeight + padding + qrSize + 28)
 
-      ctx.fillStyle = '#64748b'
-      ctx.font = '12px sans-serif'
+      ctx.fillStyle = '#707a6a'
+      ctx.font = '12px "Inter", sans-serif'
       const display = url.length > 56 ? url.slice(0, 53) + '...' : url
       ctx.fillText(display, canvas.width / 2, headerHeight + padding + qrSize + 50)
 
@@ -76,8 +76,8 @@ export default function AgenceQRCodeCard({ url, label }: AgenceQRCodeCardProps) 
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col items-center gap-4">
-      <div className="bg-gradient-to-br from-orange-500/10 to-red-600/10 p-2 rounded-2xl border-4 border-orange-500">
+    <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-6 flex flex-col items-center gap-4">
+      <div className="bg-gradient-to-br from-primary/10 to-primary-dark/10 p-2.5 rounded-2xl border-4 border-primary">
         <img
           src={qrSrc}
           alt={`QR Code ${label}`}
@@ -90,16 +90,18 @@ export default function AgenceQRCodeCard({ url, label }: AgenceQRCodeCardProps) 
 
       <div className="text-center max-w-full">
         <div className="flex items-center justify-center gap-2 mb-1">
-          <QrCode size={14} className="text-orange-600" />
-          <p className="font-display text-sm uppercase tracking-wide text-slate-800">{label}</p>
+          <QrCode size={14} className="text-primary" />
+          <p className="font-display text-sm uppercase tracking-wide text-text-primary font-bold">
+            {label}
+          </p>
         </div>
-        <p className="text-[11px] text-slate-400 break-all">{url}</p>
+        <p className="text-[11px] text-text-light break-all">{url}</p>
       </div>
 
       <button
         type="button"
         onClick={handleDownload}
-        className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-br from-orange-500 to-red-600 text-white font-bold text-xs uppercase tracking-widest py-2.5 rounded-xl shadow-md shadow-orange-500/20 hover:-translate-y-0.5 transition-all"
+        className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-br from-primary to-primary-dark text-white font-bold text-xs uppercase tracking-widest py-3 rounded-xl shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all"
       >
         <Download size={14} />
         Télécharger PNG

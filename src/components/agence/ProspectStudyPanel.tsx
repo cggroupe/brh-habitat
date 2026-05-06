@@ -168,9 +168,9 @@ const DPE_BG: Record<string, string> = {
 
 const ISO_BADGE_CLASS: Record<string, string> = {
   'iso-bad': 'bg-red-100 text-red-700 border-red-200',
-  'iso-medium': 'bg-orange-100 text-orange-700 border-orange-200',
-  'iso-good': 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  '': 'bg-slate-100 text-slate-600 border-slate-200',
+  'iso-medium': 'bg-primary/10 text-primary-dark border-primary/20',
+  'iso-good': 'bg-emerald-100 text-primary border-emerald-200',
+  '': 'bg-background text-text-secondary border-neutral-light',
 }
 
 interface Props {
@@ -303,7 +303,7 @@ export function ProspectStudyPanel({
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 z-10 bg-white border border-slate-200 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-slate-50"
+          className="absolute top-3 right-3 z-10 bg-white border border-neutral-light rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-background"
           aria-label="Fermer"
         >
           <X size={16} />
@@ -324,11 +324,11 @@ export function ProspectStudyPanel({
           {/* Title + adresse */}
           <div>
             <h1 className="text-xl font-bold text-[#0a5e2a] mb-1">Étude énergétique</h1>
-            <p className="text-sm text-slate-600 flex items-start gap-1">
+            <p className="text-sm text-text-secondary flex items-start gap-1">
               <MapPin size={14} className="shrink-0 mt-0.5" />
               <span>
                 {adresse}
-                {d.commune ? <span className="text-slate-500"> · {d.commune}</span> : null}
+                {d.commune ? <span className="text-text-light"> · {d.commune}</span> : null}
               </span>
             </p>
           </div>
@@ -348,7 +348,7 @@ export function ProspectStudyPanel({
           ) : null}
 
           {/* DPE strip */}
-          <div className="flex items-center justify-between gap-2 bg-slate-50 rounded-xl p-3">
+          <div className="flex items-center justify-between gap-2 bg-background rounded-xl p-3">
             <div className="text-center flex-1">
               <span
                 className="inline-block px-3 py-1.5 rounded-md text-white font-bold text-2xl leading-none min-w-[40px]"
@@ -359,7 +359,7 @@ export function ProspectStudyPanel({
               >
                 {dpe}
               </span>
-              <p className="text-[11px] text-slate-500 mt-1">DPE actuel</p>
+              <p className="text-[11px] text-text-light mt-1">DPE actuel</p>
             </div>
             {ges ? (
               <div className="text-center flex-1">
@@ -369,10 +369,10 @@ export function ProspectStudyPanel({
                 >
                   {ges}
                 </span>
-                <p className="text-[11px] text-slate-500 mt-1">GES</p>
+                <p className="text-[11px] text-text-light mt-1">GES</p>
               </div>
             ) : null}
-            <span className="text-slate-400 text-xl">→</span>
+            <span className="text-text-light text-xl">→</span>
             <div className="text-center flex-1">
               <span
                 className="inline-block px-3 py-1.5 rounded-md text-white font-bold text-2xl leading-none min-w-[40px]"
@@ -380,11 +380,11 @@ export function ProspectStudyPanel({
               >
                 {cible}
               </span>
-              <p className="text-[11px] text-slate-500 mt-1">Après travaux</p>
+              <p className="text-[11px] text-text-light mt-1">Après travaux</p>
             </div>
-            <div className="bg-amber-50 border-2 border-orange-400 rounded-md p-2 text-center">
-              <p className="text-orange-600 font-bold text-base leading-none">−{gainPct}%</p>
-              <p className="text-[10px] text-slate-600 mt-0.5">Conso énergie</p>
+            <div className="bg-amber-50 border-2 border-primary rounded-md p-2 text-center">
+              <p className="text-primary font-bold text-base leading-none">−{gainPct}%</p>
+              <p className="text-[10px] text-text-secondary mt-0.5">Conso énergie</p>
             </div>
           </div>
 
@@ -435,7 +435,7 @@ export function ProspectStudyPanel({
           d.qualite_isolation_plancher_bas ||
           d.qualite_isolation_menuiseries ? (
             <Section title="État de l'isolation">
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-neutral-light">
                 {d.qualite_isolation_murs ? (
                   <IsoRow label="Murs" value={d.qualite_isolation_murs} />
                 ) : null}
@@ -470,7 +470,7 @@ export function ProspectStudyPanel({
                   color="#0a5e2a"
                 />
               </div>
-              <p className="text-[11px] text-slate-500 mt-2">
+              <p className="text-[11px] text-text-light mt-2">
                 {d.dvf_date} · {d.dvf_type ?? 'Vente'} · à {d.dvf_distance_m}m
               </p>
             </Section>
@@ -492,12 +492,12 @@ export function ProspectStudyPanel({
                     onClick={() => setScenario(s)}
                     className={`p-2 rounded-xl border-2 text-center transition ${
                       active
-                        ? 'border-orange-400 bg-amber-50'
-                        : 'border-slate-200 bg-white hover:border-[#0a5e2a]'
+                        ? 'border-primary bg-amber-50'
+                        : 'border-neutral-light bg-white hover:border-[#0a5e2a]'
                     }`}
                   >
                     <p className="font-bold text-xs text-[#0a5e2a]">{titles.title}</p>
-                    <p className="text-[10px] uppercase text-slate-500">{titles.tag}</p>
+                    <p className="text-[10px] uppercase text-text-light">{titles.tag}</p>
                     <span
                       className="inline-block px-2 py-0.5 mt-1 rounded text-white font-bold text-base"
                       style={{
@@ -507,7 +507,7 @@ export function ProspectStudyPanel({
                     >
                       {lab}
                     </span>
-                    <p className="text-[11px] text-slate-600 mt-0.5">−{g}%</p>
+                    <p className="text-[11px] text-text-secondary mt-0.5">−{g}%</p>
                   </button>
                 )
               })}
@@ -517,14 +517,14 @@ export function ProspectStudyPanel({
           {/* Travaux */}
           <Section title="Travaux recommandés">
             {Object.keys(filteredDetail).length === 0 ? (
-              <p className="text-xs text-slate-500 italic">Pas de travaux à proposer.</p>
+              <p className="text-xs text-text-light italic">Pas de travaux à proposer.</p>
             ) : (
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-neutral-light">
                 {Object.entries(filteredDetail).map(([g, info]) => (
                   <li key={g} className="flex items-center justify-between gap-2 py-2">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm text-slate-800 truncate">{labelGeste(g)}</p>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-sm text-text-primary truncate">{labelGeste(g)}</p>
+                      <p className="text-[11px] text-text-light">
                         {info.qte} {info.unite}
                       </p>
                     </div>
@@ -535,7 +535,7 @@ export function ProspectStudyPanel({
                 ))}
               </ul>
             )}
-            <div className="flex items-center justify-between pt-3 mt-2 border-t-2 border-slate-200 text-sm">
+            <div className="flex items-center justify-between pt-3 mt-2 border-t-2 border-neutral-light text-sm">
               <span>Total estimé TTC</span>
               <b className="text-[#0a5e2a] text-base">
                 {Math.round(totalFilteredTtc).toLocaleString('fr-FR')} €
@@ -547,14 +547,14 @@ export function ProspectStudyPanel({
           <Section title="Aides personnalisées">
             <div className="flex gap-2 items-end mb-3">
               <div className="flex-1">
-                <label className="block text-[11px] text-slate-600 mb-1">Personnes</label>
+                <label className="block text-[11px] text-text-secondary mb-1">Personnes</label>
                 <select
                   value={foyer}
                   onChange={(e) => {
                     setFoyer(Number(e.target.value))
                     setRecomputed(true)
                   }}
-                  className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm"
+                  className="w-full px-2 py-1.5 border border-neutral-light rounded text-sm"
                 >
                   {[1, 2, 3, 4, 5].map((n) => (
                     <option key={n} value={n}>
@@ -565,7 +565,7 @@ export function ProspectStudyPanel({
                 </select>
               </div>
               <div className="flex-1">
-                <label className="block text-[11px] text-slate-600 mb-1">Revenu fiscal</label>
+                <label className="block text-[11px] text-text-secondary mb-1">Revenu fiscal</label>
                 <input
                   type="number"
                   min={0}
@@ -575,7 +575,7 @@ export function ProspectStudyPanel({
                     setRfr(Number(e.target.value))
                     setRecomputed(true)
                   }}
-                  className="w-full px-2 py-1.5 border border-slate-200 rounded text-sm"
+                  className="w-full px-2 py-1.5 border border-neutral-light rounded text-sm"
                 />
               </div>
             </div>
@@ -618,7 +618,7 @@ export function ProspectStudyPanel({
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-3 space-y-1.5">
                 {enrichment.iris.med21 ? (
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-700">Revenu médian commune</span>
+                    <span className="text-text-secondary">Revenu médian commune</span>
                     <span className="font-bold text-indigo-700">
                       {Math.round(enrichment.iris.med21).toLocaleString('fr-FR')} € / an
                     </span>
@@ -626,7 +626,7 @@ export function ProspectStudyPanel({
                 ) : null}
                 {enrichment.iris.couleur_mpr ? (
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-700">Catégorie MPR estimée</span>
+                    <span className="text-text-secondary">Catégorie MPR estimée</span>
                     <span className="font-bold text-indigo-700">
                       {DECILE_LABELS[enrichment.iris.couleur_mpr]} ({enrichment.iris.couleur_mpr})
                     </span>
@@ -634,22 +634,22 @@ export function ProspectStudyPanel({
                 ) : null}
                 {enrichment.iris.tx_proprio != null ? (
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-700">Taux propriétaires</span>
-                    <span className="font-medium text-slate-800">
+                    <span className="text-text-secondary">Taux propriétaires</span>
+                    <span className="font-medium text-text-primary">
                       {Math.round(enrichment.iris.tx_proprio * 100)} %
                     </span>
                   </div>
                 ) : null}
                 {enrichment.iris.tx_avant_1975 != null ? (
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-700">Logements pré-1975 (cible rénovation)</span>
-                    <span className="font-medium text-slate-800">
+                    <span className="text-text-secondary">Logements pré-1975 (cible rénovation)</span>
+                    <span className="font-medium text-text-primary">
                       {Math.round(enrichment.iris.tx_avant_1975 * 100)} %
                     </span>
                   </div>
                 ) : null}
               </div>
-              <p className="text-[10px] text-slate-400 mt-1">
+              <p className="text-[10px] text-text-light mt-1">
                 Source : INSEE Filosofi 2021 · IRIS {enrichment.iris.iris_code}
               </p>
             </Section>
@@ -696,7 +696,7 @@ export function ProspectStudyPanel({
                   <p className="font-bold text-emerald-900 mb-0.5">
                     🌟 OPAH active — {enrichment.commune.opah_type ?? 'Programme local'}
                   </p>
-                  <p className="text-emerald-700">
+                  <p className="text-primary">
                     Opérateur : {enrichment.commune.opah_operateur ?? '—'}
                     {enrichment.commune.opah_fin_validite
                       ? ` · Jusqu'au ${new Date(
@@ -722,19 +722,19 @@ export function ProspectStudyPanel({
                 {enrichment.artisans_proches.map((a) => (
                   <li
                     key={a.id}
-                    className="bg-slate-50 rounded-lg p-3 border border-slate-100"
+                    className="bg-background rounded-lg p-3 border border-neutral-light"
                   >
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <div className="min-w-0 flex-1">
-                        <p className="font-bold text-slate-800 text-sm truncate">
+                        <p className="font-bold text-text-primary text-sm truncate">
                           {a.nom_entreprise}
                         </p>
-                        <p className="text-[11px] text-slate-500">
+                        <p className="text-[11px] text-text-light">
                           {a.commune}
                           {a.code_postal ? ` (${a.code_postal})` : ''} · à {a.distance_km.toFixed(1)} km
                         </p>
                       </div>
-                      <span className="shrink-0 text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">
+                      <span className="shrink-0 text-[10px] bg-emerald-100 text-primary px-1.5 py-0.5 rounded font-bold">
                         RGE
                       </span>
                     </div>
@@ -743,7 +743,7 @@ export function ProspectStudyPanel({
                         {a.geste_specialites.slice(0, 4).map((g) => (
                           <span
                             key={g}
-                            className="text-[10px] bg-white border border-slate-200 text-slate-600 px-1.5 py-0.5 rounded"
+                            className="text-[10px] bg-white border border-neutral-light text-text-secondary px-1.5 py-0.5 rounded"
                           >
                             {g.replace(/_/g, ' ')}
                           </span>
@@ -773,7 +773,7 @@ export function ProspectStudyPanel({
                   </li>
                 ))}
               </ul>
-              <p className="text-[10px] text-slate-400 mt-2">
+              <p className="text-[10px] text-text-light mt-2">
                 Source : registre RGE France-rénov · {enrichment.artisans_proches.length} suggestions filtrées par dept + spécialités
               </p>
             </Section>
@@ -802,7 +802,7 @@ export function ProspectStudyPanel({
                         </span>
                       ) : null}
                     </div>
-                    <p className="text-[10px] text-slate-600">
+                    <p className="text-[10px] text-text-secondary">
                       {aide.organisme} · geste {aide.geste_id.replace(/_/g, ' ')}
                       {aide.plafond_euros ? ` · plafond ${aide.plafond_euros.toLocaleString('fr-FR')} €` : ''}
                     </p>
@@ -843,7 +843,7 @@ export function ProspectStudyPanel({
             </div>
           </Section>
 
-          <p className="text-[10px] text-slate-400 leading-relaxed">
+          <p className="text-[10px] text-text-light leading-relaxed">
             Étude indicative. Source :{' '}
             {isVirtual
               ? 'Reconstruction BDNB CSTB (bâtiment connu, DPE estimé via 3CL + climat 3CL local)'
@@ -853,7 +853,7 @@ export function ProspectStudyPanel({
         </div>
 
         {/* Sticky footer */}
-        <footer className="sticky bottom-0 bg-white border-t border-slate-200 p-4 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+        <footer className="sticky bottom-0 bg-white border-t border-neutral-light p-4 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
           {customFooter ? (
             customFooter
           ) : isVirtual ? (
@@ -881,7 +881,7 @@ export function ProspectStudyPanel({
               </a>
             </div>
           ) : alreadyClaimed ? (
-            <div className="flex items-center gap-2 text-slate-500 text-sm">
+            <div className="flex items-center gap-2 text-text-light text-sm">
               <Lock size={16} />
               Lead déjà réservé
             </div>
@@ -895,7 +895,7 @@ export function ProspectStudyPanel({
               type="button"
               onClick={onClaim}
               disabled={isClaiming}
-              className="w-full px-4 py-3 bg-gradient-to-br from-orange-500 to-red-600 text-white text-sm font-bold rounded-lg shadow-md hover:shadow-lg disabled:opacity-50 transition"
+              className="w-full px-4 py-3 bg-gradient-to-br from-primary to-primary-dark text-white text-sm font-bold rounded-lg shadow-md hover:shadow-lg disabled:opacity-50 transition"
             >
               {isClaiming ? 'Claim en cours…' : 'Claim ce lead — exclusivité 30j'}
             </button>
@@ -908,11 +908,11 @@ export function ProspectStudyPanel({
 
 function Kpi({ value, label, color }: { value: string; label: string; color?: string }) {
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-2 text-center">
+    <div className="bg-white border border-neutral-light rounded-lg p-2 text-center">
       <p className="font-bold text-base" style={{ color: color ?? '#0a5e2a' }}>
         {value}
       </p>
-      <p className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">{label}</p>
+      <p className="text-[10px] text-text-light uppercase tracking-wider mt-0.5">{label}</p>
     </div>
   )
 }
@@ -944,7 +944,7 @@ function Tag({
       className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs ${
         danger
           ? 'bg-red-50 border border-red-200 text-red-800'
-          : 'bg-slate-50 border border-slate-200 text-slate-700'
+          : 'bg-background border border-neutral-light text-text-secondary'
       }`}
     >
       {icon}

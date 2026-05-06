@@ -126,6 +126,7 @@ const ReseauProfil = lazy(() => import('@/pages/reseau/ReseauProfil'))
 const ReseauDecouvrir = lazy(() => import('@/pages/reseau/ReseauDecouvrir'))
 const ReseauChantiers = lazy(() => import('@/pages/reseau/ReseauChantiers'))
 const ReseauChantierNew = lazy(() => import('@/pages/reseau/ReseauChantierNew'))
+const ReseauChantierDetail = lazy(() => import('@/pages/reseau/ReseauChantierDetail'))
 const ReseauConnexions = lazy(() => import('@/pages/reseau/ReseauConnexions'))
 const ReseauMessages = lazy(() => import('@/pages/reseau/ReseauMessages'))
 const ReseauParamsAutaf = lazy(() => import('@/pages/reseau/ReseauParamsAutaf'))
@@ -263,6 +264,7 @@ export default function App() {
                 <Route path="/reseau/decouvrir" element={<ReseauDecouvrir />} />
                 <Route path="/reseau/chantiers" element={<ReseauChantiers />} />
                 <Route path="/reseau/chantiers/nouveau" element={<ReseauChantierNew />} />
+                <Route path="/reseau/chantiers/:id" element={<ReseauChantierDetail />} />
                 <Route path="/reseau/connexions" element={<ReseauConnexions />} />
                 <Route path="/reseau/messages" element={<ReseauMessages />} />
                 <Route path="/reseau/parametres/autaf" element={<ReseauParamsAutaf />} />

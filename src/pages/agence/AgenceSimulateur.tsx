@@ -175,24 +175,24 @@ export default function AgenceSimulateur() {
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#0a5e2a] to-[#16a34a] mb-4 shadow-lg">
           <Sparkles size={28} className="text-white" />
         </div>
-        <h1 className="text-3xl font-display tracking-tight text-slate-900">
+        <h1 className="text-3xl font-display tracking-tight text-text-primary">
           Simulateur énergétique BRH
         </h1>
-        <p className="text-sm text-slate-600 mt-2 max-w-xl mx-auto">
+        <p className="text-sm text-text-secondary mt-2 max-w-xl mx-auto">
           Étudiez n'importe quelle adresse de Bretagne ou saisissez les caractéristiques
           précises avec votre client en RDV — calcul DPE temps réel.
         </p>
       </header>
 
       {/* Tabs mode */}
-      <div className="flex bg-slate-100 rounded-xl p-1 max-w-md mx-auto">
+      <div className="flex bg-background rounded-xl p-1 max-w-md mx-auto">
         <button
           type="button"
           onClick={() => setMode('address')}
           className={`flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-semibold transition ${
             mode === 'address'
               ? 'bg-white text-[#0a5e2a] shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
+              : 'text-text-secondary hover:text-text-primary'
           }`}
         >
           <Wand2 size={14} />
@@ -204,7 +204,7 @@ export default function AgenceSimulateur() {
           className={`flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-semibold transition ${
             mode === 'manual'
               ? 'bg-white text-[#0a5e2a] shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
+              : 'text-text-secondary hover:text-text-primary'
           }`}
         >
           <Sliders size={14} />
@@ -293,7 +293,7 @@ function AddressMode({
       <div className="relative">
         <Search
           size={18}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-text-light pointer-events-none"
         />
         <input
           ref={inputRef}
@@ -303,7 +303,7 @@ function AddressMode({
           onFocus={() => addr.length >= 2 && setShowSuggestions(true)}
           onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
           placeholder="Tapez l'adresse — ex: 12 rue de la Paix, Rennes"
-          className="w-full pl-11 pr-12 py-4 border-2 border-slate-200 rounded-2xl text-base focus:outline-none focus:border-[#0a5e2a] focus:ring-4 focus:ring-[#0a5e2a]/15 shadow-sm"
+          className="w-full pl-11 pr-12 py-4 border-2 border-neutral-light rounded-2xl text-base focus:outline-none focus:border-[#0a5e2a] focus:ring-4 focus:ring-[#0a5e2a]/15 shadow-sm"
         />
         {searchingAddr ? (
           <Loader
@@ -313,7 +313,7 @@ function AddressMode({
         ) : null}
 
         {showSuggestions ? (
-          <ul className="absolute top-full mt-1 left-0 right-0 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden z-50 max-h-96 overflow-y-auto">
+          <ul className="absolute top-full mt-1 left-0 right-0 bg-white rounded-xl shadow-2xl border border-neutral-light overflow-hidden z-50 max-h-96 overflow-y-auto">
             {suggestions.length > 0 ? (
               suggestions.map((f, i) => (
                 <li
@@ -324,9 +324,9 @@ function AddressMode({
                   }}
                   className="px-4 py-3 text-sm cursor-pointer hover:bg-emerald-50 border-b border-slate-50 last:border-0"
                 >
-                  <p className="text-slate-800 font-medium">{f.properties.label}</p>
+                  <p className="text-text-primary font-medium">{f.properties.label}</p>
                   {f.properties.context ? (
-                    <p className="text-[11px] text-slate-500 mt-0.5">{f.properties.context}</p>
+                    <p className="text-[11px] text-text-light mt-0.5">{f.properties.context}</p>
                   ) : null}
                 </li>
               ))
@@ -336,7 +336,7 @@ function AddressMode({
                 <p>{searchError}</p>
               </li>
             ) : !searchingAddr && addr.length >= 2 ? (
-              <li className="px-4 py-3 text-sm text-slate-500 italic">
+              <li className="px-4 py-3 text-sm text-text-light italic">
                 Aucune adresse trouvée — tapez plus précisément
               </li>
             ) : null}
@@ -368,12 +368,12 @@ function AddressMode({
 
       {/* Loading */}
       {loading ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-12 flex flex-col items-center gap-3">
+        <div className="bg-white border border-neutral-light rounded-2xl p-12 flex flex-col items-center gap-3">
           <Loader className="animate-spin text-[#0a5e2a]" size={28} />
-          <p className="text-sm font-medium text-slate-700">
+          <p className="text-sm font-medium text-text-secondary">
             Calcul de l'étude énergétique BDNB CSTB...
           </p>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-text-light">
             Bâtiment, climat 3CL local, scénarios, aides, chiffrage...
           </p>
         </div>
@@ -402,12 +402,12 @@ function AddressMode({
 
       {/* Tips */}
       {!study && !loading && !error ? (
-        <div className="bg-white border border-slate-200 rounded-xl p-5">
-          <h2 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+        <div className="bg-white border border-neutral-light rounded-xl p-5">
+          <h2 className="text-sm font-display text-base font-bold text-text-primary mb-3 tracking-tight flex items-center gap-2">
             <Lightbulb size={14} className="text-amber-500" />
             Quand utiliser ce simulateur ?
           </h2>
-          <ul className="space-y-2 text-sm text-slate-700">
+          <ul className="space-y-2 text-sm text-text-secondary">
             <li className="flex items-start gap-2">
               <span className="text-emerald-600 font-bold">→</span>
               <span>
@@ -437,7 +437,7 @@ function AddressMode({
               </span>
             </li>
           </ul>
-          <p className="text-[11px] text-slate-500 mt-4 italic">
+          <p className="text-[11px] text-text-light mt-4 italic">
             ⚡ Précision étude virtuelle : ±1 classe DPE. Pour un audit officiel signé,
             commander un Pro RGE BRH (commission agence 5 % HT si chantier signé).
           </p>

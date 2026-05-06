@@ -46,6 +46,21 @@
 
 ---
 
+## 2026-05-06 — Phase 16.1 refonte design system BRH du portail agence
+
+- **Contexte** : portail agence ne respectait pas la charte BRH (palette `#1c7b1d` vert primary + DM Sans/Inter/Bebas Neue + bg `#f5f3f2` beige). Dérive vers slate/orange/red Tailwind, typographie médiocre. Mesure d'écart : **126 occurrences hors-DS** (Agence) vs **32 tokens DS** (Pro).
+- **Skill `designer-pro-x` invoqué** + UI UX Pro Max recommande "Exaggerated Minimalism" pour real estate (oversized typography, palette teal/green compatible BRH).
+- **Lot 2 — Composants partagés** : refonte structurelle de `LeadBreakdownCard` (forfait `from-deep to-primary-dark` + numéral oversized DM Sans), `ReferralTreeView` (3 KPIs premium gradients verts, badges N1-N5 décroissants), `AgenceQRCodeCard` (gradient canvas `#1c7b1d → #094114`, fonts DM Sans/Inter), `AgenceShell` (sidebar `bg-deep`, accent `border-primary-light`).
+- **Lot 1 — Pages quotidien (Dashboard, Leads, Parrainage, ScoreVente)** : hero Dashboard `from-deep via-primary-dark to-deep` avec H1 oversized `text-4xl lg:text-5xl leading-[1.05]`, status charte `success/10`, KPI cards pattern Pro (`shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80` + icon container `w-10 h-10 bg-primary/10 rounded-xl text-primary`).
+- **Lot 3 — 10 pages secondaires** : mass-replace sed sur 14 patterns (slate→DS, orange→primary, gradients indigo/emerald→primary/deep). Cards uplift au pattern Pro.
+- **Lot 4 — Pages publiques (Vitrine /a/:id, Inscription)** : hero Vitrine deep green, badge "Partenaire certifié", CTA gradient primary.
+- **Sémantiques préservées (intentionnel)** : DPE F=orange-500 / G=red-600 (norme officielle), "Très chaud" red / "Chaud" orange (signal thermique Score Vente), tier paliers (bronze=amber, silver=slate, gold=amber, platinum=violet — conventions universelles).
+- **Tests** : 390/390 ✓ TS strict ✓ ESLint ✓ Build prod 19.31s ✓.
+- **Risque** : Low — refonte purement visuelle, aucune logique métier touchée.
+- **Status** : ✅ DONE — portail agence aligné DS BRH (vert primary, DM Sans + Inter, shadow signature, oversized typography).
+
+---
+
 ## 2026-05-06 — Phase 16.1 enhancements : 6 polish économie de leads agences
 
 - **Contexte** : après Steps A-D livrés, polish UX + hardening dans l'ordre infrastructure → RPC → triggers → UI → contenu.
@@ -59,6 +74,72 @@
 - **Tests** : 368/368 vert, TS strict, ESLint clean.
 - **Risque** : Low — modifs additives. Seul breaking change : signature RPC `brh_grant_lead_claim` (UUID → TABLE), 1 seul consumer adapté.
 - **Status** : ✅ DONE
+
+---
+
+## 2026-05-06 — Phase 18 Étape 8 : bridge AUTAF API (config V1 + recos read-only)
+
+- **Contexte** : Étape 8/12 du plan Phase 18 (1 sem prévue). Connecte BRH Habitat à AUTAF (WordPress OVH WorkRepublic) sans le migrer. Décision structurante du 06/05 : pas de refonte WordPress AUTAF, juste un **bridge API optionnel** pour enrichir les profils pro BRH des données AUTAF (recommandations read-only V1, cross-post posts/chantiers V1.5, OAuth flow V2).
+- **Spec produit** :
+  - V1 livré : configuration **manuelle** par saisie du token API AUTAF (V1.5 OAuth flow quand Genesii livre `autaf/v1/oauth/*`)
+  - Page `/reseau/parametres/autaf` : 3 états UI (non configuré / actif / form de configuration) + scopes granulaires (read_recommendations, write_posts, write_chantiers, read_profile)
+  - Composant `AutafRecommendations` : affichage read-only sur profils pros BRH avec **fallback gracieux** si AUTAF API down (HTTP 200 + `available: false`)
+  - EF Deno `autaf-recommendations-fetch` : auth JWT user → lookup `brh_autaf_link` du viewer → fetch AUTAF API avec timeout 8s + tracking `last_error` + rate limit 60/min/IP
+  - Spec API attendue côté Genesii documentée dans `docs/wiki/autaf-bridge.md` (endpoint principal `GET /wp-json/autaf/v1/recommendations/:user_id` Bearer auth)
+- **Fichiers créés (5)** :
+  - `src/api/reseau-autaf.ts` (CRUD `brh_autaf_link` + appel EF + types `AutafLink`/`AutafRecommendation`)
+  - `src/hooks/queries/reseau-autaf.ts` (5 hooks : link CRUD + recommendations fetch)
+  - `src/components/reseau/AutafRecommendations.tsx` (display read-only avec badge violet "via AUTAF" + fallback)
+  - `supabase/functions/autaf-recommendations-fetch/index.ts` (EF Deno ~180 lignes : auth + fetch AUTAF + last_error tracking)
+  - `docs/wiki/autaf-bridge.md` (spec complète : architecture, schéma DB, endpoints API attendus côté Genesii, sécurité, roadmap V1/V1.5/V2, **email type à envoyer à Genesii**)
+- **Fichiers modifiés (1)** :
+  - `src/pages/reseau/ReseauParamsAutaf.tsx` (skeleton → page complète form configuration + status + désactiver/supprimer)
+- **Migrations SQL** : aucune (réutilise `brh_autaf_link` Étape 3)
+- **Pages wiki impactées** :
+  - **Créée** : `docs/wiki/autaf-bridge.md`
+  - **À mettre à jour** : `docs/wiki/index.md` (référencer `autaf-bridge.md`)
+- **Risque** : Low/Medium — dépendance externe AUTAF API (Genesii pas encore confirmé). Code blindé avec fallback gracieux sur tous les cas d'erreur (`bridge_inactive`, `scope_missing`, `autaf_unavailable`, `autaf_http_*`). Token V1 stocké en clair (chiffrement AES-GCM via pgcrypto en V2).
+- **Tests** : `npx tsc --noEmit` exit 0 ✅, **Vitest 390/390** (inchangé — logique async sur API externe, mocks lourds → V2), `npx eslint` exit 0 ✅.
+- **Status** : ✅ DONE — Étape 8/12 livrée. Reste 4 étapes. Prochaine : Étape 9 (modération avancée + DPIA RGPD).
+
+### Action requise par Philippe (parallèle)
+1. **Email à Genesii** dès J-0 avec la spec endpoints `autaf/v1/recommendations/:user_id` (template prêt dans `docs/wiki/autaf-bridge.md` § 8). Délai cible : confirmation S+5.
+2. **Déploiement EF** : `supabase functions deploy autaf-recommendations-fetch` (depuis local avec SUPABASE_ACCESS_TOKEN).
+
+### Décisions techniques V1
+1. **V1 = saisie manuelle token** au lieu de OAuth flow → débloque le développement sans dépendance Genesii bloquante. V1.5 = remplacer par OAuth quand `autaf/v1/oauth/*` confirmé.
+2. **Fallback HTTP 200 toujours** : l'EF retourne 200 + `available: false` au lieu de 5xx → pas de retry agressif côté React Query (`retry: false`), UI gracieuse.
+3. **Token en clair V1** : champ `oauth_access_token_encrypted` reste le nom (anticipation V2). Acceptable car RLS owner-only + admin BRH = personne d'autre n'y accède.
+4. **Last_error tracké côté DB** : permet à l'UI d'afficher la cause précise et debug Genesii.
+5. **Pas de cross-post V1** : reporté V1.5 pour limiter scope Étape 8 et éviter les EFs jamais utilisées si Genesii ne livre pas `/posts` rapidement.
+
+---
+
+## 2026-05-06 — Phase 18 Étape 7 : marketplace chantiers KILLER + commission 5%
+
+- **Contexte** : Étape 7/12 du plan Phase 18 — **KILLER feature** (2.5 sem prévues). Marketplace pair-à-pair où les pros publient des offres de chantier (sous-traitance / co-traitance / apport d'affaires), les autres pros candidatent, le publisher sélectionne, et la commission 5% HT est tracée à la signature du devis (réutilise `brh_commission_invoices` + trigger `calculate_commission`).
+- **Spec produit** :
+  - Liste avec 2 vues (Liste / Carte Leaflet) + filtres département (5 BRH : 22/29/35/56/44)
+  - Algo matching V1 : intersection métiers + Haversine + recency_factor + tri DESC
+  - Form publication complet 12 champs avec auto-detect dépt + autocomplete métiers
+  - Form candidature : message + montant devis + URL devis
+  - Détail offre : 2 vues conditionnelles (publisher / candidat) avec actions différenciées
+  - Workflow publisher : pending → shortlist → selected → trigger DB snapshot commission_pct → quote_id signé → calcul auto commission_amount_cents
+- **Migrations SQL** : aucune (réutilise migration Étape 3)
+- **Fichiers créés (12)** : libs (chantier-matching + tests 22 cas), 2 APIs, 2 hooks, 5 composants, 1 page detail
+- **Fichiers modifiés (3)** : ReseauChantiers, ReseauChantierNew, App.tsx (+1 route `/reseau/chantiers/:id`)
+- **Risque** : Medium — ranking côté front V1 (V2 RPC SQL avec PostGIS)
+- **Tests** : `npx tsc --noEmit` exit 0 ✅, **Vitest 390/390** (était 368, +22 nouveaux), `npx eslint` exit 0 ✅.
+- **Status** : ✅ DONE — Étape 7/12 livrée. Reste 5 étapes. Prochaine : Étape 8 (bridge AUTAF API).
+
+### Décisions techniques V1
+1. Ranking côté front (V2 RPC SQL + PostGIS)
+2. Pas d'auto-création thread message à la sélection (V1.5 = bouton manuel)
+3. Carte Leaflet sans cluster V1 (≤100 markers OK)
+4. Géocodage manuel V1 (V1.5 = autocomplete BAN)
+
+### Tests Vitest chantier-matching (22 cas)
+Haversine, proximityFactor, recencyFactor, matchMetiers, scoreChantierForPro, rankChantiersForPro — tous verts.
 
 ---
 

@@ -49,36 +49,36 @@ export default function AgenceDashboard() {
   return (
     <div className="p-6 lg:p-10 max-w-6xl mx-auto space-y-6">
       {/* Hero header */}
-      <header className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl p-6 text-white relative overflow-hidden">
+      <header className="bg-gradient-to-br from-deep via-primary-dark to-deep rounded-2xl p-8 text-white relative overflow-hidden shadow-xl shadow-primary/20">
         <div
-          className="absolute top-0 right-0 w-64 h-64 rounded-full opacity-20 blur-3xl"
-          style={{ background: 'radial-gradient(circle, #f97316 0%, transparent 70%)' }}
+          className="absolute top-0 right-0 w-72 h-72 rounded-full opacity-25 blur-3xl"
+          style={{ background: 'radial-gradient(circle, #81c784 0%, transparent 70%)' }}
         />
         <div className="relative">
-          <p className="text-orange-300 text-sm font-medium mb-1">
-            Bonjour {user?.full_name?.split(' ')[0] ?? 'Partenaire'} 👋
+          <p className="text-[10px] uppercase tracking-widest font-bold text-primary-light mb-2">
+            Bonjour {user?.full_name?.split(' ')[0] ?? 'Partenaire'}
           </p>
-          <h1 className="text-3xl font-display tracking-tight mb-2">
-            {tresChaud + chaud} opportunités à explorer
+          <h1 className="font-display text-4xl lg:text-5xl font-bold tracking-tight mb-3 leading-[1.05]">
+            {tresChaud + chaud} opportunités<br />à explorer
           </h1>
-          <p className="text-sm text-slate-300 max-w-xl">
+          <p className="text-sm text-white/70 max-w-xl leading-relaxed">
             Propriétaires F/G en Bretagne avec le plus fort potentiel de mise en
             vente sur les 6 prochains mois, scorés par notre algo 13 règles.
           </p>
-          <div className="flex flex-wrap gap-2 mt-4">
+          <div className="flex flex-wrap gap-2 mt-6">
             <Link
               to="/agence/score-vente"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-orange-500 to-red-600 text-white text-sm font-semibold rounded-lg shadow-lg shadow-orange-500/30 hover:shadow-xl hover:from-orange-600 hover:to-red-700 transition"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-text-primary text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg hover:-translate-y-0.5 transition-all"
             >
-              <Flame size={16} />
+              <Flame size={14} className="text-primary" />
               Explorer Score Vente
-              <ArrowRight size={14} />
+              <ArrowRight size={13} />
             </Link>
             <Link
               to="/agence/leads"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/15 backdrop-blur text-white text-sm font-medium rounded-lg border border-white/10 transition"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/15 backdrop-blur text-white text-xs font-bold uppercase tracking-widest rounded-xl border border-white/15 transition-colors"
             >
-              <ClipboardList size={16} />
+              <ClipboardList size={14} />
               Mes leads ({activeLeads})
             </Link>
           </div>
@@ -87,82 +87,98 @@ export default function AgenceDashboard() {
 
       {/* Status charte */}
       {membership ? (
-        <div className="bg-white border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-            <ShieldCheck className="text-emerald-600" size={20} />
+        <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-5 flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center shrink-0">
+            <ShieldCheck className="text-success" size={22} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-slate-900">Charte partenaire active</p>
-            <p className="text-xs text-slate-600">
+            <p className="font-display font-bold text-text-primary">Charte partenaire active</p>
+            <p className="text-xs text-text-light mt-0.5">
               Modèle Hoguet « A » · fiches d'opportunité scorées · pas de transaction directe
             </p>
           </div>
           <Link
             to="/agence/profil"
-            className="text-xs text-orange-600 hover:text-orange-700 font-semibold inline-flex items-center gap-1"
+            className="text-xs text-primary hover:text-primary-dark font-bold inline-flex items-center gap-1 transition-colors"
           >
             Relire <ArrowRight size={12} />
           </Link>
         </div>
       ) : (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
-          <Clock className="text-amber-600 shrink-0 mt-0.5" size={20} />
+        <div className="bg-warning/5 border border-warning/30 rounded-2xl p-5 flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-warning/10 flex items-center justify-center shrink-0">
+            <Clock className="text-warning" size={22} />
+          </div>
           <div>
-            <p className="text-sm font-medium text-amber-900">Charte en attente</p>
-            <p className="text-xs text-amber-700">
+            <p className="font-display font-bold text-text-primary">Charte en attente</p>
+            <p className="text-xs text-text-secondary mt-0.5">
               Finalisez votre inscription pour accéder aux leads.
             </p>
           </div>
         </div>
       )}
 
-      {/* KPI cards 4 col */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-white rounded-2xl border border-slate-100 p-4 hover:shadow-md transition">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold">
-              Mes leads
-            </p>
-            <ClipboardList size={16} className="text-slate-400" />
+      {/* KPI cards 4 col — pattern Pro premium */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+              <ClipboardList size={18} className="text-primary" />
+            </div>
           </div>
-          <p className="text-3xl font-bold tabular-nums text-slate-900">{activeLeads}</p>
-          <p className="text-[11px] text-slate-500 mt-1">Actifs · exclusivité 30j</p>
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">
+            Mes leads
+          </p>
+          <p className="font-display text-3xl font-bold tabular-nums text-text-primary tracking-tight">
+            {activeLeads}
+          </p>
+          <p className="text-[11px] text-text-light mt-1">Actifs · exclusivité 30j</p>
         </div>
 
-        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-4 text-white shadow-md shadow-red-500/20">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs uppercase tracking-wider opacity-90 font-semibold">
-              Très chauds
-            </p>
-            <Flame size={16} />
+        {/* Très chauds — gardé rouge sémantique métier */}
+        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-6 text-white shadow-lg shadow-red-500/20">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center">
+              <Flame size={18} className="text-white" />
+            </div>
           </div>
-          <p className="text-3xl font-bold tabular-nums">
+          <p className="text-[10px] uppercase tracking-widest font-bold opacity-90 mb-1">
+            Très chauds
+          </p>
+          <p className="font-display text-3xl font-bold tabular-nums tracking-tight">
             {tresChaud.toLocaleString('fr-FR')}
           </p>
-          <p className="text-[11px] opacity-90 mt-1">Score ≥ 80 · proba 6m 65 %</p>
+          <p className="text-[11px] opacity-80 mt-1">Score ≥ 80 · proba 6m 65 %</p>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-4 text-white shadow-md shadow-orange-500/20">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs uppercase tracking-wider opacity-90 font-semibold">
-              Chauds
-            </p>
-            <ThermometerSun size={16} />
+        {/* Chauds — gardé orange sémantique métier */}
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-6 text-white shadow-lg shadow-orange-500/20">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center">
+              <ThermometerSun size={18} className="text-white" />
+            </div>
           </div>
-          <p className="text-3xl font-bold tabular-nums">{chaud.toLocaleString('fr-FR')}</p>
-          <p className="text-[11px] opacity-90 mt-1">Score 60-79 · proba 6m 40 %</p>
+          <p className="text-[10px] uppercase tracking-widest font-bold opacity-90 mb-1">
+            Chauds
+          </p>
+          <p className="font-display text-3xl font-bold tabular-nums tracking-tight">
+            {chaud.toLocaleString('fr-FR')}
+          </p>
+          <p className="text-[11px] opacity-80 mt-1">Score 60-79 · proba 6m 40 %</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-100 p-4">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold">
-              Leads dispo
-            </p>
-            <TrendingUp size={16} className="text-slate-400" />
+        <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+              <TrendingUp size={18} className="text-primary" />
+            </div>
           </div>
-          <p className="text-3xl font-bold tabular-nums text-slate-900">
+          <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">
+            Leads dispo
+          </p>
+          <p className="font-display text-3xl font-bold tabular-nums text-text-primary tracking-tight">
             {totalRemaining === null ? (
-              <span className="text-orange-500">∞</span>
+              <span className="text-primary">∞</span>
             ) : (
               totalRemaining
             )}
@@ -185,17 +201,20 @@ export default function AgenceDashboard() {
 
       {/* Widget progression affiliation */}
       {progression ? (
-        <div className="bg-gradient-to-br from-emerald-50 via-white to-amber-50 rounded-2xl border border-emerald-200 p-5">
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
-                <Award size={16} className="text-white" />
+        <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-6">
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-md shadow-primary/20">
+                <Award size={20} className="text-white" />
               </div>
               <div>
-                <p className="font-bold text-slate-800">
-                  Palier {TIER_LABELS_FR[progression.tier]}
+                <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-0.5">
+                  Palier
                 </p>
-                <p className="text-[11px] text-slate-500">
+                <p className="font-display text-xl font-bold text-text-primary tracking-tight">
+                  {TIER_LABELS_FR[progression.tier]}
+                </p>
+                <p className="text-[11px] text-text-light mt-0.5">
                   {progression.chantiers_signes} chantiers signés ·{' '}
                   {progression.bonus_leads_unlocked} leads bonus débloqués
                 </p>
@@ -203,7 +222,7 @@ export default function AgenceDashboard() {
             </div>
             <Link
               to="/agence/progression"
-              className="text-xs text-emerald-700 hover:text-emerald-900 font-semibold inline-flex items-center gap-1"
+              className="text-xs text-primary hover:text-primary-dark font-bold inline-flex items-center gap-1 transition-colors"
             >
               Voir <ArrowRight size={12} />
             </Link>
@@ -211,9 +230,9 @@ export default function AgenceDashboard() {
 
           {TIER_THRESHOLDS[progression.tier].next_chantiers ? (
             <>
-              <div className="h-2 bg-white rounded-full overflow-hidden border border-emerald-100">
+              <div className="h-2 bg-background rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600"
+                  className="h-full bg-gradient-to-r from-primary to-primary-dark"
                   style={{
                     width: `${Math.min(
                       100,
@@ -226,11 +245,11 @@ export default function AgenceDashboard() {
                   }}
                 />
               </div>
-              <p className="text-[11px] text-emerald-700 mt-2">
+              <p className="text-[11px] text-text-secondary mt-2">
                 {TIER_THRESHOLDS[progression.tier].next_chantiers! -
                   progression.chantiers_signes}{' '}
                 chantier(s) signé(s) restant pour passer{' '}
-                <strong>
+                <strong className="text-primary">
                   {
                     TIER_LABELS_FR[
                       TIER_THRESHOLDS[progression.tier]
@@ -245,7 +264,7 @@ export default function AgenceDashboard() {
 
           <Link
             to="/agence/contributions"
-            className="mt-3 inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gradient-to-br from-emerald-500 to-emerald-700 text-white text-sm font-bold rounded-lg shadow hover:shadow-md transition"
+            className="mt-4 inline-flex items-center justify-center gap-2 w-full px-4 py-3 bg-gradient-to-br from-primary to-primary-dark text-white text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-all"
           >
             <Handshake size={14} />
             Apporter un prospect travaux (+5 % commission)
@@ -254,53 +273,55 @@ export default function AgenceDashboard() {
       ) : null}
 
       {/* Recent claims */}
-      <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+      <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 overflow-hidden">
+        <div className="px-6 py-5 border-b border-neutral-light flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Eye size={16} className="text-slate-500" />
-            <h3 className="font-semibold text-slate-800">Mes derniers claims</h3>
+            <Eye size={14} className="text-text-light" />
+            <h3 className="font-display text-base font-bold text-text-primary tracking-tight">
+              Mes derniers claims
+            </h3>
           </div>
           <Link
             to="/agence/leads"
-            className="text-xs text-orange-600 hover:text-orange-700 font-semibold"
+            className="text-xs text-primary hover:text-primary-dark font-bold transition-colors"
           >
             Voir tout →
           </Link>
         </div>
         {recentClaims.length === 0 ? (
-          <div className="p-8 text-center text-sm text-slate-500">
+          <div className="p-10 text-center text-sm text-text-light">
             Aucun claim pour l'instant.
             <Link
               to="/agence/score-vente"
-              className="block mt-2 text-orange-600 font-semibold hover:underline"
+              className="block mt-2 text-primary font-bold hover:underline"
             >
               Explorer les opportunités →
             </Link>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-neutral-light">
             {recentClaims.slice(0, 3).map((claim) => (
-              <div key={claim.id} className="px-5 py-3 flex items-center gap-3 hover:bg-slate-50">
+              <div key={claim.id} className="px-6 py-4 flex items-center gap-3 hover:bg-background transition-colors">
                 <div
                   className={`w-2 h-2 rounded-full shrink-0 ${
                     claim.status === 'contacted'
-                      ? 'bg-emerald-500'
+                      ? 'bg-success'
                       : claim.status === 'active'
-                      ? 'bg-orange-500'
-                      : 'bg-slate-400'
+                      ? 'bg-primary'
+                      : 'bg-text-light/40'
                   }`}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-800">
+                  <p className="text-sm font-medium text-text-primary">
                     Lead #{claim.prospect_id}
                   </p>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[11px] text-text-light">
                     Claim le {new Date(claim.claimed_at).toLocaleDateString('fr-FR')} ·{' '}
                     {claim.contact_attempts} tentative
                     {claim.contact_attempts > 1 ? 's' : ''}
                   </p>
                 </div>
-                <span className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 capitalize">
+                <span className="text-[11px] px-2.5 py-1 rounded-md bg-background text-text-secondary capitalize font-medium">
                   {claim.status}
                 </span>
               </div>
@@ -310,32 +331,32 @@ export default function AgenceDashboard() {
       </div>
 
       {/* Rappel charte */}
-      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
-        <h3 className="font-semibold text-slate-800 mb-3 flex items-center gap-2 text-sm">
-          <ShieldCheck size={16} className="text-emerald-600" />
+      <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-6">
+        <h3 className="font-display text-base font-bold text-text-primary mb-4 flex items-center gap-2 tracking-tight">
+          <ShieldCheck size={18} className="text-primary" />
           Rappel des engagements de la charte
         </h3>
-        <ul className="space-y-1.5 text-slate-700 text-xs leading-relaxed">
+        <ul className="space-y-2 text-text-secondary text-xs leading-relaxed">
           <li className="flex items-start gap-2">
-            <CheckCircle2 size={12} className="text-emerald-500 mt-0.5 shrink-0" />
+            <CheckCircle2 size={14} className="text-success mt-0.5 shrink-0" />
             <span>1 lead claim = exclusivité 30 jours pour votre agence</span>
           </li>
           <li className="flex items-start gap-2">
-            <CheckCircle2 size={12} className="text-emerald-500 mt-0.5 shrink-0" />
+            <CheckCircle2 size={14} className="text-success mt-0.5 shrink-0" />
             <span>
-              Maximum <strong>2 tentatives</strong> de contact par lead
+              Maximum <strong className="text-text-primary">2 tentatives</strong> de contact par lead
             </span>
           </li>
           <li className="flex items-start gap-2">
-            <CheckCircle2 size={12} className="text-emerald-500 mt-0.5 shrink-0" />
+            <CheckCircle2 size={14} className="text-success mt-0.5 shrink-0" />
             <span>Déclaration obligatoire de chaque tentative dans BRH</span>
           </li>
           <li className="flex items-start gap-2">
-            <AlertCircle size={12} className="text-amber-500 mt-0.5 shrink-0" />
+            <AlertCircle size={14} className="text-warning mt-0.5 shrink-0" />
             <span>Respect du droit d'opposition RGPD si le propriétaire le demande</span>
           </li>
           <li className="flex items-start gap-2">
-            <AlertCircle size={12} className="text-amber-500 mt-0.5 shrink-0" />
+            <AlertCircle size={14} className="text-warning mt-0.5 shrink-0" />
             <span>Audit aléatoire mensuel par BRH (5 % des leads contactés)</span>
           </li>
         </ul>

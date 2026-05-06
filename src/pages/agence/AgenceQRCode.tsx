@@ -66,12 +66,12 @@ export default function AgenceQRCode() {
   return (
     <div className="p-6 lg:p-10 max-w-5xl mx-auto space-y-6">
       <header className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-md">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-md">
           <QrCode size={20} className="text-white" />
         </div>
         <div>
           <h1 className="text-2xl font-display tracking-tight">Mon QR Code</h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-text-light">
             Personnalisé pour vos cartes de visite, vitrine, devis, signatures email.
           </p>
         </div>
@@ -89,29 +89,29 @@ export default function AgenceQRCode() {
               onClick={() => setMode(d.id)}
               className={`text-left p-4 rounded-2xl border-2 transition ${
                 active
-                  ? 'bg-gradient-to-br from-orange-50 to-red-50 border-orange-400 shadow-md'
-                  : 'bg-white border-slate-200 hover:border-orange-200'
+                  ? 'bg-gradient-to-br from-primary/5 to-primary-dark/5 border-primary shadow-md'
+                  : 'bg-white border-neutral-light hover:border-primary/20'
               }`}
             >
               <div className="flex items-center gap-2 mb-1.5">
                 <div
                   className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                    active ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-500'
+                    active ? 'bg-primary text-white' : 'bg-background text-text-light'
                   }`}
                 >
                   <Icon size={15} />
                 </div>
-                <p className="font-bold text-sm text-slate-800">{d.label}</p>
+                <p className="font-bold text-sm text-text-primary">{d.label}</p>
               </div>
-              <p className="text-xs text-slate-500">{d.description}</p>
+              <p className="text-xs text-text-light">{d.description}</p>
             </button>
           )
         })}
       </div>
 
       {!membership ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
-          <p className="text-sm text-slate-500">Chargement de votre agence…</p>
+        <div className="bg-white rounded-2xl border border-neutral-light p-8 text-center">
+          <p className="text-sm text-text-light">Chargement de votre agence…</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -121,12 +121,12 @@ export default function AgenceQRCode() {
           {/* Side info */}
           <div className="space-y-4">
             {/* URL + copy */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5">
-              <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-3">
+            <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-6">
+              <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-3">
                 URL encodée
               </p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-xs text-slate-700 truncate">
+                <code className="flex-1 bg-background border border-neutral-light rounded-lg px-3 py-2.5 text-xs text-text-secondary truncate">
                   {url}
                 </code>
                 <button
@@ -134,8 +134,8 @@ export default function AgenceQRCode() {
                   onClick={handleCopy}
                   className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-bold transition ${
                     copied
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : 'bg-slate-800 text-white hover:bg-slate-900'
+                      ? 'bg-success/10 text-success'
+                      : 'bg-primary text-white hover:bg-primary-dark'
                   }`}
                 >
                   {copied ? <Check size={12} /> : <Copy size={12} />}
@@ -146,7 +146,7 @@ export default function AgenceQRCode() {
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 inline-flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 font-medium"
+                className="mt-3 inline-flex items-center gap-1 text-xs text-primary hover:text-primary-dark font-medium"
               >
                 <ExternalLink size={11} />
                 Ouvrir le lien dans un onglet
@@ -154,11 +154,11 @@ export default function AgenceQRCode() {
             </div>
 
             {/* Usage tips */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5">
-              <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-3">
+            <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-6">
+              <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-3">
                 Comment l'utiliser
               </p>
-              <ul className="space-y-2.5 text-sm text-slate-700">
+              <ul className="space-y-2.5 text-sm text-text-secondary">
                 {[
                   'Cartes de visite et plaquettes',
                   'Devis, mandats et présentations clients',
@@ -167,14 +167,14 @@ export default function AgenceQRCode() {
                   'Salons immobiliers et événements locaux',
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
                     {item}
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 text-xs text-orange-800 leading-relaxed">
+            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 text-xs text-primary-dark leading-relaxed">
               <p className="font-bold mb-1">💡 Conseil impression</p>
               <p>
                 Téléchargez le PNG, puis imprimez à minimum 2 cm × 2 cm pour scan fiable. Les QR

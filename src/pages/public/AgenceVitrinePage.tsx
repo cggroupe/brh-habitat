@@ -68,24 +68,24 @@ export default function AgenceVitrinePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-10 h-10 border-3 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-10 h-10 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
       </div>
     )
   }
 
   if (notFound || !agence) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
-        <Building2 size={48} className="text-slate-300 mb-3" />
-        <h1 className="text-xl font-bold text-slate-700">Agence introuvable</h1>
-        <p className="text-sm text-slate-500 mt-1 max-w-md">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6 text-center">
+        <Building2 size={48} className="text-text-light mb-3" />
+        <h1 className="text-xl font-bold text-text-secondary">Agence introuvable</h1>
+        <p className="text-sm text-text-light mt-1 max-w-md">
           Cette agence n'est plus partenaire ou le lien est incorrect. Vous pouvez tout de même
           demander une simulation gratuite directement à BRH.
         </p>
         <Link
           to="/contact"
-          className="mt-5 inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-br from-orange-500 to-red-600 text-white font-bold text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-orange-500/30 hover:-translate-y-0.5 transition-all"
+          className="mt-5 inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-br from-primary to-primary-dark text-white font-bold text-xs uppercase tracking-widest rounded-xl shadow-lg shadow-primary/30 hover:-translate-y-0.5 transition-all"
         >
           <Mail size={14} />
           Demander une simulation
@@ -95,28 +95,28 @@ export default function AgenceVitrinePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50">
+    <div className="min-h-screen bg-gradient-to-b from-background via-white to-background">
       {/* Hero */}
-      <header className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+      <header className="bg-gradient-to-br from-deep via-primary-dark to-deep text-white">
         <div className="max-w-3xl mx-auto px-6 py-12 lg:py-16">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg shadow-primary/30">
               <Flame size={16} className="text-white" />
             </div>
-            <span className="text-[10px] uppercase tracking-widest text-orange-300 font-bold">
+            <span className="text-[10px] uppercase tracking-widest text-primary-light font-bold">
               Partenaire BRH Habitat
             </span>
           </div>
-          <h1 className="font-display text-3xl lg:text-4xl font-bold tracking-tight mb-3">
+          <h1 className="font-display text-4xl lg:text-5xl font-bold tracking-tight mb-3 leading-[1.05]">
             {agence.raison_sociale}
           </h1>
-          <p className="text-slate-300 text-sm lg:text-base">
+          <p className="text-text-light text-sm lg:text-base">
             {agence.commune
               ? `${agence.code_postal ? agence.code_postal + ' ' : ''}${agence.commune}`
               : null}
             {agence.departement ? ` · Département ${agence.departement}` : null}
           </p>
-          <div className="mt-5 inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-4 py-1.5 text-xs font-bold text-emerald-300">
+          <div className="mt-5 inline-flex items-center gap-2 bg-success/10 border border-success/30 rounded-full px-4 py-1.5 text-xs font-bold text-primary-light">
             <ShieldCheck size={13} />
             Agence partenaire certifiée
           </div>
@@ -125,26 +125,26 @@ export default function AgenceVitrinePage() {
 
       {/* CTA */}
       <main className="max-w-3xl mx-auto px-6 py-10 lg:py-14 space-y-8">
-        <section className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 p-7 lg:p-10 text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500/10 to-red-600/10 mb-4">
-            <Sparkles size={26} className="text-orange-600" />
+        <section className="bg-white rounded-3xl shadow-xl shadow-text-primary/5 border border-neutral-light p-7 lg:p-10 text-center">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-primary-dark/10 mb-4">
+            <Sparkles size={26} className="text-primary" />
           </div>
-          <h2 className="font-display text-2xl lg:text-3xl font-bold text-slate-800 tracking-tight mb-3">
+          <h2 className="font-display text-2xl lg:text-3xl font-bold text-text-primary tracking-tight mb-3">
             Vous voulez vendre ou rénover votre maison&nbsp;?
           </h2>
-          <p className="text-slate-600 text-sm lg:text-base max-w-lg mx-auto mb-6">
+          <p className="text-text-secondary text-sm lg:text-base max-w-lg mx-auto mb-6">
             En partenariat avec <strong>{agence.raison_sociale}</strong>, BRH Habitat vous propose
             une simulation énergétique gratuite, un chiffrage des travaux et une estimation
             d'aides MaPrimeRénov' — en moins de 5 minutes.
           </p>
           <Link
             to={contactUrl}
-            className="inline-flex items-center gap-2 px-7 py-4 bg-gradient-to-br from-orange-500 to-red-600 text-white font-bold text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-orange-500/30 hover:-translate-y-0.5 transition-all"
+            className="inline-flex items-center gap-2 px-7 py-4 bg-gradient-to-br from-primary to-primary-dark text-white font-bold text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/30 hover:-translate-y-0.5 transition-all"
           >
             <Mail size={14} />
             Demander ma simulation gratuite
           </Link>
-          <p className="text-[11px] text-slate-400 mt-3">
+          <p className="text-[11px] text-text-light mt-3">
             Sans engagement · Réponse sous 48 h ouvrées
           </p>
         </section>
@@ -168,22 +168,22 @@ export default function AgenceVitrinePage() {
               desc: 'MaPrimeRénov\', CEE, aides locales Bretagne — calculées auto.',
             },
           ].map((a) => (
-            <div key={a.title} className="bg-white rounded-2xl border border-slate-200 p-4">
-              <a.icon size={16} className="text-emerald-500 mb-2" />
-              <p className="font-bold text-slate-800 text-sm">{a.title}</p>
-              <p className="text-xs text-slate-500 mt-1">{a.desc}</p>
+            <div key={a.title} className="bg-white rounded-2xl border border-neutral-light p-4">
+              <a.icon size={16} className="text-success mb-2" />
+              <p className="font-bold text-text-primary text-sm">{a.title}</p>
+              <p className="text-xs text-text-light mt-1">{a.desc}</p>
             </div>
           ))}
         </section>
 
         {/* Site agence */}
         {agence.site_web ? (
-          <section className="bg-slate-100 rounded-2xl p-5 flex items-center justify-between">
+          <section className="bg-background rounded-2xl p-5 flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <p className="text-xs font-bold text-text-light uppercase tracking-wider">
                 Site de l'agence
               </p>
-              <p className="text-sm font-medium text-slate-800 mt-0.5 truncate">
+              <p className="text-sm font-medium text-text-primary mt-0.5 truncate">
                 {agence.site_web}
               </p>
             </div>
@@ -191,7 +191,7 @@ export default function AgenceVitrinePage() {
               href={agence.site_web}
               target="_blank"
               rel="noopener noreferrer"
-              className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-300 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 transition"
+              className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-neutral-light text-text-secondary text-xs font-bold rounded-lg hover:bg-background transition"
             >
               Visiter
               <ExternalLink size={12} />
@@ -199,7 +199,7 @@ export default function AgenceVitrinePage() {
           </section>
         ) : null}
 
-        <p className="text-center text-[11px] text-slate-400">
+        <p className="text-center text-[11px] text-text-light">
           BRH Habitat — Bretagne Rénovation Habitat · Partenaire reconnu Hoguet « A »
         </p>
       </main>

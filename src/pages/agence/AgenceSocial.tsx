@@ -104,7 +104,7 @@ export default function AgenceSocial() {
           </div>
           <div>
             <h1 className="text-2xl font-display tracking-tight">Réseaux sociaux</h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-text-light">
               Partagez BRH Habitat sur vos réseaux → débloquez des leads bonus
             </p>
           </div>
@@ -115,33 +115,33 @@ export default function AgenceSocial() {
       <div className="bg-gradient-to-br from-emerald-50 to-pink-50 border-2 border-emerald-200 rounded-2xl p-5">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <p className="text-[11px] uppercase tracking-wider text-emerald-700 font-bold">
+            <p className="text-[11px] uppercase tracking-wider text-primary font-bold">
               Publications validées ce mois
             </p>
-            <p className="text-3xl font-bold tabular-nums text-slate-800 mt-1">
+            <p className="text-3xl font-bold tabular-nums text-text-primary mt-1">
               {monthlyValidated} / {MAX_VALIDATED_PER_MONTH}
             </p>
-            <p className="text-[11px] text-slate-500 mt-1">
+            <p className="text-[11px] text-text-light mt-1">
               Plafond mensuel : {MAX_VALIDATED_PER_MONTH} publications max
             </p>
           </div>
           <div>
-            <p className="text-[11px] uppercase tracking-wider text-emerald-700 font-bold">
+            <p className="text-[11px] uppercase tracking-wider text-primary font-bold">
               Récompense moyenne
             </p>
-            <p className="text-3xl font-bold tabular-nums text-emerald-700 mt-1">
+            <p className="text-3xl font-bold tabular-nums text-primary mt-1">
               +5 leads
             </p>
-            <p className="text-[11px] text-slate-500 mt-1">
+            <p className="text-[11px] text-text-light mt-1">
               par publication validée (10 max/mois)
             </p>
           </div>
           <div>
-            <p className="text-[11px] uppercase tracking-wider text-emerald-700 font-bold">
+            <p className="text-[11px] uppercase tracking-wider text-primary font-bold">
               Bonus TikTok / vidéo
             </p>
             <p className="text-3xl font-bold tabular-nums text-pink-600 mt-1">+8 leads</p>
-            <p className="text-[11px] text-slate-500 mt-1">
+            <p className="text-[11px] text-text-light mt-1">
               format vidéo = engagement supérieur
             </p>
           </div>
@@ -163,12 +163,12 @@ export default function AgenceSocial() {
       ) : (
         <form
           onSubmit={(e) => void handleSubmit(e)}
-          className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4"
+          className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-6 space-y-4"
         >
-          <h2 className="font-bold text-slate-800 text-lg">Soumettre une publication</h2>
+          <h2 className="font-bold text-text-primary text-lg">Soumettre une publication</h2>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-2">
+            <label className="block text-xs font-semibold text-text-secondary mb-2">
               Plateforme
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -180,12 +180,12 @@ export default function AgenceSocial() {
                   className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border-2 transition ${
                     platform === p
                       ? 'border-emerald-500 bg-emerald-50'
-                      : 'border-slate-200 bg-white hover:border-emerald-300'
+                      : 'border-neutral-light bg-white hover:border-emerald-300'
                   }`}
                 >
                   {PLATFORM_ICONS[p]}
                   <span className="text-[11px] font-semibold">{PLATFORM_LABELS[p]}</span>
-                  <span className="text-[10px] text-emerald-700 font-bold">
+                  <span className="text-[10px] text-primary font-bold">
                     +{REWARD_LEADS_PER_PLATFORM[p]} leads
                   </span>
                 </button>
@@ -195,13 +195,13 @@ export default function AgenceSocial() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-text-secondary mb-1">
                 Type de publication
               </label>
               <select
                 value={postType}
                 onChange={(e) => setPostType(e.target.value as SocialPostType)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                className="w-full px-3 py-2 border border-neutral-light rounded-lg text-sm"
               >
                 {Object.entries(POST_TYPE_LABELS).map(([k, v]) => (
                   <option key={k} value={k}>
@@ -211,7 +211,7 @@ export default function AgenceSocial() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-semibold text-text-secondary mb-1">
                 URL de la publication *
               </label>
               <input
@@ -220,13 +220,13 @@ export default function AgenceSocial() {
                 onChange={(e) => setPostUrl(e.target.value)}
                 placeholder="https://www.facebook.com/..."
                 required
-                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                className="w-full px-3 py-2 border border-neutral-light rounded-lg text-sm"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label className="block text-xs font-semibold text-text-secondary mb-1">
               Description (optionnel)
             </label>
             <textarea
@@ -234,7 +234,7 @@ export default function AgenceSocial() {
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
               placeholder="Ex : Post sur le DPE F/G, parlant de la rénovation énergétique avec lien BRH..."
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+              className="w-full px-3 py-2 border border-neutral-light rounded-lg text-sm"
             />
           </div>
 
@@ -280,7 +280,7 @@ export default function AgenceSocial() {
 
       {/* Historique */}
       <section>
-        <h2 className="text-sm uppercase tracking-wider text-slate-500 font-bold mb-3">
+        <h2 className="text-sm uppercase tracking-wider text-text-light font-bold mb-3">
           Mes publications ({posts.length})
         </h2>
 
@@ -289,10 +289,10 @@ export default function AgenceSocial() {
             <Loader className="animate-spin text-pink-500" />
           </div>
         ) : posts.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-xl p-8 text-center">
-            <Share2 size={28} className="mx-auto mb-2 text-slate-300" />
-            <p className="text-slate-700 font-medium">Aucune publication soumise</p>
-            <p className="text-xs text-slate-500 mt-1">
+          <div className="bg-white border border-neutral-light rounded-xl p-8 text-center">
+            <Share2 size={28} className="mx-auto mb-2 text-text-light" />
+            <p className="text-text-secondary font-medium">Aucune publication soumise</p>
+            <p className="text-xs text-text-light mt-1">
               Postez sur vos réseaux + soumettez le lien ici → +5 leads bonus par
               publication validée
             </p>
@@ -302,9 +302,9 @@ export default function AgenceSocial() {
             {posts.map((p) => (
               <div
                 key={p.id}
-                className="bg-white border border-slate-200 rounded-xl p-3 flex items-center gap-3"
+                className="bg-white rounded-xl shadow-[0_8px_30px_rgba(27,28,28,0.04)] border border-white/80 p-3.5 flex items-center gap-3"
               >
-                <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-lg bg-background flex items-center justify-center shrink-0">
                   {PLATFORM_ICONS[p.platform]}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -313,16 +313,16 @@ export default function AgenceSocial() {
                       href={p.post_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-semibold text-slate-800 hover:text-pink-600 truncate inline-flex items-center gap-1"
+                      className="text-sm font-semibold text-text-primary hover:text-pink-600 truncate inline-flex items-center gap-1"
                     >
                       {PLATFORM_LABELS[p.platform]} · {POST_TYPE_LABELS[p.post_type]}
                       <ExternalLink size={11} />
                     </a>
                   </div>
                   {p.description ? (
-                    <p className="text-[11px] text-slate-500 truncate">{p.description}</p>
+                    <p className="text-[11px] text-text-light truncate">{p.description}</p>
                   ) : null}
-                  <p className="text-[10px] text-slate-400 mt-0.5">
+                  <p className="text-[10px] text-text-light mt-0.5">
                     Soumis le {new Date(p.created_at).toLocaleDateString('fr-FR')}
                   </p>
                 </div>
@@ -331,7 +331,7 @@ export default function AgenceSocial() {
                     {STATUS_LABELS[p.status]}
                   </span>
                   {p.status === 'validee' ? (
-                    <p className="text-[11px] text-emerald-700 font-bold mt-1 inline-flex items-center gap-0.5">
+                    <p className="text-[11px] text-primary font-bold mt-1 inline-flex items-center gap-0.5">
                       <Award size={10} />+{p.reward_leads} leads
                     </p>
                   ) : null}

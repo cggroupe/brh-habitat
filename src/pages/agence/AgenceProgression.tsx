@@ -43,7 +43,7 @@ export default function AgenceProgression() {
   if (!progression) {
     return (
       <div className="p-6 lg:p-10 max-w-6xl mx-auto">
-        <p className="text-slate-500">Chargement…</p>
+        <p className="text-text-light">Chargement…</p>
       </div>
     )
   }
@@ -73,7 +73,7 @@ export default function AgenceProgression() {
           </div>
           <div>
             <h1 className="text-2xl font-display tracking-tight">Ma progression</h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-text-light">
               Apportez des prospects travaux pour débloquer plus de leads vente + features
             </p>
           </div>
@@ -162,7 +162,7 @@ export default function AgenceProgression() {
 
       {/* Ladder paliers */}
       <section>
-        <h2 className="text-sm uppercase tracking-wider text-slate-500 font-bold mb-3">
+        <h2 className="text-sm uppercase tracking-wider text-text-light font-bold mb-3">
           Tous les paliers
         </h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -175,10 +175,10 @@ export default function AgenceProgression() {
                 key={tier}
                 className={`rounded-2xl border-2 p-5 transition ${
                   isCurrent
-                    ? 'border-emerald-500 bg-emerald-50/50 shadow-md'
+                    ? 'border-primary bg-primary/5 shadow-md'
                     : reached
-                    ? 'border-slate-200 bg-white'
-                    : 'border-slate-100 bg-slate-50/50 opacity-75'
+                    ? 'border-neutral-light bg-white'
+                    : 'border-neutral-light bg-background/50 opacity-75'
                 }`}
               >
                 <div className="flex items-start justify-between gap-2 mb-3">
@@ -193,10 +193,10 @@ export default function AgenceProgression() {
                       )}
                     </div>
                     <div>
-                      <p className="font-bold text-slate-800">
+                      <p className="font-bold text-text-primary">
                         {TIER_LABELS_FR[tier]}
                       </p>
-                      <p className="text-[11px] text-slate-500">
+                      <p className="text-[11px] text-text-light">
                         {tierThr.chantiers === 0
                           ? 'Palier de départ'
                           : `${tierThr.chantiers} chantiers signés`}
@@ -204,7 +204,7 @@ export default function AgenceProgression() {
                     </div>
                   </div>
                   {isCurrent ? (
-                    <span className="text-[10px] uppercase tracking-wider bg-emerald-600 text-white font-bold px-2 py-0.5 rounded">
+                    <span className="text-[10px] uppercase tracking-wider bg-primary text-white font-bold px-2 py-0.5 rounded">
                       Actuel
                     </span>
                   ) : null}
@@ -214,15 +214,15 @@ export default function AgenceProgression() {
                   {TIER_FEATURES[tier].map((feat) => (
                     <li
                       key={feat.key}
-                      className="text-sm flex items-start gap-2 text-slate-700"
+                      className="text-sm flex items-start gap-2 text-text-secondary"
                     >
                       <Check
                         size={14}
                         className={`mt-0.5 shrink-0 ${
-                          reached ? 'text-emerald-600' : 'text-slate-300'
+                          reached ? 'text-emerald-600' : 'text-text-light'
                         }`}
                       />
-                      <span className={reached ? '' : 'text-slate-500'}>{feat.label}</span>
+                      <span className={reached ? '' : 'text-text-light'}>{feat.label}</span>
                     </li>
                   ))}
                 </ul>
@@ -235,12 +235,12 @@ export default function AgenceProgression() {
       {/* CTA contribuer */}
       <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-2xl p-5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-deep to-primary-dark flex items-center justify-center">
             <Handshake size={20} className="text-white" />
           </div>
           <div>
             <p className="font-bold text-emerald-900">Pas encore au palier visé ?</p>
-            <p className="text-xs text-emerald-700">
+            <p className="text-xs text-primary">
               Apportez vos prospects vendeurs intéressés par la rénovation — commission 5% +
               5 leads bonus par chantier signé
             </p>
@@ -248,7 +248,7 @@ export default function AgenceProgression() {
         </div>
         <Link
           to="/agence/contributions"
-          className="shrink-0 inline-flex items-center gap-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-lg shadow"
+          className="shrink-0 inline-flex items-center gap-1 px-4 py-2.5 bg-emerald-600 hover:bg-primary-dark text-white text-sm font-bold rounded-lg shadow"
         >
           <TrendingUp size={14} />
           Apporter
