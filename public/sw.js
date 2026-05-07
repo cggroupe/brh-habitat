@@ -1,4 +1,4 @@
-const CACHE_NAME = 'brh-habitat-v3'
+const CACHE_NAME = 'brh-habitat-v4-foncier-fixes-2026-05-07'
 const STATIC_ASSETS = ['/', '/index.html']
 
 self.addEventListener('install', (event) => {
