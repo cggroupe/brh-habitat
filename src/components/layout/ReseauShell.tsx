@@ -19,7 +19,7 @@
  *   /reseau/profil/:slug          — vitrine pro polymorphe (lien public)
  *   /reseau/chantiers/nouveau     — publication d'offre (action contextuelle)
  */
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, Link } from 'react-router-dom'
 import {
   Home,
   Map,
@@ -29,6 +29,7 @@ import {
   Link2,
   Network,
   LogOut,
+  ArrowLeft,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -64,6 +65,14 @@ export default function ReseauShell() {
       {/* Sidebar desktop — slate dark + accent cyan (réseau social) */}
       <aside className="hidden lg:flex flex-col w-64 sticky top-0 h-screen bg-slate-900 text-white">
         <div className="px-5 py-6 border-b border-white/5">
+          {/* Bouton retour vers le portail d'origine */}
+          <Link
+            to="/agence"
+            className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-slate-400 hover:text-cyan-300 transition mb-3"
+          >
+            <ArrowLeft size={11} />
+            Retour mon portail
+          </Link>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-sky-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
               <Network size={16} className="text-white" />

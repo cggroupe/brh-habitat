@@ -274,6 +274,26 @@ export default function AgenceScoreVente() {
 
   return (
     <div className="h-full flex flex-col">
+      {/* Bannière Phase 19 — orientation vers nouvelles pages Foncier Pro */}
+      <div className="bg-emerald-50 border-b border-emerald-200 px-4 py-2 text-xs text-emerald-900 flex items-center gap-3 flex-wrap">
+        <span className="font-semibold">📍 Phase 19 Foncier Pro disponible :</span>
+        <a href="/agence/foncier/carte" className="underline hover:text-emerald-700 font-medium">
+          Carte cadastre + DPE A-G colorés
+        </a>
+        <span>·</span>
+        <a href="/agence/foncier/sci" className="underline hover:text-emerald-700 font-medium">
+          SCI + flag décès
+        </a>
+        <span>·</span>
+        <a href="/agence/foncier/tertiaire" className="underline hover:text-emerald-700 font-medium">
+          BODACC ventes urgentes
+        </a>
+        <span>·</span>
+        <a href="/agence/foncier/favoris" className="underline hover:text-emerald-700 font-medium">
+          Favoris parcelles
+        </a>
+      </div>
+
       {/* === Topbar === */}
       <header className="bg-white border-b border-neutral-light px-4 py-2.5 flex items-center gap-3 shadow-sm z-[1000]">
         <div className="flex items-center gap-2 shrink-0">
