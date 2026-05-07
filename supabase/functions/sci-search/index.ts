@@ -251,9 +251,10 @@ Deno.serve(async (req: Request) => {
 
     // ---- Mode recherche libre ----
     if (body.q) {
-      const limit = Math.min(body.limit ?? 20, 50)
-      // BUG API gouv : include=dirigeants casse la recherche multi-filtres (verifie 07/05/2026).
-      // Heureusement les dirigeants sont retournes par defaut.
+      // BUG API gouv (07/05/2026) : per_page > 25 retourne HTTP 400 — cap a 25.
+      // BUG API gouv (07/05/2026) : include=dirigeants casse la recherche multi-filtres ;
+      // les dirigeants sont retournes par defaut sans le param.
+      const limit = Math.min(body.limit ?? 20, 25)
       const params = new URLSearchParams({
         q: body.q,
         per_page: String(limit),
@@ -288,6 +289,46 @@ Deno.serve(async (req: Request) => {
         if (upsErr) upsertError = upsErr.message
       }
 
+      // Fire-and-forget : lance le matching deces pour TOUTES les SCI retournees
+      // qui ont au moins un dirigeant >=60 ans (probable deces statistique).
+      // Le matching tourne en background via EdgeRuntime.waitUntil ; le client
+      // peut refresh apres ~30s pour voir les flags has_deceased_dirigeant.
+      const matchTargets = rows.filter((r) =>
+        r.dirigeants.some((d) => {
+          if (!d.date_naissance) return false
+          const dob = new Date(d.date_naissance)
+          if (isNaN(dob.getTime())) return false
+          const ageYears = (Date.now() - dob.getTime()) / (365.25 * 86_400_000)
+          return ageYears >= 60
+        }),
+      )
+      const decesMatchEnqueued = matchTargets.length
+
+      // EdgeRuntime.waitUntil permet d'attendre des promesses apres avoir renvoye la response
+      const ert = (globalThis as { EdgeRuntime?: { waitUntil(p: Promise<unknown>): void } }).EdgeRuntime
+      if (ert?.waitUntil && matchTargets.length > 0) {
+        const url = `${Deno.env.get('SUPABASE_URL')}/functions/v1/sci-deces-match`
+        ert.waitUntil(
+          (async () => {
+            for (const r of matchTargets) {
+              try {
+                await fetch(url, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: authHeader,
+                  },
+                  body: JSON.stringify({ siren: r.siren }),
+                  signal: AbortSignal.timeout(15_000),
+                })
+              } catch {
+                // ignore individual failures
+              }
+            }
+          })(),
+        )
+      }
+
       return new Response(
         JSON.stringify({
           sci: rows,
@@ -297,6 +338,7 @@ Deno.serve(async (req: Request) => {
           api_total: data.total_results,
           api_query: { q: body.q, departement: body.departement, codes: SCI_CODES },
           upsert_error: upsertError,
+          deces_match_enqueued: decesMatchEnqueued,
         }),
         { status: 200, headers: { ...cors, 'Content-Type': 'application/json' } },
       )
