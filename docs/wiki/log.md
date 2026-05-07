@@ -77,6 +77,39 @@
 
 ---
 
+## 2026-05-06 — Phase 19 Sprint D : IA killer features (PLU + Vision toiture)
+
+- **Contexte** : Sprint D/F de Phase 19 Foncier Pro. Le sprint le plus différenciant vs Quelfoncier — **PLU IA** (Claude Sonnet 4.6 lit le PDF règlement PLUi et résume zones/hauteurs/ABF en JSON structuré) + **Vision IA toiture** (crop aérien IGN BD ORTHO 80m × Claude Sonnet vision : type, orientation, surface, potentiel PV).
+- **Migration prod** : `20260706430000_brh_phase_19_d_ia.sql` — `brh_plu_summaries` (PK code_insee, JSONB summary, TTL 180j) + `brh_satellite_analyses` (PK parcelle_idu, JSONB analysis, TTL 365j) + ai_cost_eur_cents tracking.
+- **EFs (2)** :
+  - `plu-summarize-ai` : GPU API geoportail-urbanisme.gouv.fr (3 endpoints fallback) → fetch PDF règlement (max 20 MB) → Claude Sonnet 4.6 PDF input direct → JSON structuré (zones_principales[] + abf_zones + mentions + synthese). Coût ~0.01-0.03 €/PLU.
+  - `satellite-vision-ai` : WMS BD ORTHO `data.geopf.fr` BBOX adaptatif 60-200m → Claude Sonnet vision base64 → JSON (7 catégories toiture + 8 directions + surface + état + PV). Coût ~0.02-0.04 €/Vision.
+- **Fichiers créés (5)** : `src/api/foncier-ia.ts`, `src/hooks/queries/foncier-ia.ts` (4 hooks), `src/components/foncier/PluSummaryCard.tsx` + `SatelliteAnalysisCard.tsx`, 2 EFs.
+- **Fichier modifié** : `AgenceFoncierCarte.tsx` (intégration auto sur clic parcelle, opt-in via boutons).
+- **Risque** : Medium — dépend secret `ANTHROPIC_API_KEY` à pousser via `supabase secrets set`. PDF parfois >20 MB (fallback erreur). GPU API endpoints variables (3 fallbacks). Cost ~0.03 €/parcelle complète tracé via ai_cost_eur_cents.
+- **Tests** : `npx tsc --noEmit` exit 0 ✅, `npx eslint` exit 0 ✅, **Vitest 390/390**.
+- **Status** : ✅ DONE — Sprint D/F livré (commit 7eb3cef).
+
+### Action Philippe (déploiement)
+1. Pousser secret Anthropic : `supabase secrets set ANTHROPIC_API_KEY=sk-ant-... --project-ref lygmmvxnmvlgynmrcpny`
+2. Déployer 6 EFs Phase 19 d'un coup :
+   ```bash
+   supabase functions deploy cadastre-fetch sci-search sci-deces-match \
+     commune-sociodemo-fetch plu-summarize-ai satellite-vision-ai \
+     --project-ref lygmmvxnmvlgynmrcpny
+   ```
+
+### Décisions techniques V1
+1. Claude Sonnet 4.6 (qualité > coût V1)
+2. PDF input direct (pas parsing manuel) — Anthropic supporte 32 MB / 100 pages natif
+3. WMS plutôt que WMTS (GetMap accepte BBOX direct, plus simple)
+4. BBOX adaptatif selon contenance parcelle
+5. JSON structuré strict via system prompt (pas de markdown)
+6. ai_cost_eur_cents tracking par requête
+7. Opt-in via boutons (pas auto au clic)
+
+---
+
 ## 2026-05-06 — Phase 19 Sprint C : DVF archive + sociodémo communes
 
 - **Contexte** : Sprint C/F de Phase 19 Foncier Pro. Archive long-terme DVF (anti-suppression officielle 4-5 ans data.gouv.fr) + cache sociodémo enrichi par commune INSEE (loyers + élections + élus + Filosofi + recensement + score gentrification). Permet aux agences d'évaluer une parcelle avec son contexte de marché et son potentiel de gentrification.

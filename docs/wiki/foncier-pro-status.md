@@ -13,7 +13,7 @@
 | **A** | Foundation : cadastre IGN + carte agence + favoris | 5-7 j | ✅ DONE | 2026-05-06 |
 | **B** | SCI enrichi : recherche-entreprises + dirigeants + décès INSEE matchid.io | 8-10 j | ✅ DONE | 2026-05-06 |
 | **C** | DVF archive + sociodémo (loyers + gentrification + RPC stats) | 6-8 j | ✅ DONE | 2026-05-06 |
-| **D** | PLU IA Claude + Vision IA toiture | 12-15 j | ⏸ PENDING (dépend A) | — |
+| **D** | PLU IA Claude + Vision IA toiture (BD ORTHO crop + Claude Sonnet 4.6) | 12-15 j | ✅ DONE | 2026-05-06 |
 | **E** | BODACC tertiaire + permis Sit@del2 | 6-8 j | ⏸ PENDING (dépend A) | — |
 | **F** | UX intégrée + page détail parcelle complète | 5-7 j | ⏸ PENDING (dépend A-E) | — |
 
