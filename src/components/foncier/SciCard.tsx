@@ -1,7 +1,7 @@
 /**
  * Phase 19 Sprint B — Carte SCI (résultat de recherche ou détail).
  */
-import { Building2, MapPin, Users, Skull, Loader2, RefreshCcw, ShieldQuestion } from 'lucide-react'
+import { Building2, MapPin, Users, AlertCircle, Loader2, RefreshCcw, ShieldCheck, Calendar } from 'lucide-react'
 import { useCheckDeces } from '@/hooks/queries/foncier-sci'
 import type { SciCompany } from '@/api/foncier-sci'
 
@@ -24,11 +24,11 @@ export default function SciCard({ sci, expanded, onToggle }: SciCardProps) {
 
   const successionBadge =
     sci.succession_probable_score >= 100
-      ? { label: 'Succession quasi certaine', cls: 'bg-red-100 text-red-700 border-red-200' }
+      ? { label: 'Succession quasi certaine', cls: 'bg-red-50 text-red-700 border-red-200' }
       : sci.succession_probable_score >= 50
-      ? { label: 'Succession probable', cls: 'bg-amber-100 text-amber-700 border-amber-200' }
+      ? { label: 'Succession probable', cls: 'bg-amber-50 text-amber-700 border-amber-200' }
       : sci.has_deceased_dirigeant
-      ? { label: 'Décès détecté', cls: 'bg-orange-100 text-orange-700 border-orange-200' }
+      ? { label: 'Décès détecté', cls: 'bg-slate-50 text-slate-700 border-slate-200' }
       : null
 
   const lastChecked = sci.deces_last_checked_at
@@ -80,7 +80,7 @@ export default function SciCard({ sci, expanded, onToggle }: SciCardProps) {
               <span
                 className={`inline-flex items-center gap-1 mt-2 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded border ${successionBadge.cls}`}
               >
-                <Skull size={10} />
+                <AlertCircle size={10} />
                 {successionBadge.label}
                 <span className="font-mono">· {sci.succession_probable_score}/100</span>
               </span>
@@ -102,14 +102,14 @@ export default function SciCard({ sci, expanded, onToggle }: SciCardProps) {
                 onClick={() => checkDeces.mutate(sci.siren)}
                 disabled={checkDeces.isPending}
                 className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-cyan-50 hover:bg-cyan-100 text-cyan-700 text-[11px] font-semibold transition disabled:opacity-50"
-                title="Vérifier décès INSEE"
+                title="Re-vérifier le statut de chaque dirigeant via INSEE"
               >
                 {checkDeces.isPending ? (
                   <Loader2 size={11} className="animate-spin" />
                 ) : (
-                  <ShieldQuestion size={11} />
+                  <ShieldCheck size={11} />
                 )}
-                Vérifier décès
+                Vérifier statut INSEE
               </button>
             </div>
             <ul className="space-y-1.5">
@@ -118,6 +118,9 @@ export default function SciCard({ sci, expanded, onToggle }: SciCardProps) {
               )}
               {sci.dirigeants.map((d, idx) => {
                 const age = ageFromDob(d.date_naissance)
+                const decesDateFmt = d.deces_date
+                  ? new Date(d.deces_date).toLocaleDateString('fr-FR')
+                  : null
                 return (
                   <li
                     key={idx}
@@ -129,9 +132,8 @@ export default function SciCard({ sci, expanded, onToggle }: SciCardProps) {
                       <p className="font-semibold text-slate-800">
                         {d.prenom} {d.nom}
                         {d.est_decede && (
-                          <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] font-bold uppercase text-red-700">
-                            <Skull size={10} />
-                            Décédé (conf. {d.deces_match_score}%)
+                          <span className="ml-1.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase text-red-700 bg-red-100 px-1.5 py-0.5 rounded">
+                            Décédé · confiance {d.deces_match_score}%
                           </span>
                         )}
                       </p>
@@ -144,6 +146,13 @@ export default function SciCard({ sci, expanded, onToggle }: SciCardProps) {
                           </>
                         )}
                       </p>
+                      {d.est_decede && decesDateFmt && (
+                        <p className="text-[11px] text-red-700 inline-flex items-center gap-1 mt-1">
+                          <Calendar size={10} />
+                          Décès le <strong>{decesDateFmt}</strong>
+                          {d.deces_commune && <span className="text-red-600">— {d.deces_commune}</span>}
+                        </p>
+                      )}
                     </div>
                   </li>
                 )

@@ -9,7 +9,7 @@
  * Au clic sur un résultat → expand inline avec détail dirigeants + bouton "Vérifier décès".
  */
 import { useState, useMemo } from 'react'
-import { Search, Building2, Filter, Skull, Loader2, AlertCircle, FileSearch } from 'lucide-react'
+import { Search, Building2, Filter, AlertCircle, Loader2, FileSearch } from 'lucide-react'
 import { useSearchSci } from '@/hooks/queries/foncier-sci'
 import SciCard from '@/components/foncier/SciCard'
 
@@ -139,7 +139,7 @@ export default function AgenceFoncierSci() {
             checked={hasDeceasedOnly}
             onChange={(e) => setHasDeceasedOnly(e.target.checked)}
           />
-          <Skull size={12} className="text-orange-600" />
+          <AlertCircle size={12} className="text-amber-600" />
           Avec décès détecté uniquement
         </label>
         <label className="inline-flex items-center gap-1.5">

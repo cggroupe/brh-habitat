@@ -18,6 +18,10 @@ export interface SciDirigeant {
   date_naissance: string | null
   est_decede: boolean
   deces_match_score: number
+  /** Date du décès au format YYYY-MM-DD (depuis matchid INSEE). */
+  deces_date?: string | null
+  /** Commune du décès (depuis matchid INSEE). */
+  deces_commune?: string | null
 }
 
 export interface SciCompany {

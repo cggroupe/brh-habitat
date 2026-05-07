@@ -54,6 +54,9 @@ interface Dirigeant {
   date_naissance: string | null
   est_decede: boolean
   deces_match_score: number
+  /** Date du décès au format YYYY-MM-DD (V2 : enrichissement matchid). */
+  deces_date?: string | null
+  deces_commune?: string | null
 }
 
 /**
@@ -260,10 +263,21 @@ Deno.serve(async (req: Request) => {
       }
 
       const matchFound = bestScore >= MIN_CONFIDENCE && !!bestMatch
+      // Si match trouve : enrichis le dirigeant avec date + commune deces.
+      // matchid.io retourne deces.date au format YYYYMMDD, on normalise YYYY-MM-DD.
+      let decesDate: string | null = null
+      if (matchFound && bestMatch?.death?.date) {
+        const md = bestMatch.death.date
+        if (/^\d{8}$/.test(md)) decesDate = `${md.slice(0,4)}-${md.slice(4,6)}-${md.slice(6,8)}`
+        else if (/^\d{4}-\d{2}-\d{2}$/.test(md)) decesDate = md
+      }
+      const decesCommune = matchFound ? (bestMatch?.death?.location?.city ?? null) : null
       const updatedD: Dirigeant = {
         ...d,
         est_decede: matchFound,
         deces_match_score: bestScore,
+        deces_date: decesDate,
+        deces_commune: decesCommune,
       }
       updatedDirigeants.push(updatedD)
       if (matchFound !== d.est_decede || bestScore !== d.deces_match_score) updated++
