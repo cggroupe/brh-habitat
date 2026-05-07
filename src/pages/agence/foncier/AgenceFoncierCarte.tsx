@@ -7,6 +7,7 @@
  *   3. Au clic carte : fetch parcelle via EF cadastre-fetch + popup détail + bouton favoris
  */
 import { useState, useMemo, useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { MapContainer, TileLayer, WMSTileLayer, Polygon, Popup, Marker, useMapEvents, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -93,6 +94,8 @@ function BboxTracker({ onChange }: BboxTrackerProps) {
 }
 
 export default function AgenceFoncierCarte() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const focusIdu = searchParams.get('focus')
   const fetchParcelle = useFetchParcelle()
   const [selectedParcelles, setSelectedParcelles] = useState<FoncierParcelle[]>([])
   const [mapCenter, setMapCenter] = useState<[number, number]>(BRETAGNE_CENTER)
@@ -114,6 +117,35 @@ export default function AgenceFoncierCarte() {
       searchMarkerRef.current.openPopup()
     }
   }, [searchMarker, selectedParcelles])
+
+  // Sprint F.1 — focus sur une parcelle depuis lien favori (?focus=PARCELLE_IDU)
+  useEffect(() => {
+    if (!focusIdu || focusIdu.length !== 14) return
+    // L'IDU est code_insee(5) + prefixe(3) + section(2) + numero(4)
+    const code_insee = focusIdu.slice(0, 5)
+    const prefixe = focusIdu.slice(5, 8)
+    const section = focusIdu.slice(8, 10)
+    const numero = focusIdu.slice(10, 14)
+    fetchParcelle.mutate(
+      { code_insee, prefixe, section, numero },
+      {
+        onSuccess: (res) => {
+          if (res.parcelles.length > 0) {
+            setSelectedParcelles(res.parcelles)
+            const p = res.parcelles[0]
+            if (p.centroid_lat !== null && p.centroid_lng !== null) {
+              setMapCenter([p.centroid_lat, p.centroid_lng])
+              setMapZoom(19)
+            }
+          }
+          // clear param de l'url une fois traité
+          setSearchParams({}, { replace: true })
+        },
+      },
+    )
+    // intentionally only run once per focus param change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusIdu])
 
   const dpeQuery = useDpeProspectsInBbox(
     {

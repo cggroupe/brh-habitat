@@ -218,8 +218,8 @@ Deno.serve(async (req: Request) => {
         }
       }
 
-      // Fetch API recherche-entreprises
-      const url = `${API_BASE}?q=${body.siren}&include=dirigeants`
+      // Fetch API recherche-entreprises (dirigeants inclus par defaut)
+      const url = `${API_BASE}?q=${body.siren}`
       const apiRes = await fetch(url, {
         headers: { Accept: 'application/json' },
         signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
@@ -252,9 +252,10 @@ Deno.serve(async (req: Request) => {
     // ---- Mode recherche libre ----
     if (body.q) {
       const limit = Math.min(body.limit ?? 20, 50)
+      // BUG API gouv : include=dirigeants casse la recherche multi-filtres (verifie 07/05/2026).
+      // Heureusement les dirigeants sont retournes par defaut.
       const params = new URLSearchParams({
         q: body.q,
-        include: 'dirigeants',
         per_page: String(limit),
         // Filter SCI/PM personnes morales actives
         nature_juridique: SCI_CODES.join(','),

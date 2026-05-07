@@ -174,11 +174,20 @@ export default function AgenceFoncierFavoris() {
                   <Trash2 size={14} />
                 </button>
                 <Link
-                  to={`/agence/foncier/carte?focus=${f.parcelle_idu}`}
+                  to={`/agence/foncier/parcelle/${f.parcelle_idu}`}
                   className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 transition"
-                  aria-label="Voir sur la carte"
+                  aria-label="Ouvrir la fiche complète"
+                  title="Ouvrir la fiche complète (DVF + PLU + sociodémo + vision toiture)"
                 >
                   <ExternalLink size={14} />
+                </Link>
+                <Link
+                  to={`/agence/foncier/carte?focus=${f.parcelle_idu}`}
+                  className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition"
+                  aria-label="Voir sur la carte"
+                  title="Voir sur la carte"
+                >
+                  <MapPin size={14} />
                 </Link>
               </div>
             </div>

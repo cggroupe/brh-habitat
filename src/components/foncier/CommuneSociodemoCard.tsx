@@ -100,8 +100,8 @@ export default function CommuneSociodemoCard({ codeInsee, compact = false }: Com
               </div>
             )}
           </div>
-          <p className="text-[9px] text-amber-700 mt-1 italic">
-            ⚠ Fallback département (CLAMEUR pas en API). Précision quartier en cours via ingestion CSV mensuel — V1.bis.
+          <p className="text-[9px] text-slate-400 mt-1 italic">
+            Indicatif moyenne départementale — précision par quartier en cours d'enrichissement.
           </p>
         </div>
       )}

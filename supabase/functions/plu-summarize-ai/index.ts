@@ -23,10 +23,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getCorsHeaders } from '../_shared/cors.ts'
 import { checkRateLimit } from '../_shared/rate-limit.ts'
 
-const GPU_API = 'https://www.geoportail-urbanisme.gouv.fr/api/document'
+// GPU document API gardé pour référence — on utilise désormais apicarto IGN
+// (zone-urba sur centroid commune) qui marche bien mieux pour récupérer le PDF.
+// const GPU_API = 'https://www.geoportail-urbanisme.gouv.fr/api/document'
 const ANTHROPIC_API = 'https://api.anthropic.com/v1/messages'
 const ANTHROPIC_MODEL = 'claude-sonnet-4-5-20250929' // Sonnet 4.6 alias actuel
-const MAX_PDF_SIZE_MB = 20  // Anthropic accepte jusqu'à 32 MB / 100 pages
+const MAX_PDF_SIZE_MB = 32  // Limite hard Anthropic Messages PDF input (32 MB / 100 pages)
 const FETCH_TIMEOUT_MS = 30_000
 const CACHE_TTL_S = 15_552_000 // 180j
 
@@ -104,66 +106,97 @@ async function getEpciCode(insee: string): Promise<string | null> {
 }
 
 /**
- * Filtre les documents GPU pour ne garder que ceux:
- *   - publiés (pas deleted)
- *   - avec legalStatus 'APPROVED'
- *   - matchant le code grille (insee commune ou EPCI)
- *   - de type PLU/PLUi/POS/CC (pas SUP qui sont des servitudes)
+ * Récupère le centroid d'une commune via geo.api.gouv.fr.
+ * Retourne {lat, lng} ou null.
  */
-function filterPluDocuments(docs: GpuDocument[], gridName: string): GpuDocument[] {
-  return docs.filter((d) => {
-    const isPublished = !d.status || d.status === 'document.published'
-    const isApproved = !d.legalStatus || d.legalStatus === 'APPROVED'
-    const matchesGrid = d.grid?.name === gridName
-    const isPlu = ['PLU', 'PLUi', 'POS', 'CC'].includes((d.type ?? '').toUpperCase())
-    return isPublished && isApproved && matchesGrid && isPlu
-  })
+async function getCommuneCentroid(insee: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const res = await fetch(`https://geo.api.gouv.fr/communes/${insee}?fields=centre`, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    })
+    if (!res.ok) return null
+    const j = (await res.json()) as { centre?: { coordinates: [number, number] } }
+    const coords = j.centre?.coordinates
+    if (!coords) return null
+    return { lng: coords[0], lat: coords[1] }
+  } catch {
+    return null
+  }
 }
 
-async function fetchGpuDocuments(insee: string): Promise<{ docs: GpuDocument[]; tried_epci: string | null }> {
-  // 1) Tentative par INSEE commune
-  const urls = [
-    `${GPU_API}?territory=${insee}&type=PLUi`,
-    `${GPU_API}?territory=${insee}&type=PLU`,
-    `${GPU_API}?territory=${insee}`,
-  ]
-  for (const url of urls) {
-    try {
-      const res = await fetch(url, {
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        const docs = (Array.isArray(data) ? data : data.results ?? data.documents ?? []) as GpuDocument[]
-        const filtered = filterPluDocuments(docs, insee)
-        if (filtered.length > 0) return { docs: filtered, tried_epci: null }
-      }
-    } catch {
-      // continue
-    }
+interface ApicartoFeature {
+  properties?: {
+    gpu_doc_id?: string
+    libelle?: string
+    typezone?: string
+    partition?: string
+    idurba?: string
+    nomfic?: string
+    urlfic?: string
+    datappro?: string
   }
+}
 
-  // 2) Fallback EPCI : Brest Métropole, Rennes Métropole, etc.
+/**
+ * Stratégie API Carto IGN (la SEULE qui marche en pratique pour récupérer le
+ * PDF règlement réel d'une commune française) :
+ *   1. Récupère centroid commune
+ *   2. Hit https://apicarto.ign.fr/api/gpu/zone-urba?geom=POINT  → retourne
+ *      le GeoJSON de la zone urbanistique au point + propriétés dont urlfic
+ *      (lien direct vers PDF règlement officiel hébergé par l'EPCI).
+ *
+ * Cette API est filtrée côté serveur (pas le cas de geoportail-urbanisme.gouv.fr
+ * qui retourne tout son corpus aléatoire). Brest, Rennes, Nantes, etc. tous OK.
+ */
+async function fetchGpuDocuments(insee: string): Promise<{
+  docs: GpuDocument[]
+  tried_epci: string | null
+  apicarto_url: string | null
+}> {
+  const centroid = await getCommuneCentroid(insee)
+  if (!centroid) return { docs: [], tried_epci: null, apicarto_url: null }
+
   const epci = await getEpciCode(insee)
-  if (epci) {
-    try {
-      const res = await fetch(`${GPU_API}?territory=${epci}&type=PLUi`, {
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        const docs = (Array.isArray(data) ? data : data.results ?? data.documents ?? []) as GpuDocument[]
-        const filtered = filterPluDocuments(docs, epci)
-        if (filtered.length > 0) return { docs: filtered, tried_epci: epci }
-      }
-    } catch {
-      // ignore
-    }
-  }
+  const geom = encodeURIComponent(JSON.stringify({
+    type: 'Point',
+    coordinates: [centroid.lng, centroid.lat],
+  }))
+  const apicartoUrl = `https://apicarto.ign.fr/api/gpu/zone-urba?geom=${geom}`
 
-  return { docs: [], tried_epci: epci }
+  try {
+    const res = await fetch(apicartoUrl, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    })
+    if (!res.ok) return { docs: [], tried_epci: epci, apicarto_url: apicartoUrl }
+    const j = (await res.json()) as { features?: ApicartoFeature[] }
+    const features = j.features ?? []
+    if (features.length === 0) return { docs: [], tried_epci: epci, apicarto_url: apicartoUrl }
+
+    // Dédoublonne par urlfic (un PDF, un doc)
+    const seen = new Set<string>()
+    const docs: GpuDocument[] = []
+    for (const f of features) {
+      const p = f.properties ?? {}
+      const url = p.urlfic
+      if (!url || seen.has(url)) continue
+      seen.add(url)
+      // Extrait le type (PLUI, PLU, POS, CC) depuis idurba ex: "242900314_PLUI_20260217"
+      const idMatch = (p.idurba ?? '').match(/_(PLUI|PLU|POS|CC|RNU)_/i)
+      const type = idMatch ? idMatch[1].toUpperCase() : 'PLU'
+      docs.push({
+        id: p.gpu_doc_id,
+        type: type === 'PLUI' ? 'PLUi' : type,
+        document_url: url,
+        approval_date: p.datappro ?? undefined,
+        originalName: p.idurba ?? undefined,
+      })
+    }
+    return { docs, tried_epci: epci, apicarto_url: apicartoUrl }
+  } catch {
+    return { docs: [], tried_epci: epci, apicarto_url: apicartoUrl }
+  }
 }
 
 function pickBestDocument(docs: GpuDocument[]): GpuDocument | null {
@@ -178,11 +211,40 @@ function pickBestDocument(docs: GpuDocument[]): GpuDocument | null {
 }
 
 function getDocumentUrl(doc: GpuDocument): string | null {
-  return doc.document_url ?? doc.document_pdf ?? doc.url ?? null
+  const raw = doc.document_url ?? doc.document_pdf ?? doc.url ?? null
+  if (!raw) return null
+  // Strip anchor #page=N que les PDFs des EPCIs incluent souvent
+  return raw.split('#')[0]
 }
 
-async function fetchPdfBase64(url: string): Promise<{ base64: string; size_mb: number } | null> {
+/**
+ * HEAD request pour obtenir la taille PDF avant téléchargement complet.
+ * Évite de DL un PDF de 63 MB pour rien.
+ */
+async function getPdfSize(url: string): Promise<number | null> {
   try {
+    const res = await fetch(url, {
+      method: 'HEAD',
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    })
+    if (!res.ok) return null
+    const len = res.headers.get('content-length')
+    if (!len) return null
+    return parseInt(len, 10) / 1_048_576
+  } catch {
+    return null
+  }
+}
+
+async function fetchPdfBase64(url: string): Promise<{ base64: string; size_mb: number; oversize_mb?: number } | null> {
+  try {
+    // 1) HEAD check de la taille
+    const headSizeMb = await getPdfSize(url)
+    if (headSizeMb !== null && headSizeMb > MAX_PDF_SIZE_MB) {
+      console.error(`PDF too large (HEAD): ${headSizeMb.toFixed(2)} MB > ${MAX_PDF_SIZE_MB} MB`)
+      return { base64: '', size_mb: 0, oversize_mb: headSizeMb }
+    }
+
     const res = await fetch(url, {
       headers: { Accept: 'application/pdf' },
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
@@ -191,10 +253,10 @@ async function fetchPdfBase64(url: string): Promise<{ base64: string; size_mb: n
     const buf = await res.arrayBuffer()
     const sizeMb = buf.byteLength / 1_048_576
     if (sizeMb > MAX_PDF_SIZE_MB) {
-      console.error(`PDF too large: ${sizeMb.toFixed(2)} MB`)
-      return null
+      console.error(`PDF too large (full): ${sizeMb.toFixed(2)} MB`)
+      return { base64: '', size_mb: 0, oversize_mb: sizeMb }
     }
-    // Convert to base64 (Deno.encodeBase64 syntax)
+    // Convert to base64
     const bytes = new Uint8Array(buf)
     let binary = ''
     for (let i = 0; i < bytes.byteLength; i++) {
@@ -339,8 +401,8 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Fetch documents GPU (avec fallback EPCI pour les communes en PLUi intercommunal)
-    const { docs, tried_epci } = await fetchGpuDocuments(body.code_insee)
+    // Fetch documents PLU via apicarto IGN (zone-urba sur centroid commune)
+    const { docs, tried_epci, apicarto_url } = await fetchGpuDocuments(body.code_insee)
     const doc = pickBestDocument(docs)
     if (!doc) {
       return new Response(
@@ -348,9 +410,10 @@ Deno.serve(async (req: Request) => {
           error: 'no_plu_document_found',
           insee: body.code_insee,
           tried_epci,
+          apicarto_url,
           hint: tried_epci
-            ? `Aucun PLU/PLUi publié sur GPU pour la commune ${body.code_insee} ni pour son EPCI ${tried_epci}. Cette commune est probablement en RNU (Règlement National d'Urbanisme) ou son PLUi n'est pas encore numérisé sur le Géoportail de l'Urbanisme.`
-            : `Aucun PLU/PLUi publié sur GPU pour la commune ${body.code_insee}. Code EPCI introuvable.`,
+            ? `Aucun PLU/PLUi numérisé pour ${body.code_insee} (EPCI ${tried_epci}). Probablement en RNU ou PLUi pas encore référencé.`
+            : `Aucun PLU/PLUi numérisé pour ${body.code_insee}.`,
         }),
         { status: 404, headers: { ...cors, 'Content-Type': 'application/json' } },
       )
@@ -370,6 +433,20 @@ Deno.serve(async (req: Request) => {
       return new Response(
         JSON.stringify({ error: 'pdf_fetch_failed', url: pdfUrl }),
         { status: 502, headers: { ...cors, 'Content-Type': 'application/json' } },
+      )
+    }
+    // PDF trop gros (cas Brest Métropole 63 MB) — pas analysable par Claude
+    if (pdf.oversize_mb !== undefined) {
+      return new Response(
+        JSON.stringify({
+          error: 'pdf_too_large',
+          url: pdfUrl,
+          size_mb: pdf.oversize_mb,
+          max_mb: MAX_PDF_SIZE_MB,
+          hint: `Le règlement PLUi de cette commune fait ${pdf.oversize_mb.toFixed(0)} MB, au-delà de la limite Claude (${MAX_PDF_SIZE_MB} MB / 100 pages). Le PDF reste accessible directement via le lien officiel ci-dessous.`,
+          pdf_url: pdfUrl,
+        }),
+        { status: 413, headers: { ...cors, 'Content-Type': 'application/json' } },
       )
     }
 

@@ -137,13 +137,14 @@ async function fetchBodaccDataset(params: {
   limit: number
 }): Promise<BodaccRecord[]> {
   const since = new Date(Date.now() - params.daysBack * 86_400_000).toISOString().slice(0, 10)
-  const where = `datepublication >= date'${since}'`
+  // Champ correct = `dateparution` (verifie 07/05/2026, pas `datepublication`).
+  const where = `dateparution >= date'${since}'`
 
   const refines: string[] = []
   if (params.cp) refines.push(`cp:${params.cp}`)
   if (params.dept) refines.push(`numerodepartement:${params.dept}`)
 
-  const url = `${BODACC_API_BASE}/${params.dataset}/records?where=${encodeURIComponent(where)}&order_by=datepublication%20desc&limit=${params.limit}${
+  const url = `${BODACC_API_BASE}/${params.dataset}/records?where=${encodeURIComponent(where)}&order_by=dateparution%20desc&limit=${params.limit}${
     refines.length > 0 ? '&refine=' + refines.map(encodeURIComponent).join('&refine=') : ''
   }`
 

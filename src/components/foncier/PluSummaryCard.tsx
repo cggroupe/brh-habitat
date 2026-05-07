@@ -34,22 +34,33 @@ export default function PluSummaryCard({ codeInsee, compact = false }: PluSummar
         >
           <Sparkles size={12} /> Analyser le PLU
         </button>
-        {summarize.isError && (
-          <div className="mt-2 text-[10px] text-amber-800 bg-amber-50 border border-amber-200 rounded p-2 text-left">
-            <p className="font-semibold inline-flex items-center gap-1">
-              <AlertCircle size={10} />
-              PLU non disponible sur Géoportail Urbanisme
-            </p>
-            <p className="text-[10px] text-amber-700 mt-1 leading-relaxed">
-              Cette commune n'a pas de PLU/PLUi numérisé publié. Elle peut être :
-              <strong> en RNU</strong> (règlement national), ou son PLUi intercommunal n'est pas
-              encore référencé. Consultez la mairie ou l'EPCI pour le règlement papier.
-            </p>
-            <p className="text-[9px] text-slate-400 mt-1 italic break-all">
-              [Debug] {String(summarize.error)}
-            </p>
-          </div>
-        )}
+        {summarize.isError && (() => {
+          const err = summarize.error as Error & { hint?: string; pdfUrl?: string; sizeMb?: number }
+          const isOversize = err.message === 'pdf_too_large'
+          return (
+            <div className="mt-2 text-[10px] text-amber-800 bg-amber-50 border border-amber-200 rounded p-2 text-left">
+              <p className="font-semibold inline-flex items-center gap-1">
+                <AlertCircle size={10} />
+                {isOversize
+                  ? `Règlement PLUi trop volumineux pour analyse IA (${err.sizeMb?.toFixed(0)} MB)`
+                  : 'PLU non disponible'}
+              </p>
+              <p className="text-[10px] text-amber-700 mt-1 leading-relaxed">
+                {err.hint ?? 'Cette commune est probablement en RNU (Règlement National d\'Urbanisme).'}
+              </p>
+              {err.pdfUrl && (
+                <a
+                  href={err.pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex items-center gap-1 px-2 py-1 rounded bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-semibold"
+                >
+                  <ExternalLink size={10} /> Ouvrir le PDF officiel ({err.sizeMb?.toFixed(0)} MB)
+                </a>
+              )}
+            </div>
+          )
+        })()}
       </div>
     )
   }

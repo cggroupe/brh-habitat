@@ -74,8 +74,22 @@ export const foncierPluApi = {
       body: JSON.stringify({ code_insee: codeInsee, force_refresh: forceRefresh }),
     })
     if (!res.ok) {
-      const j = (await res.json().catch(() => ({}))) as { error?: string }
-      throw new Error(j.error ?? `plu_summarize_http_${res.status}`)
+      const j = (await res.json().catch(() => ({}))) as {
+        error?: string
+        hint?: string
+        pdf_url?: string
+        size_mb?: number
+      }
+      // Cas spéciaux : on remonte hint + pdf_url pour affichage UI clair
+      const err = new Error(j.error ?? `plu_summarize_http_${res.status}`) as Error & {
+        hint?: string
+        pdfUrl?: string
+        sizeMb?: number
+      }
+      err.hint = j.hint
+      err.pdfUrl = j.pdf_url
+      err.sizeMb = j.size_mb
+      throw err
     }
     const data = (await res.json()) as { summary: PluSummary }
     return data.summary
