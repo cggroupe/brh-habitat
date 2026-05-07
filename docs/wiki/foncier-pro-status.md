@@ -15,7 +15,9 @@
 | **C** | DVF archive + sociodémo (loyers + gentrification + RPC stats) | 6-8 j | ✅ DONE | 2026-05-06 |
 | **D** | PLU IA Claude + Vision IA toiture (BD ORTHO crop + Claude Sonnet 4.6) | 12-15 j | ✅ DONE | 2026-05-06 |
 | **E** | BODACC tertiaire + permis Sit@del2 (V1 cache lecture) | 6-8 j | ✅ DONE | 2026-05-06 |
-| **F** | UX intégrée + page détail parcelle complète | 5-7 j | ⏸ PENDING (dépend A-E) | — |
+| **F** | UX intégrée (DPE markers A-G colorés + page détail parcelle complète) | 5-7 j | ✅ DONE | 2026-05-06 |
+
+**🎉 Phase 19 100% livrée — 6/6 sprints en 1 session marathon (06/05/2026)**
 
 **Total estimé** : 42-55 jours dev compressés.
 

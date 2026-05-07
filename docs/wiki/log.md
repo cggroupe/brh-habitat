@@ -77,6 +77,49 @@
 
 ---
 
+## 2026-05-06 — Phase 19 Sprint F : UX intégrée — Phase 19 100% LIVRÉE
+
+- **Contexte** : Sprint F/F final = **Phase 19 100% livrée**. Polish UX final : markers DPE A-G colorés (couleurs ADEME 2024) sur la carte cadastre + page détail parcelle `/agence/foncier/parcelle/:idu` agrégeant tous les enrichissements Sprints A-E.
+- **Spec produit** : DPE markers Leaflet divIcon en pin coloré + lettre A-G, BBOX-driven (max 500 markers, zoom ≥13). Filtres ratings checkbox (par défaut F+G). Page détail = carte mini + WMS cadastre + polygone + ParcelleDetailCard + DVF historique mutations + CommuneSociodemoCard + PluSummaryCard + SatelliteAnalysisCard.
+- **Fichiers créés (5)** : `src/lib/foncier/dpe-colors.ts` (constants extraits pour `react-refresh/only-export-components`) + `src/components/foncier/DpeMarker.tsx` + `src/api/foncier-dpe-prospects.ts` (listByBbox sur 59k DPE F/G existants Phase 6.2) + hook + page `AgenceFoncierParcelleDetail.tsx`.
+- **Fichiers modifiés (2)** : `AgenceFoncierCarte.tsx` (BboxTracker + filtres DPE + markers + lien fiche complète), `App.tsx` (+1 route).
+- **Migration SQL** : aucune (réutilise tables existantes).
+- **Tests** : `npx tsc --noEmit` exit 0 ✅, `npx eslint` exit 0 ✅, **Vitest 390/390**.
+- **Status** : ✅ DONE — Sprint F/F livré (commit dfd0b76).
+
+### Phase 19 — Bilan complet (6/6 sprints en 1 session)
+- 5 migrations SQL prod (foncier_a + b + c + d + e)
+- 8 EFs Deno (cadastre-fetch / sci-search / sci-deces-match / commune-sociodemo-fetch / plu-summarize-ai / satellite-vision-ai / bodacc-fetch / permis-fetch)
+- 6 nouvelles pages `/agence/foncier/*` (carte / favoris / sci / tertiaire / parcelle/:idu)
+- 4 entrées sidebar AgenceShell (Carte / Favoris / SCI / Tertiaire)
+- 15+ composants foncier
+- Vitest 390/390 maintenu
+- Type-check + ESLint exit 0 à chaque commit
+
+### Différenciateurs uniques vs Quelfoncier (Foncier Facile Plus)
+1. ✅ Cadastre IGN + favoris workflow 5 statuts
+2. ✅ SCI + matching décès INSEE → succession probable
+3. ✅ DVF archive long-terme (anti-suppression officielle 4-5 ans)
+4. ✅ Sociodémo + gentrification automatique
+5. ✅ **PLU IA Claude Sonnet 4.6** (UNIQUE marché immo français)
+6. ✅ **Vision IA toiture sur BD ORTHO** (UNIQUE marché immo français)
+7. ✅ BODACC tertiaire (3 datasets parallèles)
+8. ✅ Permis Sit@del2 (V1 cache, ingestion E.bis)
+9. ✅ DPE markers colorés A-G + page détail tout-en-un
+
+### Action Philippe pour activation 100% prod
+1. Pousser secret Anthropic : `supabase secrets set ANTHROPIC_API_KEY=sk-ant-... --project-ref lygmmvxnmvlgynmrcpny`
+2. Déployer 8 EFs Phase 19 d'un coup :
+   ```bash
+   supabase functions deploy \
+     cadastre-fetch sci-search sci-deces-match commune-sociodemo-fetch \
+     plu-summarize-ai satellite-vision-ai bodacc-fetch permis-fetch \
+     --project-ref lygmmvxnmvlgynmrcpny
+   ```
+3. Ingestion data différée (Sprint E.bis script standalone) : DVF archive millésime 2024 + Sit@del2 mensuel CSV
+
+---
+
 ## 2026-05-06 — Phase 19 Sprint E : BODACC tertiaire + permis Sit@del2
 
 - **Contexte** : Sprint E/F de Phase 19 Foncier Pro. Détecte les opportunités tertiaires (ventes urgentes / liquidations / radiations RCS) via API officielle BODACC + base permis de construire Sit@del2 (V1 lecture cache, ingestion massive Sprint E.bis).
