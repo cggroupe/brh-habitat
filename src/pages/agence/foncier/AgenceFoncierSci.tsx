@@ -52,10 +52,17 @@ export default function AgenceFoncierSci() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (query.trim().length < 3 && !isSiren) return
-    setActiveQuery(query.trim())
+    // Recherche API gouv : query >= 3 chars OU SIREN. Sinon on reset activeQuery
+    // pour basculer sur le mode cacheLocal (filtre dept + decès dans cache).
+    if (query.trim().length >= 3 || isSiren) {
+      setActiveQuery(query.trim())
+    } else {
+      setActiveQuery('')
+    }
   }
 
+  // Combine cache + recherche : si query active, on affiche les resultats API,
+  // sinon on affiche le cache local filtre par dept/deces/score.
   const list = activeQuery ? search.data?.sci ?? [] : cacheLocal.data?.sci ?? []
   const isLoading = activeQuery ? search.isLoading : cacheLocal.isLoading
   const isError = activeQuery ? search.isError : cacheLocal.isError
@@ -85,7 +92,7 @@ export default function AgenceFoncierSci() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Nom de SCI, ville, ou SIREN (9 chiffres)…"
+            placeholder="Nom de SCI, ville, ou SIREN — ou laissez vide pour voir tout le département"
             className="w-full rounded-lg border border-slate-200 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
           {isSiren && (
@@ -109,11 +116,14 @@ export default function AgenceFoncierSci() {
 
         <button
           type="submit"
-          disabled={query.trim().length < 3 && !isSiren}
-          className="md:col-span-2 inline-flex items-center justify-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white text-sm font-semibold transition"
+          className="md:col-span-2 inline-flex items-center justify-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition"
         >
-          {search.isFetching ? <Loader2 size={14} className="animate-spin" /> : <FileSearch size={14} />}
-          Rechercher
+          {(search.isFetching || cacheLocal.isFetching) ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <FileSearch size={14} />
+          )}
+          {query.trim().length >= 3 || isSiren ? 'Rechercher API' : 'Filtrer cache'}
         </button>
       </form>
 
