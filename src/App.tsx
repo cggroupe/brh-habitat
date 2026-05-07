@@ -143,6 +143,8 @@ const AgenceFoncierCarte = lazy(() => import('@/pages/agence/foncier/AgenceFonci
 const AgenceFoncierFavoris = lazy(() => import('@/pages/agence/foncier/AgenceFoncierFavoris'))
 // Phase 19 Sprint B — SCI enrichi
 const AgenceFoncierSci = lazy(() => import('@/pages/agence/foncier/AgenceFoncierSci'))
+// Phase 19 Sprint E — Tertiaire (BODACC + permis)
+const AgenceFoncierTertiaire = lazy(() => import('@/pages/agence/foncier/AgenceFoncierTertiaire'))
 const AgenceContributions = lazy(() => import('@/pages/agence/AgenceContributions'))
 const AgenceProgression = lazy(() => import('@/pages/agence/AgenceProgression'))
 const AgenceSimulateur = lazy(() => import('@/pages/agence/AgenceSimulateur'))
@@ -304,6 +306,7 @@ export default function App() {
                 <Route path="/agence/foncier/carte" element={<AgenceFoncierCarte />} />
                 <Route path="/agence/foncier/favoris" element={<AgenceFoncierFavoris />} />
                 <Route path="/agence/foncier/sci" element={<AgenceFoncierSci />} />
+                <Route path="/agence/foncier/tertiaire" element={<AgenceFoncierTertiaire />} />
               </Route>
             </Route>
 

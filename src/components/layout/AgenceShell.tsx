@@ -26,6 +26,7 @@ import {
   Map as MapIcon,
   Star,
   Building2,
+  AlertTriangle,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -41,6 +42,7 @@ const AGENCE_NAV = [
   { to: '/agence/foncier/carte', label: 'Foncier — Carte', icon: MapIcon },
   { to: '/agence/foncier/favoris', label: 'Foncier — Favoris', icon: Star },
   { to: '/agence/foncier/sci', label: 'Foncier — SCI', icon: Building2 },
+  { to: '/agence/foncier/tertiaire', label: 'Foncier — Tertiaire', icon: AlertTriangle },
   { to: '/agence/leads', label: 'Mes leads', icon: ClipboardList },
   { to: '/agence/contributions', label: 'Apporter prospect', icon: Handshake },
   { to: '/agence/reseaux-sociaux', label: 'Réseaux sociaux', icon: Share2 },
