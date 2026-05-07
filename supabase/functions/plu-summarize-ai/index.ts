@@ -35,15 +35,26 @@ interface RequestBody {
   force_refresh?: boolean
 }
 
+interface GpuGrid {
+  name?: string
+  title?: string
+  type?: 'municipality' | 'epci' | 'departement'
+}
+
 interface GpuDocument {
   id?: string | number
-  type?: string  // 'PLU', 'PLUi', 'POS', 'CC', 'RNU'
+  type?: string  // 'PLU', 'PLUi', 'POS', 'CC', 'RNU', 'SUP'
   name?: string
   document_url?: string
   approval_date?: string
   /** Quelques variantes selon endpoint GPU */
   document_pdf?: string
   url?: string
+  /** Status raw GPU : 'document.published', 'document.deleted', etc. */
+  status?: string
+  legalStatus?: string
+  grid?: GpuGrid
+  originalName?: string
 }
 
 const SYSTEM_PROMPT = `Tu es un expert en urbanisme français. On te fournit le règlement PLUi (Plan Local d'Urbanisme intercommunal) d'une commune en PDF.
@@ -74,8 +85,43 @@ Renvoie UNIQUEMENT du JSON valide (pas de markdown, pas de prose), au format sui
 
 Si une info n'est pas disponible, mets null. Maximum 8 zones principales (les plus représentatives). Sois précis et factuel.`
 
-async function fetchGpuDocuments(insee: string): Promise<GpuDocument[]> {
-  // Plusieurs variantes d'endpoint GPU selon les versions
+/**
+ * Recupere code EPCI d'une commune via geo.api.gouv.fr (gratuit).
+ * Retourne ex. '242900314' pour Brest (Brest Métropole).
+ */
+async function getEpciCode(insee: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `https://geo.api.gouv.fr/communes/${insee}?fields=codeEpci`,
+      { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) },
+    )
+    if (!res.ok) return null
+    const j = (await res.json()) as { codeEpci?: string }
+    return j.codeEpci ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Filtre les documents GPU pour ne garder que ceux:
+ *   - publiés (pas deleted)
+ *   - avec legalStatus 'APPROVED'
+ *   - matchant le code grille (insee commune ou EPCI)
+ *   - de type PLU/PLUi/POS/CC (pas SUP qui sont des servitudes)
+ */
+function filterPluDocuments(docs: GpuDocument[], gridName: string): GpuDocument[] {
+  return docs.filter((d) => {
+    const isPublished = !d.status || d.status === 'document.published'
+    const isApproved = !d.legalStatus || d.legalStatus === 'APPROVED'
+    const matchesGrid = d.grid?.name === gridName
+    const isPlu = ['PLU', 'PLUi', 'POS', 'CC'].includes((d.type ?? '').toUpperCase())
+    return isPublished && isApproved && matchesGrid && isPlu
+  })
+}
+
+async function fetchGpuDocuments(insee: string): Promise<{ docs: GpuDocument[]; tried_epci: string | null }> {
+  // 1) Tentative par INSEE commune
   const urls = [
     `${GPU_API}?territory=${insee}&type=PLUi`,
     `${GPU_API}?territory=${insee}&type=PLU`,
@@ -90,13 +136,34 @@ async function fetchGpuDocuments(insee: string): Promise<GpuDocument[]> {
       if (res.ok) {
         const data = await res.json()
         const docs = (Array.isArray(data) ? data : data.results ?? data.documents ?? []) as GpuDocument[]
-        if (docs.length > 0) return docs
+        const filtered = filterPluDocuments(docs, insee)
+        if (filtered.length > 0) return { docs: filtered, tried_epci: null }
       }
     } catch {
-      // continue to next url
+      // continue
     }
   }
-  return []
+
+  // 2) Fallback EPCI : Brest Métropole, Rennes Métropole, etc.
+  const epci = await getEpciCode(insee)
+  if (epci) {
+    try {
+      const res = await fetch(`${GPU_API}?territory=${epci}&type=PLUi`, {
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        const docs = (Array.isArray(data) ? data : data.results ?? data.documents ?? []) as GpuDocument[]
+        const filtered = filterPluDocuments(docs, epci)
+        if (filtered.length > 0) return { docs: filtered, tried_epci: epci }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return { docs: [], tried_epci: epci }
 }
 
 function pickBestDocument(docs: GpuDocument[]): GpuDocument | null {
@@ -272,12 +339,19 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Fetch documents GPU
-    const docs = await fetchGpuDocuments(body.code_insee)
+    // Fetch documents GPU (avec fallback EPCI pour les communes en PLUi intercommunal)
+    const { docs, tried_epci } = await fetchGpuDocuments(body.code_insee)
     const doc = pickBestDocument(docs)
     if (!doc) {
       return new Response(
-        JSON.stringify({ error: 'no_plu_document_found', insee: body.code_insee }),
+        JSON.stringify({
+          error: 'no_plu_document_found',
+          insee: body.code_insee,
+          tried_epci,
+          hint: tried_epci
+            ? `Aucun PLU/PLUi publié sur GPU pour la commune ${body.code_insee} ni pour son EPCI ${tried_epci}. Cette commune est probablement en RNU (Règlement National d'Urbanisme) ou son PLUi n'est pas encore numérisé sur le Géoportail de l'Urbanisme.`
+            : `Aucun PLU/PLUi publié sur GPU pour la commune ${body.code_insee}. Code EPCI introuvable.`,
+        }),
         { status: 404, headers: { ...cors, 'Content-Type': 'application/json' } },
       )
     }

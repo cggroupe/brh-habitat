@@ -68,6 +68,8 @@ export interface SearchSciResult {
   source: 'cache' | 'api'
   cached_at: string
   total_results?: number
+  api_total?: number
+  upsert_error?: string | null
 }
 
 export const foncierSciApi = {

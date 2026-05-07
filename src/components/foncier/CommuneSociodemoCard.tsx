@@ -5,6 +5,7 @@ import { Loader2, Users2, TrendingUp, Home, MapPin, Vote, Euro, AlertCircle } fr
 import { useCommuneSociodemo, useDvfStats } from '@/hooks/queries/foncier-sociodemo'
 
 const GENTRIF_BADGE: Record<string, { label: string; cls: string }> = {
+  indetermine: { label: 'Données DVF non chargées', cls: 'bg-slate-50 text-slate-500 border border-slate-200' },
   declin: { label: 'En déclin', cls: 'bg-slate-100 text-slate-600' },
   stable: { label: 'Stable', cls: 'bg-slate-100 text-slate-700' },
   dynamique: { label: 'Dynamique', cls: 'bg-emerald-100 text-emerald-700' },
@@ -77,6 +78,9 @@ export default function CommuneSociodemoCard({ codeInsee, compact = false }: Com
             {c.loyer_source_year && (
               <span className="text-[9px] text-slate-400 font-normal">({c.loyer_source_year})</span>
             )}
+            <span className="text-[9px] font-bold uppercase bg-amber-100 text-amber-700 px-1 py-0.5 rounded ml-1">
+              moyenne dépt
+            </span>
           </h3>
           <div className="grid grid-cols-2 gap-2 text-xs">
             {c.loyer_appartement_eur_cents !== null && (
@@ -96,6 +100,9 @@ export default function CommuneSociodemoCard({ codeInsee, compact = false }: Com
               </div>
             )}
           </div>
+          <p className="text-[9px] text-amber-700 mt-1 italic">
+            ⚠ Fallback département (CLAMEUR pas en API). Précision quartier en cours via ingestion CSV mensuel — V1.bis.
+          </p>
         </div>
       )}
 

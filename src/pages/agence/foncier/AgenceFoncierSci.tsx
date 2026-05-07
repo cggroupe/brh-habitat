@@ -168,11 +168,25 @@ export default function AgenceFoncierSci() {
         <div className="rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50/30 p-8 text-center">
           <Building2 size={32} className="mx-auto text-emerald-400 mb-2" />
           <p className="text-sm font-semibold text-slate-700">
-            {activeQuery ? 'Aucune SCI trouvée' : 'Lancez une recherche pour explorer les SCI'}
+            {activeQuery
+              ? search.data?.api_total
+                ? `${search.data.api_total} entreprises trouvées dans l'API mais aucune ne correspond aux filtres SCI/personne morale`
+                : 'Aucune SCI trouvée'
+              : 'Lancez une recherche pour explorer les SCI'}
           </p>
           <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
             Saisissez un nom (≥ 3 caractères) ou un SIREN précis. Le filtre département est appliqué automatiquement.
+            {activeQuery && !search.data?.api_total && (
+              <span className="block mt-2 text-amber-700">
+                💡 Astuce : essayez un nom plus précis (ex. « SCI dupont », « immobilier rennes ») plutôt qu'un nom de ville seul.
+              </span>
+            )}
           </p>
+          {search.data?.upsert_error && (
+            <p className="text-[10px] text-red-500 mt-3 italic">
+              [Debug] Cache RLS error : {search.data.upsert_error}
+            </p>
+          )}
         </div>
       )}
 

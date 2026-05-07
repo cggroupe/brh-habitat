@@ -277,8 +277,14 @@ Deno.serve(async (req: Request) => {
       const rows = (data.results ?? []).map(mapApiResultToRow)
 
       // Upsert tout en batch (ne déclenche pas de matching décès — fait à la demande)
+      // ⚠️ Si l'upsert échoue (RLS, contrainte, etc.) on continue quand même —
+      // les résultats API sont retournés au client même sans cache.
+      let upsertError: string | null = null
       if (rows.length > 0) {
-        await supa.from('brh_sci_companies').upsert(rows, { onConflict: 'siren', ignoreDuplicates: false })
+        const { error: upsErr } = await supa
+          .from('brh_sci_companies')
+          .upsert(rows, { onConflict: 'siren', ignoreDuplicates: false })
+        if (upsErr) upsertError = upsErr.message
       }
 
       return new Response(
@@ -287,6 +293,9 @@ Deno.serve(async (req: Request) => {
           source: 'api',
           cached_at: new Date().toISOString(),
           total_results: data.total_results,
+          api_total: data.total_results,
+          api_query: { q: body.q, departement: body.departement, codes: SCI_CODES },
+          upsert_error: upsertError,
         }),
         { status: 200, headers: { ...cors, 'Content-Type': 'application/json' } },
       )

@@ -35,10 +35,20 @@ export default function PluSummaryCard({ codeInsee, compact = false }: PluSummar
           <Sparkles size={12} /> Analyser le PLU
         </button>
         {summarize.isError && (
-          <p className="text-[10px] text-red-600 mt-1.5 inline-flex items-center gap-1">
-            <AlertCircle size={10} />
-            {String(summarize.error)}
-          </p>
+          <div className="mt-2 text-[10px] text-amber-800 bg-amber-50 border border-amber-200 rounded p-2 text-left">
+            <p className="font-semibold inline-flex items-center gap-1">
+              <AlertCircle size={10} />
+              PLU non disponible sur Géoportail Urbanisme
+            </p>
+            <p className="text-[10px] text-amber-700 mt-1 leading-relaxed">
+              Cette commune n'a pas de PLU/PLUi numérisé publié. Elle peut être :
+              <strong> en RNU</strong> (règlement national), ou son PLUi intercommunal n'est pas
+              encore référencé. Consultez la mairie ou l'EPCI pour le règlement papier.
+            </p>
+            <p className="text-[9px] text-slate-400 mt-1 italic break-all">
+              [Debug] {String(summarize.error)}
+            </p>
+          </div>
         )}
       </div>
     )

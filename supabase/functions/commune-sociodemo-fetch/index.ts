@@ -102,12 +102,22 @@ async function computeGentrificationScore(
   let score = Math.min(100, Math.round(densityPer1k))
   if (mutations === 0) score = 0
 
-  let label = 'stable'
-  if (score >= 80) label = 'tres_gentrifiee'
-  else if (score >= 60) label = 'gentrifiee'
-  else if (score >= 40) label = 'en_gentrification'
-  else if (score >= 20) label = 'dynamique'
-  else if (score === 0) label = 'declin'
+  // Si aucune mutation DVF (data archive pas encore ingérée pour cette commune),
+  // on retourne 'indetermine' plutôt que 'declin' qui est un faux positif trompeur.
+  let label: string
+  if (mutations === 0) {
+    label = 'indetermine'
+  } else if (score >= 80) {
+    label = 'tres_gentrifiee'
+  } else if (score >= 60) {
+    label = 'gentrifiee'
+  } else if (score >= 40) {
+    label = 'en_gentrification'
+  } else if (score >= 20) {
+    label = 'dynamique'
+  } else {
+    label = 'stable'
+  }
 
   return { score, label }
 }
