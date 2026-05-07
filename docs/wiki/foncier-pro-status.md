@@ -14,7 +14,7 @@
 | **B** | SCI enrichi : recherche-entreprises + dirigeants + décès INSEE matchid.io | 8-10 j | ✅ DONE | 2026-05-06 |
 | **C** | DVF archive + sociodémo (loyers + gentrification + RPC stats) | 6-8 j | ✅ DONE | 2026-05-06 |
 | **D** | PLU IA Claude + Vision IA toiture (BD ORTHO crop + Claude Sonnet 4.6) | 12-15 j | ✅ DONE | 2026-05-06 |
-| **E** | BODACC tertiaire + permis Sit@del2 | 6-8 j | ⏸ PENDING (dépend A) | — |
+| **E** | BODACC tertiaire + permis Sit@del2 (V1 cache lecture) | 6-8 j | ✅ DONE | 2026-05-06 |
 | **F** | UX intégrée + page détail parcelle complète | 5-7 j | ⏸ PENDING (dépend A-E) | — |
 
 **Total estimé** : 42-55 jours dev compressés.

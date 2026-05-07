@@ -77,6 +77,26 @@
 
 ---
 
+## 2026-05-06 — Phase 19 Sprint E : BODACC tertiaire + permis Sit@del2
+
+- **Contexte** : Sprint E/F de Phase 19 Foncier Pro. Détecte les opportunités tertiaires (ventes urgentes / liquidations / radiations RCS) via API officielle BODACC + base permis de construire Sit@del2 (V1 lecture cache, ingestion massive Sprint E.bis).
+- **Migration prod** : `20260706440000_brh_phase_19_e_bodacc_permis.sql` — `brh_bodacc_alerts` (PK id_bodacc, 3 familles d'avis, prix_cession_cents BIGINT, raw_record JSONB) + `brh_permis_construire` (PK id_permis, type PC/PA/PD/DP/DPMI/DPLT, decision 6 états, parcelle_idu soft FK, source_year+month).
+- **EFs (2)** : `bodacc-fetch` (3 datasets parallèles bodacc-datadila.opendatasoft.com → upsert cache) + `permis-fetch` (V1 lecture cache, ingestion Sit@del2 CSV mensuel = Sprint E.bis script standalone).
+- **Fichiers créés (6)** : api foncier-tertiaire + 4 hooks + page AgenceFoncierTertiaire (2 tabs BODACC/Permis) + 2 EFs.
+- **Fichiers modifiés (2)** : App.tsx (+1 route `/agence/foncier/tertiaire`), AgenceShell (+1 entrée NAV "Foncier — Tertiaire" icône AlertTriangle).
+- **Risque** : Low — API BODACC stable. Permis Sit@del2 V1 vide (table prête, ingestion script standalone E.bis).
+- **Tests** : tsc/eslint exit 0 ✅, **Vitest 390/390**.
+- **Status** : ✅ DONE — Sprint E/F livré (commit 72c8e7f).
+
+### Décisions techniques V1
+1. API BODACC > scraping (REST stable + filtres puissants)
+2. 3 datasets parallèles (filtre famille vente vs liquidation vs radiation)
+3. Permis V1 lecture seule (Sit@del2 = CSV ~500 MB/mois trop lourd EF)
+4. Soft FK parcelle_idu (DGFIP MAJIC mapping = avantage concurrentiel V2)
+5. Refresh manuel BODACC (V2 = cron quotidien systemd 5 dépts BRH)
+
+---
+
 ## 2026-05-06 — Phase 19 Sprint D : IA killer features (PLU + Vision toiture)
 
 - **Contexte** : Sprint D/F de Phase 19 Foncier Pro. Le sprint le plus différenciant vs Quelfoncier — **PLU IA** (Claude Sonnet 4.6 lit le PDF règlement PLUi et résume zones/hauteurs/ABF en JSON structuré) + **Vision IA toiture** (crop aérien IGN BD ORTHO 80m × Claude Sonnet vision : type, orientation, surface, potentiel PV).
