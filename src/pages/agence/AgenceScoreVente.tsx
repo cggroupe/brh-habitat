@@ -8,7 +8,8 @@
  *   - Slide-in panel droit : étude prospect (DPE strip + 3 scénarios + aides + claim)
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { MapContainer, TileLayer, CircleMarker, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, CircleMarker, Marker, Popup, useMap } from 'react-leaflet'
+import { getDpeIcon, type DpeRating } from '@/lib/foncier/dpe-colors'
 import 'leaflet/dist/leaflet.css'
 
 /** Force Leaflet à recalculer sa taille après mount (sinon hauteur 0 dans flex). */
@@ -88,6 +89,7 @@ export default function AgenceScoreVente() {
   const [filterSegment, setFilterSegment] = useState<ScoreVenteSegment | ''>('')
   const [scoreMin, setScoreMin] = useState<number>(60)
   const [showHeatmap, setShowHeatmap] = useState(true)
+  const [markerMode, setMarkerMode] = useState<'scoring' | 'dpe'>('scoring')
 
   // Welcome — fermé par défaut, ouvre via bouton Menu (pour ne pas masquer la map)
   const [welcomeOpen, setWelcomeOpen] = useState(false)
@@ -387,8 +389,32 @@ export default function AgenceScoreVente() {
           active={filterSegment === 'chaud'}
           onClick={() => setFilterSegment(filterSegment === 'chaud' ? '' : 'chaud')}
         />
+        {/* Toggle Score Vente / DPE A-G (Phase 19) */}
+        <div className="ml-auto inline-flex items-center gap-1 bg-white border border-neutral-light rounded-full p-0.5">
+          <button
+            type="button"
+            onClick={() => setMarkerMode('scoring')}
+            className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide transition ${
+              markerMode === 'scoring' ? 'bg-orange-600 text-white' : 'text-slate-500 hover:text-slate-700'
+            }`}
+            title="Markers colorés selon segment vente"
+          >
+            🔥 Score
+          </button>
+          <button
+            type="button"
+            onClick={() => setMarkerMode('dpe')}
+            className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide transition ${
+              markerMode === 'dpe' ? 'bg-emerald-600 text-white' : 'text-slate-500 hover:text-slate-700'
+            }`}
+            title="Pins ADEME 2024 avec lettre DPE A-G"
+          >
+            🅰️ DPE A-G
+          </button>
+        </div>
+
         {subscription ? (
-          <span className="ml-auto text-text-secondary">
+          <span className="text-text-secondary">
             <span className="text-text-light">
               {TIER_LABELS[subscription.tier]} · ce mois
             </span>{' '}
@@ -482,6 +508,39 @@ export default function AgenceScoreVente() {
           {showHeatmap && heatPoints.length > 0 ? <HeatmapLayer points={heatPoints} /> : null}
           {markerRows.map((r) => {
             const isClaimed = claimedIds.has(r.prospect_id)
+            const dpe = (r.prospect?.etiquette_dpe ?? '').toUpperCase()
+            const validDpe = ['A', 'B', 'C', 'D', 'E', 'F', 'G'].includes(dpe)
+
+            // Mode "DPE" : marker avec lettre A-G colorée (Phase 19 Sprint F)
+            if (markerMode === 'dpe' && validDpe) {
+              return (
+                <Marker
+                  key={r.prospect_id}
+                  position={[r.prospect!.latitude!, r.prospect!.longitude!]}
+                  icon={getDpeIcon(dpe as DpeRating)}
+                  eventHandlers={{
+                    click: () =>
+                      openProspectStudy(r.prospect_id, [
+                        r.prospect!.latitude!,
+                        r.prospect!.longitude!,
+                      ]),
+                  }}
+                >
+                  <Popup>
+                    <div className="text-xs space-y-1 min-w-[180px]">
+                      <p className="font-bold text-sm">DPE {dpe}</p>
+                      {r.prospect?.commune && <p className="text-slate-600">{r.prospect.commune}</p>}
+                      {r.score !== null && r.score !== undefined && (
+                        <p className="text-emerald-700 font-semibold">Score : {r.score}/100</p>
+                      )}
+                      {r.segment && <p className="text-slate-500">Segment : {r.segment}</p>}
+                    </div>
+                  </Popup>
+                </Marker>
+              )
+            }
+
+            // Mode "Scoring" (par défaut) : CircleMarker coloré selon segment
             return (
               <CircleMarker
                 key={r.prospect_id}
@@ -602,7 +661,7 @@ export default function AgenceScoreVente() {
                 className="w-full mb-3"
               />
 
-              <label className="flex items-center gap-2 text-xs text-text-secondary mb-3">
+              <label className="flex items-center gap-2 text-xs text-text-secondary mb-2">
                 <input
                   type="checkbox"
                   checked={showHeatmap}
@@ -610,6 +669,35 @@ export default function AgenceScoreVente() {
                 />
                 Afficher heatmap densité
               </label>
+
+              <div className="mb-3">
+                <p className="text-xs font-semibold text-text-secondary mb-1.5">Affichage des markers</p>
+                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => setMarkerMode('scoring')}
+                    className={`flex-1 px-2 py-1.5 rounded-md text-[11px] font-semibold transition ${
+                      markerMode === 'scoring' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'
+                    }`}
+                  >
+                    🔥 Score Vente
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMarkerMode('dpe')}
+                    className={`flex-1 px-2 py-1.5 rounded-md text-[11px] font-semibold transition ${
+                      markerMode === 'dpe' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'
+                    }`}
+                  >
+                    🅰️ Lettre DPE A-G
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-1">
+                  {markerMode === 'scoring'
+                    ? 'Pings colorés selon segment vente (rouge=très chaud)'
+                    : 'Pins colorés ADEME 2024 avec lettre DPE (vert A → rouge G)'}
+                </p>
+              </div>
 
               <button
                 type="button"

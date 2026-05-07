@@ -153,7 +153,8 @@ export default function AgenceFoncierCarte() {
   }
 
   function handleMapClick(latlng: { lat: number; lng: number }) {
-    if (mapZoom < 17) return // évite les clics au zoom trop large
+    const currentZoom = bbox?.zoom ?? mapZoom
+    if (currentZoom < 17) return
     fetchParcelle.mutate(latlng, {
       onSuccess: (res) => {
         if (res.parcelles.length > 0) {
@@ -243,12 +244,17 @@ export default function AgenceFoncierCarte() {
             center={mapCenter}
             zoom={mapZoom}
             scrollWheelZoom
+            doubleClickZoom
+            maxZoom={21}
+            minZoom={6}
             style={{ height: '100%', width: '100%' }}
             key={`${mapCenter[0]}-${mapCenter[1]}-${mapZoom}`}
           >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              maxZoom={21}
+              maxNativeZoom={19}
             />
             {/* Surcouche cadastre IGN (WMS gratuit) */}
             <WMSTileLayer
@@ -260,6 +266,7 @@ export default function AgenceFoncierCarte() {
                 version: '1.3.0',
               }}
               opacity={0.6}
+              maxZoom={21}
               attribution='Cadastre &copy; <a href="https://www.geoportail.gouv.fr/">IGN</a>'
             />
 
@@ -316,9 +323,9 @@ export default function AgenceFoncierCarte() {
             </div>
           )}
 
-          {mapZoom < 17 && (
+          {bbox && bbox.zoom < 17 && (
             <div className="absolute bottom-3 left-3 right-3 bg-white/95 rounded-lg shadow-md px-3 py-2 text-xs text-slate-600 z-[1000] pointer-events-none">
-              💡 Zoomez (≥ niveau 17) pour cliquer sur une parcelle, ou utilisez la barre de recherche.
+              💡 Zoomez (≥ 17) pour cliquer sur une parcelle. Pings DPE visibles dès zoom ≥13. <strong>Zoom max : 21</strong>.
             </div>
           )}
         </div>
@@ -361,13 +368,13 @@ export default function AgenceFoncierCarte() {
             <SatelliteAnalysisCard parcelleIdu={selectedParcelles[0].idu} compact />
           )}
 
-          {/* Sprint F — Lien vers détail complet */}
+          {/* Sprint F — Lien vers détail complet (proéminent en haut) */}
           {selectedParcelles[0]?.idu && (
             <Link
               to={`/agence/foncier/parcelle/${selectedParcelles[0].idu}`}
-              className="block text-center px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition"
+              className="block text-center px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white text-sm font-bold shadow-lg shadow-emerald-500/30 transition transform hover:scale-105"
             >
-              Voir la fiche complète →
+              📋 Voir la fiche complète (DVF · PLU IA · Vision toiture · sociodémo)
             </Link>
           )}
         </div>

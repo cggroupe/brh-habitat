@@ -92,7 +92,7 @@ export default function ParcelleSearchBar({
           )}
 
           {showSuggestions && (geocode.data ?? []).length > 0 && (
-            <ul className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg border border-slate-200 shadow-lg overflow-hidden z-10">
+            <ul className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg border border-slate-200 shadow-2xl overflow-hidden z-[1001]">
               {(geocode.data ?? []).map((s, i) => (
                 <li key={i}>
                   <button
