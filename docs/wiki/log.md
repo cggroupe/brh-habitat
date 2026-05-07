@@ -77,6 +77,64 @@
 
 ---
 
+## 2026-05-06 — Phase 19 Sprint A : Foncier Pro foundation (cadastre IGN + carte + favoris)
+
+- **Contexte** : Phase 18 réseau social mise en pause sur feedback Philippe ("vraiment mauvais"). Pivot vers **Phase 19 Foncier Pro Agence** — récupération de 80% des features de Quelfoncier (Foncier Facile Plus) + différenciateurs IA (PLU résumé Claude, Vision IA toiture). 12 features actées en bloc, 6 sprints A-F (~42-55j), Bretagne V1, all-free data publique. **Sprint A foundation** = cadastre IGN + carte agence + favoris.
+- **Spec produit Sprint A** :
+  - Section "Foncier Pro" dans portail agence (`/agence/foncier/*`) avec 2 sous-pages V1 : Carte cadastre + Favoris
+  - Recherche parcelle 3 modes : adresse (BAN autocomplete api-adresse.data.gouv.fr) / réf cadastrale (insee+section+numéro+préfixe) / clic carte (lat,lng)
+  - Carte Leaflet + WMS cadastre IGN superposé (`data.geopf.fr/wms-r/wms` couche `CADASTRALPARCELS.PARCELLAIRE_EXPRESS`)
+  - Bouton favoris ⭐ avec workflow status (à étudier / contact pris / offre faite / vendu / abandonné) + tags + notes + priorité
+  - Cache 90j Supabase (réduit appels api-carto IGN)
+- **Migration SQL appliquée prod** : `20260706400000_brh_phase_19_a_foncier.sql`
+  - Table `brh_parcelles_cache` (PK = idu 14 chars, géométrie GeoJSON, TTL 90j)
+  - Table `brh_agence_favoris_parcelles` (UNIQUE agence_id+parcelle_idu, status workflow 5 états)
+  - Helper SECURITY DEFINER `brh_user_agence_id()` (signataire OR member, réutilise pattern Phase 16.1)
+  - Trigger `status_updated_at` auto sur changement de statut
+  - RLS owner-only agence + admin (jamais USING(true) sauf cache parcelles publiques documenté)
+- **Edge Function créée** : `supabase/functions/cadastre-fetch/index.ts`
+  - Proxy api-carto IGN parcelles_express (3 modes : idu / insee+section+numero / lat+lng)
+  - Cache hit prioritaire dans `brh_parcelles_cache`, fallback api-carto + upsert
+  - Rate limit 60/min/IP, timeout 8s, fallback gracieux (HTTP 502 si api-carto down)
+  - Auth JWT user requise
+- **Fichiers créés (8)** :
+  - `supabase/migrations/20260706400000_brh_phase_19_a_foncier.sql`
+  - `supabase/functions/cadastre-fetch/index.ts`
+  - `src/api/foncier-parcelles.ts` (fetch via EF + getCachedByIdu + getCachedManyByIdu + geocodeAddress BAN)
+  - `src/api/foncier-favoris.ts` (CRUD favoris + isFavori toggle)
+  - `src/hooks/queries/foncier-parcelles.ts` (4 hooks : fetch mutation + cached queries + geocode)
+  - `src/hooks/queries/foncier-favoris.ts` (5 hooks : list + detail + isFavori + add + update + remove)
+  - `src/components/foncier/ParcelleSearchBar.tsx` (mode adresse BAN autocomplete + mode réf cadastrale)
+  - `src/components/foncier/ParcelleDetailCard.tsx` (carte détail compact/full + bouton favoris)
+  - `src/pages/agence/foncier/AgenceFoncierCarte.tsx` (carte Leaflet + WMS + Polygon + Popup)
+  - `src/pages/agence/foncier/AgenceFoncierFavoris.tsx` (liste filtrable + workflow status + tags)
+  - Wiki : `docs/wiki/foncier-pro-blueprint.md` + `docs/wiki/foncier-pro-status.md`
+- **Fichiers modifiés (3)** :
+  - `src/App.tsx` (+1 lazy AgenceFoncierCarte + 1 lazy AgenceFoncierFavoris + 2 routes `/agence/foncier/*`)
+  - `src/components/layout/AgenceShell.tsx` (+2 imports lucide MapIcon Star + 2 entrées NAV "Foncier — Carte" et "Foncier — Favoris")
+  - `docs/wiki/index.md` (référence blueprint + status Foncier Pro Phase 19)
+- **Pages wiki impactées** :
+  - **Créées** : `foncier-pro-blueprint.md`, `foncier-pro-status.md`
+  - **Mises à jour** : `index.md`, `log.md`
+- **Risque** : Low/Medium — api-carto IGN gratuite mais limitée (60/min/IP rate limited côté EF). Cache 90j obligatoire pour absorber. WMS cadastre = data.geopf.fr (gratuit, stable). Helper `brh_user_agence_id()` peut conflicter avec Phase 16.1 si déjà créé : géré par CREATE OR REPLACE idempotent.
+- **Tests** : `npx tsc --noEmit` exit 0 ✅, **Vitest 390/390** (inchangé Sprint A — UI uniquement, tests pure functions à ajouter Sprint D pour matching IDU et conversion GeoJSON), `npx eslint` exit 0 ✅.
+- **Status** : ✅ DONE — Sprint A/F livré. Reste 5 sprints. Prochain : Sprint B (SCI enrichi : INPI + âge dirigeants + décès INSEE).
+
+### Différenciateurs déjà visibles V1
+- **Cache 90j** : économie d'appels api-carto IGN à grande échelle (vs Quelfoncier qui fait probablement N+1)
+- **WMS officiel IGN** : données cadastrales fraîches (vs scraping ou data figée)
+- **Multi-mode recherche** : BAN autocomplete + réf cadastrale + clic carte = robuste à toutes les saisies
+- **Workflow status agence** : 5 états + tags + notes + priorité (pas juste un favoris binaire)
+
+### Décisions techniques V1
+1. **PK `idu` 14 chars** au lieu d'UUID : stable et standard cadastre national, évite les doublons
+2. **Géométrie en JSONB** (pas PostGIS) : suffisant pour V1 (Leaflet rend du GeoJSON natif). PostGIS = V2 si besoin de queries spatiales backend
+3. **Snapshot dénormalisé dans favoris** : commune/dept/contenance copiés dans `brh_agence_favoris_parcelles` pour affichage rapide même si cache parcelle expire
+4. **Pas de PostGIS V1** : la requête "parcelles dans rayon X" est faite côté front via Haversine + filtres sur `centroid_lat/lng` indexés
+5. **Default icon Leaflet en SVG inline** : évite les problèmes classiques de bundler avec les images Leaflet par défaut
+
+---
+
 ## 2026-05-06 — Phase 18 fix UX : entrée "Réseau pro BRH" dans les 3 sidebars persona
 
 - **Contexte** : Philippe a remarqué qu'en étant connecté en tant qu'agence immo, il ne voyait aucun lien vers `/reseau` — la couche Phase 18 livrée mais inaccessible depuis les portails persona. Le `ReseauGuard` accepte tout `partner_contract` actif, mais sans lien dans les sidebars `AgenceShell`, `ArtisanShell`, `ProShell`, l'entrée du portail unifié était orpheline.

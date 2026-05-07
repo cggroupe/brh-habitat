@@ -138,6 +138,9 @@ const AgenceLeads = lazy(() => import('@/pages/agence/AgenceLeads'))
 const AgenceScoreVente = lazy(() => import('@/pages/agence/AgenceScoreVente'))
 const AgenceAbonnement = lazy(() => import('@/pages/agence/AgenceAbonnement'))
 const AgenceProfil = lazy(() => import('@/pages/agence/AgenceProfil'))
+// Phase 19 Sprint A — Foncier Pro
+const AgenceFoncierCarte = lazy(() => import('@/pages/agence/foncier/AgenceFoncierCarte'))
+const AgenceFoncierFavoris = lazy(() => import('@/pages/agence/foncier/AgenceFoncierFavoris'))
 const AgenceContributions = lazy(() => import('@/pages/agence/AgenceContributions'))
 const AgenceProgression = lazy(() => import('@/pages/agence/AgenceProgression'))
 const AgenceSimulateur = lazy(() => import('@/pages/agence/AgenceSimulateur'))
@@ -295,6 +298,9 @@ export default function App() {
                 <Route path="/agence/messages" element={<AgenceMessages />} />
                 <Route path="/agence/abonnement" element={<AgenceAbonnement />} />
                 <Route path="/agence/profil" element={<AgenceProfil />} />
+                {/* Phase 19 Sprint A — Foncier Pro */}
+                <Route path="/agence/foncier/carte" element={<AgenceFoncierCarte />} />
+                <Route path="/agence/foncier/favoris" element={<AgenceFoncierFavoris />} />
               </Route>
             </Route>
 
