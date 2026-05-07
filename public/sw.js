@@ -1,4 +1,4 @@
-const CACHE_NAME = 'brh-habitat-v5-deces-pro-icons-2026-05-07'
+const CACHE_NAME = 'brh-habitat-v6-deces-period-filter-2026-05-07'
 const STATIC_ASSETS = ['/', '/index.html']
 
 self.addEventListener('install', (event) => {

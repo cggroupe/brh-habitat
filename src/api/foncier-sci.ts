@@ -45,11 +45,19 @@ export interface SciCompany {
   dirigeants: SciDirigeant[]
   has_deceased_dirigeant: boolean
   succession_probable_score: number
+  /** Date du décès le plus récent parmi les dirigeants (calc auto via EF). */
+  latest_deces_date: string | null
   fetched_at: string
   deces_last_checked_at: string | null
   updated_at: string
   created_at: string
 }
+
+/** Tri possibles pour la liste SCI. */
+export type SciSortMode =
+  | 'recent_deces'  // décès le plus récent en premier (défaut quand filtre décès)
+  | 'succession'    // score succession DESC
+  | 'recent'        // fetched_at DESC
 
 export interface SearchSciFilters {
   /** Texte libre (raison sociale, ville, etc.) */
@@ -61,6 +69,10 @@ export interface SearchSciFilters {
   /** Filtres locaux (post-fetch) */
   hasDeceasedOnly?: boolean
   minSuccessionScore?: number
+  /** Date min de décès (ISO YYYY-MM-DD). Filtre les SCI avec latest_deces_date >= cette date. */
+  decesSince?: string
+  /** Mode de tri (défaut : succession). */
+  sortBy?: SciSortMode
   /** Recherche dans le cache local seulement (sans hit API) */
   cacheOnly?: boolean
   /** Force le refresh API même si cache fresh */
@@ -87,8 +99,18 @@ export const foncierSciApi = {
       if (filters.departement) q = q.eq('departement', filters.departement)
       if (filters.hasDeceasedOnly) q = q.eq('has_deceased_dirigeant', true)
       if (filters.minSuccessionScore) q = q.gte('succession_probable_score', filters.minSuccessionScore)
+      if (filters.decesSince) q = q.gte('latest_deces_date', filters.decesSince)
       if (filters.q) q = q.ilike('denomination', `%${filters.q}%`)
-      q = q.order('succession_probable_score', { ascending: false }).order('fetched_at', { ascending: false })
+      // Tri : recent_deces (date desc) > succession > fetched_at
+      const sortBy = filters.sortBy ?? (filters.hasDeceasedOnly || filters.decesSince ? 'recent_deces' : 'succession')
+      if (sortBy === 'recent_deces') {
+        q = q.order('latest_deces_date', { ascending: false, nullsFirst: false })
+             .order('succession_probable_score', { ascending: false })
+      } else if (sortBy === 'succession') {
+        q = q.order('succession_probable_score', { ascending: false }).order('latest_deces_date', { ascending: false, nullsFirst: false })
+      } else {
+        q = q.order('fetched_at', { ascending: false })
+      }
       const { data, error } = await q
       if (error) throw error
       return {

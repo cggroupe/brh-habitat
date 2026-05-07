@@ -298,12 +298,23 @@ Deno.serve(async (req: Request) => {
       })
     }
 
+    // Calcule la date du deces le plus recent parmi les dirigeants decedes
+    let latestDecesDate: string | null = null
+    for (const d of updatedDirigeants) {
+      if (d.est_decede && d.deces_date) {
+        if (!latestDecesDate || d.deces_date > latestDecesDate) {
+          latestDecesDate = d.deces_date
+        }
+      }
+    }
+
     // Update SCI avec les flags décès
     await supa
       .from('brh_sci_companies')
       .update({
         dirigeants: updatedDirigeants,
         deces_last_checked_at: new Date().toISOString(),
+        latest_deces_date: latestDecesDate,
       })
       .eq('siren', body.siren)
 

@@ -19,6 +19,38 @@ function ageFromDob(dob: string | null): number | null {
   return Math.floor(ageMs / (365.25 * 86_400_000))
 }
 
+function monthsBetween(dateIso: string): number {
+  const d = new Date(dateIso)
+  if (Number.isNaN(d.getTime())) return Infinity
+  return Math.floor((Date.now() - d.getTime()) / (30.44 * 86_400_000))
+}
+
+function DecesBadge({ date }: { date: string }) {
+  const decesDate = new Date(date)
+  const monthsAgo = monthsBetween(date)
+  const recentBadge =
+    monthsAgo <= 6
+      ? { label: 'TRÈS RÉCENT', cls: 'bg-red-600 text-white' }
+      : monthsAgo <= 12
+      ? { label: 'RÉCENT', cls: 'bg-orange-500 text-white' }
+      : monthsAgo <= 24
+      ? { label: 'RÉCENT 2 ANS', cls: 'bg-amber-500 text-white' }
+      : null
+  return (
+    <>
+      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-600">
+        <Calendar size={10} />
+        Décès {decesDate.toLocaleDateString('fr-FR')}
+      </span>
+      {recentBadge && (
+        <span className={`inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${recentBadge.cls}`}>
+          {recentBadge.label}
+        </span>
+      )}
+    </>
+  )
+}
+
 export default function SciCard({ sci, expanded, onToggle }: SciCardProps) {
   const checkDeces = useCheckDeces()
 
@@ -77,13 +109,16 @@ export default function SciCard({ sci, expanded, onToggle }: SciCardProps) {
               )}
             </p>
             {successionBadge && (
-              <span
-                className={`inline-flex items-center gap-1 mt-2 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded border ${successionBadge.cls}`}
-              >
-                <AlertCircle size={10} />
-                {successionBadge.label}
-                <span className="font-mono">· {sci.succession_probable_score}/100</span>
-              </span>
+              <div className="mt-2 flex items-center gap-2 flex-wrap">
+                <span
+                  className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded border ${successionBadge.cls}`}
+                >
+                  <AlertCircle size={10} />
+                  {successionBadge.label}
+                  <span className="font-mono">· {sci.succession_probable_score}/100</span>
+                </span>
+                {sci.latest_deces_date && <DecesBadge date={sci.latest_deces_date} />}
+              </div>
             )}
           </div>
         </div>

@@ -22,13 +22,32 @@ const BRETAGNE_DEPTS = [
   { code: '44', label: '44 — Loire-Atlantique' },
 ]
 
+/** Filtre période décès : nombre de mois (ou null = pas de filtre). */
+const DECES_PERIODS: Array<{ label: string; months: number | null }> = [
+  { label: 'Toutes périodes', months: null },
+  { label: 'Décès < 3 mois', months: 3 },
+  { label: 'Décès < 6 mois', months: 6 },
+  { label: 'Décès < 1 an', months: 12 },
+  { label: 'Décès < 2 ans', months: 24 },
+  { label: 'Décès < 5 ans', months: 60 },
+]
+
+function monthsAgoIso(months: number): string {
+  const d = new Date()
+  d.setMonth(d.getMonth() - months)
+  return d.toISOString().slice(0, 10)
+}
+
 export default function AgenceFoncierSci() {
   const [query, setQuery] = useState('')
   const [activeQuery, setActiveQuery] = useState('')
   const [departement, setDepartement] = useState('29')
   const [hasDeceasedOnly, setHasDeceasedOnly] = useState(false)
   const [minSuccessionScore, setMinSuccessionScore] = useState(0)
+  const [decesPeriodMonths, setDecesPeriodMonths] = useState<number | null>(null)
   const [expandedSiren, setExpandedSiren] = useState<string | null>(null)
+
+  const decesSince = decesPeriodMonths !== null ? monthsAgoIso(decesPeriodMonths) : undefined
 
   // Active la recherche dès que activeQuery est défini
   const search = useSearchSci({
@@ -37,6 +56,7 @@ export default function AgenceFoncierSci() {
     limit: 30,
     hasDeceasedOnly,
     minSuccessionScore,
+    decesSince,
   })
 
   // Cache local : SCI déjà fetched (pour navigation rapide quand activeQuery vide)
@@ -45,6 +65,7 @@ export default function AgenceFoncierSci() {
     departement: departement || undefined,
     hasDeceasedOnly,
     minSuccessionScore,
+    decesSince,
     limit: 50,
   })
 
@@ -154,9 +175,26 @@ export default function AgenceFoncierSci() {
             <option value="100">100 (certain)</option>
           </select>
         </label>
+        <label className="inline-flex items-center gap-1.5">
+          <span className="font-semibold text-amber-700">📅 Période décès</span>
+          <select
+            value={decesPeriodMonths === null ? '' : String(decesPeriodMonths)}
+            onChange={(e) => setDecesPeriodMonths(e.target.value === '' ? null : parseInt(e.target.value, 10))}
+            className="rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+          >
+            {DECES_PERIODS.map((p) => (
+              <option key={String(p.months)} value={p.months === null ? '' : String(p.months)}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+        </label>
         <span className="ml-auto text-slate-500">
           {list.length} résultat{list.length > 1 ? 's' : ''}
           {!activeQuery && ' (cache local)'}
+          {decesPeriodMonths !== null && (
+            <span className="ml-1 text-amber-700 font-semibold">· tri par décès récent ↓</span>
+          )}
         </span>
       </div>
 
