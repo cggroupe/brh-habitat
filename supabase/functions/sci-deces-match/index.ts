@@ -95,15 +95,24 @@ function computeMatchScore(d: Dirigeant, m: MatchidPerson): number {
   }
   if (prenomScore === 0) return 0
 
-  // Match date de naissance : exact / mois proche / année seule
+  // Match date de naissance : normalise les 2 formats vers YYYY-MM-DD avant comparaison.
+  // Dirigeant : YYYY-MM-DD (api gouv) ou YYYY-MM (annee seule).
+  // Matchid    : YYYYMMDD (e.g. '19340828').
+  function normalizeDob(s: string | undefined): string | null {
+    if (!s) return null
+    if (/^\d{8}$/.test(s)) return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s
+    if (/^\d{4}-\d{2}$/.test(s)) return `${s}-01`
+    if (/^\d{4}$/.test(s)) return `${s}-01-01`
+    return null
+  }
   let dobScore = 0
-  if (d.date_naissance && m.birth?.date) {
-    const dDob = d.date_naissance
-    const mDob = m.birth.date
+  const dDob = normalizeDob(d.date_naissance ?? undefined)
+  const mDob = normalizeDob(m.birth?.date)
+  if (dDob && mDob) {
     if (dDob === mDob) dobScore = 100
     else if (dDob.slice(0, 7) === mDob.slice(0, 7)) dobScore = 85
     else if (dDob.slice(0, 4) === mDob.slice(0, 4)) {
-      // Même année — calcul écart en mois
       const dD = new Date(dDob)
       const mD = new Date(mDob)
       const diffMonths = Math.abs(
@@ -114,8 +123,7 @@ function computeMatchScore(d: Dirigeant, m: MatchidPerson): number {
       else dobScore = 50
     }
   } else if (!d.date_naissance) {
-    // Pas de DOB chez le dirigeant — match basé uniquement sur nom+prénom
-    dobScore = 40 // confiance modérée, à signaler
+    dobScore = 40
   }
 
   // Score composite : pondération nom+prénom (50%) + dob (50%)
@@ -219,7 +227,14 @@ Deno.serve(async (req: Request) => {
         firstName: d.prenom,
         lastName: d.nom,
       })
-      if (d.date_naissance) params.set('birthDate', d.date_naissance)
+      // BUG matchid.io (07/05/2026) : birthDate doit etre au format DD/MM/YYYY
+      // (francais), pas YYYY-MM-DD. Sinon retourne `invalid birthDate value`.
+      if (d.date_naissance) {
+        const m = d.date_naissance.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+        if (m) {
+          params.set('birthDate', `${m[3]}/${m[2]}/${m[1]}`)
+        }
+      }
 
       let bestMatch: MatchidPerson | null = null
       let bestScore = 0
