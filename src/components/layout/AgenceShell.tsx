@@ -25,6 +25,7 @@ import {
   Globe,
   Map as MapIcon,
   Star,
+  Building2,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -36,9 +37,10 @@ const AGENCE_NAV = [
   { to: '/reseau', label: 'Réseau pro BRH', icon: Globe },
   { to: '/agence/simulateur', label: 'Simulateur énergétique', icon: Sparkles },
   { to: '/agence/score-vente', label: 'Score Vente', icon: Flame },
-  // Phase 19 Sprint A — Foncier Pro (carte cadastre + favoris)
+  // Phase 19 Sprint A-B — Foncier Pro (carte + favoris + SCI enrichi)
   { to: '/agence/foncier/carte', label: 'Foncier — Carte', icon: MapIcon },
   { to: '/agence/foncier/favoris', label: 'Foncier — Favoris', icon: Star },
+  { to: '/agence/foncier/sci', label: 'Foncier — SCI', icon: Building2 },
   { to: '/agence/leads', label: 'Mes leads', icon: ClipboardList },
   { to: '/agence/contributions', label: 'Apporter prospect', icon: Handshake },
   { to: '/agence/reseaux-sociaux', label: 'Réseaux sociaux', icon: Share2 },
