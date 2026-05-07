@@ -24,7 +24,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getCorsHeaders } from '../_shared/cors.ts'
 import { checkRateLimit } from '../_shared/rate-limit.ts'
 
-const RNE_BASE = 'https://www.data.gouv.fr/api/1/datasets/r/d5f400de-ae3f-4966-8cb6-a85c70c6c24a' // RNE élus municipaux JSON
+// V2 : RNE élus municipaux JSON via data.gouv.fr (pour enrichissement maire/élus)
+// const RNE_BASE = 'https://www.data.gouv.fr/api/1/datasets/r/d5f400de-ae3f-4966-8cb6-a85c70c6c24a'
 const DECOUPAGE_BASE = 'https://geo.api.gouv.fr/communes'
 const FETCH_TIMEOUT_MS = 8_000
 const CACHE_TTL_S = 7_776_000 // 90j
@@ -44,16 +45,8 @@ interface DecoupageCommune {
   centre?: { coordinates: [number, number] }
 }
 
-interface RnElu {
-  /** Code commune */
-  code_insee?: string
-  nom?: string
-  prenom?: string
-  date_de_naissance?: string
-  fonction?: string  // "Maire", "Adjoint", etc.
-  parti_politique?: string
-  date_debut_mandat?: string
-}
+// V2 : type RnElu pour enrichissement maire/élus via API RNE data.gouv.fr
+// interface RnElu { code_insee?: string; nom?: string; prenom?: string; date_de_naissance?: string; fonction?: string; parti_politique?: string; date_debut_mandat?: string }
 
 /** Fetch les métadonnées commune via geo.api.gouv.fr (gratuit, rapide). */
 async function fetchCommuneMeta(insee: string): Promise<DecoupageCommune | null> {

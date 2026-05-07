@@ -46,7 +46,7 @@ export default function ChantierForm() {
   const [budgetVisible, setBudgetVisible] = useState(true)
   const [startDate, setStartDate] = useState('')
   // Phase 18.7 — durationWeeks réservé pour la suite (formulaire en cours de design)
-  const [durationWeeks, _setDurationWeeks] = useState('')
+  const [durationWeeks] = useState('')
   const [contractMode, setContractMode] = useState<ContractMode>('sous_traitance')
   const [commissionPct, setCommissionPct] = useState(5)
   const [visibility, setVisibility] = useState<ChantierVisibility>('public')

@@ -4,7 +4,7 @@
  * 3 tiers : Free / Premium 19€/mois / Featured 49€/mois (V2).
  * Réutilise l'EF `create-checkout-session` (pattern Phase 15).
  */
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Crown, Check, Sparkles, Star, AlertCircle, ExternalLink } from 'lucide-react'
 import {
@@ -28,25 +28,21 @@ export default function ReseauAbonnement() {
   const checkout = useCreateReseauCheckout()
   const portal = useOpenReseauPortal()
 
-  const [statusMessage, setStatusMessage] = useState<string | null>(null)
+  // Lecture directe du status depuis l'URL (pas de setState dans useEffect)
+  const status = searchParams.get('status')
+  const statusMessage =
+    status === 'success'
+      ? '✓ Paiement validé. Votre abonnement est actif.'
+      : status === 'cancel'
+        ? 'Paiement annulé. Vous restez sur le plan Free.'
+        : null
 
+  // Auto-clear de l'URL param après 5s (effet sans setState React)
   useEffect(() => {
-    const status = searchParams.get('status')
-    if (status === 'success') {
-      setStatusMessage('✓ Paiement validé. Votre abonnement est actif.')
-      // Clear param après 5s
-      setTimeout(() => {
-        setSearchParams({})
-        setStatusMessage(null)
-      }, 5000)
-    } else if (status === 'cancel') {
-      setStatusMessage('Paiement annulé. Vous restez sur le plan Free.')
-      setTimeout(() => {
-        setSearchParams({})
-        setStatusMessage(null)
-      }, 5000)
-    }
-  }, [searchParams, setSearchParams])
+    if (!status) return
+    const t = setTimeout(() => setSearchParams({}), 5000)
+    return () => clearTimeout(t)
+  }, [status, setSearchParams])
 
   const currentTier = sub.data?.tier ?? 'free'
   const isPaying = currentTier !== 'free'
