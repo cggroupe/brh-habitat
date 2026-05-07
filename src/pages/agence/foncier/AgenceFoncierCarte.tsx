@@ -6,7 +6,7 @@
  *   2. Carte Leaflet + WMS cadastre IGN superposé
  *   3. Au clic carte : fetch parcelle via EF cadastre-fetch + popup détail + bouton favoris
  */
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { MapContainer, TileLayer, WMSTileLayer, Polygon, Popup, Marker, useMapEvents, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -105,6 +105,15 @@ export default function AgenceFoncierCarte() {
   const [showDpe, setShowDpe] = useState(true)
   const [dpeRatings, setDpeRatings] = useState<DpeRating[]>(['F', 'G'])
   const [bbox, setBbox] = useState<{ minLat: number; minLng: number; maxLat: number; maxLng: number; zoom: number } | null>(null)
+
+  const searchMarkerRef = useRef<L.Marker | null>(null)
+
+  // Auto-ouvre le popup du pin dès que la parcelle est chargée
+  useEffect(() => {
+    if (searchMarker && selectedParcelles[0] && searchMarkerRef.current) {
+      searchMarkerRef.current.openPopup()
+    }
+  }, [searchMarker, selectedParcelles])
 
   const dpeQuery = useDpeProspectsInBbox(
     {
@@ -286,11 +295,35 @@ export default function AgenceFoncierCarte() {
             ))}
 
             {searchMarker && (
-              <Marker position={[searchMarker.lat, searchMarker.lng]} icon={defaultIcon}>
-                <Popup>
-                  <div className="text-xs">
-                    <p className="font-semibold">Adresse recherchée</p>
-                    <p className="text-slate-600">{searchMarker.label}</p>
+              <Marker
+                position={[searchMarker.lat, searchMarker.lng]}
+                icon={defaultIcon}
+                ref={(r) => { searchMarkerRef.current = r }}
+              >
+                <Popup minWidth={280}>
+                  <div className="text-xs space-y-2">
+                    <div>
+                      <p className="font-semibold text-emerald-700">📍 Adresse recherchée</p>
+                      <p className="text-slate-600">{searchMarker.label}</p>
+                    </div>
+                    {fetchParcelle.isPending && (
+                      <p className="text-slate-500 italic inline-flex items-center gap-1">
+                        <Loader2 size={11} className="animate-spin" /> Chargement parcelle…
+                      </p>
+                    )}
+                    {selectedParcelles[0] && (
+                      <>
+                        <div className="border-t border-slate-200 pt-2">
+                          <ParcelleDetailCard parcelle={selectedParcelles[0]} compact />
+                        </div>
+                        <Link
+                          to={`/agence/foncier/parcelle/${selectedParcelles[0].idu}`}
+                          className="block w-full text-center px-3 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-700 text-white text-[11px] font-bold"
+                        >
+                          📋 Fiche complète →
+                        </Link>
+                      </>
+                    )}
                   </div>
                 </Popup>
               </Marker>

@@ -6,7 +6,7 @@
  *   2. Recherche par référence cadastrale (insee + section + numéro)
  */
 import { useState } from 'react'
-import { Search, MapPin, FileSearch, Loader2 } from 'lucide-react'
+import { Search, MapPin, FileSearch, Loader2, X } from 'lucide-react'
 import { useGeocodeAddress } from '@/hooks/queries/foncier-parcelles'
 
 interface ParcelleSearchBarProps {
@@ -84,12 +84,24 @@ export default function ParcelleSearchBar({
             placeholder="12 rue de Brest, 29000 Quimper…"
             className="w-full rounded-lg border border-slate-200 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
-          {geocode.isLoading && (
+          {geocode.isLoading ? (
             <Loader2
               size={14}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 animate-spin"
             />
-          )}
+          ) : addressQuery.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => {
+                setAddressQuery('')
+                setShowSuggestions(false)
+              }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition"
+              aria-label="Effacer la recherche"
+            >
+              <X size={14} />
+            </button>
+          ) : null}
 
           {showSuggestions && (geocode.data ?? []).length > 0 && (
             <ul className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg border border-slate-200 shadow-2xl overflow-hidden z-[1001]">
