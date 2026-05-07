@@ -77,6 +77,48 @@
 
 ---
 
+## 2026-05-06 — Phase 19 Sprint C : DVF archive + sociodémo communes
+
+- **Contexte** : Sprint C/F de Phase 19 Foncier Pro. Archive long-terme DVF (anti-suppression officielle 4-5 ans data.gouv.fr) + cache sociodémo enrichi par commune INSEE (loyers + élections + élus + Filosofi + recensement + score gentrification). Permet aux agences d'évaluer une parcelle avec son contexte de marché et son potentiel de gentrification.
+- **Migration prod** : `20260706420000_brh_phase_19_c_sociodemo.sql` — table `brh_dvf_archive` (PK UUID + UNIQUE id_mutation + valeur_fonciere_cents BIGINT) + table `brh_communes_sociodemo` (PK code_insee + JSONB elections/elus + score gentrification SMALLINT) + RPC `brh_dvf_commune_stats(insee, years_back)` (percentile_cont médian)
+- **Edge Function** : `commune-sociodemo-fetch` — multi-source (geo.api.gouv.fr meta + RPC DVF stats + fallback loyers Bretagne hardcodé V1) + cache TTL 90j + heuristique gentrification `min(100, mutations/population*1000)` sur 5 ans
+- **Fichiers créés (5)** : `src/api/foncier-sociodemo.ts`, `src/hooks/queries/foncier-sociodemo.ts` (5 hooks), `src/components/foncier/CommuneSociodemoCard.tsx`, `supabase/functions/commune-sociodemo-fetch/index.ts`, migration SQL
+- **Fichier modifié** : `src/pages/agence/foncier/AgenceFoncierCarte.tsx` (intégration CommuneSociodemoCard auto sur clic parcelle)
+- **Risque** : Medium — Loyers V1 fallback hardcodé Bretagne (5 dépts × 2 types), DVF archive vide à la migration (ingestion CSV millésime annuel à coder Sprint C.bis), élus/élections/Filosofi V1 placeholders.
+- **Tests** : `npx tsc --noEmit` exit 0 ✅, **Vitest 390/390**, `npx eslint` exit 0 ✅.
+- **Status** : ✅ DONE — 4 EFs total à déployer (cadastre-fetch + sci-search + sci-deces-match + commune-sociodemo-fetch).
+
+### Décisions techniques V1
+1. Score gentrification simple (densité mutations / population) — V2 ajout évolution prix + revenus 5 ans
+2. JSONB pour élections+élus (flexibilité, GIN si besoin)
+3. Loyer en CENTS (règle anti-bug #2)
+4. RPC SECURITY DEFINER pour DVF stats (percentile_cont SQL natif > agrégation EF)
+5. Cache à la demande (pas pré-fetch toutes les communes)
+
+---
+
+## 2026-05-06 — Phase 19 Sprint B : SCI enrichi (recherche + matching décès INSEE)
+
+- **Contexte** : Sprint B/F de Phase 19 Foncier Pro. Recherche SCI/PM via recherche-entreprises.api.gouv.fr (DataInfogreffe gratuit) avec extraction automatique des dirigeants + matching décès INSEE via api.deces.matchid.io. Permet aux agences de détecter les SCI en succession probable (signal vendeur fort).
+- **Migration prod** : `20260706410000_brh_phase_19_b_sci.sql` — extension `pg_trgm` activée + table `brh_sci_companies` (PK SIREN, dirigeants en JSONB, capital_social_cents BIGINT, TTL 30j) + table `brh_sci_deces_matches` (audit trail RGPD admin only) + helper SQL `brh_sci_recompute_succession_score(siren)` (0/50/100)
+- **Edge Functions (2)** :
+  - `sci-search` : 2 modes (SIREN précis / recherche libre + dept) → recherche-entreprises.api.gouv.fr → cache 30j. Filtre nature_juridique 6540/6541/6543/6551 (SCI variants). Dirigeants personnes physiques uniquement. Normalisation date_naissance (YYYY-MM-DD / YYYY-MM-01 / YYYY-01-01).
+  - `sci-deces-match` : api.deces.matchid.io → score confiance 0-100 (nom 50% + dob 50%, seuil flag 60). Met à jour brh_sci_companies + log audit + RPC recompute score.
+- **Fichiers créés (4)** : `src/api/foncier-sci.ts`, `src/hooks/queries/foncier-sci.ts` (4 hooks), `src/components/foncier/SciCard.tsx` (card collapsible avec dirigeants + bouton vérifier décès + badges succession 100/50/0), `src/pages/agence/foncier/AgenceFoncierSci.tsx` (page complète recherche + filtres latéraux + résultats)
+- **Fichiers modifiés (2)** : `src/App.tsx` (+1 route `/agence/foncier/sci`), `src/components/layout/AgenceShell.tsx` (+1 entrée NAV "Foncier — SCI")
+- **Risque** : Medium — api.deces.matchid.io est communautaire (non gouvernemental). Fallback gracieux si indisponible. Score 60% min pour flag décès = limite faux positifs homonymes. RGPD personnes morales validé avocat (mémoire 06/05).
+- **Tests** : `npx tsc --noEmit` exit 0 ✅, **Vitest 390/390**, `npx eslint` exit 0 ✅.
+- **Status** : ✅ DONE — Sprint B/F livré (commit d76a339).
+
+### Décisions techniques V1
+1. Cache à la demande (pas pré-fetch en bulk)
+2. Filtrage côté front + serveur (UI réactif + mode cacheOnly)
+3. Matching décès opt-in (pas automatique au search, hits matchid.io ciblés)
+4. Score 60% min flag décès (compromis faux positifs homonymes / faux négatifs DOB partielle)
+5. Audit trail admin only (RGPD — détail matching = admin, score binaire = pro agence)
+
+---
+
 ## 2026-05-06 — Phase 19 Sprint A : Foncier Pro foundation (cadastre IGN + carte + favoris)
 
 - **Contexte** : Phase 18 réseau social mise en pause sur feedback Philippe ("vraiment mauvais"). Pivot vers **Phase 19 Foncier Pro Agence** — récupération de 80% des features de Quelfoncier (Foncier Facile Plus) + différenciateurs IA (PLU résumé Claude, Vision IA toiture). 12 features actées en bloc, 6 sprints A-F (~42-55j), Bretagne V1, all-free data publique. **Sprint A foundation** = cadastre IGN + carte agence + favoris.
