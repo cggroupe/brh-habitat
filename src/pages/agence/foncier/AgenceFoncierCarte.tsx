@@ -14,6 +14,7 @@ import { Map as MapIcon, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import ParcelleSearchBar from '@/components/foncier/ParcelleSearchBar'
 import ParcelleDetailCard from '@/components/foncier/ParcelleDetailCard'
+import CommuneSociodemoCard from '@/components/foncier/CommuneSociodemoCard'
 import { useFetchParcelle } from '@/hooks/queries/foncier-parcelles'
 import type { FoncierParcelle, ParcelleGeometry } from '@/api/foncier-parcelles'
 
@@ -245,6 +246,11 @@ export default function AgenceFoncierCarte() {
           {selectedParcelles.map((p) => (
             <ParcelleDetailCard key={p.idu} parcelle={p} />
           ))}
+
+          {/* Sprint C — sociodémo de la commune de la 1re parcelle sélectionnée */}
+          {selectedParcelles[0]?.code_insee && (
+            <CommuneSociodemoCard codeInsee={selectedParcelles[0].code_insee} compact />
+          )}
         </div>
       </div>
 
