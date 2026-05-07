@@ -6,8 +6,8 @@
  *   2. Carte Leaflet + WMS cadastre IGN superposé
  *   3. Au clic carte : fetch parcelle via EF cadastre-fetch + popup détail + bouton favoris
  */
-import { useState, useMemo } from 'react'
-import { MapContainer, TileLayer, WMSTileLayer, Polygon, Popup, Marker, useMapEvents } from 'react-leaflet'
+import { useState, useMemo, useEffect } from 'react'
+import { MapContainer, TileLayer, WMSTileLayer, Polygon, Popup, Marker, useMapEvents, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Map as MapIcon, Loader2 } from 'lucide-react'
@@ -15,7 +15,12 @@ import { Link } from 'react-router-dom'
 import ParcelleSearchBar from '@/components/foncier/ParcelleSearchBar'
 import ParcelleDetailCard from '@/components/foncier/ParcelleDetailCard'
 import CommuneSociodemoCard from '@/components/foncier/CommuneSociodemoCard'
+import PluSummaryCard from '@/components/foncier/PluSummaryCard'
+import SatelliteAnalysisCard from '@/components/foncier/SatelliteAnalysisCard'
+import DpeMarker from '@/components/foncier/DpeMarker'
+import type { DpeRating } from '@/lib/foncier/dpe-colors'
 import { useFetchParcelle } from '@/hooks/queries/foncier-parcelles'
+import { useDpeProspectsInBbox } from '@/hooks/queries/foncier-dpe-prospects'
 import type { FoncierParcelle, ParcelleGeometry } from '@/api/foncier-parcelles'
 
 const BRETAGNE_CENTER: [number, number] = [48.0, -3.0]
@@ -59,6 +64,34 @@ function MapClickHandler({ onClick }: MapClickHandlerProps) {
   return null
 }
 
+interface BboxTrackerProps {
+  onChange: (bbox: { minLat: number; minLng: number; maxLat: number; maxLng: number; zoom: number }) => void
+}
+
+function BboxTracker({ onChange }: BboxTrackerProps) {
+  const map = useMap()
+  useEffect(() => {
+    function update() {
+      const b = map.getBounds()
+      onChange({
+        minLat: b.getSouth(),
+        minLng: b.getWest(),
+        maxLat: b.getNorth(),
+        maxLng: b.getEast(),
+        zoom: map.getZoom(),
+      })
+    }
+    update()
+    map.on('moveend', update)
+    map.on('zoomend', update)
+    return () => {
+      map.off('moveend', update)
+      map.off('zoomend', update)
+    }
+  }, [map, onChange])
+  return null
+}
+
 export default function AgenceFoncierCarte() {
   const fetchParcelle = useFetchParcelle()
   const [selectedParcelles, setSelectedParcelles] = useState<FoncierParcelle[]>([])
@@ -66,6 +99,20 @@ export default function AgenceFoncierCarte() {
   const [mapZoom, setMapZoom] = useState(8)
   const [searchMarker, setSearchMarker] = useState<{ lat: number; lng: number; label: string } | null>(
     null,
+  )
+
+  // Sprint F — DPE prospects layer
+  const [showDpe, setShowDpe] = useState(true)
+  const [dpeRatings, setDpeRatings] = useState<DpeRating[]>(['F', 'G'])
+  const [bbox, setBbox] = useState<{ minLat: number; minLng: number; maxLat: number; maxLng: number; zoom: number } | null>(null)
+
+  const dpeQuery = useDpeProspectsInBbox(
+    {
+      bbox: bbox ? { minLat: bbox.minLat, minLng: bbox.minLng, maxLat: bbox.maxLat, maxLng: bbox.maxLng } : undefined,
+      ratings: dpeRatings,
+      limit: 500,
+    },
+    showDpe && !!bbox && bbox.zoom >= 13,
   )
 
   function handleAddressSelect(point: { lat: number; lng: number; label: string }) {
@@ -148,6 +195,47 @@ export default function AgenceFoncierCarte() {
 
       <ParcelleSearchBar onSelectAddress={handleAddressSelect} onSearchByRef={handleSearchByRef} />
 
+      {/* Sprint F — Filtres DPE */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-3 flex items-center gap-3 flex-wrap text-xs">
+        <label className="inline-flex items-center gap-1.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={showDpe}
+            onChange={(e) => setShowDpe(e.target.checked)}
+          />
+          <span className="font-semibold text-slate-700">Pings DPE F/G</span>
+        </label>
+        {showDpe && (
+          <>
+            <span className="text-slate-400">|</span>
+            <span className="text-slate-500">Filtrer ratings :</span>
+            {(['A', 'B', 'C', 'D', 'E', 'F', 'G'] as DpeRating[]).map((r) => (
+              <label key={r} className="inline-flex items-center gap-1 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={dpeRatings.includes(r)}
+                  onChange={(e) => {
+                    if (e.target.checked) setDpeRatings([...dpeRatings, r])
+                    else setDpeRatings(dpeRatings.filter((x) => x !== r))
+                  }}
+                />
+                <span className="font-bold">{r}</span>
+              </label>
+            ))}
+            {bbox && bbox.zoom < 13 && (
+              <span className="ml-auto text-amber-600 text-[11px] italic">
+                Zoom ≥13 requis pour afficher les pings DPE
+              </span>
+            )}
+            {bbox && bbox.zoom >= 13 && (dpeQuery.data ?? []).length > 0 && (
+              <span className="ml-auto text-slate-600 font-semibold">
+                {(dpeQuery.data ?? []).length} ping{(dpeQuery.data ?? []).length > 1 ? 's' : ''}
+              </span>
+            )}
+          </>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Carte */}
         <div className="lg:col-span-2 rounded-2xl overflow-hidden border border-slate-200 shadow-sm relative" style={{ height: 600 }}>
@@ -176,6 +264,19 @@ export default function AgenceFoncierCarte() {
             />
 
             <MapClickHandler onClick={handleMapClick} />
+            <BboxTracker onChange={setBbox} />
+
+            {/* Sprint F — DPE prospects markers (zoom ≥13) */}
+            {showDpe && (dpeQuery.data ?? []).map((p) => (
+              <DpeMarker
+                key={p.id}
+                lat={p.lat}
+                lng={p.lng}
+                rating={p.dpe_rating}
+                adresse={p.adresse ?? undefined}
+                surface={p.surface}
+              />
+            ))}
 
             {searchMarker && (
               <Marker position={[searchMarker.lat, searchMarker.lng]} icon={defaultIcon}>
@@ -251,11 +352,29 @@ export default function AgenceFoncierCarte() {
           {selectedParcelles[0]?.code_insee && (
             <CommuneSociodemoCard codeInsee={selectedParcelles[0].code_insee} compact />
           )}
+
+          {/* Sprint D — IA killer features (opt-in via boutons) */}
+          {selectedParcelles[0]?.code_insee && (
+            <PluSummaryCard codeInsee={selectedParcelles[0].code_insee} compact />
+          )}
+          {selectedParcelles[0]?.idu && (
+            <SatelliteAnalysisCard parcelleIdu={selectedParcelles[0].idu} compact />
+          )}
+
+          {/* Sprint F — Lien vers détail complet */}
+          {selectedParcelles[0]?.idu && (
+            <Link
+              to={`/agence/foncier/parcelle/${selectedParcelles[0].idu}`}
+              className="block text-center px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition"
+            >
+              Voir la fiche complète →
+            </Link>
+          )}
         </div>
       </div>
 
       <div className="rounded-xl bg-emerald-50/40 border border-emerald-200/60 p-3 text-xs text-emerald-900">
-        <strong>Sprint A en place</strong> · Cadastre IGN + favoris. À venir : SCI enrichi (B), DVF + sociodémo (C), PLU IA + Vision toiture (D), BODACC (E), DPE markers colorés (F).
+        <strong>Phase 19 livrée 6/6 sprints</strong> · Cadastre · SCI · DVF/sociodémo · PLU IA · Vision toiture · BODACC · permis · DPE markers colorés.
       </div>
     </div>
   )
