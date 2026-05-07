@@ -25,7 +25,6 @@ import {
   Globe,
   Map as MapIcon,
   Star,
-  Building2,
   AlertTriangle,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
