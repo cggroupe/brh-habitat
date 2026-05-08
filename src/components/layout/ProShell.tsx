@@ -34,6 +34,8 @@ import {
   ShoppingBag,
   ClipboardCheck,
   Globe,
+  Briefcase,
+  Home,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -50,6 +52,8 @@ interface NavLeaf {
   feature?: keyof TenantFeatures
   /** Si présent, l'entrée est masquée si l'user n'a pas la permission. */
   permission?: Permission
+  /** Match exact uniquement (utile pour les routes parentes type /reseau). */
+  end?: boolean
 }
 
 interface NavGroup {
@@ -72,9 +76,20 @@ function isGroup(e: NavEntry): e is NavGroup {
 function buildNav(): NavEntry[] {
   const base: NavEntry[] = [
     { to: '/pro', label: 'Accueil', icon: LayoutDashboard },
-    // Phase D 2026-05-08 — réseau pro cross-persona : élargi aux brh_companies (pros).
-    // ReseauGuard accepte aussi pro_company (synthétique) en plus de brh_partner_contracts.
-    { to: '/reseau', label: 'Réseau pro', icon: Globe },
+    // Phase D + amélioration 08/05 — réseau pro en groupe pliable pour exposer
+    // directement le marketplace chantiers (cible principale du Pro).
+    {
+      id: 'reseau',
+      label: 'Réseau pro',
+      icon: Globe,
+      defaultTo: '/reseau',
+      children: [
+        { to: '/reseau', label: 'Fil d\'actualité', icon: Home, end: true },
+        { to: '/reseau/chantiers', label: 'Chantiers', icon: Briefcase },
+        { to: '/reseau/connexions', label: 'Mes connexions', icon: Users },
+        { to: '/reseau/messages', label: 'Messages réseau', icon: MessageSquare },
+      ],
+    },
     {
       id: 'prospection',
       label: 'Prospection',
@@ -265,7 +280,7 @@ export default function ProShell() {
                   >
                     {visibleChildren.map((child) => {
                       const link = (
-                        <NavLink key={child.to} to={child.to} className={subNavLinkClass}>
+                        <NavLink key={child.to} to={child.to} end={child.end} className={subNavLinkClass}>
                           {child.label}
                         </NavLink>
                       )
