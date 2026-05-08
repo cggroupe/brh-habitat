@@ -5,6 +5,109 @@
 
 ---
 
+## 2026-05-08 — Phase 11.1 démarrage : RGE Bretagne + Géorisques EF + tables brh_ext_*
+
+- **Contexte** : Philippe a rappelé la règle absolue Wiki Karpathy obligatoire (sauvée en mémoire globale `feedback_wiki_karpathy_obligatoire.md`) puis demandé le démarrage des 89 sources data Tier 1-4 documentées dans `external-data-sources.md` (Phase 11 jamais démarrée jusqu'à aujourd'hui).
+
+### Actions livrées
+- **Migration `20260706480000_brh_phase_11_1_ext_data_sources.sql`** : tables `brh_ext_cache` (cache générique APIs externes, TTL 90j) et `brh_ext_rge_companies` (entreprises RGE ADEME) + vue matérialisée `brh_ext_rge_stats_commune`. RLS publique pour authenticated (data publiques par nature, exception documentée).
+- **Ingestion RGE Bretagne** : 14 810 qualifs RGE / 5 335 entreprises uniques via API `data.ademe.fr/data-fair/api/v1/datasets/eo1n335dwa-ul7glxa7lm1ho/lines`. Pagination via `next` URL (cursor `after=`). Fix bug NUL byte (`\x00`) dans certaines colonnes email → `tr -d '\000'` avant COPY. Enrichi `code_insee_commune` via cross-référence `brh_dvf_archive` (10 428/14 810 enrichis = 70%).
+- **EF `georisques-fetch`** : déployée, lookup live `www.georisques.gouv.fr/api/v1/resultats_rapport_risque?code_insee=` + cache 90j dans `brh_ext_cache`. Test prod Brest 29019 : 12 risques naturels + 6 techno HTTP 200 OK.
+
+### Sources reportées (API down ou format complexe)
+- **Filosofi 2021 IRIS revenus** : INSEE HTTP 500 sur `https://www.insee.fr/fr/statistiques/fichier/8229323/BASE_TD_FILO_DISP_IRIS_2021_CSV.zip` le 08/05. Alternative possible : dataset parquet 1.8 GB sur data.gouv.fr (lourd). À retry plus tard.
+- **Enedis conso résidentielle IRIS** : API Opendatasoft endpoint à investiguer (search `data.enedis.fr` ne renvoie pas de JSON valide direct).
+- **GRDF conso gaz IRIS** : dataset existe (`consommation-annuelle-de-gaz-par-iris-et-par-secteur-dactivite`) mais format `total_count: None` à mapper.
+
+### Fichiers créés
+- `supabase/migrations/20260706480000_brh_phase_11_1_ext_data_sources.sql`
+- `supabase/functions/georisques-fetch/index.ts`
+- Scripts standalone VPS : `/tmp/rge_ingest.py` (ingestion RGE), `/tmp/enrich_rge_insee.py`
+
+### Pages wiki impactées
+- `log.md` (cette entrée)
+- `foncier-pro-status.md` — table data Bretagne ajoutée
+- ⏸ `data-model.md` — TODO ajouter `brh_ext_cache` + `brh_ext_rge_companies` au schéma
+- ⏸ `edge-functions-reference.md` — TODO ajouter `georisques-fetch`
+- ⏸ `external-data-sources.md` — TODO mettre à jour Phase 11.1 status (de "❌ à démarrer" → "🟡 partiel : RGE done, Géorisques EF done")
+
+### Risque : Low
+- RLS publique sur `brh_ext_*` = données publiques par nature
+- Aucun breaking change
+
+### Tests
+- ESLint exit 0
+- EF georisques-fetch testée prod (HTTP 200, 12 risques naturels Brest)
+- Migration appliquée prod via psql direct
+
+### Status
+✅ DONE — Phase 11.1 démarrée. RGE + Géorisques opérationnels.
+
+---
+
+## 2026-05-07 — Foncier Pro Sprint G + H : seed data Bretagne + filtre date décès + 4 bugs API live
+
+- **Contexte** : Philippe a remonté que les agences voyaient peu de SCI / décès. Audit des EFs en prod via curl avec vrai user token a révélé **4 bugs API externes** + il manquait le filtre période décès (killer feature business : succession récente = vente immédiate).
+
+### Sprint G — Seed data massive Bretagne (07/05 matin)
+- **DVF 2024 Bretagne** : ingéré les 5 CSV départementaux (`files.data.gouv.fr/geo-dvf 2024`) → 104 225 mutations dans `brh_dvf_archive` (22:15403, 29:20415, 35:21690, 44:28602, 56:18115). Script standalone Python `/tmp/dvf_bretagne_ingest.py` + `\copy` postgres direct.
+- **PLU Brest pré-cache** : PDF 63 MB (208 pages) trop lourd pour Claude PDF input (limite 32 MB) → workaround pypdf extraction texte (419k chars) puis Claude Sonnet 4.6 text-input (164k tokens / 3k output / ~$0.54). 7 zones extraites + ABF + synthèse + mentions stockées dans `brh_plu_summaries.code_insee=29019`.
+- **SCI Bretagne via Apify** : recherche-entreprises.api.gouv.fr rate-limit IP VPS au-delà de 400 pages → switch sur actor Apify `corent1robert/recherche-entreprises-scraper` (flat $10/mois, 2h gratuit en trial). 5 runs parallèles (1/dépt, max 10k SCI). Free trial épuisé après ~6500 SCI/run → 27 343 SCI uniques récupérées + 3369 dépt 56 = **29 502 SCI Bretagne en cache** dans `brh_sci_companies`.
+- **Match décès massif** : 15 868 SCI > 60 ans matchées → **522 SCI avec décès** (182 succession score 100, 340 score 50-99, 27 décès <6 mois ULTRA chauds).
+
+### Sprint H — Filtre date décès + tri "succession récente" (07/05 après-midi)
+- **Killer feature business** validée par Philippe : « décès récent = succession en cours = opportunité vente, c'est presque part entière du système ».
+- DB : `ALTER TABLE brh_sci_companies ADD COLUMN latest_deces_date DATE` + index DESC NULLS LAST. Calc auto = max(`dirigeants[*].deces_date`) au matching.
+- EF `sci-deces-match` : enrichit dirigeant JSONB avec `deces_date` (normalisé YYYY-MM-DD depuis matchid YYYYMMDD) + `deces_commune` + update `latest_deces_date` SCI.
+- UI page SCI : dropdown "📅 Période décès" (3m / 6m / 1an / 2ans / 5ans / Toutes) avec tri auto par date desc dès qu'un filtre période ou hasDeceased est actif.
+- UI fiche SCI : badge "TRÈS RÉCENT" rouge si <6 mois, "RÉCENT" orange <1 an, "RÉCENT 2 ANS" amber <2 ans. Date décès affichée directement sur la carte (pas besoin d'expand).
+- UI dirigeant décédé : ligne `Décès le 10/10/2020 — Fontenay-le-Comte` avec icône Calendar (plus de Skull, demande user "plateforme pro pas un jeu").
+- Form SCI : bouton recherche **toujours enabled** (auparavant disabled si query <3 chars → user obligé de taper une ville). Label switch "Rechercher API" si query, "Filtrer cache" sinon.
+
+### Bugs API live identifiés et corrigés (07/05)
+1. **`recherche-entreprises.api.gouv.fr` `per_page > 25` → HTTP 400** (le frontend BRH passait `limit=30` → EF retournait 502 → UI "Erreur lors de la recherche"). Cap à 25 dans `sci-search` EF.
+2. **`recherche-entreprises` `include=dirigeants` casse les requêtes multi-filtres** (retourne 0 résultats avec dept+nature_juridique). Les dirigeants sont retournés par défaut, param retiré.
+3. **`bodacc-datadila.opendatasoft.com`** : champ correct = `dateparution` (pas `datepublication`). Toutes les requêtes BODACC retournaient 0 → fix sur where + order_by → 10 065 alertes 90j sur le 29.
+4. **`matchid.io` exige `birthDate=DD/MM/YYYY`** (français), pas `YYYY-MM-DD` (rejetait avec `invalid birthDate value`). En plus, `computeMatchScore` comparait deux formats différents (`YYYYMMDD` matchid vs `YYYY-MM-DD` gouv). Fix : conversion DD/MM/YYYY avant call + normalizeDob() commun avant comparaison → 522 décès trouvés au lieu de 0.
+5. **`geoportail-urbanisme.gouv.fr/api/document?territory=` ignore le paramètre territory** (retourne du contenu aléatoire FR). Switch vers `apicarto.ign.fr/api/gpu/zone-urba?geom=POINT` (centroid commune) qui retourne le PDF règlement officiel direct via `urlfic` (ex Brest → `echanges.brest-metropole.fr/.../242900314_reglement_20260217.pdf`).
+
+### Fichiers modifiés
+- EFs : `sci-search/index.ts`, `sci-deces-match/index.ts`, `bodacc-fetch/index.ts`, `plu-summarize-ai/index.ts`, `commune-sociodemo-fetch/index.ts`
+- Code client : `src/api/foncier-sci.ts`, `src/api/foncier-ia.ts`, `src/components/foncier/SciCard.tsx`, `src/components/foncier/PluSummaryCard.tsx`, `src/components/foncier/CommuneSociodemoCard.tsx`, `src/pages/agence/foncier/AgenceFoncierSci.tsx`, `src/pages/agence/foncier/AgenceFoncierCarte.tsx`, `src/pages/agence/foncier/AgenceFoncierFavoris.tsx`, `src/App.tsx`
+- SW : `public/sw.js` v3 → v4 → v5 → v6
+- Composants foncier ajoutés : favoris dual link (fiche complète + carte), focus carte via `?focus=IDU`
+
+### Migrations créées (3 ce jour)
+- `20260706450000_brh_phase_19_f_gentrification_indetermine.sql` — label `indetermine` au lieu de `declin` quand DVF non chargé (faux positif). 1 row migrée (Brest).
+- `20260706460000_brh_phase_19_g_dvf_brest_seed.sql` — log seed DVF Bretagne 104k + PLU Brest cache (one-shot via psql direct, pas auto-reproductible).
+- `20260706470000_brh_phase_19_h_deces_recent_filter.sql` — colonne `latest_deces_date` + index DESC NULLS LAST.
+
+### Pages wiki impactées (à rattraper)
+- ✅ `log.md` (cette entrée)
+- ⏸ `foncier-pro-status.md` — passer 6/6 → 8/8 sprints
+- ⏸ `data-model.md` — ajouter `latest_deces_date` + `dirigeants.deces_date` + `dirigeants.deces_commune` dans schéma SCI
+- ⏸ `edge-functions-reference.md` — noter les 4 bugs API externes corrigés (mémo pour futurs devs)
+
+### Risque
+- **Low** : tous les fixes sont des corrections de bugs existants, pas de breaking change
+- **Medium** : seed DVF/SCI/PLU Brest non auto-reproductible (script standalone). Si la base est wipe, faut relancer manuellement les ingestions
+
+### Tests
+- ESLint exit 0 sur tous les commits
+- CI GitHub Actions verte sur les 8 commits de la session
+- Build Vercel OK
+- Tests prod via curl (vrai user token admin@brh-test.fr) : sci-search ✓, sci-deces-match ✓, bodacc-fetch ✓, plu-summarize-ai ✓
+
+### Status
+✅ DONE — Sprints G + H livrés en 1 session marathon, 8 commits poussés, EFs redéployées (sci-search, sci-deces-match, bodacc-fetch, commune-sociodemo-fetch, plu-summarize-ai).
+
+### Cron systemd (mis en pause à la demande de Philippe)
+- `sci-bretagne-cron.timer` (30 min) — ingestion progressive 200 pages/dépt en rotation
+- `sci-deces-cron.timer` (15 min) — match décès sur 500 SCI les + âgées non checkées
+- État : **stoppés et désactivés** le 07/05 fin de session ; réactivables via `systemctl enable --now sci-{bretagne,deces}-cron.timer`
+
+---
+
 ## 2026-05-06 — Phase 16.1 Steps A-C : modèle économique unifié leads agences
 
 - **Contexte** : avant Step A, le RPC `brh_grant_lead_claim` ne décomptait que le tier Stripe ; les colonnes `bonus_leads_unlocked / consumed` existaient mais n'étaient jamais utilisées au claim. Bug structurel — les agences ne profitaient jamais de leurs leads bonus. Philippe a aussi décidé d'étendre le parrainage agences en cascade 5 niveaux (clone Pro) + d'ajouter des leads bonus sur le parrainage (en plus du cash 100 €).

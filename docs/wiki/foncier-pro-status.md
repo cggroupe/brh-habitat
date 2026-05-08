@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Tableau de livraison (6 sprints)
+## 1. Tableau de livraison (8 sprints)
 
 | Sprint | Contenu | Durée prévue | Status | Date livraison |
 |---|---|---|---|---|
@@ -16,10 +16,26 @@
 | **D** | PLU IA Claude + Vision IA toiture (BD ORTHO crop + Claude Sonnet 4.6) | 12-15 j | ✅ DONE | 2026-05-06 |
 | **E** | BODACC tertiaire + permis Sit@del2 (V1 cache lecture) | 6-8 j | ✅ DONE | 2026-05-06 |
 | **F** | UX intégrée (DPE markers A-G colorés + page détail parcelle complète) | 5-7 j | ✅ DONE | 2026-05-06 |
+| **G** | Seed data Bretagne : DVF 104k + PLU Brest cache + 4 bugs API gouv | — | ✅ DONE | 2026-05-07 |
+| **H** | Filtre date décès + tri "succession récente" + badges TRÈS RÉCENT | — | ✅ DONE | 2026-05-07 |
 
-**🎉 Phase 19 100% livrée — 6/6 sprints en 1 session marathon (06/05/2026)**
+**🎉 Phase 19 100% livrée — 8/8 sprints sur 2 sessions (06+07/05/2026)**
 
 **Total estimé** : 42-55 jours dev compressés.
+
+### État data Bretagne en prod (08/05/2026)
+
+| Source | Volume | État |
+|---|---|---|
+| DVF mutations 2024 | 104 225 | ✅ Bretagne complète (5 dépts) |
+| SCI / dirigeants | 29 502 | ✅ ~60% du max API gouv (50k théorique) |
+| SCI avec décès détecté | 522 | ✅ dont 27 < 6 mois, 47 < 1 an |
+| PLU communal pré-cache | 1 (Brest) | 🟡 V2 : Rennes/Nantes/Vannes/Quimper |
+| RGE artisans Bretagne | 5 335 / 14 810 qualifs | ✅ 663 communes couvertes |
+| Géorisques | EF cache à la demande | ✅ Brest testé (12 nat + 6 techno) |
+| Filosofi 2021 IRIS | 0 | 🔴 INSEE HTTP 500 le 08/05, à retry |
+| Enedis conso élec | 0 | 🟡 API endpoint à investiguer |
+| GRDF conso gaz | 0 | 🟡 dataset structure à mapper |
 
 ---
 
