@@ -6,6 +6,37 @@
 ---
 
 
+## 2026-05-08 — Ménage post-refonte (cohérence sidebars + warnings React 19)
+
+- **Contexte** : audit de cohérence après les 4 phases A-D a révélé 2 vrais bugs et 2 warnings non bloquants. Philippe demande "tout doit être absolument parfait".
+- **Livré** :
+  - **Bug 1 — CTA conversion DiagnosticExpressPage** (`pages/public/DiagnosticExpressPage.tsx:470`) : le bouton "Créer un compte" pointait vers `/inscription` (= hub depuis Phase A). Dans le contexte d'un diagnostic énergétique particulier, on attend le flow direct → corrigé en `/inscription/particulier`.
+  - **Bug 2 — Liens RGE dans ProShell sortaient de ProShell** : le groupe "Activité RGE" pointait vers `/artisan/missions`, `/artisan/agenda`… qui sont rendus sous `ArtisanShell`. L'user perdait sa sidebar Pro à chaque clic. Fix en 2 étapes :
+    1. `App.tsx` : ajout de 4 routes alias sous `/pro/*` qui réutilisent les composants Artisan : `/pro/missions`, `/pro/agenda`, `/pro/factures-brh`, `/pro/profil-rge`. Aucune duplication de code (juste duplicate route declarations).
+    2. `ProShell.tsx` : `RGE_GROUP` pointe désormais vers ces nouvelles routes `/pro/*`. L'user reste dans ProShell quand il clique.
+  - **Warnings React 19 — AgenceShell.tsx** :
+    - `useMemo([])` avec `eslint-disable-line react-hooks/exhaustive-deps` masquait la dep `location.pathname` → remplacé par lazy init du `useState` (`useState(() => computeOpenGroups(location.pathname))`). Plus simple, plus correct, plus de eslint-disable.
+    - `useEffect` qui faisait setState à chaque navigation sans bailout → ajout d'un bailout `if (!changed) return prev` pour éviter les re-renders inutiles.
+    - Extraction de la fonction pure `computeOpenGroups(pathname)` au top-level.
+- **Fichiers modifiés** :
+  - `src/pages/public/DiagnosticExpressPage.tsx` (1 ligne)
+  - `src/App.tsx` (+5 lignes routes alias)
+  - `src/components/layout/ProShell.tsx` (4 lignes group RGE)
+  - `src/components/layout/AgenceShell.tsx` (refactor useMemo→useState lazy + bailout useEffect)
+- **Migrations créées** : aucune
+- **Pages wiki impactées** : log.md
+- **Risque** : Low — les 4 routes `/artisan/*` originales restent fonctionnelles (rétrocompat pour les artisans legacy sans `brh_companies`). Les utilisateurs Pro+RGE bénéficient désormais d'une UX cohérente.
+- **Tests** : `npm run build` ✅ vert (21.43s, 0 TS error)
+- **Status** : ✅ DONE
+
+### Reste en backlog (non critique, sessions futures)
+- Migration ArtisanShell complète vers ProShell (suppression définitive d'ArtisanShell pour les users avec `brh_companies`) — actuellement coexistence acceptable
+- Lazy-load `react-pdf` dans `AuditView` + `AdminCommissionsArtisans` (gain ~1.5 MB sur bundle initial admin)
+- Code split chunks index 462 + 410 KB
+
+---
+
+
 ## 2026-05-08 — Phase D : Réseau pro cross-persona (Agences + Pros)
 
 - **Contexte** : finalisation refonte 4 personas. Avant Phase D, `/reseau` était strictement réservé aux signataires `brh_partner_contracts` (agences principalement) et toujours rendu sous `AgenceShell`. Un Pro (`brh_companies`) ne pouvait pas accéder au réseau pour communiquer avec les agences.

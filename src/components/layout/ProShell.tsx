@@ -82,12 +82,12 @@ const RGE_GROUP: NavGroup = {
   id: 'rge',
   label: 'Activité RGE',
   icon: Award,
-  defaultTo: '/artisan/missions',
+  defaultTo: '/pro/missions',
   children: [
-    { to: '/artisan/missions', label: 'Mes missions BRH', icon: Briefcase },
-    { to: '/artisan/agenda', label: 'Agenda', icon: Calendar },
-    { to: '/artisan/factures', label: 'Factures BRH', icon: FileText },
-    { to: '/artisan/profil', label: 'Profil RGE', icon: Award },
+    { to: '/pro/missions', label: 'Mes missions BRH', icon: Briefcase },
+    { to: '/pro/agenda', label: 'Agenda', icon: Calendar },
+    { to: '/pro/factures-brh', label: 'Factures BRH', icon: FileText },
+    { to: '/pro/profil-rge', label: 'Profil RGE', icon: Award },
   ],
 }
 

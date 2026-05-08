@@ -126,31 +126,38 @@ function isPathInGroup(pathname: string, group: NavGroup): boolean {
   return group.matchPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
 }
 
+function computeOpenGroups(pathname: string): Record<NavGroup['id'], boolean> {
+  const open: Record<NavGroup['id'], boolean> = {
+    foncier: false,
+    reseau: false,
+    'mon-agence': false,
+  }
+  for (const g of GROUPS) if (isPathInGroup(pathname, g)) open[g.id] = true
+  return open
+}
+
 export default function AgenceShell() {
   const { user } = useAuth()
   const location = useLocation()
 
-  // Auto-ouvre le groupe correspondant à la route active.
-  const initialOpen = useMemo(() => {
-    const open: Record<NavGroup['id'], boolean> = {
-      foncier: false,
-      reseau: false,
-      'mon-agence': false,
-    }
-    for (const g of GROUPS) if (isPathInGroup(location.pathname, g)) open[g.id] = true
-    return open
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  // Lazy init du state à partir du pathname courant — pas de useMemo nécessaire,
+  // pas de eslint-disable, et compatible React 19 compiler.
+  const [groupsOpen, setGroupsOpen] = useState(() => computeOpenGroups(location.pathname))
 
-  const [groupsOpen, setGroupsOpen] = useState(initialOpen)
-
-  // Quand l'utilisateur change de route, on ouvre automatiquement le groupe actif.
+  // Quand l'utilisateur change de route, on ouvre automatiquement le groupe actif
+  // sans refermer ceux que l'user a ouverts manuellement.
   useEffect(() => {
+    const computed = computeOpenGroups(location.pathname)
     setGroupsOpen((prev) => {
+      let changed = false
       const next = { ...prev }
-      for (const g of GROUPS) {
-        if (isPathInGroup(location.pathname, g)) next[g.id] = true
+      for (const id of Object.keys(computed) as NavGroup['id'][]) {
+        if (computed[id] && !prev[id]) {
+          next[id] = true
+          changed = true
+        }
       }
-      return next
+      return changed ? next : prev
     })
   }, [location.pathname])
 

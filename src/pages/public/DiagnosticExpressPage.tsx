@@ -467,7 +467,7 @@ export default function DiagnosticExpressPage() {
                       </Link>
                     ) : (
                       <Link
-                        to="/inscription"
+                        to="/inscription/particulier"
                         className="inline-flex items-center gap-2 rounded-md border border-white/40 px-5 py-2.5 text-sm font-medium text-white hover:bg-white/10"
                       >
                         <ArrowRight className="h-4 w-4" />
