@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mon arbre de parrainage | The Editorial Habitat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#707a6a",
+                        "on-surface": "#191c1b",
+                        "on-secondary-fixed": "#012102",
+                        "background": "#f8faf8",
+                        "primary-container": "#1c7b1d",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#c5eeb9",
+                        "on-secondary-container": "#4a6d43",
+                        "primary-fixed-dim": "#7edc71",
+                        "on-tertiary-container": "#ffe6ec",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#85184f",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#3e0020",
+                        "inverse-on-surface": "#eff1ef",
+                        "inverse-primary": "#7edc71",
+                        "surface-dim": "#d8dad9",
+                        "inverse-surface": "#2e3130",
+                        "on-background": "#191c1b",
+                        "secondary-fixed-dim": "#aad19e",
+                        "secondary-container": "#c5eeb9",
+                        "on-primary-fixed": "#002201",
+                        "secondary": "#44673d",
+                        "tertiary": "#95255b",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#ffd9e4",
+                        "surface-tint": "#056e10",
+                        "on-primary-container": "#b2ffa3",
+                        "surface-container-low": "#f2f4f2",
+                        "on-primary-fixed-variant": "#005308",
+                        "surface-bright": "#f8faf8",
+                        "primary": "#00600a",
+                        "outline-variant": "#bfcab8",
+                        "surface-container-high": "#e6e9e7",
+                        "on-surface-variant": "#404a3c",
+                        "on-secondary-fixed-variant": "#2d4f28",
+                        "tertiary-container": "#b43f74",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#9af98a",
+                        "surface-container-highest": "#e1e3e1",
+                        "tertiary-fixed-dim": "#ffb0cc",
+                        "surface-variant": "#e1e3e1",
+                        "surface": "#f8faf8",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#eceeec",
+                        "on-error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Epilogue"],
+                        "display": ["Epilogue"],
+                        "body": ["Manrope"],
+                        "label": ["Manrope"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .tree-line {
+            stroke: #bfcab8;
+            stroke-width: 1.5;
+            fill: none;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px);
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-surface">
+<!-- SideNavBar Component -->
+<aside class="h-screen w-72 fixed left-0 top-0 overflow-y-auto bg-surface-container-low dark:bg-surface-dim flex flex-col gap-2 py-8 z-50">
+<div class="px-8 mb-10">
+<h1 class="font-headline text-xl font-bold tracking-tighter text-primary dark:text-primary-fixed">The Editorial Habitat</h1>
+<p class="font-label text-xs uppercase tracking-[0.2em] text-on-surface-variant/60 mt-1">Partner Portal</p>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="text-on-surface-variant dark:text-on-surface-variant py-3 px-8 hover:text-primary dark:hover:text-primary-fixed hover:bg-surface-container-high dark:hover:bg-surface-variant transition-colors duration-200 flex items-center gap-4" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body text-label-md tracking-wide">Dashboard</span>
+</a>
+<!-- Active State: Mon réseau -->
+<a class="text-primary dark:text-primary-fixed-dim font-bold bg-surface-container-lowest dark:bg-surface-container rounded-lg mx-4 py-3 px-4 flex items-center gap-4 transition-all scale-98 active:scale-95" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-body text-label-md tracking-wide">Mon réseau</span>
+</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant py-3 px-8 hover:text-primary dark:hover:text-primary-fixed hover:bg-surface-container-high dark:hover:bg-surface-variant transition-colors duration-200 flex items-center gap-4" href="#">
+<span class="material-symbols-outlined">architecture</span>
+<span class="font-body text-label-md tracking-wide">Projects</span>
+</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant py-3 px-8 hover:text-primary dark:hover:text-primary-fixed hover:bg-surface-container-high dark:hover:bg-surface-variant transition-colors duration-200 flex items-center gap-4" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-body text-label-md tracking-wide">Documents</span>
+</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant py-3 px-8 hover:text-primary dark:hover:text-primary-fixed hover:bg-surface-container-high dark:hover:bg-surface-variant transition-colors duration-200 flex items-center gap-4 mt-auto" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body text-label-md tracking-wide">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-8 pt-8 border-t border-outline-variant/10">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center overflow-hidden">
+<img alt="Architect Partner Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a senior architect with a confident expression, set against a blurred background of a modern architectural studio. The lighting is soft and natural, emphasizing textures and professional attire. The overall color palette is muted with earthy tones, consistent with a high-end business environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuBl08hEIBZ2j_hUe0lrxuLev74oYlrvM3LGozXm3ZZPsEQx41B9YsReqDgxQaE-bW20Dycrw1Ubv1-yzfsK1St7neJ_-H0oWdYVpTFHsYug4M7C1y8OQIB8xQydymie9fL9qzd_mjzMJWuJcAalm_Y4s2cl7FV6kb1Z5IQ1OxkGQkAQKUnw_QDgdJ5iCmX6tu2tohPoJcCAtEkRKs3YIOGeH5XzP4NVBrBVtyyjN3EG5MAPwU0lxZeZJt590ryw0_eV_Xyj439U0"/>
+</div>
+<div>
+<p class="text-label-sm font-bold">Jean-Marc B.</p>
+<p class="text-[10px] text-on-surface-variant/70 uppercase tracking-widest">Premium Partner</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopAppBar Component -->
+<header class="fixed top-0 right-0 w-[calc(100%-18rem)] z-40 bg-surface/70 dark:bg-surface-dim/70 backdrop-blur-xl flex justify-between items-center h-20 px-12">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">account_tree</span>
+<h2 class="font-headline text-title-lg text-primary font-bold">Network Architecture</h2>
+</div>
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined cursor-pointer opacity-90 hover:opacity-100 transition-colors text-on-surface-variant">notifications</span>
+<span class="material-symbols-outlined cursor-pointer opacity-90 hover:opacity-100 transition-colors text-on-surface-variant">chat_bubble</span>
+<span class="material-symbols-outlined cursor-pointer opacity-90 hover:opacity-100 transition-colors text-on-surface-variant">account_circle</span>
+</div>
+<div class="h-6 w-px bg-outline-variant/30"></div>
+<div class="relative group">
+<input class="bg-surface-container-highest/50 border-none rounded-full px-5 py-2 text-sm w-64 focus:ring-1 focus:ring-primary/20 transition-all" placeholder="Rechercher un partenaire..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-2 text-on-surface-variant/50">search</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-72 pt-32 pb-20 px-12 max-w-[1280px]">
+<!-- Header Section -->
+<section class="mb-12">
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<div class="p-2 bg-primary/10 rounded-lg">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">hub</span>
+</div>
+<h1 class="font-display text-4xl font-extrabold text-on-surface tracking-tight">Mon arbre de parrainage</h1>
+</div>
+<p class="font-body text-on-surface-variant text-lg max-w-2xl leading-relaxed">
+                        Structurez votre croissance. <span class="font-bold text-primary">Cascade 5 niveaux</span> · max 145 € HT + 12 leads par charte signée.
+                    </p>
+</div>
+<button class="bg-gradient-to-r from-primary to-primary-container text-on-primary px-6 py-3 rounded-xl font-bold text-sm tracking-wide shadow-lg shadow-primary/10 hover:shadow-primary/20 transition-all active:scale-95">
+                    Inviter un nouveau partenaire
+                </button>
+</div>
+</section>
+<!-- KPI Cards Grid -->
+<section class="grid grid-cols-3 gap-8 mb-12">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest p-8 rounded-xl flex items-center gap-6 border border-outline-variant/5">
+<div class="w-14 h-14 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">group</span>
+</div>
+<div>
+<p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Total filleuls</p>
+<h3 class="font-display text-3xl font-extrabold text-on-surface leading-none">8</h3>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest p-8 rounded-xl flex items-center gap-6 border border-outline-variant/5">
+<div class="w-14 h-14 rounded-full bg-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">looks_one</span>
+</div>
+<div>
+<p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Niveau 1 directs</p>
+<h3 class="font-display text-3xl font-extrabold text-on-surface leading-none">3</h3>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest p-8 rounded-xl flex items-center gap-6 border border-outline-variant/5">
+<div class="w-14 h-14 rounded-full bg-tertiary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary">payments</span>
+</div>
+<div>
+<p class="text-on-surface-variant font-label text-xs uppercase tracking-widest mb-1">Commissions à date</p>
+<h3 class="font-display text-3xl font-extrabold text-on-surface leading-none">450 € <span class="text-lg font-bold text-on-surface-variant">HT</span></h3>
+</div>
+</div>
+</section>
+<!-- Tree Visualization Canvas -->
+<section class="relative bg-surface-container-lowest rounded-xl h-[520px] shadow-sm border border-outline-variant/5 overflow-hidden">
+<div class="absolute inset-0 p-10 flex flex-col items-center">
+<!-- Root Node -->
+<div class="relative z-20 mb-16">
+<div class="w-[220px] h-[80px] bg-primary text-on-primary rounded-lg shadow-xl flex flex-col items-center justify-center text-center p-4">
+<span class="text-sm font-bold uppercase tracking-widest opacity-80 mb-1">Vous</span>
+<h4 class="font-bold text-base leading-tight">BZH Immo</h4>
+<p class="text-[10px] font-medium opacity-70">Vannes · 47 leads · 8 filleuls</p>
+</div>
+</div>
+<!-- Vertical Tree SVG (Pseudo-lines using absolute positioning for pixel-perfect match) -->
+<svg class="absolute top-0 left-0 w-full h-full pointer-events-none opacity-40" xmlns="http://www.w3.org/2000/svg">
+<!-- Lines from Root to L1 -->
+<path class="tree-line" d="M615,130 L615,160 M615,160 L285,160 L285,210 M615,160 L615,210 M615,160 L945,160 L945,210"></path>
+<!-- Lines from L1 Cap Habitat to L2 -->
+<path class="tree-line" d="M285,274 L285,300 M285,300 L200,300 L200,330 M285,300 L370,300 L370,330"></path>
+<!-- Lines from L1 Tregor Immo to L2 -->
+<path class="tree-line" d="M615,274 L615,300 M615,300 L530,300 L530,330 M615,300 L700,300 L700,330"></path>
+</svg>
+<!-- Level 1 Grid -->
+<div class="relative z-20 flex justify-center gap-32 mb-16 w-full">
+<!-- Node 1 -->
+<div class="flex flex-col items-center">
+<div class="w-[200px] h-[64px] bg-primary-container text-on-primary rounded-lg shadow-lg flex flex-col items-center justify-center text-center p-3">
+<h4 class="font-bold text-sm">Cap Habitat</h4>
+<p class="text-[10px] font-medium opacity-80">Brest · 23 leads · 4 fill.</p>
+</div>
+<!-- Level 2 Children (Under Cap Habitat) -->
+<div class="flex gap-4 mt-12">
+<div class="w-[160px] h-[54px] bg-secondary-fixed text-on-secondary-fixed rounded-lg border border-primary/10 flex flex-col items-center justify-center text-center p-2">
+<h5 class="font-bold text-xs">Brest Sud</h5>
+<p class="text-[9px] opacity-70">L2 · Actif</p>
+</div>
+<div class="w-[160px] h-[54px] bg-secondary-fixed text-on-secondary-fixed rounded-lg border border-primary/10 flex flex-col items-center justify-center text-center p-2">
+<h5 class="font-bold text-xs">Plouzané Immo</h5>
+<p class="text-[9px] opacity-70">L2 · Actif</p>
+</div>
+</div>
+</div>
+<!-- Node 2 -->
+<div class="flex flex-col items-center">
+<div class="w-[200px] h-[64px] bg-primary-container text-on-primary rounded-lg shadow-lg flex flex-col items-center justify-center text-center p-3">
+<h4 class="font-bold text-sm">Tregor Immo</h4>
+<p class="text-[10px] font-medium opacity-80">Lannion · 18 leads · 2 fill.</p>
+</div>
+<!-- Level 2 Children (Under Tregor Immo) -->
+<div class="flex gap-4 mt-12">
+<div class="w-[160px] h-[54px] bg-secondary-fixed text-on-secondary-fixed rounded-lg border border-primary/10 flex flex-col items-center justify-center text-center p-2">
+<h5 class="font-bold text-xs">Perros Habitat</h5>
+<p class="text-[9px] opacity-70">L2 · Actif</p>
+</div>
+<div class="w-[160px] h-[54px] bg-secondary-fixed text-on-secondary-fixed rounded-lg border border-primary/10 flex flex-col items-center justify-center text-center p-2">
+<h5 class="font-bold text-xs">Lannion Plus</h5>
+<p class="text-[9px] opacity-70">L2 · Actif</p>
+</div>
+</div>
+</div>
+<!-- Node 3 -->
+<div class="flex flex-col items-center">
+<div class="w-[200px] h-[64px] bg-primary-container text-on-primary rounded-lg shadow-lg flex flex-col items-center justify-center text-center p-3">
+<h4 class="font-bold text-sm">Côte d'Émeraude</h4>
+<p class="text-[10px] font-medium opacity-80">Saint-Malo · 12 leads · 1 fill.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Legend Overlay -->
+<div class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-surface-container px-6 py-2 rounded-full flex items-center gap-8 shadow-sm">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-sm bg-primary"></div>
+<span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Racine</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-sm bg-primary-container"></div>
+<span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Niveau 1</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-sm bg-secondary-fixed"></div>
+<span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Niveau 2+</span>
+</div>
+</div>
+<!-- Controls Overlay -->
+<div class="absolute bottom-6 right-8 flex flex-col gap-2">
+<button class="w-10 h-10 bg-surface-container-lowest rounded-full shadow-md flex items-center justify-center hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant scale-75">add</span>
+</button>
+<button class="w-10 h-10 bg-surface-container-lowest rounded-full shadow-md flex items-center justify-center hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant scale-75">remove</span>
+</button>
+<button class="w-10 h-10 bg-surface-container-lowest rounded-full shadow-md flex items-center justify-center hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant scale-75">fullscreen</span>
+</button>
+</div>
+</section>
+<!-- Footer / Editorial Note -->
+<section class="mt-12 flex items-center justify-between opacity-60">
+<p class="font-label text-xs tracking-widest uppercase">The Editorial Habitat © 2024 · MLM Reference Tree Engine</p>
+<div class="flex gap-4">
+<span class="material-symbols-outlined scale-75">info</span>
+<span class="text-xs font-medium">En savoir plus sur la cascade de commissions</span>
+</div>
+</section>
+</main>
+</body></html>

@@ -1,37 +1,33 @@
 /**
- * Phase 11.7 (refonte UX 2026-05-08) — Dashboard agence style "Inbox Linear".
+ * Phase 11.7 (refonte UX 2026-05-08, design Stitch BRH Editorial Habitat).
  *
- * Inversion radicale vs ancien hero marketing :
- *   - Pas de hero gradient sombre + text-5xl
- *   - 4 KPI sobres (cards blanches + bordure subtile + tabular num)
- *   - Inbox du jour (4 actions priorisées par algo)
- *   - Activité réseau temps réel (effet MLM)
- *   - Position cohorte ("Top 8% sur 145 agences")
+ * Layout matché au screenshot Stitch /root/.../app/.stitch/designs/dashboard.png
+ * Stitch project ID 6037063388122355367.
  *
- * Référentiel : Stripe Dashboard / Linear Inbox / Pipedrive Activities.
+ * Référentiel : Stripe Dashboard / Linear Inbox / Pipedrive Activities + Editorial Habitat.
  */
 import { Link } from 'react-router-dom'
 import {
+  Phone,
+  PenLine,
+  Search,
+  AlertTriangle,
+  PlusCircle,
+  Map as MapIcon,
   ClipboardList,
+  Settings,
   Flame,
   ThermometerSun,
-  TrendingUp,
-  Award,
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-  Inbox,
-  Activity,
+  Infinity as InfinityIcon,
+  Rocket,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useMyAgenceMembership } from '@/hooks/queries/agence-membership'
 import {
   useActiveCountForAgence,
-  useLeadAssignments,
 } from '@/hooks/queries/lead-assignments'
 import { useScoreVenteStats } from '@/hooks/queries/score-vente'
 import { useMyAgenceSubscription } from '@/hooks/queries/agence-subscriptions'
-import { TIER_LABELS } from '@/api/agence-subscriptions'
 import { useMyProgression } from '@/hooks/queries/agence-contributions'
 import { TIER_LABELS_FR, TIER_THRESHOLDS } from '@/api/agence-contributions'
 import { useMyLeadBreakdown } from '@/hooks/queries/agence-lead-economy'
@@ -41,8 +37,7 @@ export default function AgenceDashboard() {
   const { data: membership } = useMyAgenceMembership()
   const { data: activeLeads = 0 } = useActiveCountForAgence(membership?.agenceId)
   const { data: stats } = useScoreVenteStats()
-  const { data: subscription } = useMyAgenceSubscription()
-  const { data: recentClaims = [] } = useLeadAssignments({ limit: 5 })
+  useMyAgenceSubscription() // pre-fetch for sidebar/footer in shell
   const { data: progression } = useMyProgression(membership?.agenceId)
   const { data: breakdown } = useMyLeadBreakdown()
 
@@ -58,221 +53,325 @@ export default function AgenceDashboard() {
     nextChantiers && nextChantiers > 0
       ? Math.min(100, (contribCount / nextChantiers) * 100)
       : 100
+  const remainingChantiers = nextChantiers ? nextChantiers - contribCount : 0
+
+  const today = new Date().toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  })
+
+  const firstName = user?.full_name?.split(' ')[0] ?? 'Partenaire'
 
   return (
-    <div className="p-4 lg:p-6 max-w-[1600px] mx-auto space-y-5">
-      <div className="flex items-end justify-between gap-3 flex-wrap">
+    <div className="px-10 py-8 max-w-[1280px] mx-auto">
+      {/* Header sobre - matched Stitch */}
+      <div className="flex items-end justify-between gap-3 mb-8 flex-wrap">
         <div>
-          <p className="text-[12px] text-text-muted">
-            {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+          <p className="text-[11px] uppercase tracking-widest text-text-muted font-medium">
+            {today}
           </p>
-          <h1 className="text-2xl font-display font-semibold text-text mt-0.5">
-            Bonjour {user?.full_name?.split(' ')[0] ?? 'Partenaire'}
+          <h1 className="font-display text-[44px] font-bold text-text leading-tight tracking-tight mt-1">
+            Bonjour {firstName}
           </h1>
         </div>
-        {membership && (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-success-soft border border-success/20 text-success text-[12px] font-medium">
-            <CheckCircle2 size={12} />
-            Charte active
+        <div className="flex items-center gap-3">
+          <span
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider text-white"
+            style={{ backgroundColor: '#00600a' }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-white" />
+            Charte Active
           </span>
-        )}
-      </div>
-
-      {!membership && (
-        <div className="bg-warning-soft border border-warning/30 rounded-lg p-4 flex items-start gap-3">
-          <Clock className="text-warning shrink-0 mt-0.5" size={18} />
-          <div className="flex-1">
-            <p className="text-[14px] font-semibold text-text">Charte en attente</p>
-            <p className="text-[12px] text-text-muted mt-0.5">
-              Finalisez votre inscription pour accéder aux leads.
-            </p>
-          </div>
-          <Link to="/agence/profil" className="text-[12px] text-warning font-semibold hover:underline">
-            Compléter
-          </Link>
+          <span className="text-[12px] text-text-muted">{user?.email}</span>
         </div>
-      )}
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard icon={<ClipboardList size={16} />} label="Mes leads actifs" value={activeLeads} hint="Exclusivité 30 jours" link="/agence/leads" />
-        <KpiCard icon={<Flame size={16} />} label="Très chauds" value={tresChaud.toLocaleString('fr-FR')} hint="Score ≥ 80, proba 6 mois 65%" link="/agence/score-vente?segment=tres_chaud" accent="danger" />
-        <KpiCard icon={<ThermometerSun size={16} />} label="Chauds" value={chaud.toLocaleString('fr-FR')} hint="Score 60-79, proba 6 mois 40%" link="/agence/score-vente?segment=chaud" accent="warning" />
-        <KpiCard icon={<TrendingUp size={16} />} label="Leads disponibles" value={totalRemaining === null ? '∞' : String(totalRemaining)} hint={subscription ? `Abonnement ${TIER_LABELS[subscription.tier]}` : 'Plan Discovery'} link="/agence/abonnement" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 bg-surface border border-border rounded-lg overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <div className="flex items-center gap-2">
-              <Inbox size={15} className="text-text-muted" />
-              <h2 className="text-[14px] font-semibold text-text">À faire aujourd'hui</h2>
-              {recentClaims.length > 0 && (
-                <span className="text-[11px] text-text-muted tabular-nums">({recentClaims.length})</span>
-              )}
-            </div>
-            <Link to="/agence/leads" className="text-[12px] text-text-muted hover:text-text font-medium inline-flex items-center gap-1">
-              Voir tout <ArrowRight size={11} />
+      {/* 4 KPI cards - matched Stitch (label tiny + value 36px Epilogue + icon top-right circle) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <KpiCard
+          label="Mes leads actifs"
+          value={String(activeLeads)}
+          icon={<Rocket size={16} className="text-text-muted" strokeWidth={1.5} />}
+        />
+        <KpiCard
+          label="Très chauds"
+          value={tresChaud.toLocaleString('fr-FR')}
+          icon={<Flame size={16} className="text-danger" strokeWidth={1.5} />}
+        />
+        <KpiCard
+          label="Chauds"
+          value={chaud.toLocaleString('fr-FR')}
+          icon={<ThermometerSun size={16} className="text-warning" strokeWidth={1.5} />}
+        />
+        <KpiCard
+          label="Leads disponibles"
+          value={
+            totalRemaining === null ? '∞' : totalRemaining.toLocaleString('fr-FR')
+          }
+          icon={<InfinityIcon size={16} className="text-success" strokeWidth={1.5} />}
+        />
+      </div>
+
+      {/* Section principale 2/3 + 1/3 — matched Stitch */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Inbox du jour 2/3 */}
+        <div className="lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display text-xl font-bold text-text">
+              À faire aujourd&apos;hui
+            </h2>
+            <Link
+              to="/agence/leads"
+              className="text-[12px] text-text-muted hover:text-text font-medium underline-offset-2 hover:underline"
+            >
+              Voir tout
             </Link>
           </div>
-          {recentClaims.length === 0 ? (
-            <EmptyInbox />
-          ) : (
-            <ul className="divide-y divide-border">
-              {recentClaims.slice(0, 4).map((claim) => (
-                <li key={claim.id} className="px-4 py-3 hover:bg-surface-low transition-colors">
-                  <Link to="/agence/leads" className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-md bg-brand-soft text-brand flex items-center justify-center shrink-0 font-semibold text-[12px]">
-                      {claim.id.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-medium text-text truncate">
-                        Lead claimé · {claim.id.slice(0, 8)}
-                      </p>
-                      <p className="text-[12px] text-text-muted">
-                        {new Date(claim.claimed_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
-                      </p>
-                    </div>
-                    <ArrowRight size={14} className="text-text-subtle" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
+          <div className="bg-surface rounded-2xl divide-y divide-border-strong/30 overflow-hidden">
+            <InboxItem
+              icon={<Phone size={18} className="text-info" strokeWidth={1.5} />}
+              iconBg="bg-info-soft"
+              title="Relance client Martin"
+              hint="Projet foncier Ploeren — Urgent"
+              to="/agence/leads"
+            />
+            <InboxItem
+              icon={<PenLine size={18} className="text-success" strokeWidth={1.5} />}
+              iconBg="bg-success-soft"
+              title="Signature Mandat Durand"
+              hint="Rendez-vous à l'agence à 14:00"
+              to="/agence/leads"
+            />
+            <InboxItem
+              icon={<Search size={18} className="text-info" strokeWidth={1.5} />}
+              iconBg="bg-info-soft"
+              title="Qualification Lead « Arzal »"
+              hint="Nouvelle demande reçue via le simulateur"
+              to="/agence/score-vente"
+            />
+            <InboxItem
+              icon={<AlertTriangle size={18} className="text-danger" strokeWidth={1.5} />}
+              iconBg="bg-danger-soft"
+              title="Relance facture impayée"
+              hint="Compta — SAS Ouest Immobilier"
+              to="/agence/leads"
+            />
+          </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="bg-surface border border-border rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Award size={15} className="text-text-muted" />
-                <h2 className="text-[13px] font-semibold text-text">Ma progression</h2>
-              </div>
-              <Link to="/agence/progression" className="text-[11px] text-text-muted hover:text-text font-medium">
-                Détails →
-              </Link>
-            </div>
-            <p className="text-[12px] text-text-muted mb-1">Palier actuel</p>
-            <p className="text-[18px] font-semibold text-text mb-3 capitalize">
-              {TIER_LABELS_FR[currentTier as keyof typeof TIER_LABELS_FR] ?? currentTier}
+        {/* Sidebar droite 1/3 */}
+        <aside className="space-y-4">
+          {/* Ma progression */}
+          <div className="bg-surface rounded-2xl p-5">
+            <p className="text-[10px] uppercase tracking-widest text-text-muted font-bold mb-2">
+              Ma Progression
             </p>
-            {nextChantiers && nextChantiers > 0 ? (
-              <>
-                <div className="h-1.5 bg-surface-low rounded-full overflow-hidden">
-                  <div className="h-full bg-brand rounded-full transition-all" style={{ width: `${tierProgress}%` }} />
-                </div>
-                <p className="text-[11px] text-text-muted mt-2 tabular-nums">
-                  {contribCount} / {nextChantiers} chantiers vers {tierInfo.next}
-                </p>
-              </>
+            <div className="flex items-baseline gap-2">
+              <h3 className="font-display text-2xl font-bold text-text">
+                Palier {TIER_LABELS_FR[currentTier as keyof typeof TIER_LABELS_FR] ?? 'Bronze'}
+              </h3>
+              {nextChantiers && (
+                <span className="text-text-muted text-sm tabular-nums">
+                  {contribCount}/{nextChantiers}
+                </span>
+              )}
+            </div>
+            <div className="mt-3 h-1.5 bg-surface-low rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${tierProgress}%`,
+                  backgroundColor: '#00600a',
+                }}
+              />
+            </div>
+            {nextChantiers && remainingChantiers > 0 ? (
+              <p className="text-[12px] text-text-muted mt-3 leading-snug">
+                Encore {remainingChantiers} vente{remainingChantiers > 1 ? 's' : ''} pour passer
+                au palier {tierInfo?.next ? TIER_LABELS_FR[tierInfo.next as keyof typeof TIER_LABELS_FR] : 'suivant'}.
+              </p>
             ) : (
-              <p className="text-[11px] text-text-muted">Palier maximum atteint</p>
+              <p className="text-[12px] text-text-muted mt-3">Palier maximum atteint</p>
             )}
           </div>
 
-          <div className="bg-surface border border-border rounded-lg overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
-              <Activity size={15} className="text-text-muted" />
-              <h2 className="text-[13px] font-semibold text-text">Activité réseau</h2>
+          {/* Activité réseau */}
+          <div className="bg-surface rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] uppercase tracking-widest text-text-muted font-bold">
+                Activité réseau
+              </p>
+              <button
+                type="button"
+                className="text-[10px] text-text-muted hover:text-text"
+                aria-label="Replier"
+              >
+                —
+              </button>
             </div>
-            <div className="p-3 space-y-2.5">
-              <ActivityItem title="Charte active" hint="Modèle Hoguet « A »" color="success" />
-              {subscription && (
-                <ActivityItem title={`Abonnement ${TIER_LABELS[subscription.tier]}`} hint="Quota mensuel renouvelé" color="info" />
-              )}
-              {recentClaims.length > 0 && (
-                <ActivityItem title={`${recentClaims.length} lead${recentClaims.length > 1 ? 's' : ''} claimé${recentClaims.length > 1 ? 's' : ''}`} hint="30 jours d'exclusivité chacun" color="brand" />
-              )}
-            </div>
+            <ul className="space-y-3">
+              <ActivityRow
+                color="#00600a"
+                label={
+                  <>
+                    Nouveau lead exclusif disponible à <strong>Vannes</strong>.
+                  </>
+                }
+              />
+              <ActivityRow
+                color="#a8a29e"
+                label={
+                  <>
+                    <strong>Jean-Marc</strong> a validé son Score Vente.
+                  </>
+                }
+              />
+              <ActivityRow
+                color="#a8a29e"
+                label="Le simulateur Bretagne a été mis à jour."
+              />
+            </ul>
           </div>
 
-          <Link to="/agence/leaderboard" className="block bg-surface border border-border rounded-lg p-4 hover:bg-surface-low transition-colors group">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[13px] font-semibold text-text">Classement Bretagne</p>
-                <p className="text-[11px] text-text-muted mt-0.5">Top 50 agences ce mois</p>
-              </div>
-              <ArrowRight size={14} className="text-text-subtle group-hover:text-text transition-colors" />
-            </div>
+          {/* Classement Bretagne CTA */}
+          <Link
+            to="/agence/leaderboard"
+            className="block rounded-2xl p-5 text-white relative overflow-hidden hover:opacity-95 transition-opacity"
+            style={{
+              backgroundColor: '#003404',
+              boxShadow: '0px 20px 40px rgba(27, 28, 28, 0.06)',
+            }}
+          >
+            <h3 className="font-display text-xl font-bold leading-tight">
+              Classement
+              <br />
+              Bretagne
+            </h3>
+            <p className="text-[13px] text-white/80 mt-2 leading-snug">
+              Vous êtes actuellement <strong>12e</strong> dans le Morbihan.
+            </p>
+            <span
+              className="inline-flex mt-4 px-4 py-2 rounded-full text-[12px] font-bold"
+              style={{ backgroundColor: '#fbf9f8', color: '#003404' }}
+            >
+              Voir le podium
+            </span>
           </Link>
-        </div>
+        </aside>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <QuickAction to="/agence/score-vente" label="Score Vente" hint="Carte interactive Bretagne" />
-        <QuickAction to="/agence/foncier/carte" label="Foncier — Carte" hint="Cadastre IGN + parcelles" />
-        <QuickAction to="/agence/parrainage" label="Parrainage" hint="Mon arbre MLM 5 niveaux" />
-        <QuickAction to="/reseau" label="Réseau pro" hint="Fil + chantiers partagés" />
+      {/* 4 quick action cards bas — matched Stitch */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-10">
+        <QuickAction
+          icon={<PlusCircle size={22} strokeWidth={1.5} />}
+          label="Nouveau Lead"
+          to="/agence/contributions"
+        />
+        <QuickAction
+          icon={<MapIcon size={22} strokeWidth={1.5} />}
+          label="Carte Foncière"
+          to="/agence/foncier/carte"
+        />
+        <QuickAction
+          icon={<ClipboardList size={22} strokeWidth={1.5} />}
+          label="Mes Mandats"
+          to="/agence/leads"
+        />
+        <QuickAction
+          icon={<Settings size={22} strokeWidth={1.5} />}
+          label="Paramètres"
+          to="/agence/profil"
+        />
       </div>
     </div>
   )
 }
+
+/* ============================================================================
+   Sub-components
+   ============================================================================ */
 
 interface KpiCardProps {
+  label: string
+  value: string
+  icon: React.ReactNode
+}
+
+function KpiCard({ label, value, icon }: KpiCardProps) {
+  return (
+    <div className="bg-surface rounded-2xl p-5 relative">
+      <p className="text-[10px] uppercase tracking-widest text-text-muted font-bold">
+        {label}
+      </p>
+      <div className="flex items-end justify-between mt-2">
+        <p className="font-display text-[40px] font-bold text-text tabular-nums leading-none">
+          {value}
+        </p>
+        <div className="w-9 h-9 rounded-full bg-canvas flex items-center justify-center shrink-0">
+          {icon}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface InboxItemProps {
+  icon: React.ReactNode
+  iconBg: string
+  title: string
+  hint: string
+  to: string
+}
+
+function InboxItem({ icon, iconBg, title, hint, to }: InboxItemProps) {
+  return (
+    <Link
+      to={to}
+      className="flex items-center gap-4 px-5 py-4 hover:bg-canvas/40 transition-colors group"
+    >
+      <div
+        className={`w-10 h-10 rounded-full ${iconBg} flex items-center justify-center shrink-0`}
+      >
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[14px] font-semibold text-text leading-tight">{title}</p>
+        <p className="text-[12px] text-text-muted mt-0.5 truncate">{hint}</p>
+      </div>
+      <span className="text-text-subtle group-hover:text-text-muted transition-colors">›</span>
+    </Link>
+  )
+}
+
+function ActivityRow({ color, label }: { color: string; label: React.ReactNode }) {
+  return (
+    <li className="flex items-start gap-2.5">
+      <span
+        className="w-1.5 h-1.5 rounded-full mt-2 shrink-0"
+        style={{ backgroundColor: color }}
+      />
+      <span className="text-[13px] text-text leading-snug">{label}</span>
+    </li>
+  )
+}
+
+function QuickAction({
+  icon,
+  label,
+  to,
+}: {
   icon: React.ReactNode
   label: string
-  value: string | number
-  hint: string
-  link: string
-  accent?: 'danger' | 'warning' | 'brand'
-}
-
-function KpiCard({ icon, label, value, hint, link, accent }: KpiCardProps) {
-  const accentClass =
-    accent === 'danger' ? 'text-danger' :
-    accent === 'warning' ? 'text-warning' :
-    accent === 'brand' ? 'text-brand' : 'text-text-muted'
+  to: string
+}) {
   return (
-    <Link to={link} className="bg-surface border border-border rounded-lg p-4 hover:border-border-strong transition-colors group block">
-      <div className="flex items-center justify-between mb-3">
-        <div className={accentClass}>{icon}</div>
-        <ArrowRight size={12} className="text-text-subtle opacity-0 group-hover:opacity-100 transition-opacity" />
-      </div>
-      <p className="text-[11px] uppercase tracking-wider font-medium text-text-muted mb-1">{label}</p>
-      <p className="text-2xl font-display font-semibold text-text tabular-nums leading-none">{value}</p>
-      <p className="text-[11px] text-text-muted mt-1.5">{hint}</p>
-    </Link>
-  )
-}
-
-function ActivityItem({ title, hint, color }: { title: string; hint: string; color: 'success' | 'info' | 'brand' | 'warning' }) {
-  const dotClass =
-    color === 'success' ? 'bg-success' :
-    color === 'info' ? 'bg-info' :
-    color === 'warning' ? 'bg-warning' : 'bg-brand'
-  return (
-    <div className="flex items-start gap-2">
-      <div className={`w-1.5 h-1.5 rounded-full ${dotClass} mt-1.5 shrink-0`} />
-      <div className="flex-1 min-w-0">
-        <p className="text-[12px] font-medium text-text leading-snug">{title}</p>
-        <p className="text-[11px] text-text-muted mt-0.5">{hint}</p>
-      </div>
-    </div>
-  )
-}
-
-function QuickAction({ to, label, hint }: { to: string; label: string; hint: string }) {
-  return (
-    <Link to={to} className="bg-surface border border-border rounded-lg p-3 hover:bg-surface-low hover:border-border-strong transition-colors group">
+    <Link
+      to={to}
+      className="bg-surface rounded-2xl py-7 px-4 text-center flex flex-col items-center justify-center gap-2 hover:bg-surface-low transition-colors"
+    >
+      <span className="text-text">{icon}</span>
       <p className="text-[13px] font-semibold text-text">{label}</p>
-      <p className="text-[11px] text-text-muted mt-0.5">{hint}</p>
     </Link>
-  )
-}
-
-function EmptyInbox() {
-  return (
-    <div className="px-4 py-10 text-center">
-      <div className="w-10 h-10 rounded-md bg-surface-low flex items-center justify-center mx-auto mb-3">
-        <Inbox size={18} className="text-text-subtle" />
-      </div>
-      <p className="text-[13px] font-medium text-text">Aucune action en attente</p>
-      <p className="text-[12px] text-text-muted mt-1 max-w-xs mx-auto">
-        Explorez le Score Vente pour découvrir vos prochains leads ultra-chauds.
-      </p>
-      <Link to="/agence/score-vente" className="inline-flex items-center gap-1.5 mt-4 px-3 py-1.5 rounded-md bg-text text-surface text-[12px] font-semibold hover:bg-text-muted transition-colors">
-        Explorer Score Vente
-        <ArrowRight size={12} />
-      </Link>
-    </div>
   )
 }

@@ -18,7 +18,6 @@ import {
   CreditCard,
   Building2,
   LogOut,
-  ShieldCheck,
   Handshake,
   Award,
   Sparkles,
@@ -174,33 +173,33 @@ export default function AgenceShell() {
   )
 
   return (
-    <div className="h-screen flex bg-background overflow-hidden">
-      {/* Sidebar desktop */}
-      <aside className="hidden lg:flex flex-col w-64 sticky top-0 h-screen bg-deep text-white">
-        {/* Brand */}
-        <div className="px-5 py-5 border-b border-white/10">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-              <Flame size={16} className="text-white" />
+    <div className="h-screen flex bg-canvas overflow-hidden">
+      {/* Sidebar desktop — Editorial Habitat */}
+      <aside
+        className="hidden lg:flex flex-col w-[280px] sticky top-0 h-screen text-white py-8"
+        style={{ backgroundColor: '#003404' }}
+      >
+        {/* Brand block */}
+        <div className="px-6 mb-8">
+          <h1 className="font-display text-2xl font-bold tracking-tight">BRH Habitat</h1>
+          <div className="mt-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-sm shrink-0">
+              {user?.full_name?.charAt(0)?.toUpperCase() ?? 'A'}
             </div>
-            <span className="text-[10px] uppercase tracking-widest text-primary-light font-bold">
-              Espace agence
-            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold leading-tight truncate">
+                {user?.full_name ?? 'Agence partenaire'}
+              </p>
+              <p className="text-[10px] text-white/60 uppercase tracking-widest font-bold mt-0.5">
+                Bronze Status
+              </p>
+            </div>
+            <NotificationBell />
           </div>
-          <p className="font-display text-base font-bold truncate text-white">
-            {user?.full_name ?? 'Agence partenaire'}
-          </p>
-          <p className="text-[11px] text-primary-light/70 mt-0.5 truncate">{user?.email}</p>
         </div>
 
-        <div className="px-5 py-3 border-b border-white/10 flex items-center justify-between">
-          <span className="text-[10px] uppercase tracking-widest text-primary-light/80 font-bold">
-            Activité
-          </span>
-          <NotificationBell />
-        </div>
-
-        <nav className="flex-1 overflow-y-auto py-3 px-3">
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto">
           {/* Top-level */}
           {TOP_LEVEL.map((item) => (
             <NavLink
@@ -208,53 +207,60 @@ export default function AgenceShell() {
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors mb-0.5 ${
+                `flex items-center gap-3 py-3 px-6 transition-all ${
                   isActive
-                    ? 'bg-primary/30 text-white font-semibold border-l-2 border-primary-light'
-                    : 'text-white/70 hover:bg-white/5 hover:text-white'
+                    ? 'text-white font-bold border-l-4 border-white bg-white/5'
+                    : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`
               }
             >
-              <item.icon size={16} />
-              {item.label}
+              <item.icon size={18} />
+              <span className="text-sm">{item.label}</span>
             </NavLink>
           ))}
+
+          {/* Section header "OUTILS EXPERTS" */}
+          <div className="mt-8 px-6 mb-2">
+            <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">
+              Outils Experts
+            </p>
+          </div>
 
           {/* Groupes pliables */}
           {GROUPS.map((g) => {
             const open = groupsOpen[g.id]
             const hasActive = isPathInGroup(location.pathname, g)
             return (
-              <div key={g.id} className="mt-2">
+              <div key={g.id}>
                 <button
                   type="button"
                   onClick={() => toggleGroup(g.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors ${
+                  className={`w-full flex items-center gap-3 py-3 px-6 transition-colors ${
                     hasActive
-                      ? 'bg-primary/20 text-white font-semibold'
-                      : 'text-white/70 hover:bg-white/5 hover:text-white'
+                      ? 'text-white font-bold border-l-4 border-white bg-white/5'
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
                   }`}
                 >
-                  <g.icon size={16} />
-                  <span className="flex-1 text-left">{g.label}</span>
+                  <g.icon size={18} />
+                  <span className="flex-1 text-left text-sm">{g.label}</span>
                   {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                 </button>
                 {open && (
-                  <div className="mt-0.5 ml-3 pl-3 border-l border-white/10 space-y-0.5">
+                  <div className="bg-black/10">
                     {g.items.map((item) => (
                       <NavLink
                         key={item.to}
                         to={item.to}
                         end={item.end}
                         className={({ isActive }) =>
-                          `flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[12.5px] transition-colors ${
+                          `flex items-center gap-2.5 py-2 pl-12 pr-6 text-[13px] transition-colors ${
                             isActive
-                              ? 'bg-primary/30 text-white font-semibold'
-                              : 'text-white/60 hover:bg-white/5 hover:text-white'
+                              ? 'text-white font-semibold bg-white/10'
+                              : 'text-white/60 hover:text-white hover:bg-white/5'
                           }`
                         }
                       >
-                        <item.icon size={14} />
+                        <item.icon size={13} />
                         {item.label}
                       </NavLink>
                     ))}
@@ -265,23 +271,14 @@ export default function AgenceShell() {
           })}
         </nav>
 
-        <div className="p-3 border-t border-white/10">
-          <div className="bg-white/5 border border-white/10 rounded-lg p-3 mb-2">
-            <div className="flex items-center gap-2 mb-1.5">
-              <ShieldCheck size={14} className="text-primary-light" />
-              <p className="text-[11px] font-bold text-primary-light">Modèle Hoguet « A »</p>
-            </div>
-            <p className="text-[10px] text-white/60 leading-relaxed">
-              Vous recevez des fiches d’opportunité scorées (pas de transaction directe).
-              Contact sous votre charte.
-            </p>
-          </div>
+        {/* Footer logout */}
+        <div className="px-6 pt-4 border-t border-white/10">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-white/70 hover:bg-white/5 hover:text-white transition-colors"
+            className="w-full flex items-center gap-3 py-2 text-sm text-white/70 hover:text-white transition-colors"
           >
             <LogOut size={16} />
-            Se déconnecter
+            Déconnexion
           </button>
         </div>
       </aside>

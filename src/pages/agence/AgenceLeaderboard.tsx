@@ -1,12 +1,12 @@
 /**
- * Phase 11.7 — Leaderboard agences Bretagne (refonte UX MLM 2026-05-08).
+ * Phase 11.7 (Stitch design 2026-05-08) — Leaderboard agences Bretagne.
  *
- * Visible par toutes les agences signataires d'une charte BRH active.
- * 3 fenêtres temporelles (30j / 90j / 12 mois). Mise en évidence "vous".
+ * Layout matché au screenshot Stitch /root/.../app/.stitch/designs/leaderboard.png
+ * (Editorial Habitat — banner ma position vert profond + table top 50 + tier cards bas).
  */
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Trophy, ArrowRight, Crown } from 'lucide-react'
+import { Trophy, Crown, Award } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { agenceLeaderboardApi, type LeaderboardWindow } from '@/api/agence-leaderboard'
 
@@ -16,18 +16,18 @@ const WINDOWS: { v: LeaderboardWindow; l: string }[] = [
   { v: 365, l: '12 mois' },
 ]
 
-const TIER_COLORS: Record<string, string> = {
-  bronze: 'bg-amber-50 text-amber-800 border-amber-200',
-  silver: 'bg-slate-100 text-slate-700 border-slate-300',
-  gold: 'bg-yellow-50 text-yellow-800 border-yellow-300',
-  platinum: 'bg-violet-50 text-violet-800 border-violet-300',
+const TIER_COLORS: Record<string, { bg: string; text: string }> = {
+  bronze: { bg: '#fef3c7', text: '#92400e' },
+  silver: { bg: '#e7e5e4', text: '#44403c' },
+  gold: { bg: '#fef3c7', text: '#a16207' },
+  platinum: { bg: '#ede9fe', text: '#6d28d9' },
 }
 
 const TIER_LABELS: Record<string, string> = {
-  bronze: 'Bronze',
-  silver: 'Argent',
-  gold: 'Or',
-  platinum: 'Platine',
+  bronze: 'BRONZE',
+  silver: 'SILVER',
+  gold: 'GOLD',
+  platinum: 'PLATINUM',
 }
 
 export default function AgenceLeaderboard() {
@@ -39,40 +39,48 @@ export default function AgenceLeaderboard() {
     staleTime: 60_000,
   })
 
-  const myRank = rows.find((r) => r.is_me)?.rank ?? null
+  const myRow = rows.find((r) => r.is_me)
+  const myRank = myRow?.rank ?? null
   const totalAgences = rows.length
 
-  return (
-    <div className="p-4 lg:p-6 max-w-[1600px] mx-auto space-y-5">
-      {/* Header */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="w-10 h-10 rounded-lg bg-deep flex items-center justify-center">
-          <Trophy size={18} className="text-white" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-display font-semibold text-text">
-            Classement Bretagne
-          </h1>
-          <p className="text-[12px] text-text-muted mt-0.5">
-            Top agences par leads claimés sur {WINDOWS.find((w) => w.v === windowDays)?.l}
-          </p>
-        </div>
-      </div>
+  // Top 4 + ma ligne (si pas dans top 4)
+  const top4 = rows.slice(0, 4)
+  const showMeRow = myRow && myRank && myRank > 4
 
-      {/* Filtre période */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-[12px] text-text-muted font-medium">Période :</span>
-        <div className="flex items-center gap-1 bg-surface border border-border rounded-lg p-1">
+  return (
+    <div className="px-10 py-8 max-w-[1200px] mx-auto">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-2">
+        <div
+          className="w-10 h-10 rounded-full flex items-center justify-center"
+          style={{ backgroundColor: '#dcfce7' }}
+        >
+          <Trophy size={20} className="text-success" strokeWidth={1.75} />
+        </div>
+        <h1
+          className="font-display text-[34px] font-bold tracking-[0.02em] text-text uppercase"
+        >
+          Classement Bretagne
+        </h1>
+      </div>
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-8">
+        <p className="text-[14px] text-text-muted ml-13">
+          Top agences par leads claimés sur {WINDOWS.find((w) => w.v === windowDays)?.l}
+        </p>
+        <div className="flex items-center gap-1 bg-surface rounded-full p-1">
           {WINDOWS.map((w) => (
             <button
               key={w.v}
               type="button"
               onClick={() => setWindowDays(w.v)}
-              className={`px-3 py-1 rounded-md text-[12px] font-medium transition-colors ${
+              className={`px-4 py-1.5 rounded-full text-[12px] font-bold transition-colors ${
                 windowDays === w.v
-                  ? 'bg-text text-surface'
-                  : 'text-text-muted hover:text-text hover:bg-surface-low'
+                  ? 'text-text'
+                  : 'text-text-muted hover:text-text'
               }`}
+              style={
+                windowDays === w.v ? { backgroundColor: '#fbf9f8' } : undefined
+              }
             >
               {w.l}
             </button>
@@ -80,143 +88,239 @@ export default function AgenceLeaderboard() {
         </div>
       </div>
 
-      {/* Ma position highlight (si dans le top 50) */}
-      {myRank && (
-        <div className="bg-brand-soft border border-brand/20 rounded-lg p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-md bg-brand text-white flex items-center justify-center font-display font-semibold text-[14px]">
+      {/* Banner #12 highlight */}
+      {myRow && myRank && (
+        <div
+          className="rounded-2xl p-6 mb-8 text-white relative overflow-hidden flex items-center gap-6"
+          style={{ backgroundColor: '#003404' }}
+        >
+          <div
+            className="w-[88px] h-[88px] rounded-full border-2 border-white/20 flex items-center justify-center font-display font-bold text-[28px] shrink-0"
+            style={{ backgroundColor: 'rgba(255,255,255,0.08)' }}
+          >
             #{myRank}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-semibold text-text">
+            <h2 className="font-display text-2xl font-bold leading-tight">
               Vous êtes #{myRank} sur {totalAgences} agences
-            </p>
-            <p className="text-[12px] text-text-muted">
-              Top {Math.round((myRank / totalAgences) * 100)}% de votre cohorte ·{' '}
-              {WINDOWS.find((w) => w.v === windowDays)?.l}
+            </h2>
+            <p className="text-[13px] text-white/70 mt-1">
+              Top {Math.round((myRank / totalAgences) * 100)} % de votre cohorte régionale
             </p>
           </div>
           {myRank > 1 && (
-            <div className="text-right">
-              <p className="text-[11px] text-text-muted">Pour gagner 1 place</p>
-              <p className="text-[12px] font-semibold text-text">
-                +{(rows[myRank - 2]?.leads_claimed ?? 0) - (rows[myRank - 1]?.leads_claimed ?? 0) + 1} lead
+            <div className="text-right shrink-0">
+              <p className="text-[10px] uppercase tracking-widest text-white/60 font-bold mb-1">
+                Prochain objectif
+              </p>
+              <p className="text-[14px] font-semibold leading-tight">
+                Pour gagner 1 place :
+                <br />
+                +{(rows[myRank - 2]?.leads_claimed ?? 0) -
+                  (rows[myRank - 1]?.leads_claimed ?? 0) +
+                  1}{' '}
+                leads
               </p>
             </div>
           )}
+          <Link
+            to="/agence/score-vente"
+            className="inline-flex items-center px-5 py-3 rounded-full text-[12px] font-bold uppercase tracking-wider shrink-0"
+            style={{ backgroundColor: '#fbf9f8', color: '#003404' }}
+          >
+            Claimer des leads
+          </Link>
         </div>
       )}
 
-      {/* Tableau leaderboard */}
-      <div className="bg-surface border border-border rounded-lg overflow-hidden">
+      {/* Tableau top 50 */}
+      <div className="bg-surface rounded-2xl overflow-hidden mb-6">
         <div className="overflow-x-auto">
-          <table className="min-w-full text-[13px]">
-            <thead className="bg-surface-low border-b border-border">
-              <tr className="text-text-muted font-semibold text-left">
-                <th className="px-3 py-2.5 w-12">Rang</th>
-                <th className="px-3 py-2.5">Agence</th>
-                <th className="px-3 py-2.5">Commune</th>
-                <th className="px-3 py-2.5 text-right">Leads (période)</th>
-                <th className="px-3 py-2.5 text-right">Chantiers</th>
-                <th className="px-3 py-2.5">Palier</th>
+          <table className="min-w-full">
+            <thead>
+              <tr className="text-[10px] uppercase tracking-widest text-text-muted font-bold">
+                <th className="px-5 py-4 text-left w-20">Rang</th>
+                <th className="px-5 py-4 text-left">Agence</th>
+                <th className="px-5 py-4 text-left">Commune</th>
+                <th className="px-5 py-4 text-right">Leads</th>
+                <th className="px-5 py-4 text-right">Chantiers</th>
+                <th className="px-5 py-4 text-left w-32">Palier</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border-strong/20">
               {isLoading ? (
-                Array.from({ length: 8 }).map((_, i) => (
+                Array.from({ length: 6 }).map((_, i) => (
                   <tr key={i} className="animate-pulse">
-                    <td colSpan={6} className="px-3 py-3">
-                      <div className="h-3 bg-surface-low rounded w-full" />
+                    <td colSpan={6} className="px-5 py-4">
+                      <div className="h-4 bg-surface-low rounded w-full" />
                     </td>
                   </tr>
                 ))
-              ) : rows.length === 0 ? (
+              ) : top4.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-3 py-12 text-center text-text-muted">
-                    <Trophy size={20} className="mx-auto text-text-subtle mb-2" />
-                    <p className="text-[13px] font-medium text-text mb-1">Pas encore de classement</p>
-                    <p className="text-[12px]">Le classement s'active avec les premiers leads claimés.</p>
+                  <td colSpan={6} className="px-5 py-12 text-center text-text-muted">
+                    <Trophy size={24} className="mx-auto text-text-subtle mb-2" />
+                    <p className="text-sm font-medium text-text">Pas encore de classement</p>
+                    <p className="text-xs">Le classement s’active avec les premiers leads claimés.</p>
                   </td>
                 </tr>
               ) : (
-                rows.map((r) => (
-                  <tr
-                    key={r.agence_id}
-                    className={`transition-colors ${
-                      r.is_me
-                        ? 'bg-brand-soft hover:bg-brand-soft'
-                        : 'hover:bg-surface-low'
-                    }`}
-                  >
-                    <td className="px-3 py-3">
-                      <span
-                        className={`inline-flex items-center justify-center w-7 h-7 rounded-md text-[12px] font-semibold ${
-                          r.rank <= 3
-                            ? 'bg-yellow-100 text-yellow-900 border border-yellow-300'
-                            : r.is_me
-                            ? 'bg-brand text-white'
-                            : 'bg-surface-low text-text-muted'
-                        }`}
-                      >
-                        {r.rank <= 3 ? <Crown size={14} /> : r.rank}
-                      </span>
-                    </td>
-                    <td className="px-3 py-3">
-                      <p className={`text-[13px] ${r.is_me ? 'font-semibold' : 'font-medium'} text-text`}>
-                        {r.raison_sociale}
-                        {r.is_me && (
-                          <span className="ml-2 text-[11px] text-brand font-semibold">
-                            (vous)
-                          </span>
-                        )}
-                      </p>
-                    </td>
-                    <td className="px-3 py-3 text-text-muted">
-                      {r.commune ?? '—'}
-                      {r.departement && ` (${r.departement})`}
-                    </td>
-                    <td className="px-3 py-3 text-right tabular-nums">
-                      <span className="font-semibold text-text">{r.leads_claimed}</span>
-                    </td>
-                    <td className="px-3 py-3 text-right tabular-nums text-text-muted">
-                      {r.contributions_count}
-                    </td>
-                    <td className="px-3 py-3">
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border ${
-                          TIER_COLORS[r.tier] ?? TIER_COLORS.bronze
-                        }`}
-                      >
-                        {TIER_LABELS[r.tier] ?? r.tier}
-                      </span>
-                    </td>
-                  </tr>
-                ))
+                <>
+                  {top4.map((r) => (
+                    <LeaderboardRow key={r.agence_id} row={r} />
+                  ))}
+                  {showMeRow && (
+                    <>
+                      <tr>
+                        <td colSpan={6} className="text-center text-text-subtle py-2 text-[10px] tracking-widest">
+                          ···
+                        </td>
+                      </tr>
+                      <LeaderboardRow row={myRow} />
+                    </>
+                  )}
+                </>
               )}
             </tbody>
           </table>
         </div>
+        {!isLoading && rows.length > 4 && (
+          <div className="px-5 py-3 text-center border-t border-border-strong/20">
+            <button
+              type="button"
+              className="text-[11px] uppercase tracking-widest text-text-muted hover:text-text font-bold"
+            >
+              Voir les 50 premières agences
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Empty state CTA */}
-      {!isLoading && rows.length > 0 && myRank === null && (
-        <div className="bg-surface border border-border rounded-lg p-4 flex items-center justify-between">
-          <div>
-            <p className="text-[14px] font-semibold text-text">
-              Vous n'apparaissez pas dans le top 50
-            </p>
-            <p className="text-[12px] text-text-muted mt-0.5">
-              Claimez votre premier lead pour rejoindre le classement.
-            </p>
-          </div>
-          <Link
-            to="/agence/score-vente"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-text text-surface text-[12px] font-semibold hover:bg-text-muted transition-colors"
-          >
-            Explorer Score Vente
-            <ArrowRight size={12} />
-          </Link>
+      {/* 4 tier cards bas — éducatif */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <TierCard
+          label="Palier actuel"
+          name="BRONZE"
+          color="#92400e"
+          hint="Accès prioritaire à 3 leads/jour"
+          isMine={currentTierMatches('bronze', myRow?.tier)}
+        />
+        <TierCard
+          label="Objectif silver"
+          name="SILVER"
+          color="#44403c"
+          hint="+3 leads reçus en moins"
+          isMine={currentTierMatches('silver', myRow?.tier)}
+        />
+        <TierCard
+          label="Top 10 cohorte"
+          name="GOLD"
+          color="#a16207"
+          hint="Accompagnement marketing BRH"
+          isMine={currentTierMatches('gold', myRow?.tier)}
+        />
+        <TierCard
+          label="Le sommet"
+          name="PLATINUM"
+          color="#6d28d9"
+          hint="Participation au Comité Bretagne"
+          isMine={currentTierMatches('platinum', myRow?.tier)}
+        />
+      </div>
+    </div>
+  )
+}
+
+function currentTierMatches(target: string, current: string | undefined): boolean {
+  return target === current
+}
+
+function LeaderboardRow({ row }: { row: { rank: number; raison_sociale: string; commune: string | null; leads_claimed: number; contributions_count: number; tier: string; is_me: boolean } }) {
+  const tierColors = TIER_COLORS[row.tier] ?? TIER_COLORS.bronze
+  const isTop3 = row.rank <= 3
+  return (
+    <tr
+      className={`text-[14px] transition-colors ${
+        row.is_me ? '' : 'hover:bg-canvas/40'
+      }`}
+      style={row.is_me ? { backgroundColor: '#dcfce7' } : undefined}
+    >
+      <td className="px-5 py-4">
+        <span className={`inline-flex items-center gap-1.5 font-bold ${
+          isTop3 ? 'text-[#a16207]' : row.is_me ? 'text-text' : 'text-text'
+        }`}>
+          {isTop3 && <Crown size={14} fill="currentColor" />}
+          <span className="tabular-nums">
+            {String(row.rank).padStart(2, '0')}
+          </span>
+        </span>
+      </td>
+      <td className="px-5 py-4">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-text">{row.raison_sociale}</span>
+          {row.is_me && (
+            <span
+              className="inline-block px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-white"
+              style={{ backgroundColor: '#003404' }}
+            >
+              Vous
+            </span>
+          )}
         </div>
-      )}
+      </td>
+      <td className="px-5 py-4 text-text-muted">{row.commune ?? '—'}</td>
+      <td className="px-5 py-4 text-right tabular-nums font-bold text-text">
+        {row.leads_claimed}
+      </td>
+      <td className="px-5 py-4 text-right tabular-nums font-bold text-text">
+        {String(row.contributions_count).padStart(2, '0')}
+      </td>
+      <td className="px-5 py-4">
+        <span
+          className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest"
+          style={{ backgroundColor: tierColors.bg, color: tierColors.text }}
+        >
+          {TIER_LABELS[row.tier] ?? row.tier.toUpperCase()}
+        </span>
+      </td>
+    </tr>
+  )
+}
+
+function TierCard({
+  label,
+  name,
+  color,
+  hint,
+  isMine,
+}: {
+  label: string
+  name: string
+  color: string
+  hint: string
+  isMine?: boolean
+}) {
+  return (
+    <div
+      className={`rounded-2xl p-5 ${isMine ? 'ring-2 ring-offset-2' : ''}`}
+      style={{
+        backgroundColor: '#ffffff',
+        ...(isMine && { boxShadow: `0 0 0 2px ${color}` }),
+      }}
+    >
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-[10px] uppercase tracking-widest text-text-muted font-bold">
+          {label}
+        </p>
+        <Award size={14} style={{ color }} strokeWidth={1.75} />
+      </div>
+      <p
+        className="font-display text-2xl font-bold tracking-tight"
+        style={{ color }}
+      >
+        {name}
+      </p>
+      <p className="text-[12px] text-text-muted mt-1 leading-snug">{hint}</p>
     </div>
   )
 }

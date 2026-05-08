@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700&amp;family=Manrope:wght@400;500;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #fbf9f8; /* Champagne Beige from Style Guidance */
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-high": "#dce9ff",
+                        "secondary": "#5e5e5e",
+                        "outline-variant": "#c0c9ba",
+                        "surface-variant": "#d3e4fe",
+                        "outline": "#717a6c",
+                        "on-surface": "#0b1c30",
+                        "on-secondary": "#ffffff",
+                        "primary": "#003404",
+                        "secondary-fixed-dim": "#c7c6c5",
+                        "on-tertiary-container": "#66c25b",
+                        "on-primary-fixed": "#002202",
+                        "on-secondary-fixed-variant": "#464746",
+                        "tertiary": "#003403",
+                        "primary-fixed-dim": "#90d883",
+                        "surface-container": "#e5eeff",
+                        "surface-container-low": "#eff4ff",
+                        "inverse-primary": "#90d883",
+                        "on-background": "#0b1c30",
+                        "primary-fixed": "#abf59d",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-primary-container": "#78be6d",
+                        "secondary-container": "#e1dfde",
+                        "on-tertiary-fixed": "#002201",
+                        "on-secondary-container": "#636262",
+                        "tertiary-fixed-dim": "#7edc71",
+                        "inverse-surface": "#213145",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#cbdbf5",
+                        "surface": "#f8f9ff",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#09530e",
+                        "on-tertiary-fixed-variant": "#005308",
+                        "tertiary-container": "#004d06",
+                        "on-surface-variant": "#41493d",
+                        "primary-container": "#004d08",
+                        "on-secondary-fixed": "#1b1c1b",
+                        "on-error": "#ffffff",
+                        "surface-tint": "#286c25",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#e4e2e1",
+                        "background": "#f8f9ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#9af98a",
+                        "surface-bright": "#f8f9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin": "40px",
+                        "section-padding": "80px",
+                        "unit": "8px",
+                        "gutter": "24px",
+                        "container-max": "1440px"
+                    },
+                    "fontFamily": {
+                        "h2": ["Epilogue"],
+                        "label-caps": ["Manrope"],
+                        "data-mono": ["Manrope"],
+                        "body-md": ["Manrope"],
+                        "h1": ["Epilogue"],
+                        "body-sm": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "h3": ["Epilogue"]
+                    },
+                    "fontSize": {
+                        "h2": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.08em", "fontWeight": "700"}],
+                        "data-mono": ["14px", {"lineHeight": "1.0", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "h1": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "h3": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background">
+<!-- Fixed SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-tertiary-container flex flex-col h-full py-10 z-50">
+<div class="px-6 mb-10">
+<h1 class="font-h2 text-h2 font-bold text-on-tertiary tracking-tight">BRH Habitat</h1>
+<div class="mt-4 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center overflow-hidden border border-white/20">
+<img alt="User profile avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHFV1imGN7EtvGYF67Krs7ChR9gd2vKgyUH6mFHRSoid2Vr16sceaAXrd7XhJH7zLB1wZrb_9O6Js63WjkTiLEPTp0XXeurhr_XrDT_5huvWBFDWFXTIK2b9xoJVoOx6lBcZuosmSOk0pyaclOTpTKlfQwpw3xz2WfkcOvzaKVS-DhKo2vQAn3LEa7pME5YNG4GDcpVCDJEXka71z2TGooZsg96Yg_sJFyIxWFjdgu7oUu60-O874yECcaiQ_M_s-T5LdwHJRzZFg"/>
+</div>
+<div>
+<p class="font-body-sm text-on-tertiary font-bold leading-tight">Philippe's Agency</p>
+<p class="text-[10px] text-on-tertiary/60 uppercase tracking-widest font-bold">Bronze Status</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Active Tab -->
+<a class="flex items-center gap-3 text-on-tertiary font-bold border-l-4 border-surface-container-high bg-white/5 py-3 px-6 transition-all scale-95 active:scale-90" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Accueil</span>
+</a>
+<!-- Inactive Tabs -->
+<a class="flex items-center gap-3 text-on-tertiary/70 py-3 px-6 hover:text-on-tertiary hover:bg-white/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="calculate">calculate</span>
+<span class="font-body-md text-body-md">Simulateur</span>
+</a>
+<a class="flex items-center gap-3 text-on-tertiary/70 py-3 px-6 hover:text-on-tertiary hover:bg-white/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-body-md text-body-md">Score Vente</span>
+</a>
+<a class="flex items-center gap-3 text-on-tertiary/70 py-3 px-6 hover:text-on-tertiary hover:bg-white/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-body-md text-body-md">Mes leads</span>
+</a>
+<a class="flex items-center gap-3 text-on-tertiary/70 py-3 px-6 hover:text-on-tertiary hover:bg-white/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+<span class="font-body-md text-body-md">Classement Bretagne</span>
+</a>
+<!-- Collapsible Separator / Group -->
+<div class="mt-8 px-6 mb-2">
+<p class="text-[10px] font-bold text-on-tertiary/40 uppercase tracking-[0.2em]">Outils Experts</p>
+</div>
+<a class="flex items-center gap-3 text-on-tertiary/70 py-3 px-6 hover:text-on-tertiary hover:bg-white/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="location_on">location_on</span>
+<span class="font-body-md text-body-md">Foncier</span>
+</a>
+<a class="flex items-center gap-3 text-on-tertiary/70 py-3 px-6 hover:text-on-tertiary hover:bg-white/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="business_center">business_center</span>
+<span class="font-body-md text-body-md">Réseau pro</span>
+</a>
+<a class="flex items-center gap-3 text-on-tertiary/70 py-3 px-6 hover:text-on-tertiary hover:bg-white/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="domain">domain</span>
+<span class="font-body-md text-body-md">Mon agence</span>
+</a>
+</nav>
+<div class="mt-auto px-6 border-t border-white/5 pt-6">
+<a class="flex items-center gap-3 text-on-tertiary/70 py-3 hover:text-on-tertiary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-body-md text-body-md">Déconnexion</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] min-h-screen">
+<!-- TopAppBar -->
+<header class="sticky top-0 w-full flex justify-between items-end px-margin py-unit h-32 bg-background z-40">
+<div class="flex flex-col">
+<span class="font-body-md text-secondary uppercase tracking-widest text-[12px] mb-1">vendredi 8 mai</span>
+<div class="flex items-center gap-4">
+<h2 class="font-h1 text-h1 text-primary">Bonjour Philippe</h2>
+<span class="px-4 py-1.5 rounded-full bg-primary-container text-on-primary-container font-label-caps text-[10px] tracking-wider uppercase flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-container animate-pulse"></span>
+                        Charte active
+                    </span>
+</div>
+</div>
+<div class="flex items-center gap-4 pb-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-low text-primary hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="text-right">
+<p class="font-label-caps text-primary text-[11px]">philippe@brh.fr</p>
+</div>
+</div>
+</header>
+<div class="px-margin py-unit space-y-12 pb-20">
+<!-- KPI Section (Grid of 4) -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-secondary/5 hover:border-primary/20 transition-all group">
+<p class="font-label-caps text-secondary text-[12px] uppercase mb-4">Mes leads actifs</p>
+<div class="flex items-end justify-between">
+<span class="font-h1 text-h1 text-primary">3</span>
+<div class="w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="rocket_launch">rocket_launch</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-secondary/5 hover:border-primary/20 transition-all group">
+<p class="font-label-caps text-secondary text-[12px] uppercase mb-4">Très chauds</p>
+<div class="flex items-end justify-between">
+<span class="font-h1 text-h1 text-primary">28</span>
+<div class="w-10 h-10 rounded-full bg-error-container/30 flex items-center justify-center text-error">
+<span class="material-symbols-outlined" data-icon="local_fire_department" style="font-variation-settings: 'FILL' 1;">local_fire_department</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-secondary/5 hover:border-primary/20 transition-all group">
+<p class="font-label-caps text-secondary text-[12px] uppercase mb-4">Chauds</p>
+<div class="flex items-end justify-between">
+<span class="font-h1 text-h1 text-primary">147</span>
+<div class="w-10 h-10 rounded-full bg-secondary-container/50 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" data-icon="thermostat">thermostat</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-secondary/5 hover:border-primary/20 transition-all group">
+<p class="font-label-caps text-secondary text-[12px] uppercase mb-4">Leads disponibles</p>
+<div class="flex items-end justify-between">
+<span class="font-h1 text-h1 text-primary">∞</span>
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed/30 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined" data-icon="all_inclusive">all_inclusive</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Two-Column Layout -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Main Action List (2/3) -->
+<div class="lg:col-span-2 space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="font-h3 text-h3 text-primary">À faire aujourd'hui</h3>
+<a class="font-label-caps text-primary text-[12px] underline underline-offset-4" href="#">Voir tout</a>
+</div>
+<div class="bg-surface-container-lowest rounded-xl border border-secondary/5 divide-y divide-secondary/5">
+<!-- List Item 1 -->
+<div class="flex items-center gap-6 p-6 hover:bg-surface-container-low transition-colors group cursor-pointer">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="call">call</span>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-primary font-bold">Relance client Martin</p>
+<p class="font-body-sm text-secondary">Projet foncier Ploeren - Urgent</p>
+</div>
+<span class="material-symbols-outlined text-secondary/30 group-hover:text-primary transition-colors" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- List Item 2 -->
+<div class="flex items-center gap-6 p-6 hover:bg-surface-container-low transition-colors group cursor-pointer">
+<div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined" data-icon="signature">signature</span>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-primary font-bold">Signature Mandat Durand</p>
+<p class="font-body-sm text-secondary">Rendez-vous à l'agence à 14:00</p>
+</div>
+<span class="material-symbols-outlined text-secondary/30 group-hover:text-primary transition-colors" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- List Item 3 -->
+<div class="flex items-center gap-6 p-6 hover:bg-surface-container-low transition-colors group cursor-pointer">
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined" data-icon="search_check">search_check</span>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-primary font-bold">Qualification Lead "Arzal"</p>
+<p class="font-body-sm text-secondary">Nouvelle demande reçue via le simulateur</p>
+</div>
+<span class="material-symbols-outlined text-secondary/30 group-hover:text-primary transition-colors" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- List Item 4 -->
+<div class="flex items-center gap-6 p-6 hover:bg-surface-container-low transition-colors group cursor-pointer">
+<div class="w-12 h-12 rounded-full bg-error-container/40 flex items-center justify-center text-error">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-primary font-bold">Relance facture impayée</p>
+<p class="font-body-sm text-secondary">Compta - SAS Ouest Immobilier</p>
+</div>
+<span class="material-symbols-outlined text-secondary/30 group-hover:text-primary transition-colors" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Sidebar Stack (1/3) -->
+<div class="space-y-gutter">
+<!-- Progression Card -->
+<div class="bg-surface-container-lowest p-8 rounded-xl border border-secondary/5 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4">
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-4xl opacity-40" data-icon="military_tech">military_tech</span>
+</div>
+<p class="font-label-caps text-secondary text-[11px] mb-2">Ma progression</p>
+<h4 class="font-h3 text-h3 text-primary mb-6">Palier Bronze 7/10</h4>
+<div class="w-full h-2 bg-surface-container rounded-full overflow-hidden mb-4">
+<div class="w-[70%] h-full bg-primary rounded-full"></div>
+</div>
+<p class="font-body-sm text-secondary">Encore 3 ventes pour passer au palier Argent.</p>
+</div>
+<!-- Activité réseau Card -->
+<div class="bg-surface-container-lowest p-8 rounded-xl border border-secondary/5">
+<div class="flex items-center justify-between mb-6">
+<p class="font-label-caps text-secondary text-[11px]">Activité réseau</p>
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="more_horiz">more_horiz</span>
+</div>
+<div class="space-y-6">
+<div class="flex gap-4">
+<div class="w-2 h-2 rounded-full bg-on-tertiary-container mt-1.5 shrink-0"></div>
+<p class="font-body-sm text-primary">Nouveau lead exclusif disponible à <span class="font-bold">Vannes</span>.</p>
+</div>
+<div class="flex gap-4">
+<div class="w-2 h-2 rounded-full bg-primary/20 mt-1.5 shrink-0"></div>
+<p class="font-body-sm text-primary">Jean-Marc a validé son Score Vente.</p>
+</div>
+<div class="flex gap-4">
+<div class="w-2 h-2 rounded-full bg-primary/20 mt-1.5 shrink-0"></div>
+<p class="font-body-sm text-primary">Le simulateur Bretagne a été mis à jour.</p>
+</div>
+</div>
+</div>
+<!-- Ranking Card -->
+<div class="bg-primary p-8 rounded-xl relative group cursor-pointer overflow-hidden">
+<div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+<div class="relative z-10">
+<h4 class="font-h3 text-h3 text-on-primary mb-2">Classement Bretagne</h4>
+<p class="font-body-sm text-on-primary/70 mb-6">Vous êtes actuellement 12ème dans le Morbihan.</p>
+<button class="w-full py-3 bg-white text-primary font-bold rounded-lg text-body-md hover:bg-primary-fixed transition-colors">
+                                Voir le podium
+                            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Quick Actions Bottom -->
+<section class="grid grid-cols-2 lg:grid-cols-4 gap-gutter pt-8">
+<div class="bg-surface-container-low p-6 rounded-xl flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-3xl text-primary mb-3" data-icon="add_circle">add_circle</span>
+<p class="font-body-md font-bold text-primary">Nouveau Lead</p>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-3xl text-primary mb-3" data-icon="map">map</span>
+<p class="font-body-md font-bold text-primary">Carte Foncière</p>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-3xl text-primary mb-3" data-icon="history_edu">history_edu</span>
+<p class="font-body-md font-bold text-primary">Mes Mandats</p>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl flex flex-col items-center justify-center text-center group cursor-pointer hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-3xl text-primary mb-3" data-icon="settings">settings</span>
+<p class="font-body-md font-bold text-primary">Paramètres</p>
+</div>
+</section>
+</div>
+</main>
+<!-- Contextual FAB (Hidden on this Dashboard based on rules, but logic placeholder) -->
+<!-- Not rendering FAB here as per instructions for Dashboard relevance -->
+</body></html>

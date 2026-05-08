@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Classement Bretagne | BRH Habitat</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@700;800;900&amp;family=Manrope:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;700&amp;family=Montserrat:wght@700;800&amp;family=Raleway:wght@400;500;600&amp;family=Bebas+Neue&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-bright": "#fbf9f8",
+                    "tertiary-fixed": "#d0ebba",
+                    "secondary-fixed": "#93fa85",
+                    "background": "#fbf9f8",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-highest": "#e4e2e1",
+                    "surface-tint": "#056e10",
+                    "on-primary": "#ffffff",
+                    "on-surface-variant": "#404a3c",
+                    "primary-container": "#1c7b1d",
+                    "on-secondary-fixed": "#002201",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed-variant": "#374d28",
+                    "on-primary-fixed-variant": "#005308",
+                    "tertiary-container": "#597149",
+                    "on-error-container": "#93000a",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#b4cf9f",
+                    "inverse-surface": "#303030",
+                    "error-container": "#ffdad6",
+                    "surface-dim": "#dcd9d9",
+                    "surface": "#fbf9f8",
+                    "on-tertiary": "#ffffff",
+                    "secondary-container": "#93fa85",
+                    "on-primary-container": "#b2ffa3",
+                    "on-tertiary-fixed": "#0c2003",
+                    "on-secondary-container": "#007510",
+                    "inverse-primary": "#7edc71",
+                    "primary-fixed": "#9af98a",
+                    "on-background": "#1b1c1c",
+                    "inverse-on-surface": "#f3f0f0",
+                    "surface-container-low": "#f5f3f2",
+                    "primary-fixed-dim": "#7edc71",
+                    "surface-container": "#f0eded",
+                    "on-tertiary-container": "#d9f4c2",
+                    "on-secondary-fixed-variant": "#005308",
+                    "on-primary-fixed": "#002201",
+                    "tertiary": "#425833",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed-dim": "#78dd6c",
+                    "primary": "#00600a",
+                    "surface-variant": "#e4e2e1",
+                    "outline-variant": "#bfcab8",
+                    "outline": "#707a6a",
+                    "on-surface": "#1b1c1c",
+                    "surface-container-high": "#eae8e7",
+                    "secondary": "#006e0f"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "1.5rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Montserrat", "sans-serif"],
+                    "display": ["Epilogue", "sans-serif"],
+                    "body": ["Raleway", "sans-serif"],
+                    "label": ["Bebas Neue", "cursive"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-primary-gradient {
+            background: linear-gradient(135deg, #00600a 0%, #1c7b1d 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased overflow-x-hidden">
+<!-- SideNavBar Shell -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-[#1c7b1d] flex flex-col py-8 px-6 z-50">
+<div class="mb-12">
+<h1 class="text-2xl font-bold tracking-tighter text-white font-display">BRH Habitat</h1>
+<p class="text-white/60 text-xs font-medium uppercase tracking-widest mt-1">Architectural Curator</p>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-4 py-3 px-4 text-white/70 hover:text-white hover:bg-white/5 transition-colors duration-300 rounded-md" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-4 text-white/70 hover:text-white hover:bg-white/5 transition-colors duration-300 rounded-md" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm font-medium">Prospects</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-4 text-white/70 hover:text-white hover:bg-white/5 transition-colors duration-300 rounded-md" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-sm font-medium">Commissions</span>
+</a>
+<a class="flex items-center gap-4 py-3 px-4 text-white/70 hover:text-white hover:bg-white/5 transition-colors duration-300 rounded-md" href="#">
+<span class="material-symbols-outlined">diversity_3</span>
+<span class="text-sm font-medium">Equipe</span>
+</a>
+<!-- Active Tab -->
+<a class="flex items-center gap-4 py-3 px-4 bg-white/10 backdrop-blur-md rounded-md text-white font-bold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+<span class="text-sm font-medium">Badges</span>
+</a>
+</nav>
+<div class="pt-8 mt-auto border-t border-white/10">
+<div class="flex items-center gap-3 mb-8">
+<div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center overflow-hidden border border-white/20">
+<img alt="BRH Habitat Logo" class="w-full h-full object-cover" data-alt="A professional architectural firm logo icon displayed as a profile picture. The lighting is crisp and studio-quality, emphasizing a luxury corporate identity. The image uses a clean, high-end aesthetic consistent with a premium architectural curator brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMLzgwuT0MQ-d0oO-RlEl_OTMVT_6gCgEMFxXzOzHhWSfWrezp_ySjEzmqAWT6K5fRk6Qjtf0fjvLjTvnjVTzjaJrvEi27naKfN7BBp2pYug61eLVNSLnGjRQesfzNE2gxZhX_EW8Xt7PYW4fv4FlL5rFTgiX-EMU6qO4BgL-2jDYNIwjJZznsIkvNZ2NErPpLrwMUu0m7f0jCKNr6vhHpY61HXxzX355gIJhkG4luuwZUryYzj58QZYHdp4AYZmnXzRcRreHIJ-s"/>
+</div>
+<div>
+<p class="text-white text-xs font-bold uppercase tracking-tight">CG Group</p>
+<p class="text-white/40 text-[10px]">© 2024</p>
+</div>
+</div>
+<div class="flex items-center gap-2 text-white/40 text-[10px] uppercase tracking-widest">
+<span class="material-symbols-outlined text-sm">copyright</span>
+<span>Cree par CG Group</span>
+</div>
+</div>
+</aside>
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 bg-white/80 backdrop-blur-xl flex justify-between items-center px-12 z-40">
+<div class="flex items-center gap-4">
+<span class="text-xl font-black text-green-900 font-display">Classement Bretagne</span>
+</div>
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2 text-zinc-500">
+<span class="material-symbols-outlined cursor-pointer hover:text-green-700 transition-all">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-green-700 transition-all ml-4">settings</span>
+</div>
+<div class="h-8 w-px bg-surface-container-highest"></div>
+<div class="flex items-center gap-3">
+<span class="text-sm font-semibold text-green-900">BZH Immo</span>
+<div class="w-8 h-8 rounded-full bg-primary-container/20 flex items-center justify-center">
+<img alt="User Profile" class="w-full h-full object-cover rounded-full" data-alt="Close-up portrait of a professional real estate executive in a modern office setting. High-key lighting highlights refined features, suggesting confidence and success. The aesthetic is clean, professional, and tailored to a premium business environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2EGeW9o45V4nxq0M0WchgP24Yl8GpzqI5G3lS2A5Pbjgg_O9Zb_k1DQU7S5p1wlxau8SIQUphDQ1wF0ws9o9ZP09VEEBTBUZ1cbSG0NGnZXuxZvo4gCIkSntghUWh876wFKZvuwRToLkJ8kzvVLOvbEX27Vo58dVUg15McX0o8SI13SN-QkLSB6oPB3wNBklqYxl5aD5zSJ1CgZBzLq5O5ljTQpnmlNrYNxOCCxNQcKo8ifMmbASU8I41AF5R9kGx4Wc07NZTsts"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-24 pb-12 px-12 min-h-screen">
+<!-- Header Section -->
+<section class="mb-12 flex items-end justify-between">
+<div>
+<div class="flex items-center gap-4 mb-2">
+<div class="w-12 h-12 bg-primary-container/10 flex items-center justify-center rounded-xl">
+<span class="material-symbols-outlined text-primary-container text-3xl" style="font-variation-settings: 'FILL' 1;">trophy</span>
+</div>
+<h2 class="text-4xl font-black font-display uppercase tracking-wider text-green-900">Classement Bretagne</h2>
+</div>
+<p class="text-on-surface-variant font-medium text-lg ml-16">Top agences par leads claimés sur 30 jours</p>
+</div>
+<!-- Period Filter -->
+<div class="flex bg-surface-container-low p-1.5 rounded-full">
+<button class="px-6 py-2 rounded-full bg-white text-primary text-sm font-bold shadow-sm transition-all">30 jours</button>
+<button class="px-6 py-2 rounded-full text-on-surface-variant text-sm font-medium hover:text-primary transition-all">90 jours</button>
+<button class="px-6 py-2 rounded-full text-on-surface-variant text-sm font-medium hover:text-primary transition-all">12 mois</button>
+</div>
+</section>
+<!-- Highlight Banner (Architectural Layering) -->
+<section class="relative mb-16 h-48 rounded-xl overflow-hidden shadow-sm group">
+<div class="absolute inset-0 bg-primary-gradient opacity-90"></div>
+<img alt="Architecture Banner" class="absolute inset-0 w-full h-full object-cover -z-10 group-hover:scale-105 transition-transform duration-1000" data-alt="An expansive, high-angle view of a coastal Brittany landscape with modern architectural structures blending into the natural greenery. The lighting is soft morning sun, creating deep shadows and bright highlights. The style is editorial, luxury photography, perfectly complementing the brand's identity as an architectural curator." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYiraAImtlL9-JnNKHhO-Vyrq3S1C5emxJHq1lN5TSzAOEVq2PoTDtPTp-zz8juwtI_z6BiUye71UyZiDYIFs3Ev7nqmhuuxiXAsSL8svKcgg48KEj4d-HeiedST1n1nxibwLHpu0BzZX2VVmmAw8t_9aFOjmmSdloLinl-SJY-UrSBuOt1FzIjSurKQ94xcm-ZSWqLe7IlMiE-fLiq6qoe-Emo_ONJ5AY0U9pe5RWKI73uJo2j7Uhv71uRwTJgieX5t2Yc7C_NzM"/>
+<div class="relative h-full flex items-center justify-between px-12 text-white">
+<div class="flex items-center gap-8">
+<div class="w-24 h-24 rounded-full border-4 border-white/20 flex items-center justify-center bg-white/10 backdrop-blur-md">
+<span class="text-4xl font-black font-label">#12</span>
+</div>
+<div>
+<h3 class="text-2xl font-bold font-headline mb-1">Vous êtes #12 sur 145 agences</h3>
+<p class="text-white/80 font-medium">Top 8% de votre cohorte régionale</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="text-right">
+<p class="text-sm font-label uppercase tracking-widest opacity-70">Prochain objectif</p>
+<p class="text-xl font-bold">Pour gagner 1 place: +3 leads</p>
+</div>
+<button class="bg-white text-primary-container px-8 py-4 rounded-full font-bold font-headline text-sm uppercase tracking-widest hover:scale-105 transition-all active:scale-95 shadow-lg">
+                        Claimer des leads
+                    </button>
+</div>
+</div>
+</section>
+<!-- Leaderboard Table (Asymmetric Bento Grid Feel) -->
+<div class="bg-surface-container-low rounded-xl p-8">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-separate border-spacing-y-4">
+<thead>
+<tr class="text-on-surface-variant font-label text-sm uppercase tracking-[0.2em]">
+<th class="pb-4 pl-6 font-medium">Rang</th>
+<th class="pb-4 font-medium">Agence</th>
+<th class="pb-4 font-medium">Commune</th>
+<th class="pb-4 font-medium text-center">Leads</th>
+<th class="pb-4 font-medium text-center">Chantiers</th>
+<th class="pb-4 font-medium text-right pr-6">Palier</th>
+</tr>
+</thead>
+<tbody>
+<!-- Rank 1 -->
+<tr class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(27,28,28,0.02)] group hover:shadow-md transition-all duration-300">
+<td class="py-5 pl-6 rounded-l-xl">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-yellow-500" style="font-variation-settings: 'FILL' 1;">crown</span>
+<span class="font-label text-2xl text-primary">01</span>
+</div>
+</td>
+<td class="py-5 font-headline font-bold text-green-900 tracking-tight">Cap Habitat</td>
+<td class="py-5 text-on-surface-variant font-medium">Brest</td>
+<td class="py-5 text-center font-label text-xl">47</td>
+<td class="py-5 text-center font-label text-xl">12</td>
+<td class="py-5 pr-6 text-right rounded-r-xl">
+<span class="bg-yellow-400/10 text-yellow-700 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-yellow-400/20">Gold</span>
+</td>
+</tr>
+<!-- Rank 2 -->
+<tr class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(27,28,28,0.02)] hover:shadow-md transition-all duration-300">
+<td class="py-5 pl-6 rounded-l-xl">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400" style="font-variation-settings: 'FILL' 1;">crown</span>
+<span class="font-label text-2xl text-primary">02</span>
+</div>
+</td>
+<td class="py-5 font-headline font-bold text-green-900 tracking-tight">Tregor Immo</td>
+<td class="py-5 text-on-surface-variant font-medium">Lannion</td>
+<td class="py-5 text-center font-label text-xl">41</td>
+<td class="py-5 text-center font-label text-xl">09</td>
+<td class="py-5 pr-6 text-right rounded-r-xl">
+<span class="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-slate-200">Silver</span>
+</td>
+</tr>
+<!-- Rank 3 -->
+<tr class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(27,28,28,0.02)] hover:shadow-md transition-all duration-300">
+<td class="py-5 pl-6 rounded-l-xl">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-amber-600" style="font-variation-settings: 'FILL' 1;">crown</span>
+<span class="font-label text-2xl text-primary">03</span>
+</div>
+</td>
+<td class="py-5 font-headline font-bold text-green-900 tracking-tight">Côte d'Émeraude</td>
+<td class="py-5 text-on-surface-variant font-medium">Saint-Malo</td>
+<td class="py-5 text-center font-label text-xl">38</td>
+<td class="py-5 text-center font-label text-xl">11</td>
+<td class="py-5 pr-6 text-right rounded-r-xl">
+<span class="bg-yellow-400/10 text-yellow-700 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-yellow-400/20">Gold</span>
+</td>
+</tr>
+<!-- Rank 4 -->
+<tr class="bg-white rounded-xl shadow-[0px_4px_20px_rgba(27,28,28,0.02)] hover:shadow-md transition-all duration-300">
+<td class="py-5 pl-6 rounded-l-xl">
+<div class="flex items-center gap-2">
+<span class="w-6 inline-block"></span>
+<span class="font-label text-2xl text-on-surface-variant">04</span>
+</div>
+</td>
+<td class="py-5 font-headline font-bold text-green-900 tracking-tight">BZH Premium</td>
+<td class="py-5 text-on-surface-variant font-medium">Rennes</td>
+<td class="py-5 text-center font-label text-xl">31</td>
+<td class="py-5 text-center font-label text-xl">05</td>
+<td class="py-5 pr-6 text-right rounded-r-xl">
+<span class="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-slate-200">Silver</span>
+</td>
+</tr>
+<!-- Spacer row -->
+<tr><td class="py-2 text-center text-on-surface-variant opacity-20 tracking-widest" colspan="6">• • •</td></tr>
+<!-- Rank 12 (Highlighted) -->
+<tr class="bg-primary-container/10 rounded-xl border-2 border-primary-container/20 group scale-[1.02] shadow-xl z-10 relative">
+<td class="py-6 pl-6 rounded-l-xl">
+<div class="flex items-center gap-2">
+<span class="w-6 inline-block"></span>
+<span class="font-label text-3xl text-primary-container">12</span>
+</div>
+</td>
+<td class="py-6 font-headline font-bold text-green-900 tracking-tight">
+<div class="flex items-center gap-3">
+<span>BZH Immo</span>
+<span class="bg-primary-container text-white text-[9px] px-2 py-0.5 rounded font-black uppercase tracking-tighter">(vous)</span>
+</div>
+</td>
+<td class="py-6 text-on-surface-variant font-bold">Vannes</td>
+<td class="py-6 text-center font-label text-2xl text-primary-container">23</td>
+<td class="py-6 text-center font-label text-2xl text-primary-container">06</td>
+<td class="py-6 pr-6 text-right rounded-r-xl">
+<span class="bg-amber-100 text-amber-800 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-200/50">Bronze</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="mt-8 flex justify-center">
+<button class="flex items-center gap-2 text-primary font-bold font-headline uppercase text-xs tracking-widest group">
+                    Voir les 50 premières agences
+                    <span class="material-symbols-outlined group-hover:translate-y-1 transition-transform">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Tier Info Bento Grid -->
+<section class="mt-16 grid grid-cols-4 gap-6">
+<div class="p-6 bg-white rounded-xl border border-outline-variant/10">
+<div class="flex items-center justify-between mb-4">
+<span class="text-amber-800/60 font-label tracking-widest text-xs uppercase">Palier Actuel</span>
+<span class="material-symbols-outlined text-amber-600">workspace_premium</span>
+</div>
+<h4 class="text-2xl font-black font-display text-amber-800">BRONZE</h4>
+<p class="mt-2 text-sm text-on-surface-variant">Accès prioritaire à 3 leads/jour</p>
+</div>
+<div class="p-6 bg-white rounded-xl border border-outline-variant/10">
+<div class="flex items-center justify-between mb-4">
+<span class="text-slate-600/60 font-label tracking-widest text-xs uppercase">Objectif Silver</span>
+<span class="material-symbols-outlined text-slate-400">workspace_premium</span>
+</div>
+<h4 class="text-2xl font-black font-display text-slate-600">SILVER</h4>
+<p class="mt-2 text-sm text-on-surface-variant">+7 leads requis ce mois-ci</p>
+</div>
+<div class="p-6 bg-white rounded-xl border border-outline-variant/10">
+<div class="flex items-center justify-between mb-4">
+<span class="text-yellow-600/60 font-label tracking-widest text-xs uppercase">Elite Status</span>
+<span class="material-symbols-outlined text-yellow-500">workspace_premium</span>
+</div>
+<h4 class="text-2xl font-black font-display text-yellow-600">GOLD</h4>
+<p class="mt-2 text-sm text-on-surface-variant">Accompagnement marketing BRH</p>
+</div>
+<div class="p-6 bg-white rounded-xl border border-primary-container/20 bg-primary-container/5 relative overflow-hidden">
+<div class="absolute -right-4 -bottom-4 opacity-5 scale-150 rotate-12">
+<span class="material-symbols-outlined text-9xl">auto_awesome</span>
+</div>
+<div class="flex items-center justify-between mb-4">
+<span class="text-violet-600/60 font-label tracking-widest text-xs uppercase">Le Sommet</span>
+<span class="material-symbols-outlined text-violet-600">workspace_premium</span>
+</div>
+<h4 class="text-2xl font-black font-display text-violet-600">PLATINUM</h4>
+<p class="mt-2 text-sm text-on-surface-variant">Participation au Comité Bretagne</p>
+</div>
+</section>
+</main>
+</body></html>

@@ -1,17 +1,20 @@
 @import "tailwindcss";
 
 /**
- * BRH Habitat — Design Tokens v2 (refonte UX 2026-05-08)
+ * BRH Habitat — Design Tokens v3 "Editorial Habitat" (refonte UX 2026-05-08)
  *
- * Inspiré de Stripe, Linear, Vercel, Notion. Palette principale neutre (zinc),
- * brand vert utilisé avec parcimonie pour sidebar + accents identitaires.
- * Palette sémantique séparée pour les states (success/warning/danger/info).
- * Score Vente garde ses couleurs métier (rouge=très chaud / orange=chaud).
+ * Aligné sur le projet Stitch BRH (id 6037063388122355367) "Editorial Habitat".
+ * Polices Epilogue (display) + Manrope (body) + Material Symbols (icons).
+ * Vert profond #003404 sidebar + canvas champagne #fbf9f8.
  */
+
+/* Polices Editorial Habitat (Stitch BRH) */
+@import url('https://fonts.googleapis.com/css2?family=Epilogue:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
 @theme {
-  /* === Brand BRH (sparing use, identité visuelle) === */
-  --color-brand:              #0f7a2a;  /* Vert BRH renforcé (sidebar accent) */
-  --color-brand-deep:         #062a0d;  /* Sidebar background, header dark */
+  /* === Brand BRH (Editorial Habitat) === */
+  --color-brand:              #00600a;  /* primary */
+  --color-brand-deep:         #003404;  /* sidebar bg (tertiary-container) */
   --color-brand-light:        #86efac;  /* Hover state, illumination */
   --color-brand-soft:         #ecfdf5;  /* Background subtil "active" */
   /* Aliases pour rétrocompatibilité (anciens composants) */
@@ -64,12 +67,12 @@
   --color-score-warm:         #d97706;
   --color-score-cold:         #71717a;
 
-  /* === Typographie === */
-  --font-display:             "DM Sans", "Inter", sans-serif;
-  --font-sans:                "Inter", system-ui, -apple-system, sans-serif;
-  --font-heading:             "DM Sans", "Inter", sans-serif;
-  --font-body:                "Inter", sans-serif;
-  --font-accent:              "Inter", sans-serif;
+  /* === Typographie Editorial Habitat === */
+  --font-display:             "Epilogue", "Inter", sans-serif;
+  --font-sans:                "Manrope", "Inter", system-ui, sans-serif;
+  --font-heading:             "Epilogue", "Inter", sans-serif;
+  --font-body:                "Manrope", "Inter", sans-serif;
+  --font-accent:              "Manrope", "Inter", sans-serif;
 
   /* === Rayons (uniformes) === */
   --radius-sm:                6px;
@@ -123,13 +126,19 @@
     background-color: var(--color-canvas);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-feature-settings: "cv11", "ss01";
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     color: var(--color-text);
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+
+  /* Material Symbols utility */
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    font-family: 'Material Symbols Outlined';
   }
 
   /* Focus ring uniforme accessibilité (WCAG AA) */

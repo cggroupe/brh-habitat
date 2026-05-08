@@ -24,7 +24,8 @@ interface D3TreeNode {
   children?: D3TreeNode[]
 }
 
-const LEVEL_COLORS = ['#062a0d', '#0f7a2a', '#16a34a', '#86efac', '#dcfce7', '#f0fdf4']
+// Editorial Habitat color scale — vert profond → vert pâle par niveau MLM
+const LEVEL_COLORS = ['#003404', '#00600a', '#1c7b1d', '#7edc71', '#c5eeb9', '#dcfce7']
 
 function buildTree(flatNodes: MlmTreeNode[]): D3TreeNode | null {
   if (flatNodes.length === 0) return null
@@ -63,10 +64,10 @@ export default function MlmTreeViz({ nodes }: MlmTreeVizProps) {
 
   if (!tree) {
     return (
-      <div className="bg-surface border border-border rounded-lg p-8 text-center">
-        <p className="text-[13px] font-medium text-text">Aucun arbre MLM</p>
-        <p className="text-[12px] text-text-muted mt-1">
-          Vous n'avez pas encore de filleul. Partagez votre lien parrainage pour démarrer.
+      <div className="bg-surface rounded-2xl p-10 text-center">
+        <p className="text-base font-bold text-text">Aucun arbre MLM</p>
+        <p className="text-[13px] text-text-muted mt-1">
+          Vous n&apos;avez pas encore de filleul. Partagez votre lien parrainage pour démarrer.
         </p>
       </div>
     )
@@ -75,8 +76,8 @@ export default function MlmTreeViz({ nodes }: MlmTreeVizProps) {
   return (
     <div
       ref={containerRef}
-      className="bg-surface border border-border rounded-lg overflow-hidden"
-      style={{ height: 480 }}
+      className="bg-surface rounded-2xl overflow-hidden"
+      style={{ height: 480, boxShadow: '0px 20px 40px rgba(27, 28, 28, 0.06)' }}
     >
       <Tree
         data={tree}
