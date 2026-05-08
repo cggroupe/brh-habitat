@@ -80,12 +80,12 @@ export default function AgenceFoncierParcelleDetail() {
       </Link>
 
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center">
           <Hash size={18} className="text-white" />
         </div>
         <div>
-          <h1 className="text-2xl font-display">Détail parcelle</h1>
-          <p className="text-sm text-slate-500 inline-flex items-center gap-1">
+          <h1 className="text-xl font-display text-slate-900">Détail parcelle</h1>
+          <p className="text-[12px] text-slate-500 inline-flex items-center gap-1">
             <code className="bg-slate-100 px-1 rounded text-[11px]">{idu}</code>
             {parcelle?.commune && ` · ${parcelle.commune}`}
           </p>

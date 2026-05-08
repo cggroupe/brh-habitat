@@ -37,22 +37,22 @@ export default function AgenceFoncierFavoris() {
   }, [favoris.data, filterStatus])
 
   return (
-    <div className="p-4 lg:p-6 max-w-5xl mx-auto space-y-4">
+    <div className="p-4 lg:p-6 max-w-[1600px] mx-auto space-y-4">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
-            <Star size={20} className="text-white" fill="currentColor" />
+          <div className="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center">
+            <Star size={18} className="text-white" fill="currentColor" />
           </div>
           <div>
-            <h1 className="text-2xl font-display">Mes parcelles favorites</h1>
-            <p className="text-sm text-slate-500">
+            <h1 className="text-xl font-display text-slate-900">Mes parcelles favorites</h1>
+            <p className="text-[12px] text-slate-500">
               {(favoris.data ?? []).length} parcelle{(favoris.data ?? []).length > 1 ? 's' : ''} suivie{(favoris.data ?? []).length > 1 ? 's' : ''}
             </p>
           </div>
         </div>
         <Link
           to="/agence/foncier/carte"
-          className="text-xs text-emerald-700 hover:text-emerald-800 font-semibold inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 transition"
+          className="text-[12px] text-slate-700 hover:text-slate-900 font-semibold inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-slate-200 hover:border-slate-300 bg-white transition"
         >
           ← Retour à la carte
         </Link>

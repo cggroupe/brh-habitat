@@ -12,6 +12,7 @@
  */
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ClipboardList } from 'lucide-react'
 import { useFoncierProspectsTable } from '@/hooks/queries/foncier-prospects-table'
 import type {
   CouleurMpr,
@@ -136,16 +137,21 @@ export default function AgenceFoncierProspects() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="bg-white rounded-2xl border border-slate-200 p-5">
-        <h1 className="text-xl font-bold text-slate-900 mb-1">Foncier — Prospects</h1>
-        <p className="text-sm text-slate-600">
-          59 306 logements DPE F/G en Bretagne, scorés Phase 11.3b sur 18 critères composites
-          (Filosofi, Enedis, Géorisques, ANAH, Sit@del2, Recensement, LOVAC, TLV, audits ADEME, Mérimée).
-        </p>
+    <div className="p-4 lg:p-6 max-w-[1600px] mx-auto space-y-4">
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center">
+          <ClipboardList size={18} className="text-white" />
+        </div>
+        <div>
+          <h1 className="text-xl font-display text-slate-900">Foncier — Prospects</h1>
+          <p className="text-[12px] text-slate-500">
+            59 306 logements DPE F/G en Bretagne, scorés sur 22 critères composites
+            (Filosofi, Enedis, Géorisques, ANAH, Sit@del2, Recensement, LOVAC, TLV, audits ADEME, BASIAS, SRU, ZNIEFF, ABF, Cat-Nat).
+          </p>
+        </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-3 text-sm">
+      <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3 text-sm">
         {/* Ligne 1 — département + recherche */}
         <div className="flex items-center gap-3 flex-wrap">
           <span className="font-semibold text-slate-700">Département :</span>
@@ -244,7 +250,7 @@ export default function AgenceFoncierProspects() {
       </div>
 
       {/* Tableau */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50">
           <div className="text-sm text-slate-700">
             {isLoading ? (
@@ -360,10 +366,10 @@ export default function AgenceFoncierProspects() {
                     </td>
                     <td className="px-3 py-2">
                       <Link
-                        to={`/agence/foncier/parcelle/${r.iris_code ?? ''}`}
-                        className="text-emerald-700 hover:text-emerald-900 font-semibold text-[11px]"
+                        to={`/agence/score-vente?prospect=${r.id}`}
+                        className="text-slate-700 hover:text-slate-900 font-semibold text-[11px] underline-offset-2 hover:underline"
                       >
-                        Détail
+                        Étudier
                       </Link>
                     </td>
                   </tr>

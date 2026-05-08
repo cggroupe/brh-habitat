@@ -89,15 +89,15 @@ export default function AgenceFoncierSci() {
   const isError = activeQuery ? search.isError : cacheLocal.isError
 
   return (
-    <div className="p-4 lg:p-6 max-w-6xl mx-auto space-y-4">
+    <div className="p-4 lg:p-6 max-w-[1600px] mx-auto space-y-4">
       <div className="flex items-center gap-3 flex-wrap">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center">
-          <Building2 size={20} className="text-white" />
+        <div className="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center">
+          <Building2 size={18} className="text-white" />
         </div>
         <div>
-          <h1 className="text-2xl font-display">SCI & Personnes morales</h1>
-          <p className="text-sm text-slate-500">
-            Recherche enrichie + flag succession (croisement décès INSEE) — 100% sources publiques gratuites
+          <h1 className="text-xl font-display text-slate-900">SCI et personnes morales</h1>
+          <p className="text-[12px] text-slate-500">
+            Recherche enrichie avec flag succession (croisement décès INSEE) — sources publiques
           </p>
         </div>
       </div>
@@ -226,7 +226,7 @@ export default function AgenceFoncierSci() {
             Saisissez un nom (≥ 3 caractères) ou un SIREN précis. Le filtre département est appliqué automatiquement.
             {activeQuery && !search.data?.api_total && (
               <span className="block mt-2 text-amber-700">
-                💡 Astuce : essayez un nom plus précis (ex. « SCI dupont », « immobilier rennes ») plutôt qu'un nom de ville seul.
+                Astuce : essayez un nom plus précis (ex. « SCI dupont », « immobilier rennes ») plutôt qu'un nom de ville seul.
               </span>
             )}
           </p>

@@ -229,22 +229,22 @@ export default function AgenceFoncierCarte() {
   }, [selectedParcelles])
 
   return (
-    <div className="p-4 lg:p-6 max-w-7xl mx-auto space-y-4">
+    <div className="p-4 lg:p-6 max-w-[1600px] mx-auto space-y-4">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center">
-            <MapIcon size={20} className="text-white" />
+          <div className="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center">
+            <MapIcon size={18} className="text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-display">Carte cadastre Foncier Pro</h1>
-            <p className="text-sm text-slate-500">
-              Bretagne · 22 / 29 / 35 / 56 / 44 · Cadastre IGN + parcelles
+            <h1 className="text-xl font-display text-slate-900">Carte cadastre Foncier Pro</h1>
+            <p className="text-[12px] text-slate-500">
+              Bretagne — 22 · 29 · 35 · 56 · Cadastre IGN + parcelles enrichies
             </p>
           </div>
         </div>
         <Link
           to="/agence/foncier/favoris"
-          className="text-xs text-emerald-700 hover:text-emerald-800 font-semibold inline-flex items-center gap-1"
+          className="text-[12px] text-emerald-700 hover:text-emerald-800 font-semibold inline-flex items-center gap-1"
         >
           Mes favoris →
         </Link>
@@ -252,51 +252,57 @@ export default function AgenceFoncierCarte() {
 
       <ParcelleSearchBar onSelectAddress={handleAddressSelect} onSearchByRef={handleSearchByRef} />
 
-      {/* Sprint F + Phase 11.1 — Filtres DPE + Score v2 */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-3 space-y-2 text-xs">
-        <div className="flex items-center gap-3 flex-wrap">
-          <label className="inline-flex items-center gap-1.5 cursor-pointer">
+      {/* Filtres : Pings DPE / Score v2 / Critères commune */}
+      <div className="bg-white rounded-xl border border-slate-200 p-3 space-y-2.5 text-xs">
+        {/* Ligne 1 : toggle pings + ratings DPE */}
+        <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap">
+          <label className="inline-flex items-center gap-1.5 cursor-pointer shrink-0">
             <input
               type="checkbox"
               checked={showDpe}
               onChange={(e) => setShowDpe(e.target.checked)}
+              className="accent-slate-900"
             />
-            <span className="font-semibold text-slate-700">Pings DPE F/G</span>
+            <span className="font-semibold text-slate-700">Pings DPE</span>
           </label>
           {showDpe && (
             <>
-              <span className="text-slate-400">|</span>
-              <span className="text-slate-500">Ratings :</span>
-              {(['A', 'B', 'C', 'D', 'E', 'F', 'G'] as DpeRating[]).map((r) => (
-                <label key={r} className="inline-flex items-center gap-1 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={dpeRatings.includes(r)}
-                    onChange={(e) => {
-                      if (e.target.checked) setDpeRatings([...dpeRatings, r])
-                      else setDpeRatings(dpeRatings.filter((x) => x !== r))
-                    }}
-                  />
-                  <span className="font-bold">{r}</span>
-                </label>
-              ))}
-              {bbox && bbox.zoom < 13 && (
-                <span className="ml-auto text-amber-600 text-[11px] italic">
-                  Zoom ≥13 requis
-                </span>
-              )}
-              {bbox && bbox.zoom >= 13 && (dpeQuery.data ?? []).length > 0 && (
-                <span className="ml-auto text-slate-600 font-semibold">
-                  {(dpeQuery.data ?? []).length} pings
-                </span>
-              )}
+              <span className="text-slate-300 shrink-0">|</span>
+              <span className="text-slate-500 shrink-0">Ratings :</span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {(['A', 'B', 'C', 'D', 'E', 'F', 'G'] as DpeRating[]).map((r) => (
+                  <label key={r} className="inline-flex items-center gap-1 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={dpeRatings.includes(r)}
+                      onChange={(e) => {
+                        if (e.target.checked) setDpeRatings([...dpeRatings, r])
+                        else setDpeRatings(dpeRatings.filter((x) => x !== r))
+                      }}
+                      className="accent-slate-900"
+                    />
+                    <span className="font-bold tabular-nums">{r}</span>
+                  </label>
+                ))}
+              </div>
+              <div className="ml-auto shrink-0">
+                {bbox && bbox.zoom < 13 && (
+                  <span className="text-amber-700 text-[11px] italic">Zoomez à 13 ou +</span>
+                )}
+                {bbox && bbox.zoom >= 13 && (dpeQuery.data ?? []).length > 0 && (
+                  <span className="text-slate-700 font-semibold tabular-nums">
+                    {(dpeQuery.data ?? []).length} pings affichés
+                  </span>
+                )}
+              </div>
             </>
           )}
         </div>
+        {/* Ligne 2 : score v2 + segment */}
         {showDpe && (
-          <div className="flex items-center gap-3 flex-wrap pt-2 border-t border-slate-100">
-            <span className="font-semibold text-slate-700">Score v2 :</span>
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap pt-2 border-t border-slate-100">
+            <span className="font-semibold text-slate-700 shrink-0">Score v2 :</span>
+            <div className="flex items-center gap-2 shrink-0">
               <input
                 type="range"
                 min={0}
@@ -304,60 +310,65 @@ export default function AgenceFoncierCarte() {
                 step={5}
                 value={scoreV2Min}
                 onChange={(e) => setScoreV2Min(Number(e.target.value))}
-                className="w-32"
+                className="w-28 accent-slate-900"
               />
-              <span className="font-bold text-slate-800 tabular-nums w-10">≥ {scoreV2Min}</span>
+              <span className="font-bold text-slate-800 tabular-nums w-12">≥ {scoreV2Min}</span>
             </div>
-            <span className="text-slate-400">|</span>
-            <span className="text-slate-500">Segment :</span>
-            {([
-              { v: '', l: 'Tous', cls: 'border-slate-300 text-slate-700' },
-              { v: 'ultra_chaud', l: 'Ultra-chaud', cls: 'border-red-300 text-red-800 bg-red-50' },
-              { v: 'mpr_bleu_prio', l: 'MPR Bleu prioritaire', cls: 'border-sky-300 text-sky-800 bg-sky-50' },
-              { v: 'standard', l: 'Standard', cls: 'border-amber-300 text-amber-800 bg-amber-50' },
-            ] as const).map((s) => (
-              <button
-                key={s.v}
-                type="button"
-                onClick={() => setSegmentV2(segmentV2 === s.v ? '' : s.v)}
-                className={`px-2.5 py-1 rounded-md font-medium text-[11px] border transition ${
-                  segmentV2 === s.v ? `${s.cls} ring-1 ring-current` : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
-                }`}
-              >
-                {s.l}
-              </button>
-            ))}
+            <span className="text-slate-300 shrink-0">|</span>
+            <span className="text-slate-500 shrink-0">Segment :</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {([
+                { v: '', l: 'Tous', cls: 'border-slate-300 text-slate-700' },
+                { v: 'ultra_chaud', l: 'Ultra-chaud', cls: 'border-red-300 text-red-800 bg-red-50' },
+                { v: 'mpr_bleu_prio', l: 'MPR Bleu prio.', cls: 'border-sky-300 text-sky-800 bg-sky-50' },
+                { v: 'standard', l: 'Standard', cls: 'border-amber-300 text-amber-800 bg-amber-50' },
+              ] as const).map((s) => (
+                <button
+                  key={s.v}
+                  type="button"
+                  onClick={() => setSegmentV2(segmentV2 === s.v ? '' : s.v)}
+                  className={`px-2.5 py-1 rounded-md font-medium text-[11px] border transition ${
+                    segmentV2 === s.v ? `${s.cls} ring-1 ring-current` : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
+                  }`}
+                >
+                  {s.l}
+                </button>
+              ))}
+            </div>
           </div>
         )}
+        {/* Ligne 3 : critères commune */}
         {showDpe && (
-          <div className="flex items-center gap-3 flex-wrap pt-2 border-t border-slate-100">
-            <span className="font-semibold text-slate-700">Critères commune :</span>
-            {([
-              { k: opahOnly, set: setOpahOnly, l: 'OPAH/PIG actif' },
-              { k: rgaFortOnly, set: setRgaFortOnly, l: 'Aléa argile fort' },
-              { k: tlvTendueOnly, set: setTlvTendueOnly, l: 'Zone tendue' },
-              { k: auditsDynaOnly, set: setAuditsDynaOnly, l: 'Commune dynamique (>100 audits)' },
-            ] as const).map((f, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => f.set(!f.k)}
-                className={`px-2.5 py-1 rounded-md font-medium text-[11px] border transition ${
-                  f.k
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 ring-1 ring-emerald-300'
-                    : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
-                }`}
-              >
-                {f.l}
-              </button>
-            ))}
+          <div className="flex items-center gap-x-3 gap-y-1.5 flex-wrap pt-2 border-t border-slate-100">
+            <span className="font-semibold text-slate-700 shrink-0">Commune :</span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {([
+                { k: opahOnly, set: setOpahOnly, l: 'OPAH/PIG actif' },
+                { k: rgaFortOnly, set: setRgaFortOnly, l: 'Aléa argile fort' },
+                { k: tlvTendueOnly, set: setTlvTendueOnly, l: 'Zone tendue' },
+                { k: auditsDynaOnly, set: setAuditsDynaOnly, l: 'Dynamique rénovation' },
+              ] as const).map((f, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => f.set(!f.k)}
+                  className={`px-2.5 py-1 rounded-md font-medium text-[11px] border transition ${
+                    f.k
+                      ? 'bg-emerald-50 border-emerald-300 text-emerald-800 ring-1 ring-emerald-300'
+                      : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
+                  }`}
+                >
+                  {f.l}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Carte */}
-        <div className="lg:col-span-2 rounded-2xl overflow-hidden border border-slate-200 shadow-sm relative" style={{ height: 600 }}>
+        {/* Carte — sticky pour rester visible quand la sidebar scrolle */}
+        <div className="lg:col-span-2 rounded-xl overflow-hidden border border-slate-200 shadow-sm relative h-[calc(100vh-280px)] min-h-[520px] lg:sticky lg:top-4">
           <MapContainer
             center={mapCenter}
             zoom={mapZoom}
@@ -411,11 +422,11 @@ export default function AgenceFoncierCarte() {
                 icon={defaultIcon}
                 ref={(r) => { searchMarkerRef.current = r }}
               >
-                <Popup minWidth={280}>
+                <Popup minWidth={280} maxWidth={360}>
                   <div className="text-xs space-y-2">
                     <div>
-                      <p className="font-semibold text-emerald-700">📍 Adresse recherchée</p>
-                      <p className="text-slate-600">{searchMarker.label}</p>
+                      <p className="font-semibold text-emerald-700">Adresse recherchée</p>
+                      <p className="text-slate-600 break-words">{searchMarker.label}</p>
                     </div>
                     {fetchParcelle.isPending && (
                       <p className="text-slate-500 italic inline-flex items-center gap-1">
@@ -429,9 +440,9 @@ export default function AgenceFoncierCarte() {
                         </div>
                         <Link
                           to={`/agence/foncier/parcelle/${selectedParcelles[0].idu}`}
-                          className="block w-full text-center px-3 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-700 text-white text-[11px] font-bold"
+                          className="block w-full text-center px-3 py-2 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-[11px] font-semibold transition"
                         >
-                          📋 Fiche complète →
+                          Fiche complète →
                         </Link>
                       </>
                     )}
@@ -468,8 +479,8 @@ export default function AgenceFoncierCarte() {
           )}
 
           {bbox && bbox.zoom < 17 && (
-            <div className="absolute bottom-3 left-3 right-3 bg-white/95 rounded-lg shadow-md px-3 py-2 text-xs text-slate-600 z-[1000] pointer-events-none">
-              💡 Zoomez (≥ 17) pour cliquer sur une parcelle. Pings DPE visibles dès zoom ≥13. <strong>Zoom max : 21</strong>.
+            <div className="absolute bottom-3 left-3 right-3 bg-white/95 border border-slate-200 rounded-lg shadow-sm px-3 py-2 text-[11px] text-slate-600 z-[1000] pointer-events-none">
+              Zoomez à 17 ou plus pour cliquer sur une parcelle. Pings DPE visibles dès zoom 13. Zoom max&nbsp;: 21.
             </div>
           )}
         </div>
@@ -485,7 +496,10 @@ export default function AgenceFoncierCarte() {
 
           {fetchParcelle.isError && (
             <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-xs text-red-700">
-              Erreur : {String(fetchParcelle.error)}
+              <p className="font-semibold mb-0.5">Impossible de récupérer la parcelle</p>
+              <p className="text-red-600">
+                {fetchParcelle.error instanceof Error ? fetchParcelle.error.message : 'Erreur inattendue'}
+              </p>
             </div>
           )}
 
@@ -512,20 +526,16 @@ export default function AgenceFoncierCarte() {
             <SatelliteAnalysisCard parcelleIdu={selectedParcelles[0].idu} compact />
           )}
 
-          {/* Sprint F — Lien vers détail complet (proéminent en haut) */}
+          {/* Sprint F — Lien vers détail complet */}
           {selectedParcelles[0]?.idu && (
             <Link
               to={`/agence/foncier/parcelle/${selectedParcelles[0].idu}`}
-              className="block text-center px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white text-sm font-bold shadow-lg shadow-emerald-500/30 transition transform hover:scale-105"
+              className="block text-center px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-[13px] font-semibold transition"
             >
-              📋 Voir la fiche complète (DVF · PLU IA · Vision toiture · sociodémo)
+              Voir la fiche complète (DVF, PLU, vision toiture, sociodémo)
             </Link>
           )}
         </div>
-      </div>
-
-      <div className="rounded-xl bg-emerald-50/40 border border-emerald-200/60 p-3 text-xs text-emerald-900">
-        <strong>Phase 19 livrée 6/6 sprints</strong> · Cadastre · SCI · DVF/sociodémo · PLU IA · Vision toiture · BODACC · permis · DPE markers colorés.
       </div>
     </div>
   )
