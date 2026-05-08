@@ -33,7 +33,6 @@ import {
   Target,
   ShoppingBag,
   ClipboardCheck,
-  Globe,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -71,7 +70,7 @@ function isGroup(e: NavEntry): e is NavGroup {
 
 const NAV: NavEntry[] = [
   { to: '/pro', label: 'Accueil', icon: LayoutDashboard },
-  { to: '/reseau', label: 'Réseau pro BRH', icon: Globe },
+  // Phase 11.7: lien /reseau retiré pour les pros — réservé aux agences en V1.
   {
     id: 'prospection',
     label: 'Prospection',

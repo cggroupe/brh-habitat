@@ -1,11 +1,16 @@
 /**
- * Phase 16.0.6 — Shell portail agence immobilière.
- * Refonte design 2026-05-06 : alignement palette BRH verte (primary).
- * Sidebar deep green (--color-deep #094114) cohérente avec l'identité
- * BRH "rénovation habitat / nature". Le rouge/orange reste réservé au
- * Score Vente (signaux thermiques métier).
+ * Phase 11.7 — Shell unique portail agence (refonte UX 2026-05-08).
+ *
+ * Sidebar à 3 niveaux :
+ *   1. Top-level (Accueil, Simulateur, Score Vente)
+ *   2. Groupes pliables (Foncier, Réseau pro, Mon agence)
+ *   3. Sous-entrées au sein des groupes
+ *
+ * Le réseau pro est désormais intégré dans CE shell (cohérence UX) :
+ * routes /reseau/* utilisent AgenceShell + sidebar agence reste accessible.
  */
-import { NavLink, Outlet } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
   ClipboardList,
@@ -22,55 +27,157 @@ import {
   Users,
   QrCode,
   MessageCircle,
-  Globe,
   Map as MapIcon,
   Star,
   AlertTriangle,
+  Briefcase,
+  Globe,
+  ChevronDown,
+  ChevronRight,
+  Home,
+  type LucideIcon,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
 import PortalMobileNav from '@/components/shared/PortalMobileNav'
 import { supabase } from '@/lib/supabase'
 
-const AGENCE_NAV = [
+interface NavLeaf {
+  to: string
+  label: string
+  icon: LucideIcon
+  end?: boolean
+}
+
+interface NavGroup {
+  id: 'foncier' | 'reseau' | 'mon-agence'
+  label: string
+  icon: LucideIcon
+  matchPaths: string[]
+  items: NavLeaf[]
+}
+
+const TOP_LEVEL: NavLeaf[] = [
   { to: '/agence', label: 'Accueil', icon: LayoutDashboard, end: true },
-  { to: '/reseau', label: 'Réseau pro BRH', icon: Globe },
   { to: '/agence/simulateur', label: 'Simulateur énergétique', icon: Sparkles },
   { to: '/agence/score-vente', label: 'Score Vente', icon: Flame },
-  // Phase 19 Sprint A-B — Foncier Pro (carte + favoris + SCI enrichi)
-  { to: '/agence/foncier/carte', label: 'Foncier — Carte', icon: MapIcon },
-  { to: '/agence/foncier/prospects', label: 'Foncier — Prospects', icon: ClipboardList },
-  { to: '/agence/foncier/favoris', label: 'Foncier — Favoris', icon: Star },
-  { to: '/agence/foncier/sci', label: 'Foncier — SCI', icon: Building2 },
-  { to: '/agence/foncier/tertiaire', label: 'Foncier — Tertiaire', icon: AlertTriangle },
   { to: '/agence/leads', label: 'Mes leads', icon: ClipboardList },
-  { to: '/agence/contributions', label: 'Apporter prospect', icon: Handshake },
-  { to: '/agence/reseaux-sociaux', label: 'Réseaux sociaux', icon: Share2 },
-  { to: '/agence/parrainage', label: 'Mon réseau', icon: Network },
-  { to: '/agence/equipe', label: 'Mon équipe', icon: Users },
-  { to: '/agence/qr-code', label: 'QR Code', icon: QrCode },
-  { to: '/agence/messages', label: 'Messages', icon: MessageCircle },
-  { to: '/agence/progression', label: 'Ma progression', icon: Award },
-  { to: '/agence/abonnement', label: 'Abonnement', icon: CreditCard },
-  { to: '/agence/profil', label: 'Mon agence', icon: Building2 },
 ]
+
+const GROUPS: NavGroup[] = [
+  {
+    id: 'foncier',
+    label: 'Foncier',
+    icon: MapIcon,
+    matchPaths: ['/agence/foncier'],
+    items: [
+      { to: '/agence/foncier/carte', label: 'Carte cadastre', icon: MapIcon },
+      { to: '/agence/foncier/prospects', label: 'Prospects DPE', icon: ClipboardList },
+      { to: '/agence/foncier/favoris', label: 'Favoris', icon: Star },
+      { to: '/agence/foncier/sci', label: 'SCI et personnes morales', icon: Building2 },
+      { to: '/agence/foncier/tertiaire', label: 'Tertiaire et permis', icon: AlertTriangle },
+    ],
+  },
+  {
+    id: 'reseau',
+    label: 'Réseau pro',
+    icon: Globe,
+    matchPaths: ['/reseau'],
+    items: [
+      { to: '/reseau', label: 'Fil d’actualité', icon: Home, end: true },
+      { to: '/reseau/connexions', label: 'Mes connexions', icon: Users },
+      { to: '/reseau/chantiers', label: 'Chantiers partagés', icon: Briefcase },
+      { to: '/reseau/messages', label: 'Messages', icon: MessageCircle },
+      { to: '/reseau/decouvrir', label: 'Découvrir', icon: MapIcon },
+    ],
+  },
+  {
+    id: 'mon-agence',
+    label: 'Mon agence',
+    icon: Building2,
+    matchPaths: [
+      '/agence/profil',
+      '/agence/equipe',
+      '/agence/abonnement',
+      '/agence/progression',
+      '/agence/qr-code',
+      '/agence/parrainage',
+      '/agence/contributions',
+      '/agence/reseaux-sociaux',
+      '/agence/messages',
+    ],
+    items: [
+      { to: '/agence/profil', label: 'Profil agence', icon: Building2 },
+      { to: '/agence/equipe', label: 'Équipe', icon: Users },
+      { to: '/agence/messages', label: 'Messagerie BRH', icon: MessageCircle },
+      { to: '/agence/contributions', label: 'Apporter prospect', icon: Handshake },
+      { to: '/agence/parrainage', label: 'Parrainage agences', icon: Network },
+      { to: '/agence/reseaux-sociaux', label: 'Publications réseaux', icon: Share2 },
+      { to: '/agence/qr-code', label: 'QR Code vitrine', icon: QrCode },
+      { to: '/agence/progression', label: 'Progression', icon: Award },
+      { to: '/agence/abonnement', label: 'Abonnement', icon: CreditCard },
+    ],
+  },
+]
+
+function isPathInGroup(pathname: string, group: NavGroup): boolean {
+  return group.matchPaths.some((p) => pathname === p || pathname.startsWith(p + '/'))
+}
 
 export default function AgenceShell() {
   const { user } = useAuth()
+  const location = useLocation()
+
+  // Auto-ouvre le groupe correspondant à la route active.
+  const initialOpen = useMemo(() => {
+    const open: Record<NavGroup['id'], boolean> = {
+      foncier: false,
+      reseau: false,
+      'mon-agence': false,
+    }
+    for (const g of GROUPS) if (isPathInGroup(location.pathname, g)) open[g.id] = true
+    return open
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const [groupsOpen, setGroupsOpen] = useState(initialOpen)
+
+  // Quand l'utilisateur change de route, on ouvre automatiquement le groupe actif.
+  useEffect(() => {
+    setGroupsOpen((prev) => {
+      const next = { ...prev }
+      for (const g of GROUPS) {
+        if (isPathInGroup(location.pathname, g)) next[g.id] = true
+      }
+      return next
+    })
+  }, [location.pathname])
+
+  function toggleGroup(id: NavGroup['id']) {
+    setGroupsOpen((prev) => ({ ...prev, [id]: !prev[id] }))
+  }
 
   async function handleLogout() {
     await supabase.auth.signOut()
     window.location.href = '/'
   }
 
+  // Pour la nav mobile : on garde une liste plate des entrées les plus utilisées.
+  const mobileNav = useMemo(
+    () => [
+      ...TOP_LEVEL,
+      ...GROUPS.flatMap((g) => g.items),
+    ].map((i) => ({ to: i.to, label: i.label, icon: i.icon })),
+    [],
+  )
+
   return (
     <div className="h-screen flex bg-background overflow-hidden">
-      {/* Sidebar desktop — deep green BRH */}
+      {/* Sidebar desktop */}
       <aside className="hidden lg:flex flex-col w-64 sticky top-0 h-screen bg-deep text-white">
-        {/* Brand block */}
-        <div className="px-5 py-6 border-b border-white/10">
+        {/* Brand */}
+        <div className="px-5 py-5 border-b border-white/10">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-primary-green flex items-center justify-center shadow-lg shadow-primary/30">
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
               <Flame size={16} className="text-white" />
             </div>
             <span className="text-[10px] uppercase tracking-widest text-primary-light font-bold">
@@ -83,7 +190,6 @@ export default function AgenceShell() {
           <p className="text-[11px] text-primary-light/70 mt-0.5 truncate">{user?.email}</p>
         </div>
 
-        {/* Bell visible direct dans le header */}
         <div className="px-5 py-3 border-b border-white/10 flex items-center justify-between">
           <span className="text-[10px] uppercase tracking-widest text-primary-light/80 font-bold">
             Activité
@@ -91,44 +197,85 @@ export default function AgenceShell() {
           <NotificationBell />
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 overflow-y-auto py-3 px-3">
-          {AGENCE_NAV.map((item) => (
+          {/* Top-level */}
+          {TOP_LEVEL.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors mb-0.5 ${
+                `flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors mb-0.5 ${
                   isActive
                     ? 'bg-primary/30 text-white font-semibold border-l-2 border-primary-light'
                     : 'text-white/70 hover:bg-white/5 hover:text-white'
                 }`
               }
             >
-              <item.icon size={17} />
+              <item.icon size={16} />
               {item.label}
             </NavLink>
           ))}
+
+          {/* Groupes pliables */}
+          {GROUPS.map((g) => {
+            const open = groupsOpen[g.id]
+            const hasActive = isPathInGroup(location.pathname, g)
+            return (
+              <div key={g.id} className="mt-2">
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(g.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors ${
+                    hasActive
+                      ? 'bg-primary/20 text-white font-semibold'
+                      : 'text-white/70 hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <g.icon size={16} />
+                  <span className="flex-1 text-left">{g.label}</span>
+                  {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                </button>
+                {open && (
+                  <div className="mt-0.5 ml-3 pl-3 border-l border-white/10 space-y-0.5">
+                    {g.items.map((item) => (
+                      <NavLink
+                        key={item.to}
+                        to={item.to}
+                        end={item.end}
+                        className={({ isActive }) =>
+                          `flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[12.5px] transition-colors ${
+                            isActive
+                              ? 'bg-primary/30 text-white font-semibold'
+                              : 'text-white/60 hover:bg-white/5 hover:text-white'
+                          }`
+                        }
+                      >
+                        <item.icon size={14} />
+                        {item.label}
+                      </NavLink>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </nav>
 
-        {/* Footer : badge Hoguet + logout */}
         <div className="p-3 border-t border-white/10">
           <div className="bg-white/5 border border-white/10 rounded-lg p-3 mb-2">
             <div className="flex items-center gap-2 mb-1.5">
               <ShieldCheck size={14} className="text-primary-light" />
-              <p className="text-[11px] font-bold text-primary-light">
-                Modèle Hoguet « A »
-              </p>
+              <p className="text-[11px] font-bold text-primary-light">Modèle Hoguet « A »</p>
             </div>
             <p className="text-[10px] text-white/60 leading-relaxed">
-              Vous recevez des fiches d'opportunité scorées (pas de transaction
-              directe). Contact sous votre charte.
+              Vous recevez des fiches d’opportunité scorées (pas de transaction directe).
+              Contact sous votre charte.
             </p>
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:bg-white/5 hover:text-white transition-colors"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-white/70 hover:bg-white/5 hover:text-white transition-colors"
           >
             <LogOut size={16} />
             Se déconnecter
@@ -140,7 +287,7 @@ export default function AgenceShell() {
         {/* Header mobile */}
         <header className="lg:hidden bg-white border-b border-neutral-light px-4 py-3 flex items-center justify-between sticky top-0 z-30 shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-primary to-primary-green flex items-center justify-center">
+            <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
               <Flame size={14} className="text-white" />
             </div>
             <p className="font-display text-base font-bold text-text-primary">Espace agence</p>
@@ -152,11 +299,7 @@ export default function AgenceShell() {
           <Outlet />
         </main>
 
-        <PortalMobileNav
-          portalLabel="Espace agence"
-          rootPath="/agence"
-          navItems={AGENCE_NAV.map((i) => ({ to: i.to, label: i.label, icon: i.icon }))}
-        />
+        <PortalMobileNav portalLabel="Espace agence" rootPath="/agence" navItems={mobileNav} />
       </div>
     </div>
   )

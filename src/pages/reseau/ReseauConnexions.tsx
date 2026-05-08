@@ -30,13 +30,13 @@ export default function ReseauConnexions() {
   const send = useSendConnectionRequest()
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
+    <div className="max-w-3xl mx-auto p-4 lg:p-6">
       <div className="flex items-center gap-3 mb-2">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-sky-600 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center">
           <Users size={20} className="text-white" />
         </div>
         <div>
-          <h1 className="text-2xl font-display">Mes connexions</h1>
+          <h1 className="text-xl font-display text-slate-900">Mes connexions</h1>
           <p className="text-sm text-slate-500">Demandes reçues, mon réseau, suggestions</p>
         </div>
       </div>

@@ -16,7 +16,6 @@ import ArtisanShell from '@/components/layout/ArtisanShell'
 import AgenceGuard from '@/components/auth/AgenceGuard'
 import AgenceShell from '@/components/layout/AgenceShell'
 import ReseauGuard from '@/components/auth/ReseauGuard'
-import ReseauShell from '@/components/layout/ReseauShell'
 import { FeatureRoute } from '@/components/shared/FeatureGate'
 import { PermissionRoute } from '@/components/auth/PermissionRoute'
 
@@ -273,9 +272,14 @@ export default function App() {
               </Route>
             </Route>
 
-            {/* Phase 18.4 — Portail réseau social pro `/reseau` (transverse 4 personae) */}
+            {/* Phase 11.7 (2026-05-08) — Réseau pro intégré dans AgenceShell.
+                ReseauGuard reste pour permettre l'accès multi-personae,
+                MAIS le shell est désormais celui de l'utilisateur courant
+                (agence en l'occurrence pour la V1 BRH) afin de conserver
+                la sidebar agence accessible côté gauche.
+                /reseau/profil/:slug reste public-friendly (vitrine) — utilise PublicShell. */}
             <Route element={<ReseauGuard />}>
-              <Route element={<ReseauShell />}>
+              <Route element={<AgenceShell />}>
                 <Route path="/reseau" element={<ReseauFeed />} />
                 <Route path="/reseau/decouvrir" element={<ReseauDecouvrir />} />
                 <Route path="/reseau/chantiers" element={<ReseauChantiers />} />

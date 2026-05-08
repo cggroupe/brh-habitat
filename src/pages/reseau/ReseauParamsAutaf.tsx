@@ -61,13 +61,13 @@ export default function ReseauParamsAutaf() {
   const isConfigured = link.data?.is_active
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 lg:py-10 space-y-5">
+    <div className="max-w-2xl mx-auto p-4 lg:p-6 space-y-5">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-sky-600 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center">
           <Link2 size={20} className="text-white" />
         </div>
         <div>
-          <h1 className="text-2xl font-display">Bridge AUTAF</h1>
+          <h1 className="text-xl font-display text-slate-900">Bridge AUTAF</h1>
           <p className="text-sm text-slate-500">Connecter mon compte AUTAF (autaf.fr)</p>
         </div>
       </div>

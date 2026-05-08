@@ -75,7 +75,7 @@ export default function ReseauChantierDetail() {
 
   if (chantier.isLoading) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-10">
+      <div className="max-w-3xl mx-auto p-4 lg:p-6">
         <p className="text-sm text-slate-400 text-center">Chargement…</p>
       </div>
     )
@@ -83,7 +83,7 @@ export default function ReseauChantierDetail() {
 
   if (!chantier.data) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-10">
+      <div className="max-w-3xl mx-auto p-4 lg:p-6">
         <div className="rounded-2xl border border-red-200 bg-red-50 p-5 flex items-center gap-3 text-red-700">
           <AlertCircle size={18} />
           <p className="text-sm">Cette offre n'existe plus ou n'est pas accessible.</p>
@@ -107,7 +107,7 @@ export default function ReseauChantierDetail() {
       : null
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 lg:py-10 space-y-5">
+    <div className="max-w-3xl mx-auto p-4 lg:p-6 space-y-5">
       <Link
         to="/reseau/chantiers"
         className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700"
@@ -119,7 +119,7 @@ export default function ReseauChantierDetail() {
       <div className="bg-white rounded-2xl border border-slate-200 p-5">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-sky-600 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center shrink-0">
               <Briefcase size={20} className="text-white" />
             </div>
             <span className="text-[10px] uppercase tracking-wider font-bold text-cyan-700">
