@@ -26,6 +26,9 @@ import {
   useMyReferred,
 } from '@/hooks/queries/agence-referrals'
 import ReferralTreeView from '@/components/agence/ReferralTreeView'
+import MlmTreeViz from '@/components/agence/MlmTreeViz'
+import { useQuery } from '@tanstack/react-query'
+import { agenceLeaderboardApi } from '@/api/agence-leaderboard'
 
 const COMMISSION_PER_REF_CENTS = 10000 // 100 € HT
 
@@ -242,7 +245,12 @@ export default function AgenceParrainage() {
         </button>
       </div>
 
-      {view === 'tree' ? <ReferralTreeView /> : null}
+      {view === 'tree' ? (
+        <div className="space-y-4">
+          <MlmTreeWithFallback />
+          <ReferralTreeView />
+        </div>
+      ) : null}
 
       {/* Liste agences parrainées (vue cash) */}
       {view === 'cash' && <section>
@@ -361,4 +369,22 @@ export default function AgenceParrainage() {
       </section>}
     </div>
   )
+}
+
+function MlmTreeWithFallback() {
+  const { data: nodes = [], isLoading } = useQuery({
+    queryKey: ['agence-mlm-tree'] as const,
+    queryFn: () => agenceLeaderboardApi.mlmTree(),
+    staleTime: 60_000,
+  })
+
+  if (isLoading) {
+    return (
+      <div className="bg-surface border border-border rounded-lg p-8 text-center text-[13px] text-text-muted">
+        Chargement de l'arbre…
+      </div>
+    )
+  }
+
+  return <MlmTreeViz nodes={nodes} />
 }

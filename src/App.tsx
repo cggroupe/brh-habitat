@@ -142,6 +142,8 @@ const AgenceFoncierCarte = lazy(() => import('@/pages/agence/foncier/AgenceFonci
 const AgenceFoncierFavoris = lazy(() => import('@/pages/agence/foncier/AgenceFoncierFavoris'))
 // Phase 11.4 — Tableau prospects DPE F/G filtrable
 const AgenceFoncierProspects = lazy(() => import('@/pages/agence/foncier/AgenceFoncierProspects'))
+// Phase 11.7 — Leaderboard Bretagne (refonte UX MLM)
+const AgenceLeaderboard = lazy(() => import('@/pages/agence/AgenceLeaderboard'))
 // Phase 19 Sprint B — SCI enrichi
 const AgenceFoncierSci = lazy(() => import('@/pages/agence/foncier/AgenceFoncierSci'))
 // Phase 19 Sprint E — Tertiaire (BODACC + permis)
@@ -298,6 +300,7 @@ export default function App() {
               <Route element={<AgenceShell />}>
                 <Route path="/agence" element={<AgenceDashboard />} />
                 <Route path="/agence/leads" element={<AgenceLeads />} />
+                <Route path="/agence/leaderboard" element={<AgenceLeaderboard />} />
                 <Route path="/agence/score-vente" element={<AgenceScoreVente />} />
                 <Route path="/agence/simulateur" element={<AgenceSimulateur />} />
                 <Route path="/agence/contributions" element={<AgenceContributions />} />

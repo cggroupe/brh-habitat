@@ -37,9 +37,11 @@ import {
   Home,
   type LucideIcon,
 } from 'lucide-react'
+import { Trophy, Search } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
 import PortalMobileNav from '@/components/shared/PortalMobileNav'
+import CommandPalette from '@/components/shared/CommandPalette'
 import { supabase } from '@/lib/supabase'
 
 interface NavLeaf {
@@ -62,6 +64,7 @@ const TOP_LEVEL: NavLeaf[] = [
   { to: '/agence/simulateur', label: 'Simulateur énergétique', icon: Sparkles },
   { to: '/agence/score-vente', label: 'Score Vente', icon: Flame },
   { to: '/agence/leads', label: 'Mes leads', icon: ClipboardList },
+  { to: '/agence/leaderboard', label: 'Classement Bretagne', icon: Trophy },
 ]
 
 const GROUPS: NavGroup[] = [
@@ -301,6 +304,22 @@ export default function AgenceShell() {
 
         <PortalMobileNav portalLabel="Espace agence" rootPath="/agence" navItems={mobileNav} />
       </div>
+      <CommandPalette />
+      {/* Hint Cmd+K (desktop, bottom-right corner) */}
+      <button
+        type="button"
+        onClick={() => {
+          const e = new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true })
+          document.dispatchEvent(e)
+        }}
+        className="hidden lg:flex fixed bottom-4 right-4 items-center gap-2 px-3 py-2 rounded-md bg-surface border border-border shadow-sm text-[12px] text-text-muted hover:text-text hover:border-border-strong transition-colors z-40"
+      >
+        <Search size={13} />
+        Rechercher
+        <kbd className="text-[10px] border border-border rounded px-1 py-0.5 font-mono ml-1">
+          ⌘K
+        </kbd>
+      </button>
     </div>
   )
 }

@@ -1,72 +1,173 @@
 @import "tailwindcss";
 
+/**
+ * BRH Habitat — Design Tokens v2 (refonte UX 2026-05-08)
+ *
+ * Inspiré de Stripe, Linear, Vercel, Notion. Palette principale neutre (zinc),
+ * brand vert utilisé avec parcimonie pour sidebar + accents identitaires.
+ * Palette sémantique séparée pour les states (success/warning/danger/info).
+ * Score Vente garde ses couleurs métier (rouge=très chaud / orange=chaud).
+ */
 @theme {
-  /* === Couleurs principales BRH === */
-  --color-primary: #1c7b1d;
-  --color-primary-dark: #094114;
-  --color-primary-light: #81c784;
-  --color-primary-green: #359932;
+  /* === Brand BRH (sparing use, identité visuelle) === */
+  --color-brand:              #0f7a2a;  /* Vert BRH renforcé (sidebar accent) */
+  --color-brand-deep:         #062a0d;  /* Sidebar background, header dark */
+  --color-brand-light:        #86efac;  /* Hover state, illumination */
+  --color-brand-soft:         #ecfdf5;  /* Background subtil "active" */
+  /* Aliases pour rétrocompatibilité (anciens composants) */
+  --color-primary:            #0f7a2a;
+  --color-primary-dark:       #062a0d;
+  --color-primary-light:      #86efac;
+  --color-primary-green:      #0f7a2a;
+  --color-secondary:          #16a34a;
+  --color-accent:             #86efac;
+  --color-deep:               #062a0d;
 
-  /* === Couleurs secondaires === */
-  --color-secondary: #39af1b;
-  --color-accent: #9fb98b;
-  --color-deep: #094114;
+  /* === Neutres (90 % de l'UI) === */
+  --color-canvas:             #fafaf9;  /* Page background */
+  --color-surface:            #ffffff;  /* Cards, panels */
+  --color-surface-low:        #f5f5f4;  /* Hover row, zebra subtle */
+  --color-surface-muted:      #e7e5e4;  /* Border subtle */
+  /* Aliases ancien code */
+  --color-background:         #fafaf9;
 
-  /* === Surfaces & backgrounds (premium) === */
-  --color-background: #f5f3f2;
-  --color-surface: #ffffff;
-  --color-surface-low: #f0eded;
+  --color-text:               #1c1917;  /* zinc-900 */
+  --color-text-muted:         #57534e;  /* zinc-600 */
+  --color-text-subtle:        #a8a29e;  /* zinc-400 */
+  /* Aliases */
+  --color-text-primary:       #1c1917;
+  --color-text-secondary:     #57534e;
+  --color-text-light:         #a8a29e;
 
-  /* === Texte === */
-  --color-text-primary: #1b1c1c;
-  --color-text-secondary: #404a3c;
-  --color-text-light: #707a6a;
+  --color-border:             #e7e5e4;
+  --color-border-strong:      #d6d3d1;
+  --color-neutral-light:      #e7e5e4;
+  --color-neutral-dark:       #44403c;
+  --color-gray-light:         #e7e5e4;
+  --color-gray-dark:          #44403c;
+  --color-neutral-gray:       #e7e5e4;
+  --color-footer-dark:        #292524;
 
-  /* === Neutres === */
-  --color-neutral-light: #e8e8e8;
-  --color-neutral-dark: #3d3d3d;
-  --color-gray-light: #e8e8e8;
-  --color-gray-dark: #3d3d3d;
-  --color-neutral-gray: #e8e8e8;
-  --color-footer-dark: #3d3d3d;
+  /* === Sémantique (1 couleur = 1 sens) === */
+  --color-success:            #16a34a;
+  --color-success-soft:       #dcfce7;
+  --color-warning:            #d97706;
+  --color-warning-soft:       #fef3c7;
+  --color-danger:             #dc2626;
+  --color-danger-soft:        #fee2e2;
+  --color-info:               #2563eb;
+  --color-info-soft:          #dbeafe;
 
-  /* === Couleurs semantiques === */
-  --color-danger: #ef4444;
-  --color-warning: #f59e0b;
-  --color-success: #10b981;
-  --color-info: #3b82f6;
+  /* === Score Vente (sémantique métier — exception légitime) === */
+  --color-score-ultra:        #dc2626;
+  --color-score-hot:          #ea580c;
+  --color-score-warm:         #d97706;
+  --color-score-cold:         #71717a;
 
   /* === Typographie === */
-  --font-display: "DM Sans", sans-serif;
-  --font-sans: "Inter", sans-serif;
-  --font-accent: "Bebas Neue", sans-serif;
-  --font-heading: "DM Sans", sans-serif;
-  --font-body: "Inter", sans-serif;
+  --font-display:             "DM Sans", "Inter", sans-serif;
+  --font-sans:                "Inter", system-ui, -apple-system, sans-serif;
+  --font-heading:             "DM Sans", "Inter", sans-serif;
+  --font-body:                "Inter", sans-serif;
+  --font-accent:              "Inter", sans-serif;
+
+  /* === Rayons (uniformes) === */
+  --radius-sm:                6px;
+  --radius:                   8px;
+  --radius-md:                10px;
+  --radius-lg:                12px;
+  --radius-xl:                16px;
+
+  /* === Animations (subtiles) === */
+  --duration-fast:            120ms;
+  --duration:                 180ms;
+  --duration-slow:            240ms;
 }
 
 /* Keyframes custom */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseSubtle {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.6; }
 }
 
 @layer utilities {
   .animate-fadeIn {
-    animation: fadeIn 0.25s ease-out both;
+    animation: fadeIn 180ms ease-out both;
+  }
+  .animate-fade-in {
+    animation: fadeIn 180ms ease-out both;
+  }
+  .animate-slide-up {
+    animation: slideUp 240ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+  .animate-pulse-subtle {
+    animation: pulseSubtle 2s ease-in-out infinite;
   }
 }
 
-/* Base styles INSIDE @layer base so utilities can override them */
+/* Base styles - corps principal */
 @layer base {
   body {
-    font-family: "Inter", sans-serif;
-    color: var(--color-text-primary);
-    background-color: var(--color-background);
+    font-family: var(--font-body);
+    color: var(--color-text);
+    background-color: var(--color-canvas);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "cv11", "ss01";
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: "DM Sans", sans-serif;
+    font-family: var(--font-heading);
+    color: var(--color-text);
+    letter-spacing: -0.01em;
+  }
+
+  /* Focus ring uniforme accessibilité (WCAG AA) */
+  *:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Scrollbar discrète style Linear */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-subtle);
+  }
+
+  /* Selection */
+  ::selection {
+    background: var(--color-brand-soft);
+    color: var(--color-text);
+  }
+
+  button:focus { outline: none; }
+}
+
+/* Reduced motion respect (a11y) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

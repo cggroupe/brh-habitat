@@ -2,6 +2,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import * as Sentry from '@sentry/react'
+import { Toaster } from 'sonner'
 import './index.css'
 import App from './App'
 import { TenantProvider } from '@/config/TenantContext'
@@ -68,6 +69,18 @@ createRoot(document.getElementById('root')!).render(
     <SentryErrorBoundary fallback={({ error }) => <FallbackUI error={error as Error} />}>
       <TenantProvider>
         <App />
+        <Toaster
+          richColors
+          closeButton
+          position="top-right"
+          toastOptions={{
+            classNames: {
+              toast: 'rounded-lg border border-border shadow-sm',
+              title: 'font-semibold text-[14px]',
+              description: 'text-[13px] text-text-muted',
+            },
+          }}
+        />
       </TenantProvider>
     </SentryErrorBoundary>
   </StrictMode>,
