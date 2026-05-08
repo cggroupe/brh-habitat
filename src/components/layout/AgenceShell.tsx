@@ -39,6 +39,7 @@ const AGENCE_NAV = [
   { to: '/agence/score-vente', label: 'Score Vente', icon: Flame },
   // Phase 19 Sprint A-B — Foncier Pro (carte + favoris + SCI enrichi)
   { to: '/agence/foncier/carte', label: 'Foncier — Carte', icon: MapIcon },
+  { to: '/agence/foncier/prospects', label: 'Foncier — Prospects', icon: ClipboardList },
   { to: '/agence/foncier/favoris', label: 'Foncier — Favoris', icon: Star },
   { to: '/agence/foncier/sci', label: 'Foncier — SCI', icon: Building2 },
   { to: '/agence/foncier/tertiaire', label: 'Foncier — Tertiaire', icon: AlertTriangle },

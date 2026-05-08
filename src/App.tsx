@@ -141,6 +141,8 @@ const AgenceProfil = lazy(() => import('@/pages/agence/AgenceProfil'))
 // Phase 19 Sprint A — Foncier Pro
 const AgenceFoncierCarte = lazy(() => import('@/pages/agence/foncier/AgenceFoncierCarte'))
 const AgenceFoncierFavoris = lazy(() => import('@/pages/agence/foncier/AgenceFoncierFavoris'))
+// Phase 11.4 — Tableau prospects DPE F/G filtrable
+const AgenceFoncierProspects = lazy(() => import('@/pages/agence/foncier/AgenceFoncierProspects'))
 // Phase 19 Sprint B — SCI enrichi
 const AgenceFoncierSci = lazy(() => import('@/pages/agence/foncier/AgenceFoncierSci'))
 // Phase 19 Sprint E — Tertiaire (BODACC + permis)
@@ -306,6 +308,7 @@ export default function App() {
                 <Route path="/agence/profil" element={<AgenceProfil />} />
                 {/* Phase 19 Sprint A — Foncier Pro */}
                 <Route path="/agence/foncier/carte" element={<AgenceFoncierCarte />} />
+                <Route path="/agence/foncier/prospects" element={<AgenceFoncierProspects />} />
                 <Route path="/agence/foncier/favoris" element={<AgenceFoncierFavoris />} />
                 <Route path="/agence/foncier/sci" element={<AgenceFoncierSci />} />
                 <Route path="/agence/foncier/tertiaire" element={<AgenceFoncierTertiaire />} />

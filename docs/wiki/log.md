@@ -5,6 +5,54 @@
 
 ---
 
+## 2026-05-08 (6e session) — Phase 11.4 : Page Foncier Prospects + Population + Cat-Nat
+
+- **Contexte** : Philippe « top continue ». Construire la vue tableau filtrable + ingérer dynamique démographique + risques naturels.
+
+### Page `/agence/foncier/prospects` — Tableau filtrable
+- Fichiers : `src/api/foncier-prospects-table.ts` + `src/hooks/queries/foncier-prospects-table.ts` + `src/pages/agence/foncier/AgenceFoncierProspects.tsx`
+- 3 lignes de filtres (sobres, sans emojis) :
+  1. Département (boutons radio) + recherche full-text adresse/commune
+  2. Slider score_v2 (0-100) + boutons segment
+  3. Couleur MPR (select) + 4 toggles commune (OPAH / RGA fort / Zone tendue / Audits dynamiques)
+- Tableau 13 colonnes : Score / Segment / Adresse / Commune / DPE / Surface / Année / Conso m² / MPR / OPAH / Risques / DVF / Détail
+- Pagination 50/page, max 200/page (RPC `brh_foncier_prospects_table` retourne aussi le `total_count`)
+- Export CSV (BOM UTF-8 + séparateur `;` pour Excel FR)
+- Sidebar `AgenceShell` enrichie d'une entrée "Foncier — Prospects" entre Carte et Favoris
+- Route `/agence/foncier/prospects` ajoutée dans `App.tsx`
+
+### Sources Tier 3 ingérées
+- **Population évolution Bretagne** (Région Bretagne WFS — `rb:rp_struct_pop_evolution_geom`) : 1303 features → **1 202/1 202 communes BZH** avec `population_2008/2016/2022` + `evolution_pop_16_22`. Total **3 422 845 habitants 2022**. **806 communes en croissance > 5%** (2016→2022) = marché immo dynamique. **386 communes en déclin > 5%** = potentiel vacance.
+- **Cat-Nat Géorisques** (API GASPAR brgm batch 1203 calls) : **7 809 arrêtés Cat-Nat BZH** dont **874 communes ≥ 5 arrêtés** et **736 communes ≥ 3 inondations**. Top : Pléchâtel (35176) 20 arrêtés / 18 inondations, Renac (35236) 19, Dinan (22050) 18, Morlaix (29151) 18, Quéménéven (29233) 18. 5 colonnes ajoutées : `catnat_total`, `catnat_inondation`, `catnat_tempete`, `catnat_secheresse`, `catnat_last_date`.
+
+### Fichiers modifiés
+- `src/api/foncier-prospects-table.ts` (NEW)
+- `src/hooks/queries/foncier-prospects-table.ts` (NEW)
+- `src/pages/agence/foncier/AgenceFoncierProspects.tsx` (NEW, 280 lignes)
+- `src/components/layout/AgenceShell.tsx` — entrée sidebar
+- `src/App.tsx` — lazy import + route
+- `supabase/migrations/20260706510000_brh_phase_11_4_prospects_table.sql` — colonnes pop/catnat + RPC table
+- `docs/wiki/log.md` (cette entrée)
+
+### Tables DB modifiées
+- `brh_ext_commune` : +9 colonnes (`population_2008/2016/2022`, `evolution_pop_16_22`, `catnat_total/inondation/tempete/secheresse/last_date`)
+- RPC `brh_foncier_prospects_table` créée (SECURITY INVOKER, `SET search_path = ''`)
+
+### Risque : Low
+- ALTER TABLE idempotent
+- RPC SECURITY INVOKER (RLS appelant)
+- UI : nouvelle page isolée, pas d'impact existant
+
+### Tests
+- TypeScript build exit 0 sur les 5 fichiers
+- ESLint exit 0
+- RPC testée : `(NULL, 70, 'standard', FALSE, FALSE, FALSE, FALSE, NULL, NULL, 5, 0)` retourne 5 prospects + total_count=107
+
+### Status
+✅ DONE — Phase 11.4 livrée. Reste Phase 11.5 = recalcul score_v2 avec règles `population_growth (+5)` et `catnat_lourd (-3)` + LiDAR HD + BDNB CSTB + ANIL aides.
+
+---
+
 ## 2026-05-08 (5e session) — Phase 11.3b : DPE tertiaire + Mérimée + Natura 2000 + RNB + RPC filtres + score 18 règles
 
 - **Contexte** : Philippe « go ». Continuer l'ingestion : sources géométriques + bâti + monuments historiques + filtres carte avancés.

@@ -58,6 +58,9 @@
 | **RNB Référentiel National Bâtiments** | **2 974 619 bâtiments constructed BZH** / 1 202 communes (top Brest 34 153) | ✅ Phase 11.3b |
 | **score_v2 distribution Phase 11.3b** | **34 ultra_chaud · 2 267 mpr_bleu_prio · 33 021 standard · 23 984 cold** | ✅ Phase 11.3b (18 règles, 59.6% qualifiés, ABF -5) |
 | **RPC `brh_foncier_prospects_filtered`** | filtres OPAH+RGA+TLV+audits côté serveur | ✅ Phase 11.3b |
+| **Population Bretagne 2008-2022** | **3 422 845 hab BZH** / 1202 communes (806 croissance >5%, 386 déclin >5%) | ✅ Phase 11.4 |
+| **Cat-Nat Géorisques 1976+** | **7 809 arrêtés BZH** / 1201 communes (874 ≥5 arrêtés, 736 ≥3 inondations) | ✅ Phase 11.4 |
+| **Page `/agence/foncier/prospects`** | Tableau filtrable 13 colonnes + pagination 50/page + export CSV | ✅ Phase 11.4 |
 
 ---
 
