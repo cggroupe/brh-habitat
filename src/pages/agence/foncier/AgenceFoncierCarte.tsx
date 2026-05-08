@@ -302,17 +302,17 @@ export default function AgenceFoncierCarte() {
             <span className="text-slate-400">|</span>
             <span className="text-slate-500">Segment :</span>
             {([
-              { v: '', l: 'Tous', cls: 'bg-slate-100 text-slate-700' },
-              { v: 'ultra_chaud', l: '🔥 Ultra-chaud', cls: 'bg-red-100 text-red-700' },
-              { v: 'mpr_bleu_prio', l: '💙 MPR Bleu prio', cls: 'bg-blue-100 text-blue-700' },
-              { v: 'standard', l: 'Standard', cls: 'bg-amber-100 text-amber-700' },
+              { v: '', l: 'Tous', cls: 'border-slate-300 text-slate-700' },
+              { v: 'ultra_chaud', l: 'Ultra-chaud', cls: 'border-red-300 text-red-800 bg-red-50' },
+              { v: 'mpr_bleu_prio', l: 'MPR Bleu prioritaire', cls: 'border-sky-300 text-sky-800 bg-sky-50' },
+              { v: 'standard', l: 'Standard', cls: 'border-amber-300 text-amber-800 bg-amber-50' },
             ] as const).map((s) => (
               <button
                 key={s.v}
                 type="button"
                 onClick={() => setSegmentV2(segmentV2 === s.v ? '' : s.v)}
-                className={`px-2.5 py-1 rounded-full font-semibold text-[11px] transition ${
-                  segmentV2 === s.v ? `${s.cls} ring-2 ring-offset-1 ring-current` : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                className={`px-2.5 py-1 rounded-md font-medium text-[11px] border transition ${
+                  segmentV2 === s.v ? `${s.cls} ring-1 ring-current` : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
                 }`}
               >
                 {s.l}

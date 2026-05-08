@@ -5,6 +5,67 @@
 
 ---
 
+## 2026-05-08 (4e session) — Phase 11.3 partielle : LOVAC + TLV + audits ADEME + cadastres solaires + ménage UI
+
+- **Contexte** : Philippe : « continue, continue. Évite les icônes/emojis, c'est pro. »
+- Nettoyage UI Foncier : retrait emojis flame/cœur/etoile sur badges segment (DpeMarker + AgenceFoncierCarte). Remplacés par badges sobres avec border + bg pastel + label texte uniquement.
+
+### Sources Tier 2/3 ingérées
+- **LOVAC commune** (Cerema 2024) : **1 026/1 202 communes BZH** avec parc privé total + vacant + vacant >2 ans. Médiane vacance 9.91%. **425 communes BZH avec vacance > 10%** = signal opportunité. 5 nouvelles colonnes `lovac_*` sur brh_ext_commune.
+- **TLV / zone tendue** (décret 22/12/2025) : **1 202/1 202 communes BZH**. Distribution : 1046 non tendue, 140 zone touristique tendue, 16 zone tendue stricte. **156 communes BZH "tendues" au sens TLV** = bonus marché immo dynamique.
+- **Audits énergétiques ADEME 2023+** (175 675 audits BZH, 1 195 communes via aggregations API ADEME) : **175 611 audits ingérés** comme `audits_ademe_count` par commune. Médiane 146 audits/commune. Top 3 103. Signal fort de dynamisme rénovation locale.
+- **Cadastres solaires EPCI** : NEW table `brh_ext_outils_communaux` avec 8 cadastres solaires officiels EPCI BZH (Brest, Rennes, Lorient, Quimper, Saint-Malo, Vannes, Dinan, Saint-Brieuc) → utilisable comme lien sortant dans l'audit énergétique BRH.
+
+### Sources reportées
+- ANIL aides locales détaillées : scraping web complexe, reporté Phase 11.4
+- ZNIEFF/Natura 2000 national : WFS Géoplateforme inaccessible BBOX Bretagne, à investiguer Phase 11.4 (lazy par parcelle pour V1)
+- DPE Rennes Métropole enrichi : 234 504 DPE déjà couverts via ADEME national (les 14 492 F/G du 35 sont en DB)
+- ZAER énergies renouvelables : shapefile uniquement, parsing reporté Phase 11.4
+
+### Score_v2 17 règles (3 nouvelles)
+- **r15 zone_tendue (+8)** — `c.tlv_tendue = true` (156 communes BZH éligibles)
+- **r16 lovac_long (+5)** — `c.lovac_tx_vacance_long > 0.05` (vacance >2 ans DGFiP)
+- **r17 audits_dyna (+5)** — `c.audits_ademe_count > 100` (commune dynamique rénovation)
+
+| Segment | Phase 11.2 | **Phase 11.3** | Δ |
+|---------|-----------|---------------|---|
+| ultra_chaud | 29 | **36** | +7 |
+| mpr_bleu_prio | 2 123 | **2 393** | +270 |
+| premium | 0 | 0 | — |
+| standard | 17 747 | **34 835** | +17 088 |
+| cold | 39 407 | 22 042 | -17 365 |
+
+**62.8% des 59 306 prospects qualifiés (≥standard)** vs 33.6% Phase 11.2 vs 0.1% à l'origine. Score max atteint 100/100 (vs 93 Phase 11.2).
+
+### Nettoyage UI (cohérence pro)
+- `DpeMarker.tsx` : SEGMENT_LABELS sans emojis, classes CSS `bg-X-50 + border` plutôt que `bg-X-100`
+- `AgenceFoncierCarte.tsx` : boutons segments `border border-slate-200` + texte seul + ring-1 actif (au lieu de ring-2 ring-offset rounded-full)
+
+### Fichiers modifiés
+- `src/components/foncier/DpeMarker.tsx` — SEGMENT_LABELS sans emojis
+- `src/pages/agence/foncier/AgenceFoncierCarte.tsx` — boutons sobres
+- `docs/wiki/log.md` (cette entrée)
+
+### Tables DB modifiées
+- `brh_ext_commune` : +7 colonnes (`lovac_pp_total_2024`, `lovac_pp_vacant_2024`, `lovac_pp_vacant_2ans_2024`, `lovac_tx_vacance`, `lovac_tx_vacance_long`, `tlv_zonage`, `tlv_tendue`, `audits_ademe_count`)
+- `brh_ext_outils_communaux` : NEW (8 rows BZH cadastres solaires)
+- `brh_dpe_prospects.score_v2` : recalculé idempotent avec 17 règles
+
+### Risque : Low
+- ALTER TABLE idempotent (IF NOT EXISTS)
+- Nouvelle table avec RLS authenticated read + admin all
+- Score_v2 recalcul idempotent
+
+### Tests
+- TypeScript build exit 0
+- ESLint exit 0
+- SQL recalcul score_v2 OK : 59 306 rows, distribution cohérente (62.8% qualifiés)
+
+### Status
+✅ DONE — Phase 11.3 partielle livrée. Reste pour Phase 11.4 : LiDAR HD toiture USP, BDNB CSTB, ABF batch SUP AC1, ANIL aides locales scraping, ZNIEFF/Natura 2000.
+
+---
+
 ## 2026-05-08 (3e session) — Phase 11.2 livrée : Recensement IRIS + BODACC batch + MF DJU + TRACC climat 2050 + 6 887 entreprises immo + PLU top 20 + filtres UI
 
 - **Contexte** : Philippe : « continue toutes les bases de données. […] PLU, PLUI, ce genre de données géométriques ». Grosse vague d'enrichissement Tier 2 + Tier 3 + UI foncier.

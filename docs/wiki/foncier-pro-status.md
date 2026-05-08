@@ -23,7 +23,7 @@
 
 **Total estimé** : 42-55 jours dev compressés.
 
-### État data Bretagne en prod (08/05/2026 — Phase 11.2 livrée)
+### État data Bretagne en prod (08/05/2026 — Phase 11.3 partielle livrée)
 
 | Source | Volume | État |
 |---|---|---|
@@ -47,6 +47,11 @@
 | **Entreprises immo BZH** | **6 887 SIREN** (1704 agences, 609 marchands biens, 343 promoteurs, 832 syndics, etc.) | ✅ Phase 11.2 NEW table |
 | **PLU/PLUi top 20 communes** | 18 + Brest pré-cachés (URL PDF + doc_id) | ✅ Phase 11.2 |
 | **score_v2 distribution finale** | **29 ultra_chaud · 2 123 mpr_bleu_prio · 17 747 standard · 39 407 cold** | ✅ Phase 11.2 (14 règles + climat futur) |
+| **LOVAC vacance 2024** | **1 026 communes BZH** (425 avec vacance > 10%) | ✅ Phase 11.3 |
+| **Zonage TLV 2025** | **1 202 communes BZH** (156 tendues : 16 strictes + 140 touristiques) | ✅ Phase 11.3 |
+| **Audits énergétiques ADEME 2023+** | **175 611 audits BZH** sur 1 195 communes (médiane 146/commune) | ✅ Phase 11.3 |
+| **Cadastres solaires EPCI** | 8 EPCI BZH (Brest, Rennes, Lorient, Quimper, Saint-Malo, Vannes, Dinan, Saint-Brieuc) | ✅ Phase 11.3 NEW table |
+| **score_v2 distribution Phase 11.3** | **36 ultra_chaud · 2 393 mpr_bleu_prio · 34 835 standard · 22 042 cold** | ✅ Phase 11.3 (17 règles, 62.8% qualifiés) |
 
 ---
 

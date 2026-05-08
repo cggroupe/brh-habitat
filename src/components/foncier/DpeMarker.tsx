@@ -24,11 +24,11 @@ interface DpeMarkerProps {
 }
 
 const SEGMENT_LABELS: Record<NonNullable<DpeMarkerProps['segmentV2']>, { label: string; cls: string }> = {
-  ultra_chaud: { label: '🔥 Ultra-chaud', cls: 'bg-red-100 text-red-700' },
-  mpr_bleu_prio: { label: '💙 MPR Bleu', cls: 'bg-blue-100 text-blue-700' },
-  premium: { label: '✨ Premium', cls: 'bg-purple-100 text-purple-700' },
-  standard: { label: 'Standard', cls: 'bg-amber-100 text-amber-700' },
-  cold: { label: 'Cold', cls: 'bg-slate-100 text-slate-500' },
+  ultra_chaud: { label: 'Ultra-chaud', cls: 'bg-red-50 text-red-800 border border-red-200' },
+  mpr_bleu_prio: { label: 'MPR Bleu prioritaire', cls: 'bg-sky-50 text-sky-800 border border-sky-200' },
+  premium: { label: 'Premium', cls: 'bg-violet-50 text-violet-800 border border-violet-200' },
+  standard: { label: 'Standard', cls: 'bg-amber-50 text-amber-800 border border-amber-200' },
+  cold: { label: 'Faible potentiel', cls: 'bg-slate-100 text-slate-600 border border-slate-200' },
 }
 
 export default function DpeMarker({
