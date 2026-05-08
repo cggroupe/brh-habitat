@@ -33,6 +33,7 @@
 | Page | Sujet |
 |------|-------|
 | [architecture-snapshot.md](architecture-snapshot.md) | Stack, 119 pages, 33+ tables `brh_*`, 70 routes, score 9.8/10 |
+| [auth-access-matrix.md](auth-access-matrix.md) | ⭐ **Source de vérité auth/accès (08/05)** — 9 personas, 78 routes × 9 personas (✅/🔄), graphe inscription, login switcher, parrainage MLM cross-persona, 10 anomalies identifiées |
 | [data-model.md](data-model.md) | Tables par domaine, RLS, triggers, fonctions SECURITY DEFINER |
 | [edge-functions-reference.md](edge-functions-reference.md) | 11 Edge Functions (IA, emails, invitations, SIRET, Clerk bridge) |
 | [hooks-reference.md](hooks-reference.md) | 14 hooks React Query + 25 modules API Zod |

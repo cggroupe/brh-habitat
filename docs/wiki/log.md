@@ -6,6 +6,39 @@
 ---
 
 
+## 2026-05-08 — Cartographie auth & access matrix (page wiki dédiée)
+
+- **Contexte** : Philippe demande "audit complet et cartographie comme il faut avec le wiki KG pour voir si tout est correct et que le KG est bien compilé". Après les 4 phases A-D + ménage, besoin d'une source de vérité unique pour qui peut accéder à quoi.
+- **Livré** : nouvelle page wiki [`auth-access-matrix.md`](auth-access-matrix.md) (~430 lignes) :
+  - **Section 1** — 9 personas avec leurs marqueurs DB primaires/secondaires (Visiteur, Particulier classique, Particulier affilié engagé, Pro, Pro RGE, Artisan legacy, Agence, Admin, User legacy)
+  - **Section 2** — Matrice d'accès complète **78 routes × 9 personas** par groupe : public (24), auth générique (8), Pro (33 dont 4 alias RGE Phase D), Particulier (14), Agence (22), Réseau (10), Artisan legacy (13), Admin (23). Chaque cellule indique ✅ / 🔄 destination / ✅* feature gate / 🛡️ permission.
+  - **Section 3** — Graphe d'inscription complet (HomePage → Hub → 3 cards → tables peuplées + redirection)
+  - **Section 4** — Logique workspace switcher post-login (`listAccessiblePortals`) en 6 puces, comportement 0/1/2+ portails
+  - **Section 5** — Système parrainage MLM cross-persona (3 formats de liens + tables impactées)
+  - **Section 6** — 10 anomalies identifiées (Admin sans /reseau, role='user' legacy bloqué, activation RGE 48h manuelle, fallback feature gates manquant, etc.)
+  - **Section 7** — Référencement 8 tables liées
+  - **Section 8** — Process de maintenance
+  - Réponse explicite à la question Philippe "un particulier non affilié peut-il accéder à l'agence ?" → **Non**, AgenceGuard requiert `brh_partner_contracts agence_immo`. Tous les particuliers sont redirigés vers `/tableau-de-bord` quand ils tentent d'accéder à `/agence/*`, `/pro/*`, `/admin/*`, `/reseau/*`.
+- **Méthodologie** : 2 Explore agents en parallèle (matrice routes + graphe inscriptions) puis consolidation manuelle dans la page wiki.
+- **Fichiers modifiés** :
+  - `docs/wiki/auth-access-matrix.md` (nouveau, 430 lignes)
+  - `docs/wiki/index.md` (entrée ajoutée Partie 1, marqueur ⭐)
+  - `docs/wiki/log.md` (cette entrée)
+- **Pages wiki impactées** : index.md, auth-access-matrix.md
+- **Risque** : None (documentation pure, aucun code modifié)
+- **Tests** : N/A (pas de code)
+- **Status** : ✅ DONE
+
+### Anomalies à traiter (priorisées dans la page wiki)
+- 🔴 `role='user'` legacy bloqué sur /tableau-de-bord — migration one-shot à faire (`UPDATE profiles SET role='particulier' WHERE role='user'`)
+- 🟡 Activation RGE 48h manuelle — à industrialiser via cron + email admin
+- 🟡 Pas de sauvegarde dernier portail visité dans switcher (Notion/Stripe le font)
+- 🟡 Param `?ref` perdu si refresh entre Hub et card cliquée
+- 🟡 Feature gates rendent page vide au lieu de redirect
+
+---
+
+
 ## 2026-05-08 — Ménage post-refonte (cohérence sidebars + warnings React 19)
 
 - **Contexte** : audit de cohérence après les 4 phases A-D a révélé 2 vrais bugs et 2 warnings non bloquants. Philippe demande "tout doit être absolument parfait".
