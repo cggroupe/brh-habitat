@@ -5,6 +5,77 @@
 
 ---
 
+## 2026-05-08 (3e session) — Phase 11.2 livrée : Recensement IRIS + BODACC batch + MF DJU + TRACC climat 2050 + 6 887 entreprises immo + PLU top 20 + filtres UI
+
+- **Contexte** : Philippe : « continue toutes les bases de données. […] PLU, PLUI, ce genre de données géométriques ». Grosse vague d'enrichissement Tier 2 + Tier 3 + UI foncier.
+
+### Sources Tier 2 ingérées
+- **Recensement Logement IRIS 2021** (INSEE — 16 027 IRIS France) : 1 739/1 909 IRIS BZH avec `tx_proprio` + `tx_avant_1975` + `tx_maison` + `tx_vacance_log`. Médianes BZH : tx_proprio 77.4%, tx_avant_1975 36.8%. **Débloque la règle `iris_proprio_ancien (+10)` du score_v2 = 80 IRIS BZH éligibles.**
+- **BODACC tertiaire batch 90j** (vente + collective + radiation, 3 familles d'avis pertinentes pour foncier-pro) : **3 653 alertes BZH** uniques cachées dans `brh_bodacc_alerts` (3 334 SIREN distincts). Avant : 34 alertes lazy à la demande. Sample : 727 ventes fonds commerce BZH 90j.
+- **Météo-France DJU 18°C** climatologique 1991-2020 : 131 stations BZH, calcul TM mensuelles → DJU annuel. Mappage station la plus proche par commune (haversine sur centroïdes prospects DPE) → **1 195/1 203 communes BZH** avec `dju_18_normal` (1913 Île de Sein → 2924 Étrelles 35, médiane 2532). USP technique : DJU réel commune vs DJU théorique 2424 zone H2a Kelvin++.
+- **DRIAS/TRACC climat futur** (OEB Bretagne, dataset officiel 1.7M lignes) : indicateurs +2°C 2050 / +2.7°C 2080 / +4°C 2100 → **1 202/1 202 communes BZH** avec `delta_dju_2050` + `tracc_climat` JSONB (5 indicateurs × 4 horizons = 20 valeurs). Stats : ΔDJU moyen -13.6 (chauffage), jours TX>30°C en 2050 = 139 j/an (vs ~1-2 actuellement) — argument PAC réversible vendable.
+- **Entreprises immobilières BZH** via `recherche-entreprises.api.gouv.fr` (NAF 68.10Z, 68.20A, 68.20B, 68.31Z, 68.32A, 68.32B, 41.10A, 41.10B) : **6 887 entreprises BZH actives** dans nouvelle table `brh_ext_immo_companies` (siren, nom, NAF, type_immo, lat/lng, date_creation). Distribution : 1 809 location terrains, 1 704 agences immo, 1 466 location logements, 832 syndics, **609 marchands de biens**, 343 promoteurs logements.
+
+### Sources géométriques (PLU/PLUi)
+- **PLU/PLUi top 19 communes BZH** (après Brest fait 07/05) : centroïdes BD via `brh_dpe_prospects` (geo.api.gouv.fr down ce jour) puis apicarto IGN `/api/gpu/zone-urba` → métadonnées zonage + `urlfic` PDF règlement. **18/19 succès** (Vannes pas de zone-urba sur centroïde). 8 communes avec PDF accessible. Stockage cache `brh_plu_summaries` avec `ai_model='metadata-only'` — résumé Claude reste à la demande via EF `plu-summarize-ai` (économise ~$10).
+- **ABF/SUP AC1** monuments historiques : reporté Phase 11.4 — déjà accessible lazy via apicarto IGN `/api/gpu/assiette-sup-s` par parcelle (testé Brest = polygones AC1 cathédrale).
+
+### Score_v2 recalculé final (14 règles + climat futur)
+3 nouvelles règles ajoutées :
+- `iris_proprio_ancien (+10)` — Recensement 2021 tx_proprio>70% & tx_avant_1975>60%
+- `vacance_struct (+5)` — IRIS tx_vacance_log > 10%
+- `dju_eleve (+5)` — DJU réel commune > 2700 (besoin chauffage fort = ROI rénovation supérieur)
+
+Breakdown JSONB enrichi avec `climat_futur_2050.delta_dju` + meilleur ordre rules par points DESC (UNION ALL puis jsonb_agg).
+
+| Segment | Phase 11.1 (12 règles) | Phase 11.2 (14 règles) |
+|---------|----------------------|----------------------|
+| ultra_chaud | 28 | **29** |
+| mpr_bleu_prio | 2 005 | **2 123** |
+| premium | 0 | 0 (couleur_mpr='rose' inexistant en zone BZH) |
+| standard | 14 890 | **17 747** |
+| cold | 42 383 | 39 407 |
+
+Total prospects qualifiés (≥standard) : **19 899/59 306 = 33.6%** (vs 16 923 = 28.5% Phase 11.1).
+
+### Filtres UI Foncier carte
+Page `AgenceFoncierCarte` enrichie :
+- Slider `Score v2 ≥ X` (0-100, step 5)
+- Boutons segment : 🔥 Ultra-chaud / 💙 MPR Bleu prio / Standard / Tous
+- Popup DPE marker : score_v2 sur 100 + badge segment coloré
+- API `foncier-dpe-prospects.ts` : ajout filtres `scoreV2Min` + `segmentV2`
+- Component `DpeMarker.tsx` : props `scoreV2` + `segmentV2` + Map des labels avec couleurs sémantiques
+
+### Fichiers modifiés
+- `src/api/foncier-dpe-prospects.ts` — types DpeProspectMarker + DpeProspectFilters + `.select` étendu
+- `src/components/foncier/DpeMarker.tsx` — props score_v2/segment + popup enrichi
+- `src/pages/agence/foncier/AgenceFoncierCarte.tsx` — slider + boutons segment + bandeau filtres
+- `docs/wiki/log.md` (cette entrée)
+
+### Tables DB nouvelles / modifiées
+- `brh_ext_iris` : +5 colonnes (`tx_maison`, `tx_vacance_log`, `p21_log`, `p21_rp`, `reco_fetched_at`)
+- `brh_ext_commune` : +2 colonnes (`tracc_climat` JSONB, `delta_dju_2050` mis à jour)
+- `brh_ext_immo_companies` : NEW table (6 887 rows BZH)
+- `brh_bodacc_alerts` : +3 619 rows (34 → 3 653 BZH)
+- `brh_plu_summaries` : +18 rows (1 → 19 BZH)
+- `brh_dpe_prospects.score_v2_breakdown` : enrichi avec `climat_futur_2050`
+
+### Risque : Low
+- ALTER TABLE idempotent (IF NOT EXISTS)
+- RLS publique sur `brh_ext_immo_companies` (data publiques Sirene)
+- Filtres UI clients-side via supabase-js (pas de breaking change API)
+- Score_v2 recalculé idempotent
+
+### Tests
+- TypeScript build exit 0
+- ESLint exit 0 sur les 3 fichiers modifiés
+- SQL recalc score_v2 OK : 59 306 rows updated, distribution cohérente
+
+### Status
+✅ DONE — Phase 11.2 majeure complétée. Reste pour Phase 11.3+11.4 : ABF systématique batch, BDNB enrichissement bâti, LiDAR HD toiture, ANIL aides locales détaillées, DPE Rennes Métropole enrichi, cadastres solaires liens.
+
+---
+
 ## 2026-05-08 (suite) — Phase 11.1 complétée : Filosofi débloqué + ANAH OPAH + Sit@del2 + iris_code 99% + score_v2 recalc
 
 - **Contexte** : Reprise après-midi pour finir Phase 11.1. Découverte au passage que `brh_ext_iris` (1909 rows) et `brh_ext_commune` (1202 rows) avaient été créées le 01/05 et partiellement seedées (Filosofi 577, Enedis 1766, GRDF 906, Géorisques 1202, RGE 1202, **ZÉRO OPAH active, ZÉRO Sit@del2**). Score_v2 calculé sur 59 306 prospects mais 99.9% en `cold` parce que **220/59306 prospects seulement avaient un iris_code matché** → tous les bonus IRIS-based (couleur MPR, conso, précarité) silenced.

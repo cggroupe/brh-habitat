@@ -16,6 +16,11 @@ export interface DpeProspectMarker {
   commune: string | null
   surface: number | null
   code_insee_commune: string | null
+  /** Phase 11.1 — score composite v2 (0-100) basé sur Filosofi + Enedis + Géorisques + ANAH + Sit@del2 + Recensement */
+  score_v2: number | null
+  /** Phase 11.1 — segment commercial calculé depuis score_v2 */
+  score_v2_segment: 'ultra_chaud' | 'mpr_bleu_prio' | 'premium' | 'standard' | 'cold' | null
+  iris_code: string | null
 }
 
 export interface DpeBbox {
@@ -30,6 +35,10 @@ export interface DpeProspectFilters {
   ratings?: DpeRating[]
   limit?: number
   departement?: string
+  /** Phase 11.1 — score composite v2 minimum (0-100) */
+  scoreV2Min?: number
+  /** Phase 11.1 — filtre par segment composite */
+  segmentV2?: 'ultra_chaud' | 'mpr_bleu_prio' | 'premium' | 'standard' | 'cold'
 }
 
 export const foncierDpeProspectsApi = {
@@ -40,7 +49,7 @@ export const foncierDpeProspectsApi = {
   async listByBbox(filters: DpeProspectFilters): Promise<DpeProspectMarker[]> {
     let q = supabase
       .from('brh_dpe_prospects')
-      .select('id, latitude, longitude, etiquette_dpe, adresse, commune, surface_habitable, code_insee_commune')
+      .select('id, latitude, longitude, etiquette_dpe, adresse, commune, surface_habitable, code_insee_commune, score_v2, score_v2_segment, iris_code')
       .not('latitude', 'is', null)
       .not('longitude', 'is', null)
       .not('etiquette_dpe', 'is', null)
@@ -63,6 +72,14 @@ export const foncierDpeProspectsApi = {
       q = q.eq('departement', filters.departement)
     }
 
+    // Phase 11.1 — filtres scoring v2
+    if (filters.scoreV2Min != null) {
+      q = q.gte('score_v2', filters.scoreV2Min)
+    }
+    if (filters.segmentV2) {
+      q = q.eq('score_v2_segment', filters.segmentV2)
+    }
+
     const { data, error } = await q
     if (error) throw error
 
@@ -75,6 +92,9 @@ export const foncierDpeProspectsApi = {
       commune: string | null
       surface_habitable: number | null
       code_insee_commune: string | null
+      score_v2: number | null
+      score_v2_segment: string | null
+      iris_code: string | null
     }
 
     return ((data ?? []) as RawRow[])
@@ -94,6 +114,9 @@ export const foncierDpeProspectsApi = {
         commune: r.commune,
         surface: r.surface_habitable,
         code_insee_commune: r.code_insee_commune,
+        score_v2: r.score_v2,
+        score_v2_segment: (r.score_v2_segment as DpeProspectMarker['score_v2_segment']) ?? null,
+        iris_code: r.iris_code,
       }))
   },
 }

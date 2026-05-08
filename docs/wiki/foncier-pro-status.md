@@ -23,7 +23,7 @@
 
 **Total estimé** : 42-55 jours dev compressés.
 
-### État data Bretagne en prod (08/05/2026 — Phase 11.1 complétée)
+### État data Bretagne en prod (08/05/2026 — Phase 11.2 livrée)
 
 | Source | Volume | État |
 |---|---|---|
@@ -39,7 +39,14 @@
 | **ANAH OPAH/PIG actifs** | **643 communes BZH (101 OPAH + 19 OPAH-RU + 523 PIG)** | ✅ NEW Tier 2 |
 | **Sit@del2 logements 2022-2023** | **35 997 logts / 1 080 communes BZH** | ✅ NEW Tier 2 |
 | **iris_code prospects DPE** | **59 285 / 59 306 (99.96%)** | ✅ point-in-polygon WFS IGN |
-| **score_v2 distribution** | 28 ultra_chaud · 2 005 mpr_bleu_prio · 14 890 standard · 42 383 cold | ✅ recalcul SQL avec breakdown JSONB 12 règles |
+| **score_v2 distribution** | 28 ultra_chaud · 2 005 mpr_bleu_prio · 14 890 standard · 42 383 cold | ✅ Phase 11.1 (12 règles) |
+| **Recensement Logement IRIS 2021** | **1 739 IRIS BZH** (tx_proprio + tx_avant_1975 + tx_vacance) | ✅ Phase 11.2 |
+| **BODACC tertiaire 90j** | **3 653 alertes BZH** (727 ventes + collective + radiation) | ✅ Phase 11.2 batch |
+| **Météo-France DJU 1991-2020** | **1 195 communes BZH** (1913-2924, USP vs DJU théorique) | ✅ Phase 11.2 |
+| **TRACC climat futur 2050/2080/2100** | **1 202 communes BZH** (5 indicateurs × 4 horizons) | ✅ Phase 11.2 OEB officiel |
+| **Entreprises immo BZH** | **6 887 SIREN** (1704 agences, 609 marchands biens, 343 promoteurs, 832 syndics, etc.) | ✅ Phase 11.2 NEW table |
+| **PLU/PLUi top 20 communes** | 18 + Brest pré-cachés (URL PDF + doc_id) | ✅ Phase 11.2 |
+| **score_v2 distribution finale** | **29 ultra_chaud · 2 123 mpr_bleu_prio · 17 747 standard · 39 407 cold** | ✅ Phase 11.2 (14 règles + climat futur) |
 
 ---
 

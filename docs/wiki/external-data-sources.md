@@ -559,13 +559,14 @@ describe('score-v2', () => {
 ## Statut d'implémentation
 
 - ✅ Phase 11.0 : Plan rédigé (ce document) — 2026-05-01
-- ✅ **Phase 11.1 : Tier 1 socle scoring — COMPLÉTÉE 2026-05-08** (Filosofi 577 IRIS, Enedis 1767, GRDF 912, RGE 14 810 qualifs, Géorisques 1202 communes, iris_code 59 285 prospects, score_v2 recalculé avec 12 règles)
-- 🟡 **Phase 11.2 : Tier 2 contextualisation — partiel** (ANAH OPAH 643 communes ✅ + Sit@del2 35 997 logts ✅ ; Recensement Logement IRIS 2022 ❌ + LOVAC ❌ + ANIL aides locales ❌ + DRIAS climat ❌)
-- ❌ Phase 11.3 : Régional Bretagne (DPE Rennes Métropole, Datarmor, RS Bretagne)
-- ❌ Phase 11.4 : Technique avancé (USP vs Kelvin) — LiDAR, BD TOPO, Météo-France, ABF
+- ✅ **Phase 11.1 : Tier 1 socle scoring — COMPLÉTÉE 2026-05-08** (Filosofi 577 IRIS, Enedis 1767, GRDF 912, RGE 14 810 qualifs, Géorisques 1202 communes, iris_code 59 285 prospects, score_v2 12 règles)
+- ✅ **Phase 11.2 : Tier 2 contextualisation — LIVRÉE 2026-05-08** (ANAH OPAH 643 communes, Sit@del2 35 997 logts, **Recensement Logement IRIS 1739**, **BODACC 3653 alertes**, **6 887 entreprises immo BZH**, **PLU 19 communes**, score_v2 14 règles)
+- ✅ **Phase 11.3 partielle : Climat futur OEB Bretagne — LIVRÉE 2026-05-08** (TRACC 1202 communes 2050/2080/2100, Météo-France DJU 1195 communes 1991-2020 normale)
+- 🟡 Phase 11.3 reste : DPE Rennes Métropole enrichi, Datarmor CD22, RS Bretagne, ANIL aides locales détaillées, cadastres solaires
+- ❌ Phase 11.4 : Technique avancé (USP vs Kelvin) — LiDAR, BD TOPO, BDNB CSTB, ABF batch, Audit ADEME
 - ❌ Phase 11.5 : Convention collectivité MAJIC/LOVAC (long terme)
 
 ## Mises à jour de cette page
 
 - **2026-05-01** : Création (recherche 89 sources + plan d'intégration 4 phases)
-- **2026-05-08** : Phase 11.1 complétée + démarrage Phase 11.2 (ANAH OPAH + Sit@del2). Cf. `log.md` entrées du 08/05.
+- **2026-05-08** : Phase 11.1 complétée + Phase 11.2 livrée (Recensement IRIS, BODACC batch, MF DJU, TRACC climat 2050, 6 887 entreprises immo, PLU top 20, filtres UI Foncier). Score_v2 distribution finale : 29 ultra_chaud + 2 123 mpr_bleu_prio + 17 747 standard. Cf. `log.md` entrées du 08/05.

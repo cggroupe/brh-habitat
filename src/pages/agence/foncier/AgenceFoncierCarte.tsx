@@ -109,6 +109,10 @@ export default function AgenceFoncierCarte() {
   const [dpeRatings, setDpeRatings] = useState<DpeRating[]>(['F', 'G'])
   const [bbox, setBbox] = useState<{ minLat: number; minLng: number; maxLat: number; maxLng: number; zoom: number } | null>(null)
 
+  // Phase 11.1 — filtres scoring v2 (Filosofi + Enedis + Géorisques + ANAH + Sit@del2 + Recensement)
+  const [scoreV2Min, setScoreV2Min] = useState<number>(0)
+  const [segmentV2, setSegmentV2] = useState<'ultra_chaud' | 'mpr_bleu_prio' | 'standard' | ''>('')
+
   const searchMarkerRef = useRef<L.Marker | null>(null)
 
   // Auto-ouvre le popup du pin dès que la parcelle est chargée
@@ -152,6 +156,8 @@ export default function AgenceFoncierCarte() {
       bbox: bbox ? { minLat: bbox.minLat, minLng: bbox.minLng, maxLat: bbox.maxLat, maxLng: bbox.maxLng } : undefined,
       ratings: dpeRatings,
       limit: 500,
+      scoreV2Min: scoreV2Min > 0 ? scoreV2Min : undefined,
+      segmentV2: segmentV2 || undefined,
     },
     showDpe && !!bbox && bbox.zoom >= 13,
   )
@@ -237,44 +243,82 @@ export default function AgenceFoncierCarte() {
 
       <ParcelleSearchBar onSelectAddress={handleAddressSelect} onSearchByRef={handleSearchByRef} />
 
-      {/* Sprint F — Filtres DPE */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-3 flex items-center gap-3 flex-wrap text-xs">
-        <label className="inline-flex items-center gap-1.5 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={showDpe}
-            onChange={(e) => setShowDpe(e.target.checked)}
-          />
-          <span className="font-semibold text-slate-700">Pings DPE F/G</span>
-        </label>
+      {/* Sprint F + Phase 11.1 — Filtres DPE + Score v2 */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-3 space-y-2 text-xs">
+        <div className="flex items-center gap-3 flex-wrap">
+          <label className="inline-flex items-center gap-1.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showDpe}
+              onChange={(e) => setShowDpe(e.target.checked)}
+            />
+            <span className="font-semibold text-slate-700">Pings DPE F/G</span>
+          </label>
+          {showDpe && (
+            <>
+              <span className="text-slate-400">|</span>
+              <span className="text-slate-500">Ratings :</span>
+              {(['A', 'B', 'C', 'D', 'E', 'F', 'G'] as DpeRating[]).map((r) => (
+                <label key={r} className="inline-flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={dpeRatings.includes(r)}
+                    onChange={(e) => {
+                      if (e.target.checked) setDpeRatings([...dpeRatings, r])
+                      else setDpeRatings(dpeRatings.filter((x) => x !== r))
+                    }}
+                  />
+                  <span className="font-bold">{r}</span>
+                </label>
+              ))}
+              {bbox && bbox.zoom < 13 && (
+                <span className="ml-auto text-amber-600 text-[11px] italic">
+                  Zoom ≥13 requis
+                </span>
+              )}
+              {bbox && bbox.zoom >= 13 && (dpeQuery.data ?? []).length > 0 && (
+                <span className="ml-auto text-slate-600 font-semibold">
+                  {(dpeQuery.data ?? []).length} pings
+                </span>
+              )}
+            </>
+          )}
+        </div>
         {showDpe && (
-          <>
+          <div className="flex items-center gap-3 flex-wrap pt-2 border-t border-slate-100">
+            <span className="font-semibold text-slate-700">Score v2 :</span>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={5}
+                value={scoreV2Min}
+                onChange={(e) => setScoreV2Min(Number(e.target.value))}
+                className="w-32"
+              />
+              <span className="font-bold text-slate-800 tabular-nums w-10">≥ {scoreV2Min}</span>
+            </div>
             <span className="text-slate-400">|</span>
-            <span className="text-slate-500">Filtrer ratings :</span>
-            {(['A', 'B', 'C', 'D', 'E', 'F', 'G'] as DpeRating[]).map((r) => (
-              <label key={r} className="inline-flex items-center gap-1 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={dpeRatings.includes(r)}
-                  onChange={(e) => {
-                    if (e.target.checked) setDpeRatings([...dpeRatings, r])
-                    else setDpeRatings(dpeRatings.filter((x) => x !== r))
-                  }}
-                />
-                <span className="font-bold">{r}</span>
-              </label>
+            <span className="text-slate-500">Segment :</span>
+            {([
+              { v: '', l: 'Tous', cls: 'bg-slate-100 text-slate-700' },
+              { v: 'ultra_chaud', l: '🔥 Ultra-chaud', cls: 'bg-red-100 text-red-700' },
+              { v: 'mpr_bleu_prio', l: '💙 MPR Bleu prio', cls: 'bg-blue-100 text-blue-700' },
+              { v: 'standard', l: 'Standard', cls: 'bg-amber-100 text-amber-700' },
+            ] as const).map((s) => (
+              <button
+                key={s.v}
+                type="button"
+                onClick={() => setSegmentV2(segmentV2 === s.v ? '' : s.v)}
+                className={`px-2.5 py-1 rounded-full font-semibold text-[11px] transition ${
+                  segmentV2 === s.v ? `${s.cls} ring-2 ring-offset-1 ring-current` : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                }`}
+              >
+                {s.l}
+              </button>
             ))}
-            {bbox && bbox.zoom < 13 && (
-              <span className="ml-auto text-amber-600 text-[11px] italic">
-                Zoom ≥13 requis pour afficher les pings DPE
-              </span>
-            )}
-            {bbox && bbox.zoom >= 13 && (dpeQuery.data ?? []).length > 0 && (
-              <span className="ml-auto text-slate-600 font-semibold">
-                {(dpeQuery.data ?? []).length} ping{(dpeQuery.data ?? []).length > 1 ? 's' : ''}
-              </span>
-            )}
-          </>
+          </div>
         )}
       </div>
 
@@ -314,7 +358,7 @@ export default function AgenceFoncierCarte() {
             <MapClickHandler onClick={handleMapClick} />
             <BboxTracker onChange={setBbox} />
 
-            {/* Sprint F — DPE prospects markers (zoom ≥13) */}
+            {/* Sprint F — DPE prospects markers (zoom ≥13) avec score_v2 Phase 11.1 */}
             {showDpe && (dpeQuery.data ?? []).map((p) => (
               <DpeMarker
                 key={p.id}
@@ -323,6 +367,8 @@ export default function AgenceFoncierCarte() {
                 rating={p.dpe_rating}
                 adresse={p.adresse ?? undefined}
                 surface={p.surface}
+                scoreV2={p.score_v2}
+                segmentV2={p.score_v2_segment}
               />
             ))}
 
