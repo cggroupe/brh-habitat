@@ -5,6 +5,62 @@
 
 ---
 
+## 2026-05-08 (8e session) — Phase 11.6 : SRU + ZNIEFF + ABF batch + score 22 règles + nettoyage emojis pro
+
+- **Contexte** : Audit complet précédent. Philippe « continue Phase 11.6 ». Bugs fix résiduels + sources reportées.
+
+### Bugs fixes
+- **CI rouge depuis Phase 11.4 + 11.5** : escapeCsv n'acceptait pas boolean (commit `582cd07`). Type strict tsc -b détectait Type 'false' incompatible. Fix : signature étendue + bool→'oui'/'non' Excel FR.
+- **Emojis ManualWizard** : 12 icônes emoji refactor en Lucide React (Flame/Fuel/Snowflake/TreePine/Zap/Factory/Waves) + label types chauffage/ECS. Cohérence visuelle pro (commit `9a59ed0`).
+- **8 emojis décoratifs supprimés** : AgenceFoncierCarte (⭐), AgenceContributions (🎉), AgenceScoreVente (🔥 ×2), AgenceSimulateur (⚡), ProspectStudyPanel (⚡🌟⚡), ManualWizard headers (⚡🎯).
+- **7 indices PostgreSQL ajoutés** : `basias_lourd`, `icpe_lourd`, `catnat_lourd`, `pop_growth`, `tlv_tendue`, `audits_dyna`, `taux_low`, `sru_carencee` — accélère les filtres RPC.
+
+### Sources Tier 3/4 ingérées
+- **SRU communes carencées** (data.gouv `donnees-sru-data-gouv-2025.csv`) : **110 communes BZH assujetties SRU**, **82 déficitaires**, **9 carencées** (= prélèvement renforcé), 7 exemptées. 4 colonnes `sru_*` ajoutées.
+- **ZNIEFF type 1 + 2 Bretagne** (WFS Géoplateforme `patrinat_znieff*` BBOX BZH EPSG:4326) : 972 ZNIEFF1 + 184 ZNIEFF2 polygones. Point-in-polygon centroïdes communes → **51 communes BZH avec centroïde dans ZNIEFF** (Pluherlin Z1+Z2, Étang Priziac, Forêt Hunaudaye, Scorff/Pont-Calleck, etc.). 3 colonnes `znieff*_count` + `znieff_sample`.
+- **ABF SUP AC1 + lignes HT** batch top 50 communes BZH (apicarto IGN GPU `/assiette-sup-s?categorie=AC1`) : **13 communes avec servitudes AC1 active sur centroïde** (Rennes 51, Fougères 10, Saint-Brieuc 3, Cesson-Sévigné 2, Brest 1). Pas de lignes HT au centroïde (logique : zones rurales). 2 colonnes `abf_ac1_count` + `lignes_ht_count`.
+
+### Sources skip avec justification
+- **APL DREES densité médicale** : datasets régionaux (Hauts-de-France, Grand Poitiers ~40 communes) sans national open. APL national est sous convention DREES. Reporté.
+- **BD TOPO IGN bâti** : déjà couvert par RNB (2.97M bâtiments BZH ingérés Phase 11.3b). Skip.
+- **ZAER énergies renouvelables** : shapefile uniquement, parsing reporté.
+- **Aides régionales éco-rénov BZH** : pas de dataset open officiel. Site web ANIL en scraping = trop fragile. Reporté.
+
+### Score_v2 final 22 règles (+2 nouvelles)
+- **r21 basias_lourd (-3)** — `c.basias_count > 50` (commune avec friche industrielle/pollution sol potentielle dense)
+- **r22 sru_carencee (+5)** — `c.sru_carencee = TRUE` (pression construction logement social = marché tendu = potentiel acquisition)
+- **r19 abf_lourd étendu** — désormais `c.merimee_count >= 5 OR c.abf_ac1_count > 0`
+
+| Segment | Phase 11.5 | **Phase 11.6** | Δ |
+|---------|-----------|---------------|---|
+| ultra_chaud | 34 | **33** | -1 (max passe de 100 à 97 — pas de "parfait" sans malus) |
+| mpr_bleu_prio | 2 321 | **2 267** | -54 (basias_lourd touche zones industrielles dense) |
+| standard | 36 263 | **35 113** | -1 150 |
+| cold | 20 688 | 21 893 | +1 205 |
+
+**63.1% prospects qualifiés** (vs 65.1% Phase 11.5 — le score est plus exigeant et reflète mieux les contraintes terrain). Score max 97/100 = pas de prospect "parfait" car presque tous les ultra_chaud sont en zone basias_lourd Brest/agglomération.
+
+### Tables DB modifiées
+- `brh_ext_commune` : +9 colonnes (`sru_*` × 4, `znieff*_count` × 3, `abf_ac1_count`, `lignes_ht_count`)
+- 11 indices total sur `brh_ext_commune` (vs 4 avant)
+- Migrations `20260706540000` (DDL+indices) + `20260706550000` (recalc score 22 règles)
+
+### Risque : Low
+- ALTER TABLE idempotent
+- Nouvelles colonnes default 0/false → pas de breaking change
+- Score recalc idempotent
+
+### Tests
+- TypeScript build exit 0 (vrai test `tsc -b --noEmit` strict)
+- ESLint exit 0
+- Vite build prod 24.36s OK
+- CI vert depuis fix `582cd07`
+
+### Status
+✅ DONE — Phase 11.6 livrée. Reste pour Phase 11.7 : LiDAR HD IGN (USP), BDNB CSTB, ANIL aides scrap, ZAER shapefile, BD TOPO bâti, APL DREES sous convention.
+
+---
+
 ## 2026-05-08 (7e session) — Phase 11.5 : Score 20 règles + risques pollution + fiscalité + dynamique démo
 
 - **Contexte** : Philippe « tout doit être absolument parfait, on doit avoir toutes les informations possibles ». Saturation Tier 3+4 sources.

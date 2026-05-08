@@ -159,7 +159,7 @@ export default function ReseauDecouvrir() {
                 </div>
                 {p.endorsement_count > 0 && (
                   <span className="text-[11px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md font-bold">
-                    ⭐ {p.endorsement_count}
+                    ★ {p.endorsement_count}
                   </span>
                 )}
               </div>

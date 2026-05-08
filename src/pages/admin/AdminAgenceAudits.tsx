@@ -58,7 +58,7 @@ const FEEDBACK_LABELS: Record<Feedback, string> = {
   correct: '✅ Contact correct',
   intrusive: '⚠ Intrusif',
   not_contacted: '❓ Non contacté',
-  interested: '🎯 Intéressé',
+  interested: 'Intéressé',
   complaint: '🚫 Plainte',
 }
 

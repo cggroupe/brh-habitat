@@ -36,6 +36,14 @@ import {
   Loader,
   Calculator,
   RotateCcw,
+  Flame,
+  Fuel,
+  Snowflake,
+  TreePine,
+  Zap,
+  Factory,
+  Waves,
+  type LucideIcon,
 } from 'lucide-react'
 import { computeDpe } from '@/lib/dpe-engine'
 import { computeAllScenarios, type ScenarioComputed } from '@/lib/dpe-engine/variantes'
@@ -1172,19 +1180,19 @@ function Step5Equipements({ form, set }: StepProps) {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {(
           [
-            { v: 'chaudiere_fioul', label: 'Fioul', icon: '🛢️', danger: true },
-            { v: 'chaudiere_fioul_condensation', label: 'Fioul cond.', icon: '🛢️', danger: true },
-            { v: 'chaudiere_gaz_standard', label: 'Gaz std', icon: '🔥', danger: false },
-            { v: 'chaudiere_gaz_condensation', label: 'Gaz cond.', icon: '🔥', danger: false },
-            { v: 'chaudiere_bois_buche', label: 'Bois bûche', icon: '🪵', danger: false },
-            { v: 'chaudiere_granules_bois', label: 'Granulés', icon: '🪵', danger: false },
-            { v: 'pac_air_air', label: 'PAC air/air', icon: '❄️', danger: false },
-            { v: 'pac_air_eau', label: 'PAC air/eau', icon: '💧', danger: false },
-            { v: 'pac_eau_eau', label: 'PAC eau/eau', icon: '🌊', danger: false },
-            { v: 'effet_joule_direct', label: 'Conv. élec', icon: '⚡', danger: true },
-            { v: 'inertie_electrique', label: 'Inertie élec', icon: '⚡', danger: false },
-            { v: 'reseau_chaleur', label: 'Réseau ch.', icon: '🏭', danger: false },
-          ] as const
+            { v: 'chaudiere_fioul', label: 'Fioul', Icon: Fuel, danger: true },
+            { v: 'chaudiere_fioul_condensation', label: 'Fioul cond.', Icon: Fuel, danger: true },
+            { v: 'chaudiere_gaz_standard', label: 'Gaz std', Icon: Flame, danger: false },
+            { v: 'chaudiere_gaz_condensation', label: 'Gaz cond.', Icon: Flame, danger: false },
+            { v: 'chaudiere_bois_buche', label: 'Bois bûche', Icon: TreePine, danger: false },
+            { v: 'chaudiere_granules_bois', label: 'Granulés', Icon: TreePine, danger: false },
+            { v: 'pac_air_air', label: 'PAC air/air', Icon: Snowflake, danger: false },
+            { v: 'pac_air_eau', label: 'PAC air/eau', Icon: Droplets, danger: false },
+            { v: 'pac_eau_eau', label: 'PAC eau/eau', Icon: Waves, danger: false },
+            { v: 'effet_joule_direct', label: 'Conv. élec', Icon: Zap, danger: true },
+            { v: 'inertie_electrique', label: 'Inertie élec', Icon: Zap, danger: false },
+            { v: 'reseau_chaleur', label: 'Réseau ch.', Icon: Factory, danger: false },
+          ] as { v: string; label: string; Icon: LucideIcon; danger: boolean }[]
         ).map((g) => (
           <button
             key={g.v}
@@ -1198,8 +1206,8 @@ function Step5Equipements({ form, set }: StepProps) {
                 : 'border-neutral-light bg-white hover:border-emerald-300'
             }`}
           >
-            <span className="text-xl block">{g.icon}</span>
-            <p className="text-[11px] font-bold text-text-primary mt-0.5">{g.label}</p>
+            <g.Icon className="mx-auto text-slate-600" size={18} strokeWidth={1.6} />
+            <p className="text-[11px] font-bold text-text-primary mt-1">{g.label}</p>
           </button>
         ))}
       </div>
@@ -1247,25 +1255,25 @@ function Step5Equipements({ form, set }: StepProps) {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {(
           [
-            { v: 'electrique', label: 'Ballon élec', icon: '⚡', danger: true },
-            { v: 'cet', label: 'Thermo CET', icon: '♨️' },
-            { v: 'gaz', label: 'Ballon gaz', icon: '🔥' },
-            { v: 'solaire_thermique', label: 'Solaire', icon: '☀️' },
-            { v: 'reseau_chaleur', label: 'Réseau ch.', icon: '🏭' },
-          ] as const
+            { v: 'electrique', label: 'Ballon élec', Icon: Zap, danger: true },
+            { v: 'cet', label: 'Thermo CET', Icon: Thermometer, danger: false },
+            { v: 'gaz', label: 'Ballon gaz', Icon: Flame, danger: false },
+            { v: 'solaire_thermique', label: 'Solaire', Icon: Sun, danger: false },
+            { v: 'reseau_chaleur', label: 'Réseau ch.', Icon: Factory, danger: false },
+          ] as { v: string; label: string; Icon: LucideIcon; danger: boolean }[]
         ).map((e) => (
           <button
             key={e.v}
             type="button"
-            onClick={() => set('ecsGenerateur', e.v)}
+            onClick={() => set('ecsGenerateur', e.v as 'electrique' | 'cet' | 'gaz' | 'solaire_thermique' | 'reseau_chaleur')}
             className={`px-2 py-2.5 rounded-lg border-2 text-center transition ${
               form.ecsGenerateur === e.v
                 ? 'border-emerald-500 bg-emerald-50 shadow-sm'
                 : 'border-neutral-light bg-white hover:border-emerald-300'
             }`}
           >
-            <span className="text-xl block">{e.icon}</span>
-            <p className="text-[11px] font-bold text-text-primary mt-0.5">{e.label}</p>
+            <e.Icon className="mx-auto text-slate-600" size={18} strokeWidth={1.6} />
+            <p className="text-[11px] font-bold text-text-primary mt-1">{e.label}</p>
           </button>
         ))}
       </div>

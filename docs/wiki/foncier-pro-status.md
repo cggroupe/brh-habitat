@@ -66,6 +66,10 @@
 | **ICPE Installations Classées** | par commune (Géorisques) | ✅ Phase 11.5 |
 | **Fiscalité locale DGFiP 2023** | 992 communes BZH (taxe foncière médiane 39.85%, habitation 27.68%) | ✅ Phase 11.5 |
 | **score_v2 final Phase 11.5** | **34 ultra_chaud · 2 321 mpr_bleu_prio · 36 263 standard · 20 688 cold** | ✅ Phase 11.5 (20 règles, **65.1% qualifiés**, score max 100/100) |
+| **SRU Solidarité et Renouvellement Urbain 2025** | **110 communes BZH** assujetties (82 déficitaires, **9 carencées**, 7 exemptées) | ✅ Phase 11.6 |
+| **ZNIEFF type 1+2 Bretagne** | 972 ZNIEFF1 + 184 ZNIEFF2 polygones BZH, **51 communes centroïde dans ZNIEFF** | ✅ Phase 11.6 |
+| **ABF SUP AC1 batch top 50 communes** | 13 communes avec servitudes monuments historiques actives (Rennes 51, Fougères 10) | ✅ Phase 11.6 |
+| **score_v2 final Phase 11.6** | **33 ultra_chaud · 2 267 mpr_bleu_prio · 35 113 standard · 21 893 cold** | ✅ Phase 11.6 (22 règles, **63.1% qualifiés**, score max 97/100, plus exigeant) |
 
 ---
 
