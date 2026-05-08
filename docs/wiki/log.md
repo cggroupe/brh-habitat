@@ -6,6 +6,34 @@
 ---
 
 
+## 2026-05-08 — Phase A clarification inscription/login (4 personas)
+
+- **Contexte** : Philippe « ça fout un peu le bordel » sur la connexion à BRH Habitat. Audit révèle 7 types d'inscriptions dispersés sur 5 pages, redirection silencieuse au login basée sur memberships cachés. Plan en 4 phases (A: hub inscription + login switcher, B: fusion Pro/Artisan, C: particulier affilié = teaser MLM, D: réseau cross-persona).
+- **Phase A livrée** :
+  - **Hub `/inscription`** = nouvelle page `RegisterHubPage.tsx` à 3 cards visuelles (Particulier / Pro-Artisan BTP / Agence immo), propagation du param `?ref=` pour préserver le tracking parrainage MLM.
+  - L'ancienne page `RegisterPage` est désormais accessible à `/inscription/particulier`.
+  - **Question RGE ajoutée** à `/inscription/pro` (radio Oui/Non, obligatoire). L'intention est stockée dans `user_metadata.is_rge_intended` Supabase auth (pas de migration DB requise) — l'admin l'utilisera pour activer manuellement `brh_artisans_rge` sous 48h. Message UX clair "validation BRH" si Oui, accès Pro classique immédiat dans tous les cas.
+  - **Login switcher** : `LoginPage` calcule désormais TOUS les portails accessibles (admin, agence, artisan, pro, particulier) via 4 queries parallèles. Si > 1 → écran "Choisir mon espace" (style Stripe/Notion workspace switcher) ; si == 1 → redirect direct comme avant.
+- **Fichiers modifiés** :
+  - `src/pages/public/RegisterHubPage.tsx` (nouveau, 145 lignes)
+  - `src/pages/public/RegisterPage.tsx` (inchangé, juste route déplacée)
+  - `src/pages/public/RegisterProPage.tsx` (+45 lignes : radio RGE + validation + meta)
+  - `src/pages/public/LoginPage.tsx` (réécriture complète, +120 lignes : `listAccessiblePortals` + UI switcher)
+  - `src/App.tsx` (route `/inscription` → Hub, `/inscription/particulier` → ancien Register, suppression du redirect legacy)
+- **Migrations créées** : aucune (intention RGE en `user_metadata`, pas de schéma DB touché)
+- **Pages wiki impactées** : log.md (cette entrée)
+- **Risque** : Low — aucune migration, fallback gracieux dans tous les cas, ancienne route `/inscription/pro` inchangée fonctionnellement, rétrocompatibilité params `?ref=`/`?recruiter=` préservée.
+- **Tests** : `npm run build` ✅ vert (28.36s, 0 TS error)
+- **Status** : ✅ DONE
+
+### Phases B/C/D restantes (sessions futures)
+- **B** : fusion routes `/artisan/*` dans `/pro/*` (gating modules par `hasArtisanRGE`), drop pages doublons
+- **C** : déverrouillage modules MLM sur `/particulier` quand `brh_affiliates` existe + bandeau funnel "Gagnez 100€" sur dashboard particulier classique
+- **D** : `/reseau` accessible aussi sous `ProShell` + `ParticulierShell(affilié)`, filtres cross-persona (Agences / Pros / Parrains particuliers)
+
+---
+
+
 ## 2026-05-08 — Fix UX critiques + rapprochement tertiaire BODACC
 
 - **Contexte** : revue Philippe sur la refonte Editorial Habitat — bugs de contraste sidebar, terminologie incorrecte, UX foncier à corriger, et nouvelle feature : rapprochement automatique sociétés tertiaires en liquidation.

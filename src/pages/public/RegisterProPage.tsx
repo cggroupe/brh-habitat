@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { SUPABASE_ANON_KEY, edgeFunctionUrl } from '@/lib/config'
 import { useAppStore } from '@/stores/appStore'
 import { logError } from '@/lib/error'
-import { Building2, ArrowRight, Search, CheckCircle2, AlertCircle, MapPin } from 'lucide-react'
+import { Building2, ArrowRight, Search, CheckCircle2, AlertCircle, MapPin, Award } from 'lucide-react'
 import { createCompany, updateCompanyRecruiter } from '@/api/companies'
 import { addCompanyMember } from '@/api/company-members'
 
@@ -47,6 +47,10 @@ export default function RegisterProPage() {
   const [siretError, setSiretError] = useState<string | null>(null)
 
   const [form, setForm] = useState({ fullName: '', email: '', phone: '', password: '' })
+  // Phase A 2026-05-08 — capture intention RGE.
+  // Pas de creation immediate de brh_artisans_rge (necessite qualifs detaillees + valid admin).
+  // L'intention est stockee dans brh_companies.extra.is_rge_intended → workflow d'activation 48h.
+  const [isRgeIntended, setIsRgeIntended] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -85,11 +89,23 @@ export default function RegisterProPage() {
     if (form.password.length < 8) {
       setError('Mot de passe trop court (8 caracteres min).'); setLoading(false); return
     }
+    if (isRgeIntended === null) {
+      setError('Indiquez si votre entreprise est certifiee RGE.'); setLoading(false); return
+    }
 
     try {
       const { data, error: authError } = await supabase.auth.signUp({
         email: form.email, password: form.password,
-        options: { data: { full_name: form.fullName, role: 'pro', phone: form.phone || null } },
+        options: {
+          data: {
+            full_name: form.fullName,
+            role: 'pro',
+            phone: form.phone || null,
+            // Phase A 2026-05-08 — intention RGE stockee dans user_metadata.
+            // L'admin lira ce flag pour activer brh_artisans_rge sous 48h.
+            is_rge_intended: isRgeIntended,
+          },
+        },
       })
       if (authError) { setError(mapAuthError(authError.message)); setLoading(false); return }
       if (!data.user) { setError('Inscription impossible.'); setLoading(false); return }
@@ -274,6 +290,53 @@ export default function RegisterProPage() {
                   <input name="password" type="password" value={form.password} onChange={handleChange} required autoComplete="new-password"
                     className="w-full px-3.5 py-3 border border-slate-200 rounded-xl font-body text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                     placeholder="8 caracteres minimum" />
+                </div>
+
+                {/* Phase A 2026-05-08 — Question RGE : active modules artisan (missions BRH, agenda) si oui */}
+                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+                  <div className="flex items-start gap-2 mb-3">
+                    <Award size={16} className="text-amber-600 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-sm font-semibold text-slate-800">
+                        Votre entreprise est-elle certifiée RGE ?
+                      </p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        RGE Qualibat, Qualit'EnR, Qualifelec, Eco Artisan… Nous activons des
+                        modules dédiés (missions BRH, agenda) pour les entreprises certifiées.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsRgeIntended(true)}
+                      className={`px-3 py-2.5 rounded-lg text-sm font-semibold transition border ${
+                        isRgeIntended === true
+                          ? 'bg-amber-600 text-white border-amber-600'
+                          : 'bg-white text-slate-700 border-slate-200 hover:border-amber-300'
+                      }`}
+                    >
+                      Oui, certifiée RGE
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsRgeIntended(false)}
+                      className={`px-3 py-2.5 rounded-lg text-sm font-semibold transition border ${
+                        isRgeIntended === false
+                          ? 'bg-slate-700 text-white border-slate-700'
+                          : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      Non, pas RGE
+                    </button>
+                  </div>
+                  {isRgeIntended === true && (
+                    <p className="mt-3 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-2">
+                      <strong>Validation BRH sous 48h :</strong> nous vérifierons vos
+                      qualifications RGE puis activerons l'espace Artisan (missions, agenda,
+                      facturation BRH). Vous accédez immédiatement à votre espace Pro classique.
+                    </p>
+                  )}
                 </div>
 
                 <button type="submit" disabled={loading}

@@ -32,6 +32,7 @@ const ContactPage = lazy(() => import('@/pages/public/ContactPage'))
 const LoginPage = lazy(() => import('@/pages/public/LoginPage'))
 const RegisterPage = lazy(() => import('@/pages/public/RegisterPage'))
 const RegisterProPage = lazy(() => import('@/pages/public/RegisterProPage'))
+const RegisterHubPage = lazy(() => import('@/pages/public/RegisterHubPage'))
 // RegisterProFinalisationPage supprimee - la creation de company se fait dans RegisterProPage directement
 // RegisterParticulierPage supprimee - tout passe par /inscription (Clerk)
 const ServicesPage = lazy(() => import('@/pages/public/ServicesPage'))
@@ -222,11 +223,11 @@ export default function App() {
               <Route path="/articles/:slug" element={<ArticlePage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/connexion" element={<LoginPage />} />
-              <Route path="/inscription" element={<RegisterPage />} />
+              {/* Phase A 2026-05-08 — /inscription = hub 3 cards (Particulier / Pro / Agence) */}
+              <Route path="/inscription" element={<RegisterHubPage />} />
+              <Route path="/inscription/particulier" element={<RegisterPage />} />
               <Route path="/inscription/pro" element={<RegisterProPage />} />
               <Route path="/inscription/pro/rejoindre" element={<JoinCompanyPage />} />
-              {/* Legacy redirect : /inscription/particulier -> /inscription (conserve les liens partages) */}
-              <Route path="/inscription/particulier" element={<Navigate to="/inscription" replace />} />
               <Route path="/partenaires" element={<PartenairesPage />} />
               <Route path="/assistant" element={<AssistantPage />} />
               <Route path="/mentions-legales" element={<MentionsLegalesPage />} />
