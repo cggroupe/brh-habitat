@@ -6,6 +6,38 @@
 ---
 
 
+## 2026-05-08 — Phase D : Réseau pro cross-persona (Agences + Pros)
+
+- **Contexte** : finalisation refonte 4 personas. Avant Phase D, `/reseau` était strictement réservé aux signataires `brh_partner_contracts` (agences principalement) et toujours rendu sous `AgenceShell`. Un Pro (`brh_companies`) ne pouvait pas accéder au réseau pour communiquer avec les agences.
+- **Phase D livrée** :
+  - `ReseauGuard.tsx` : élargi pour accepter aussi `brh_companies.owner_id`. Renvoie un objet `{partner_type: 'pro_company'}` synthétique pour le tracking. Particuliers exclus en V1 (pas de marqueur "affilié actif" en DB pour distinguer un parrain engagé d'un compte inactif).
+  - **`ReseauPortalShell.tsx`** (nouveau, 50 lignes) : wrapper qui détecte le portail dominant de l'user (`brh_partner_contracts` agence_immo → `AgenceShell`, sinon `brh_companies` → `ProShell`, fallback `AgenceShell`). Garantit la cohérence visuelle : un Pro voit ProShell sur `/reseau`, une agence voit AgenceShell.
+  - `App.tsx` : remplacement `<Route element={<AgenceShell />}>` par `<Route element={<ReseauPortalShell />}>` autour des 9 routes `/reseau/*` (rétrocompat 100 % pour les agences).
+  - `ProShell.tsx` : nouveau lien "Réseau pro" (icon `Globe`) en 2e position de la sidebar Pro, juste après Accueil.
+- **Fichiers modifiés** :
+  - `src/components/auth/ReseauGuard.tsx` — query parallèle brh_partner_contracts + brh_companies
+  - `src/components/layout/ReseauPortalShell.tsx` (nouveau)
+  - `src/App.tsx` — import ReseauPortalShell + swap shell wrapper
+  - `src/components/layout/ProShell.tsx` — entrée "Réseau pro" + import icon Globe
+- **Migrations créées** : aucune
+- **Pages wiki impactées** : log.md
+- **Risque** : Low — `useUserPrimaryReseauPortal` cache 5min, fallback AgenceShell pendant le loading (pas de flash), routes inchangées, ReseauGuard plus permissif mais pas dégradant pour les agences existantes.
+- **Tests** : `npm run build` ✅ vert (22.35s, 0 TS error)
+- **Status** : ✅ DONE
+
+### Bilan refonte 4 personas (Phases A → D)
+| Phase | Livrable |
+|---|---|
+| A | Hub `/inscription` 3 cards + login workspace switcher + question RGE |
+| B | Fusion menu Pro/Artisan (groupe RGE conditionnel dans ProShell + login fusionné) |
+| C | Banner activation parrainage MLM sur PartDashboard |
+| D | `/reseau` accessible aux Pros + shell adaptatif selon portail dominant |
+
+Aucune migration DB sur les 4 phases. Toutes les routes existantes restent fonctionnelles. Réversibilité totale.
+
+---
+
+
 ## 2026-05-08 — Phase B + C : fusion menu Pro/Artisan + teaser MLM particulier
 
 - **Contexte** : continuation de la refonte 4 personas. Phase B fusionne le menu Pro/Artisan (les 2 espaces conservent leurs routes mais s'augmentent mutuellement). Phase C amorce le funnel MLM côté particulier.

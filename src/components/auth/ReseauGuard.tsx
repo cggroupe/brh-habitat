@@ -1,12 +1,12 @@
 /**
  * Phase 18.4 — Guard portail réseau social `/reseau`.
  *
- * Vérifie que l'utilisateur authentifié est signataire d'une charte
- * `brh_partner_contracts` ACTIVE (toutes personae : agence_immo, artisan_rge,
- * pro_company, architecte, maitre_oeuvre, apporteur_affaires, courtier, syndic, autre).
+ * Vérifie que l'utilisateur authentifié peut accéder au réseau pro :
+ *   - signataire d'une charte `brh_partner_contracts` ACTIVE (agences, artisans RGE…)
+ *   - OU propriétaire d'une `brh_companies` (Phase D 2026-05-08 — ouverture aux pros)
  *
- * Si pas le cas → redirect /tableau-de-bord (l'utilisateur reste authentifié
- * mais n'a pas accès au réseau social pro). Onboarding partner ailleurs.
+ * Si aucun des deux → redirect /tableau-de-bord. Particuliers : pas d'accès en V1
+ * (en attente d'un marqueur "affilié actif" en DB).
  */
 import { Navigate, Outlet } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -17,19 +17,26 @@ export default function ReseauGuard() {
   const { user, isAuthenticated, loading: authLoading } = useAuth()
 
   const { data, isLoading } = useQuery({
-    queryKey: ['my-pro-contract', user?.id ?? 'anon'] as const,
+    queryKey: ['my-reseau-access', user?.id ?? 'anon'] as const,
     queryFn: async () => {
       if (!user?.id) return null
-      const { data, error } = await supabase
-        .from('brh_partner_contracts')
-        .select('id, partner_type, status')
-        .eq('signer_profile_id', user.id)
-        .eq('status', 'active')
-        .order('signed_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      if (error) throw error
-      return data
+      const [{ data: contract }, { data: company }] = await Promise.all([
+        supabase
+          .from('brh_partner_contracts')
+          .select('id, partner_type, status')
+          .eq('signer_profile_id', user.id)
+          .eq('status', 'active')
+          .order('signed_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('brh_companies')
+          .select('id')
+          .eq('owner_id', user.id)
+          .maybeSingle(),
+      ])
+      // Renvoie le contract en priorité (pour traçabilité partner_type), sinon company.
+      return contract ?? (company ? { id: company.id, partner_type: 'pro_company', status: 'active' } : null)
     },
     enabled: !!user?.id,
     staleTime: 5 * 60_000,

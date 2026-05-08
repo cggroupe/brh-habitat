@@ -37,6 +37,7 @@ import {
   Briefcase,
   Calendar,
   FileText,
+  Globe,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -93,7 +94,9 @@ const RGE_GROUP: NavGroup = {
 function buildNav(hasRge: boolean): NavEntry[] {
   const base: NavEntry[] = [
     { to: '/pro', label: 'Accueil', icon: LayoutDashboard },
-    // Phase 11.7: lien /reseau retiré pour les pros — réservé aux agences en V1.
+    // Phase D 2026-05-08 — réseau pro cross-persona : élargi aux brh_companies (pros).
+    // ReseauGuard accepte aussi pro_company (synthétique) en plus de brh_partner_contracts.
+    { to: '/reseau', label: 'Réseau pro', icon: Globe },
     {
       id: 'prospection',
       label: 'Prospection',
