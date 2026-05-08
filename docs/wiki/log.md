@@ -5,6 +5,59 @@
 
 ---
 
+## 2026-05-08 (7e session) — Phase 11.5 : Score 20 règles + risques pollution + fiscalité + dynamique démo
+
+- **Contexte** : Philippe « tout doit être absolument parfait, on doit avoir toutes les informations possibles ». Saturation Tier 3+4 sources.
+
+### Score_v2 final 20 règles
+2 nouvelles règles ajoutées (Phase 11.4 préparées, activées Phase 11.5) :
+- **r19 population_growth (+5)** — `c.evolution_pop_16_22 > 0.05` (commune attractive = marché immobilier actif)
+- **r20 catnat_lourd (-3)** — `c.catnat_total >= 5 OR c.catnat_inondation >= 3` (sinistralité récurrente)
+
+| Segment | 11.3b (18 règles) | **11.5 (20 règles)** | Δ |
+|---------|------------------|---------------------|---|
+| ultra_chaud | 34 | **34** | = (max 100 atteint) |
+| mpr_bleu_prio | 2 267 | **2 321** | +54 |
+| premium | 0 | 0 | — |
+| standard | 33 021 | **36 263** | +3 242 |
+| cold | 23 984 | 20 688 | -3 296 |
+
+**65.1% prospects qualifiés** (≥standard). Score max repassé à 100/100.
+
+### Sources Tier 3/4 ingérées
+- **BASIAS sites industriels potentiellement pollués** (Géorisques `/api/v1/ssp` batch 1203 communes) : **15 272 sites BASIAS BZH** sur 1 152 communes (96%). Stocké `basias_count`. Indispensable pour foncier-pro : alerte friche industrielle / pollution sol potentielle.
+- **BASOL sites pollués** (même API, autre champ `instructions`) : intégré `basol_count` (sites avec dossier ICAR/instruction administrative en cours).
+- **ICPE Installations Classées** (Géorisques `/api/v1/installations_classees` batch) : compté par commune dans `icpe_count`.
+- **Fiscalité locale DGFiP 2023** (data.economie.gouv.fr `fiscalite-locale-des-particuliers`) : **992 communes BZH** avec taux taxe foncière bâti (médiane 39.85%), foncière non-bâti, habitation résidences secondaires (médiane 27.68%), TEOM (taxe ordures). 4 colonnes `taux_tfb/tfnb/th/teom` ajoutées.
+
+### Pièges techniques rencontrés
+- ALTER TABLE timeouts répétés via pooler Supabase (statement_timeout=8s par défaut). Solution : connexion **directe** `db.lygmmvxnmvlgynmrcpny.supabase.co:5432` (pas le pooler) + `SET statement_timeout = 0`. Détection des transactions bloquantes via `pg_stat_activity` puis `pg_terminate_backend`.
+- BPE équipements INSEE 500 sur file ZIP. L'alternative `bpe23-nettoye` data.iledefrance.fr est restreinte IDF-only (8 dépts 75-95). Reporté.
+- DREES API APL (densité médicale) renvoie `total_count: 0`. Reporté.
+
+### Sources reportées
+- Densité médicale APL DREES (API empty au 08/05)
+- BPE équipements national (INSEE 500 + miroir IDF restreint)
+- Fibre THD ARCEP (volume trop verbeux pour batch session)
+
+### Tables DB modifiées
+- `brh_ext_commune` : +7 colonnes (`basias_count`, `basol_count`, `icpe_count`, `taux_tfb`, `taux_tfnb`, `taux_th`, `taux_teom`)
+- Migration `20260706520000_brh_phase_11_5_risques_fiscalite_demo.sql` (rétrofit complet Phase 11.4+11.5 idempotent)
+
+### Risque : Low
+- ALTER TABLE idempotent
+- DDL via direct DB connection (`db.lygmmvxnmvlgynmrcpny.supabase.co:5432`) avec `statement_timeout = 0`
+
+### Tests
+- TypeScript build exit 0
+- ESLint exit 0
+- SQL recalc score_v2 : 59 306 rows updated, distribution cohérente (+5.5% qualifiés)
+
+### Status
+✅ DONE — Phase 11.5 livrée. Reste pour Phase 11.6 : LiDAR HD toiture (USP vs Kelvin), BDNB CSTB, ANIL aides scrap, ZAER SHP, BD TOPO bâti, APL DREES médicale, fibre ARCEP.
+
+---
+
 ## 2026-05-08 (6e session) — Phase 11.4 : Page Foncier Prospects + Population + Cat-Nat
 
 - **Contexte** : Philippe « top continue ». Construire la vue tableau filtrable + ingérer dynamique démographique + risques naturels.

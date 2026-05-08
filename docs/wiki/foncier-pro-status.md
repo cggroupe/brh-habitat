@@ -61,6 +61,11 @@
 | **Population Bretagne 2008-2022** | **3 422 845 hab BZH** / 1202 communes (806 croissance >5%, 386 déclin >5%) | ✅ Phase 11.4 |
 | **Cat-Nat Géorisques 1976+** | **7 809 arrêtés BZH** / 1201 communes (874 ≥5 arrêtés, 736 ≥3 inondations) | ✅ Phase 11.4 |
 | **Page `/agence/foncier/prospects`** | Tableau filtrable 13 colonnes + pagination 50/page + export CSV | ✅ Phase 11.4 |
+| **BASIAS sites pollués potentiels** | **15 272 sites BZH** / 1 152 communes (Géorisques SSP) | ✅ Phase 11.5 |
+| **BASOL sites pollués confirmés** | par commune (instructions administratives) | ✅ Phase 11.5 |
+| **ICPE Installations Classées** | par commune (Géorisques) | ✅ Phase 11.5 |
+| **Fiscalité locale DGFiP 2023** | 992 communes BZH (taxe foncière médiane 39.85%, habitation 27.68%) | ✅ Phase 11.5 |
+| **score_v2 final Phase 11.5** | **34 ultra_chaud · 2 321 mpr_bleu_prio · 36 263 standard · 20 688 cold** | ✅ Phase 11.5 (20 règles, **65.1% qualifiés**, score max 100/100) |
 
 ---
 
