@@ -438,7 +438,7 @@ function AddressMode({
             </li>
           </ul>
           <p className="text-[11px] text-text-light mt-4 italic">
-            ⚡ Précision étude virtuelle : ±1 classe DPE. Pour un audit officiel signé,
+            Précision étude virtuelle : ±1 classe DPE. Pour un audit officiel signé,
             commander un Pro RGE BRH (commission agence 5 % HT si chantier signé).
           </p>
         </div>

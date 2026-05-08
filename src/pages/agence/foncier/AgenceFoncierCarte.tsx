@@ -246,7 +246,7 @@ export default function AgenceFoncierCarte() {
           to="/agence/foncier/favoris"
           className="text-xs text-emerald-700 hover:text-emerald-800 font-semibold inline-flex items-center gap-1"
         >
-          ⭐ Mes favoris →
+          Mes favoris →
         </Link>
       </div>
 

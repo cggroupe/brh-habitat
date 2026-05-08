@@ -318,7 +318,7 @@ export function ProspectStudyPanel({
                 : 'bg-blue-50 text-blue-700'
             }`}
           >
-            {isVirtual ? '⚡ Estimation BDNB CSTB' : 'DPE ADEME officiel'}
+            {isVirtual ? 'Estimation BDNB CSTB' : 'DPE ADEME officiel'}
           </span>
 
           {/* Title + adresse */}
@@ -694,7 +694,7 @@ export function ProspectStudyPanel({
               {enrichment.commune.opah_active ? (
                 <div className="mt-2 bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 text-xs">
                   <p className="font-bold text-emerald-900 mb-0.5">
-                    🌟 OPAH active — {enrichment.commune.opah_type ?? 'Programme local'}
+                    OPAH active — {enrichment.commune.opah_type ?? 'Programme local'}
                   </p>
                   <p className="text-primary">
                     Opérateur : {enrichment.commune.opah_operateur ?? '—'}
@@ -859,7 +859,7 @@ export function ProspectStudyPanel({
           ) : isVirtual ? (
             <div className="space-y-2">
               <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 leading-snug">
-                ⚡ Étude reconstruite BDNB CSTB (pas de DPE ADEME). Précision moyenne ±1
+                Étude reconstruite BDNB CSTB (pas de DPE ADEME). Précision moyenne ±1
                 classe — pour un audit officiel signé, demander un Pro RGE BRH ci-dessous.
               </p>
               <a

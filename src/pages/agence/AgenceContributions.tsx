@@ -218,7 +218,7 @@ export default function AgenceContributions() {
                   {tierThreshold.next ? TIER_LABELS_FR[tierThreshold.next as keyof typeof TIER_LABELS_FR] : ''}
                 </p>
               ) : (
-                <p className="text-[11px] text-emerald-300 mt-1">Palier max atteint 🎉</p>
+                <p className="text-[11px] text-emerald-300 mt-1">Palier maximum atteint</p>
               )}
             </div>
             <div>

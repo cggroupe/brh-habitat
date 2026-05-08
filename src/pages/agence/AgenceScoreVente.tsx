@@ -399,7 +399,7 @@ export default function AgenceScoreVente() {
             }`}
             title="Markers colorés selon segment vente"
           >
-            🔥 Score
+            Score
           </button>
           <button
             type="button"
@@ -680,7 +680,7 @@ export default function AgenceScoreVente() {
                       markerMode === 'scoring' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'
                     }`}
                   >
-                    🔥 Score Vente
+                    Score Vente
                   </button>
                   <button
                     type="button"

@@ -993,7 +993,7 @@ function Step2Localisation({ form, set }: StepProps) {
       </div>
 
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900">
-        <p className="font-bold mb-1">⚡ Pourquoi le code INSEE ?</p>
+        <p className="font-bold mb-1">Pourquoi le code INSEE ?</p>
         <p className="leading-snug">
           La commune détermine la <strong>zone climatique 3CL</strong> (H1a, H2a, H2b...) qui
           impacte directement les besoins de chauffage. La Bretagne est en H2a (climat océanique
@@ -1507,7 +1507,7 @@ function Step6Synthese({
       </div>
 
       <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-xs text-emerald-900">
-        <p className="font-bold mb-2">🎯 Et maintenant ?</p>
+        <p className="font-bold mb-2">Et maintenant ?</p>
         <ul className="space-y-1 text-emerald-800 leading-snug">
           <li>
             <strong>Imprimer le rapport</strong> ci-dessus → PDF complet à donner au client
