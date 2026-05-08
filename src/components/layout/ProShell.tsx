@@ -33,12 +33,17 @@ import {
   Target,
   ShoppingBag,
   ClipboardCheck,
+  Award,
+  Briefcase,
+  Calendar,
+  FileText,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
 import PortalMobileNav from '@/components/shared/PortalMobileNav'
 import { useTenant } from '@/config/TenantContext'
 import { PermissionGate } from '@/components/auth/PermissionGate'
+import { useMyArtisan } from '@/hooks/queries/artisan-portal'
 import type { TenantFeatures } from '@/config/tenant.types'
 import type { Permission } from '@/types/permissions'
 
@@ -68,66 +73,91 @@ function isGroup(e: NavEntry): e is NavGroup {
   return 'children' in e
 }
 
-const NAV: NavEntry[] = [
-  { to: '/pro', label: 'Accueil', icon: LayoutDashboard },
-  // Phase 11.7: lien /reseau retiré pour les pros — réservé aux agences en V1.
-  {
-    id: 'prospection',
-    label: 'Prospection',
-    icon: Target,
-    defaultTo: '/pro/prospects',
-    children: [
-      { to: '/pro/prospects', label: 'Mes prospects', icon: UserPlus },
-      { to: '/pro/prospects-bretagne', label: 'Top Bretagne F/G', icon: BarChart3 },
-      { to: '/pro/prospects-carte', label: 'Carte', icon: Map },
-      { to: '/pro/marketplace-artisans', label: 'Marketplace artisans', icon: ShoppingBag },
-    ],
-  },
-  { to: '/pro/terrain', label: 'Terrain', icon: Map },
-  // IA unifiée : un seul lien — le sélecteur de mode (Chiffrage/DTU/Courrier)
-  // + l'historique sont DANS la page /pro/ia (Phase R3 + correction 2026-05-04).
-  { to: '/pro/ia', label: 'IA Bâtiment', icon: Sparkles, feature: 'aiChiffrage' },
-  // Audits DPE 3CL : Pro RGE génère un audit officiel à partir de l'adresse + caractéristiques.
-  // C'est l'équivalent BRH de "simulation Cap Rénov+".
-  { to: '/pro/audits', label: 'Audits DPE', icon: ClipboardCheck },
-  {
-    id: 'equipe',
-    label: 'Équipe & Réseau',
-    icon: Users,
-    defaultTo: '/pro/equipe',
-    children: [
-      { to: '/pro/equipe', label: 'Mes employés', icon: Users, permission: 'canManageEmployees' },
-      { to: '/pro/vendeurs', label: 'Mon réseau', icon: Network, feature: 'recruitmentPyramid' },
-      { to: '/pro/stats-equipe', label: 'Stats équipe', icon: BarChart3, feature: 'teamStats' },
-    ],
-  },
-  {
-    id: 'finance',
-    label: 'Finance',
-    icon: Euro,
-    permission: 'canViewFinance',
-    defaultTo: '/pro/commissions',
-    children: [
-      { to: '/pro/commissions', label: 'Commissions', icon: Euro },
-      { to: '/pro/mes-leads-artisans', label: 'Mes leads artisans', icon: ShoppingBag },
-      { to: '/pro/analytics', label: 'Analytics', icon: BarChart3 },
-      { to: '/pro/abonnement', label: 'Abonnement', icon: Euro },
-      { to: '/pro/rapport', label: 'Rapport mensuel', icon: BarChart3, feature: 'monthlyPdfReport' },
-    ],
-  },
-  {
-    id: 'comm',
-    label: 'Communication',
-    icon: MessageSquare,
-    defaultTo: '/pro/messages',
-    children: [
-      { to: '/pro/messages', label: 'Messages', icon: MessageSquare },
-      { to: '/pro/reseaux-sociaux', label: 'Réseaux sociaux', icon: Share2, feature: 'socialMediaPosts' },
-      { to: '/pro/qrcode', label: 'QR Code', icon: QrCode, feature: 'qrCodeGeneration' },
-    ],
-  },
-  { to: '/pro/profil', label: 'Mon entreprise', icon: Building2 },
-]
+// Phase B 2026-05-08 — fusion Pro/Artisan : si l'user a une fiche brh_artisans_rge,
+// on injecte un groupe "Activité RGE" qui pointe vers les pages /artisan/* existantes
+// (missions BRH, agenda, factures commission, profil RGE). Pas de duplication, juste
+// augmentation de menu. L'ArtisanShell reste actif pour ces routes (rétrocompat 100%).
+const RGE_GROUP: NavGroup = {
+  id: 'rge',
+  label: 'Activité RGE',
+  icon: Award,
+  defaultTo: '/artisan/missions',
+  children: [
+    { to: '/artisan/missions', label: 'Mes missions BRH', icon: Briefcase },
+    { to: '/artisan/agenda', label: 'Agenda', icon: Calendar },
+    { to: '/artisan/factures', label: 'Factures BRH', icon: FileText },
+    { to: '/artisan/profil', label: 'Profil RGE', icon: Award },
+  ],
+}
+
+function buildNav(hasRge: boolean): NavEntry[] {
+  const base: NavEntry[] = [
+    { to: '/pro', label: 'Accueil', icon: LayoutDashboard },
+    // Phase 11.7: lien /reseau retiré pour les pros — réservé aux agences en V1.
+    {
+      id: 'prospection',
+      label: 'Prospection',
+      icon: Target,
+      defaultTo: '/pro/prospects',
+      children: [
+        { to: '/pro/prospects', label: 'Mes prospects', icon: UserPlus },
+        { to: '/pro/prospects-bretagne', label: 'Top Bretagne F/G', icon: BarChart3 },
+        { to: '/pro/prospects-carte', label: 'Carte', icon: Map },
+        { to: '/pro/marketplace-artisans', label: 'Marketplace artisans', icon: ShoppingBag },
+      ],
+    },
+    { to: '/pro/terrain', label: 'Terrain', icon: Map },
+    // IA unifiée : un seul lien — le sélecteur de mode (Chiffrage/DTU/Courrier)
+    // + l'historique sont DANS la page /pro/ia (Phase R3 + correction 2026-05-04).
+    { to: '/pro/ia', label: 'IA Bâtiment', icon: Sparkles, feature: 'aiChiffrage' },
+    // Audits DPE 3CL : Pro RGE génère un audit officiel à partir de l'adresse + caractéristiques.
+    // C'est l'équivalent BRH de "simulation Cap Rénov+".
+    { to: '/pro/audits', label: 'Audits DPE', icon: ClipboardCheck },
+    {
+      id: 'equipe',
+      label: 'Équipe & Réseau',
+      icon: Users,
+      defaultTo: '/pro/equipe',
+      children: [
+        { to: '/pro/equipe', label: 'Mes employés', icon: Users, permission: 'canManageEmployees' },
+        { to: '/pro/vendeurs', label: 'Mon réseau', icon: Network, feature: 'recruitmentPyramid' },
+        { to: '/pro/stats-equipe', label: 'Stats équipe', icon: BarChart3, feature: 'teamStats' },
+      ],
+    },
+    {
+      id: 'finance',
+      label: 'Finance',
+      icon: Euro,
+      permission: 'canViewFinance',
+      defaultTo: '/pro/commissions',
+      children: [
+        { to: '/pro/commissions', label: 'Commissions', icon: Euro },
+        { to: '/pro/mes-leads-artisans', label: 'Mes leads artisans', icon: ShoppingBag },
+        { to: '/pro/analytics', label: 'Analytics', icon: BarChart3 },
+        { to: '/pro/abonnement', label: 'Abonnement', icon: Euro },
+        { to: '/pro/rapport', label: 'Rapport mensuel', icon: BarChart3, feature: 'monthlyPdfReport' },
+      ],
+    },
+    {
+      id: 'comm',
+      label: 'Communication',
+      icon: MessageSquare,
+      defaultTo: '/pro/messages',
+      children: [
+        { to: '/pro/messages', label: 'Messages', icon: MessageSquare },
+        { to: '/pro/reseaux-sociaux', label: 'Réseaux sociaux', icon: Share2, feature: 'socialMediaPosts' },
+        { to: '/pro/qrcode', label: 'QR Code', icon: QrCode, feature: 'qrCodeGeneration' },
+      ],
+    },
+    { to: '/pro/profil', label: 'Mon entreprise', icon: Building2 },
+  ]
+  // Insertion juste après "Audits DPE" (cohérent : modules métier RGE groupés)
+  if (hasRge) {
+    const insertAt = base.findIndex((e) => !isGroup(e) && e.to === '/pro/audits') + 1
+    base.splice(insertAt, 0, RGE_GROUP)
+  }
+  return base
+}
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   isActive
@@ -143,6 +173,10 @@ export default function ProShell() {
   const { user, signOut } = useAuth()
   const { branding, features } = useTenant()
   const location = useLocation()
+  // Phase B 2026-05-08 — détection certif RGE pour augmentation de menu.
+  const { data: artisan } = useMyArtisan()
+  const hasRge = !!artisan
+  const NAV = buildNav(hasRge)
 
   // Auto-expand le groupe qui contient la route active.
   const initialOpen = NAV.filter(

@@ -6,6 +6,34 @@
 ---
 
 
+## 2026-05-08 — Phase B + C : fusion menu Pro/Artisan + teaser MLM particulier
+
+- **Contexte** : continuation de la refonte 4 personas. Phase B fusionne le menu Pro/Artisan (les 2 espaces conservent leurs routes mais s'augmentent mutuellement). Phase C amorce le funnel MLM côté particulier.
+- **Phase B livrée** :
+  - `ProShell.tsx` : nouveau groupe pliable **"Activité RGE"** (Missions BRH, Agenda, Factures BRH, Profil RGE) injecté dynamiquement après "Audits DPE" si `useMyArtisan()` retourne une fiche. Aucune duplication de pages — les liens pointent vers les routes `/artisan/*` existantes (rétrocompat 100 %). Pas de migration DB.
+  - `LoginPage.tsx` : si l'user a `brh_companies` ET `brh_artisans_rge`, on n'affiche plus 2 entrées séparées dans le switcher. On le redirige sur `/pro` (qui contient le menu RGE augmenté). Si seulement `brh_artisans_rge` (legacy magic link onboarding), on continue à pointer `/artisan`.
+  - `ArtisanDashboard.tsx` : banner emerald "Cet espace est désormais intégré à votre portail Pro" si l'user a aussi `brh_companies`. Lien vers `/pro`.
+- **Phase C livrée** :
+  - `PartDashboard.tsx` : banner persistant en gradient emerald **"Gagnez 100 € sur vos prochains travaux ou un chèque cadeau"** affiché si le particulier a `nbSigne === 0 && nbTotal === 0` (= particulier "endormi"). Disparaît automatiquement dès le 1er parrainage. CTA : copier le lien parrain (déjà existant en bas de page) + bouton WhatsApp pré-rempli avec le code referral.
+- **Fichiers modifiés** :
+  - `src/components/layout/ProShell.tsx` — buildNav(hasRge) + import `useMyArtisan` + 5 icônes (Award, Briefcase, Calendar, FileText)
+  - `src/pages/public/LoginPage.tsx` — fusion logique pro/artisan dans `listAccessiblePortals`
+  - `src/pages/artisan/ArtisanDashboard.tsx` — banner /pro + import `useMyCompany` + `useAuth`
+  - `src/pages/particulier/PartDashboard.tsx` — banner activation parrainage + WhatsApp share
+- **Migrations créées** : aucune
+- **Pages wiki impactées** : log.md
+- **Risque** : Low — toutes les routes existantes restent fonctionnelles, augmentation de menu uniquement, banner conditionnel, pas de query DB supplémentaire critique (useMyArtisan staleTime 60s, useMyCompany staleTime déjà géré)
+- **Tests** : `npm run build` ✅ vert (22.33s, 0 TS error)
+- **Status** : ✅ DONE
+
+### Phase D restante (session future, ~2h)
+- `/reseau` accessible aussi sous `ProShell` + `ParticulierShell` (aujourd'hui réservé Agences via ReseauGuard transverse mais UI sous AgenceShell only)
+- Filtres cross-persona (Agences / Pros / Particuliers parrains) dans les pages Réseau
+- Permettre à un Pro d'envoyer un message à une Agence et vice versa
+
+---
+
+
 ## 2026-05-08 — Phase A clarification inscription/login (4 personas)
 
 - **Contexte** : Philippe « ça fout un peu le bordel » sur la connexion à BRH Habitat. Audit révèle 7 types d'inscriptions dispersés sur 5 pages, redirection silencieuse au login basée sur memberships cachés. Plan en 4 phases (A: hub inscription + login switcher, B: fusion Pro/Artisan, C: particulier affilié = teaser MLM, D: réseau cross-persona).

@@ -28,6 +28,8 @@ import {
   useMyLeadsReceived,
   useRespondToLead,
 } from '@/hooks/queries/artisan-portal'
+import { useMyCompany } from '@/hooks/queries'
+import { useAuth } from '@/hooks/useAuth'
 import type { LeadAction } from '@/api/artisan-portal'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -83,8 +85,12 @@ function formatDate(s: string | null): string {
 }
 
 export default function ArtisanDashboard() {
+  const { user } = useAuth()
   const { data: artisan, isLoading: aLoading } = useMyArtisan()
   const { data: leads, isLoading: lLoading } = useMyLeadsReceived()
+  // Phase B 2026-05-08 — détecte si l'user a aussi un compte Pro (brh_companies)
+  // pour proposer la fusion d'espaces (suggérer /pro qui contient tout).
+  const { data: company } = useMyCompany(user?.id)
   const respond = useRespondToLead()
   const [actionError, setActionError] = useState<string | null>(null)
   const [signingLeadId, setSigningLeadId] = useState<string | null>(null)
@@ -152,6 +158,31 @@ export default function ArtisanDashboard() {
 
   return (
     <div className="container mx-auto max-w-7xl space-y-6 p-6">
+      {/* Phase B 2026-05-08 — banner fusion Pro/Artisan */}
+      {company && (
+        <Link
+          to="/pro"
+          className="block rounded-xl border border-emerald-200 bg-emerald-50 p-3 hover:border-emerald-300 hover:bg-emerald-100 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
+              <ArrowRight size={16} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-emerald-900">
+                Cet espace est désormais intégré à votre portail Pro
+              </p>
+              <p className="text-xs text-emerald-800 mt-0.5">
+                Retrouvez vos missions BRH, agenda et factures dans un menu unifié avec votre prospection, chiffrage et équipe.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-emerald-700 underline shrink-0">
+              Aller sur l'espace Pro
+            </span>
+          </div>
+        </Link>
+      )}
+
       {/* Top nav artisan */}
       <div className="flex items-center justify-end">
         <Link

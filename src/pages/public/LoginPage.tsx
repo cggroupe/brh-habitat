@@ -134,9 +134,14 @@ async function listAccessiblePortals(
     ])
 
   if (agence) portals.push({ id: 'agence', ...PORTAL_META.agence })
-  if (artisan) portals.push({ id: 'artisan', ...PORTAL_META.artisan })
-  // brh_companies sans certif RGE ⇒ Pro générique. Sinon Artisan suffit.
-  if (company && !artisan) portals.push({ id: 'pro', ...PORTAL_META.pro })
+  // Phase B 2026-05-08 — fusion Pro/Artisan : si l'user a une fiche brh_artisans_rge
+  // ET une brh_companies, on prioritise /pro (qui inclut le menu RGE augmenté).
+  // Sinon on tombe sur /artisan (legacy onboarding magic link) ou /pro standard.
+  if (company) {
+    portals.push({ id: 'pro', ...PORTAL_META.pro })
+  } else if (artisan) {
+    portals.push({ id: 'artisan', ...PORTAL_META.artisan })
+  }
 
   // Particulier + affilié = un seul espace pour l'instant (Phase C couvrira le mode MLM).
   if (role === 'particulier' || affiliate) {
