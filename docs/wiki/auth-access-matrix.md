@@ -1,6 +1,8 @@
 # Auth & Access Matrix — Source de vérité (2026-05-08)
 
-> **Pattern Karpathy LLM Wiki** — Page consolidée après refonte 4 personas (Phases A → D + ménage). Décrit qui peut faire quoi, qui clique où, et où on peut aller depuis n'importe quel point.
+> **Pattern Karpathy LLM Wiki** — Page consolidée après refonte 4 personas (Phases A → D + ménage + Phase E nettoyage RGE). Décrit qui peut faire quoi, qui clique où, et où on peut aller depuis n'importe quel point.
+>
+> **⚠️ MAJ Phase E (2026-05-08 fin journée)** — Suppression du système "Pro RGE distinct". Il n'y a désormais qu'**un seul type Professionnel** qui peut tout faire (prospection + chantiers + propositions). RGE devient un attribut profil optionnel, pas un type de compte. Les routes `/pro/missions`, `/pro/agenda`, `/pro/factures-brh`, `/pro/profil-rge` sont supprimées. Question RGE à l'inscription supprimée. Groupe "Activité RGE" dans ProShell supprimé. Le portail `/artisan/*` reste accessible en legacy (rétrocompat magic link historique) mais n'est plus la cible préférée.
 >
 > Source : `src/App.tsx` (78 routes), `src/components/auth/*Guard.tsx` (8 guards), `src/components/layout/*Shell.tsx` (8 shells), `src/pages/public/Register*.tsx` + `LoginPage.tsx`.
 >
@@ -8,19 +10,21 @@
 
 ---
 
-## 1. Personas (9 profils utilisateur)
+## 1. Personas (7 profils utilisateur — post Phase E)
 
 | # | Persona | Marqueur DB primaire | Marqueurs DB secondaires |
 |---|---------|---------------------|---------------------------|
 | 1 | **Visiteur** | non authentifié | — |
 | 2 | **Particulier classique** | `profiles.role='particulier'` | `brh_affiliates` auto-créé (trigger) — aucun parrainage signé |
 | 3 | **Particulier affilié engagé** | `profiles.role='particulier'` | `brh_affiliates` avec ≥1 prospect parrainé status `signe`/`termine` |
-| 4 | **Pro / Artisan BTP** | `profiles.role='pro'` | `brh_companies.owner_id` |
-| 5 | **Pro RGE** | `profiles.role='pro'` | `brh_companies.owner_id` + `brh_artisans_rge.profile_id` |
-| 6 | **Artisan legacy** | aucun `brh_companies` | `brh_artisans_rge.profile_id` (onboarding magic link historique) |
-| 7 | **Agence immobilière** | `profiles.role='pro'` | `brh_partner_contracts.signer_profile_id` avec `partner_type='agence_immo'` + `status='active'` |
-| 8 | **Admin** | `profiles.role='admin'` | — |
-| 9 | **User legacy** | `profiles.role='user'` | aucun membership (orphelin historique) |
+| 4 | **Professionnel** (BTP, RGE ou non) | `profiles.role='pro'` | `brh_companies.owner_id` — peut faire prospection + chantiers + propositions |
+| 5 | **Artisan legacy** | aucun `brh_companies` | `brh_artisans_rge.profile_id` (onboarding magic link historique — déprécié) |
+| 6 | **Agence immobilière** | `profiles.role='pro'` | `brh_partner_contracts.signer_profile_id` avec `partner_type='agence_immo'` + `status='active'` |
+| 7 | **Admin** | `profiles.role='admin'` | — |
+
+**Suppressions Phase E** : "Pro RGE" et "User legacy" retirés de la matrice :
+- Pro RGE = simple Professionnel (RGE est un attribut profil optionnel, pas un persona). La table `brh_artisans_rge` reste utilisée par le marketplace (`/pro/marketplace-artisans`) pour suggérer des artisans certifiés à des clients.
+- User legacy (`role='user'`) = à migrer one-shot vers `role='particulier'` (anomalie connue, voir Section 6).
 
 Notes :
 - **Pro et Agence partagent `role='pro'`** : la distinction se fait via les tables membership (`brh_companies` vs `brh_partner_contracts`). C'est intentionnel (flexibilité) mais ça oblige le LoginPage à faire 4 queries au login.
@@ -57,18 +61,19 @@ Tous les rôles authentifiés ont accès en théorie, mais en pratique les porta
 
 **Attention** : ces routes ne redirigent PAS vers le portail spécialisé. Un Pro authentifié qui tape `/mes-logements` à la main y a accès. C'est la responsabilité du LoginPage de rediriger immédiatement vers `/pro` après auth.
 
-### 2.3 Routes Pro (ProShell + ProGuard) — 33 routes
+### 2.3 Routes Pro (ProShell + ProGuard) — 29 routes
 
-Guard : `role IN ('pro', 'admin')`. Inclut désormais (Phase D ménage) les 4 alias RGE qui rendent les composants `/artisan/*` à l'intérieur de `ProShell`.
+Guard : `role IN ('pro', 'admin')`. **Phase E (08/05 fin)** — Suppression des 4 alias RGE (`/pro/missions`, `/pro/agenda`, `/pro/factures-brh`, `/pro/profil-rge`) car le système "Pro RGE distinct" a été supprimé.
 
-| Route | Pro | Pro RGE | Artisan legacy | Agence | Admin | Particulier |
-|-------|-----|---------|----------------|--------|-------|-------------|
-| `/pro` | ✅ | ✅ | 🔄 `/tableau-de-bord` | 🔄 `/tableau-de-bord` | ✅ | 🔄 `/tableau-de-bord` |
-| `/pro/prospects[/...]`, `/pro/audits[/...]`, `/pro/equipe`, `/pro/messages`, `/pro/profil`, `/pro/terrain`, `/pro/marketplace-artisans`, `/pro/prospects-bretagne`, `/pro/prospects-carte` | ✅ | ✅ | 🔄 | 🔄 | ✅ | 🔄 |
-| `/pro/commissions`, `/pro/analytics`, `/pro/abonnement`, `/pro/rapport`, `/pro/mes-leads-artisans` | 🛡️ `canViewFinance` | 🛡️ | 🔄 | 🔄 | 🛡️ | 🔄 |
-| `/pro/reseaux-sociaux`, `/pro/qrcode`, `/pro/vendeurs`, `/pro/stats-equipe`, `/pro/ia[/historique]` | ✅* feature | ✅* | 🔄 | 🔄 | ✅* | 🔄 |
-| `/pro/missions`, `/pro/agenda`, `/pro/factures-brh`, `/pro/profil-rge` (Phase D ménage) | ✅ | ✅ | 🔄 | 🔄 | ✅ | 🔄 |
-| `/pro/chiffrage`, `/pro/chiffrages`, `/pro/assistant` (legacy) | 🔄 `/pro/ia[?mode=...]` | 🔄 | 🔄 | 🔄 | 🔄 | 🔄 |
+| Route | Professionnel | Artisan legacy | Agence | Admin | Particulier |
+|-------|---------------|----------------|--------|-------|-------------|
+| `/pro` | ✅ | 🔄 `/tableau-de-bord` | 🔄 `/tableau-de-bord` | ✅ | 🔄 `/tableau-de-bord` |
+| `/pro/prospects[/...]`, `/pro/audits[/...]`, `/pro/equipe`, `/pro/messages`, `/pro/profil`, `/pro/terrain`, `/pro/marketplace-artisans`, `/pro/prospects-bretagne`, `/pro/prospects-carte` | ✅ | 🔄 | 🔄 | ✅ | 🔄 |
+| `/pro/commissions`, `/pro/analytics`, `/pro/abonnement`, `/pro/rapport`, `/pro/mes-leads-artisans` | 🛡️ `canViewFinance` | 🔄 | 🔄 | 🛡️ | 🔄 |
+| `/pro/reseaux-sociaux`, `/pro/qrcode`, `/pro/vendeurs`, `/pro/stats-equipe`, `/pro/ia[/historique]` | ✅* feature | 🔄 | 🔄 | ✅* | 🔄 |
+| `/pro/chiffrage`, `/pro/chiffrages`, `/pro/assistant` (legacy) | 🔄 `/pro/ia[?mode=...]` | 🔄 | 🔄 | 🔄 | 🔄 |
+
+**Note** : les chantiers proposés par d'autres pros / agences / architectes sont sur `/reseau/chantiers` (marketplace Phase 18, accessible aux Pros via Phase D).
 
 ### 2.4 Routes Particulier (ParticulierShell + ParticulierGuard) — 14 routes
 

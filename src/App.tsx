@@ -388,13 +388,6 @@ export default function App() {
                 <Route path="/pro/chiffrage" element={<Navigate to="/pro/ia?mode=chiffrage" replace />} />
                 <Route path="/pro/chiffrages" element={<Navigate to="/pro/ia/historique" replace />} />
                 <Route path="/pro/assistant" element={<Navigate to="/pro/ia?mode=dtu" replace />} />
-                {/* Phase D ménage 2026-05-08 — alias RGE sous /pro/*.
-                    Réutilisent les composants Artisan pour rester dans ProShell
-                    (sinon clic sur groupe RGE déconnectait l'user vers ArtisanShell). */}
-                <Route path="/pro/missions" element={<ArtisanMissions />} />
-                <Route path="/pro/agenda" element={<ArtisanAgenda />} />
-                <Route path="/pro/factures-brh" element={<ArtisanFactures />} />
-                <Route path="/pro/profil-rge" element={<ArtisanProfil />} />
               </Route>
             </Route>
 

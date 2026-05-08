@@ -6,6 +6,41 @@
 ---
 
 
+## 2026-05-08 — Phase E : suppression du système "Pro RGE distinct"
+
+- **Contexte** : Philippe clarifie sa vision après la cartographie : "Il n'y a pas de professionnels, ensuite des artisans classiques, ensuite des artisans RGE. Il y a UN SEUL TYPE de Professionnel qui peut faire prospection + chantiers + propositions. Ils peuvent être RGE s'ils veulent, c'est tant mieux pour eux." Le système RGE distinct ajouté en Phase A/B (question RGE obligatoire, groupe "Activité RGE" dans ProShell, alias /pro/missions etc.) ne correspond pas à sa vision.
+- **Suppressions livrées** :
+  - **`RegisterProPage.tsx`** : retrait de la question RGE Oui/Non obligatoire (state `isRgeIntended`, validation, bloc UI 30 lignes, paramètre `user_metadata.is_rge_intended`, import icône `Award`). L'inscription pro est désormais simple : SIRET → compte personnel → done.
+  - **`ProShell.tsx`** : retrait du groupe pliable "Activité RGE" (4 entrées Missions BRH / Agenda / Factures BRH / Profil RGE), retrait du hook `useMyArtisan`, retrait de la fonction `buildNav(hasRge)` (devient `buildNav()`), retrait des 4 imports d'icônes (Award, Briefcase, Calendar, FileText).
+  - **`App.tsx`** : retrait des 4 routes alias `/pro/missions`, `/pro/agenda`, `/pro/factures-brh`, `/pro/profil-rge` qui réutilisaient les composants Artisan dans ProShell.
+  - **`LoginPage.tsx`** : labels mis à jour ("Espace Pro" → "Espace Professionnel", "Espace Artisan RGE" → "Espace Artisan"). Logique `listAccessiblePortals` simplifiée : si `brh_companies` → /pro, sinon si `brh_artisans_rge` legacy → /artisan.
+  - **`ArtisanDashboard.tsx`** : reformulation du banner — n'évoque plus une "fusion" / "intégration" (le portail Pro est un espace standalone, pas une intégration de l'Artisan). Texte adapté.
+- **Conservé intact** :
+  - Portail `/artisan/*` complet (14 pages, ArtisanShell, ArtisanGuard) — rétrocompat 100 % pour les artisans onboardés via magic link historique
+  - Table `brh_artisans_rge` — utilisée par `/pro/marketplace-artisans` pour suggérer des artisans certifiés à des clients (rôle "annuaire" pas "type de compte")
+  - Lien "Réseau pro" dans ProShell (Phase D) — reste l'accès au marketplace `/reseau/chantiers` (chantiers postés par agences / architectes / autres pros)
+- **Fichiers modifiés** :
+  - `src/pages/public/RegisterProPage.tsx` (-50 lignes)
+  - `src/components/layout/ProShell.tsx` (-30 lignes)
+  - `src/App.tsx` (-7 lignes)
+  - `src/pages/public/LoginPage.tsx` (~5 lignes labels + logique inchangée)
+  - `src/pages/artisan/ArtisanDashboard.tsx` (banner reformulé)
+  - `docs/wiki/auth-access-matrix.md` (mise à jour personas 9 → 7, section Pro 33 → 29 routes)
+- **Migrations créées** : aucune
+- **Pages wiki impactées** : auth-access-matrix.md, log.md
+- **Risque** : Low — aucune migration DB, le portail /artisan reste fonctionnel pour les legacy, les composants ArtisanMissions/Agenda/Factures/Profil restent accessibles via /artisan (pas supprimés)
+- **Tests** : `npm run build` ✅ vert (21.16s, 0 TS error)
+- **Status** : ✅ DONE
+
+### Vision finale (post Phase E)
+- **3 portails actifs** : Particulier (avec teaser MLM), Professionnel (BTP unifié), Agence immobilière
+- **1 portail legacy** : Artisan (magic link historique, dépréciation soft)
+- **1 portail admin** : Admin (modération)
+- **1 réseau cross-persona** : Réseau pro accessible aux Pros + Agences (Phase D)
+
+---
+
+
 ## 2026-05-08 — Cartographie auth & access matrix (page wiki dédiée)
 
 - **Contexte** : Philippe demande "audit complet et cartographie comme il faut avec le wiki KG pour voir si tout est correct et que le KG est bien compilé". Après les 4 phases A-D + ménage, besoin d'une source de vérité unique pour qui peut accéder à quoi.

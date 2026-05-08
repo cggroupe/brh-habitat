@@ -53,15 +53,15 @@ const PORTAL_META: Record<PortalAccess['id'], Omit<PortalAccess, 'id'>> = {
   },
   pro: {
     path: '/pro',
-    label: 'Espace Pro',
-    description: 'Prospection BTP, chiffrage, équipe',
+    label: 'Espace Professionnel',
+    description: 'Prospection, chantiers, chiffrage, équipe',
     Icon: Wrench,
     accent: 'amber',
   },
   artisan: {
     path: '/artisan',
-    label: 'Espace Artisan RGE',
-    description: 'Missions BRH, agenda, facturation',
+    label: 'Espace Artisan',
+    description: 'Missions et agenda',
     Icon: Wrench,
     accent: 'amber',
   },
@@ -134,9 +134,9 @@ async function listAccessiblePortals(
     ])
 
   if (agence) portals.push({ id: 'agence', ...PORTAL_META.agence })
-  // Phase B 2026-05-08 — fusion Pro/Artisan : si l'user a une fiche brh_artisans_rge
-  // ET une brh_companies, on prioritise /pro (qui inclut le menu RGE augmenté).
-  // Sinon on tombe sur /artisan (legacy onboarding magic link) ou /pro standard.
+  // Pro = espace unique pour tous les BTP (RGE ou non). Si pas de brh_companies
+  // mais brh_artisans_rge présent → fallback /artisan (legacy onboarding magic link
+  // historique, conservé pour rétrocompat).
   if (company) {
     portals.push({ id: 'pro', ...PORTAL_META.pro })
   } else if (artisan) {

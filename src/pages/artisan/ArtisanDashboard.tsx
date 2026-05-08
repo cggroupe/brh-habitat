@@ -158,7 +158,7 @@ export default function ArtisanDashboard() {
 
   return (
     <div className="container mx-auto max-w-7xl space-y-6 p-6">
-      {/* Phase B 2026-05-08 — banner fusion Pro/Artisan */}
+      {/* Banner si l'user a aussi un compte Pro : on l'oriente vers le portail unique. */}
       {company && (
         <Link
           to="/pro"
@@ -170,14 +170,14 @@ export default function ArtisanDashboard() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-emerald-900">
-                Cet espace est désormais intégré à votre portail Pro
+                Vous avez aussi accès à votre espace Professionnel
               </p>
               <p className="text-xs text-emerald-800 mt-0.5">
-                Retrouvez vos missions BRH, agenda et factures dans un menu unifié avec votre prospection, chiffrage et équipe.
+                Retrouvez la prospection DPE, le chiffrage IA, le réseau pro et le marketplace chantiers.
               </p>
             </div>
             <span className="text-xs font-bold text-emerald-700 underline shrink-0">
-              Aller sur l'espace Pro
+              Aller à mon espace Pro
             </span>
           </div>
         </Link>

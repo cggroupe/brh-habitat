@@ -33,10 +33,6 @@ import {
   Target,
   ShoppingBag,
   ClipboardCheck,
-  Award,
-  Briefcase,
-  Calendar,
-  FileText,
   Globe,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
@@ -44,7 +40,6 @@ import NotificationBell from '@/components/shared/NotificationBell'
 import PortalMobileNav from '@/components/shared/PortalMobileNav'
 import { useTenant } from '@/config/TenantContext'
 import { PermissionGate } from '@/components/auth/PermissionGate'
-import { useMyArtisan } from '@/hooks/queries/artisan-portal'
 import type { TenantFeatures } from '@/config/tenant.types'
 import type { Permission } from '@/types/permissions'
 
@@ -74,24 +69,7 @@ function isGroup(e: NavEntry): e is NavGroup {
   return 'children' in e
 }
 
-// Phase B 2026-05-08 — fusion Pro/Artisan : si l'user a une fiche brh_artisans_rge,
-// on injecte un groupe "Activité RGE" qui pointe vers les pages /artisan/* existantes
-// (missions BRH, agenda, factures commission, profil RGE). Pas de duplication, juste
-// augmentation de menu. L'ArtisanShell reste actif pour ces routes (rétrocompat 100%).
-const RGE_GROUP: NavGroup = {
-  id: 'rge',
-  label: 'Activité RGE',
-  icon: Award,
-  defaultTo: '/pro/missions',
-  children: [
-    { to: '/pro/missions', label: 'Mes missions BRH', icon: Briefcase },
-    { to: '/pro/agenda', label: 'Agenda', icon: Calendar },
-    { to: '/pro/factures-brh', label: 'Factures BRH', icon: FileText },
-    { to: '/pro/profil-rge', label: 'Profil RGE', icon: Award },
-  ],
-}
-
-function buildNav(hasRge: boolean): NavEntry[] {
+function buildNav(): NavEntry[] {
   const base: NavEntry[] = [
     { to: '/pro', label: 'Accueil', icon: LayoutDashboard },
     // Phase D 2026-05-08 — réseau pro cross-persona : élargi aux brh_companies (pros).
@@ -154,11 +132,6 @@ function buildNav(hasRge: boolean): NavEntry[] {
     },
     { to: '/pro/profil', label: 'Mon entreprise', icon: Building2 },
   ]
-  // Insertion juste après "Audits DPE" (cohérent : modules métier RGE groupés)
-  if (hasRge) {
-    const insertAt = base.findIndex((e) => !isGroup(e) && e.to === '/pro/audits') + 1
-    base.splice(insertAt, 0, RGE_GROUP)
-  }
   return base
 }
 
@@ -176,10 +149,7 @@ export default function ProShell() {
   const { user, signOut } = useAuth()
   const { branding, features } = useTenant()
   const location = useLocation()
-  // Phase B 2026-05-08 — détection certif RGE pour augmentation de menu.
-  const { data: artisan } = useMyArtisan()
-  const hasRge = !!artisan
-  const NAV = buildNav(hasRge)
+  const NAV = buildNav()
 
   // Auto-expand le groupe qui contient la route active.
   const initialOpen = NAV.filter(
