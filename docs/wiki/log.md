@@ -5,6 +5,63 @@
 
 ---
 
+
+## 2026-05-08 (9e session) — Audit UX/UI complet (référentiel startup US + MLM)
+
+- **Contexte** : Philippe « tu me fais le plus gros audit UX que tu puisses, ressemble à une startup américaine prospection + MLM marketing réseau ».
+
+### Livrable
+- Document complet `docs/wiki/audit-ux-2026-05-08.md` (13 sections, ~600 lignes) :
+  - TL;DR + verdict (5.4/10 actuel · cible 9/10)
+  - Métriques actuelles (186 pages, 8 shells, 141 tables DB)
+  - Top 25 problèmes identifiés (8 critiques · 10 importants · 10 MLM-spécifiques · 8 mineurs)
+  - Refonte charte graphique unifiée (palette tokens, règles composition, typographie)
+  - Refonte Information Architecture (sidebar pattern groupes pliables — déjà appliqué AgenceShell)
+  - 6 pages clés auditées en détail (Dashboard, Score Vente, Foncier Carte, Foncier Prospects, Réseau, Onboarding)
+  - 4 user flows analysés (Signup, Daily use, MLM viral loop, Conversion freemium)
+  - Recommandations MLM spécifiques (leaderboard, arbre D3, share-to-earn, streak)
+  - Audit mobile + a11y
+  - Roadmap 5 sprints (~14 jours) avec 30 tâches priorisées
+  - Comparaison référentielle Stripe / Linear / Pipedrive / Apollo / doTerra (BRH score 2-5/10 contre eux)
+  - 8 décisions à prendre par Philippe
+
+### Audit chiffré
+| Catégorie | Score actuel |
+|---|---|
+| Charte graphique | 4/10 |
+| Navigation / IA | 7/10 (post-fix sidebar) |
+| Pages clés | 6/10 |
+| Parcours user | 5/10 |
+| **MLM / marketing réseau** | **2/10** ⚠️ gap business le plus grand |
+| Mobile / responsive | 6/10 |
+| Performance / a11y | 6/10 |
+| Polish | 4/10 |
+| **Total pondéré** | **5.4/10** |
+
+### Insights clés
+- **Charte multi-shell incohérente** : 8 layouts × 8 palettes différentes (vert/slate/cyan/amber/orange) → impression de "changer de site"
+- **MLM invisible** alors que c'est le modèle économique : pas de leaderboard, arbre MLM caché, pas de share-to-earn, pas de streak. Gap principal vs cible business 20k€ MRR M+12.
+- **Dashboard "marketing public"** (hero text-5xl + gradient sombre + KPI gradients fluo) au lieu d'Inbox actionnable Linear-style
+- **Manque Cmd+K command palette** standard 2026 (Linear/Vercel/Stripe/Notion)
+- **Tableaux pas mobile-first** (Foncier Prospects 13 colonnes inutilisable smartphone)
+
+### Roadmap 5 sprints (~14 jours / 70-90h)
+1. **Sprint 1 — fondations** (3j) : palette tokens, suppression gradients, standardisation 5 tokens texte
+2. **Sprint 2 — Dashboard + nav** (4j) : Inbox style Linear, Cmd+K, breadcrumbs, URL state, saved views, Sonner toast
+3. **Sprint 3 — MLM viralité** (3j) : leaderboard Bretagne, arbre D3, badges visibles, share-to-earn templates, streak counter
+4. **Sprint 4 — mobile + a11y** (2j) : bottom tab bar, tableaux→cards mobile, sheets bottom, audit a11y
+5. **Sprint 5 — polish** (2j) : empty states, 404 custom, animations, dark mode, PWA install banner
+
+### Pages wiki impactées
+- ✅ NEW `audit-ux-2026-05-08.md`
+- ⏸ TODO `index.md` — ajouter référence
+- ⏸ TODO `architecture-snapshot.md` — relier roadmap UX
+
+### Status
+✅ DONE — Audit livré. Reste validation décisions Philippe (8 questions ouvertes en §13) puis exécution roadmap 5 sprints.
+
+---
+
 ## 2026-05-08 (8e session) — Phase 11.6 : SRU + ZNIEFF + ABF batch + score 22 règles + nettoyage emojis pro
 
 - **Contexte** : Audit complet précédent. Philippe « continue Phase 11.6 ». Bugs fix résiduels + sources reportées.

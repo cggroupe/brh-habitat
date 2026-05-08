@@ -72,6 +72,7 @@
 | [performance.md](performance.md) | ⭐ SW cache v3, Sentry, staleTime, lazy imports, monitoring |
 | [tests.md](tests.md) | ⭐ État tests (aucun auto), roadmap implémentation Vitest/Playwright |
 | [playbooks.md](playbooks.md) | ⭐ 10 playbooks : RLS debug, Clerk flow, migrations, commissions cascade |
+| [audit-ux-2026-05-08.md](audit-ux-2026-05-08.md) | 🔍 **Audit UX/UI complet (08/05/2026)** — Référentiel startup US (Stripe/Linear/Pipedrive/Apollo) + MLM (doTerra/Beachbody). Score actuel **5.4/10** → cible 9/10. Top 25 problèmes priorisés. Roadmap 5 sprints / 30 tâches / 14 jours. Gap critique MLM **2/10** vs cible business 20k€ MRR. |
 
 ### Partie 4 — Méta
 
