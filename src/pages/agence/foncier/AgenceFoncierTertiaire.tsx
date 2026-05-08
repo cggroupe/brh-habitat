@@ -4,7 +4,7 @@
  * BODACC alerts (ventes commerciales / liquidations / radiations)
  * + permis Sit@del2 par commune/dept.
  */
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   Briefcase,
   AlertTriangle,
@@ -17,9 +17,11 @@ import {
   Calendar,
   MapPin,
   Euro,
+  Target,
 } from 'lucide-react'
 import { useBodaccCached, useRefreshBodacc, usePermis } from '@/hooks/queries/foncier-tertiaire'
 import type { BodaccFamille } from '@/api/foncier-tertiaire'
+import { classifyTertiaire, tertiaireSecteurLabel } from '@/lib/tertiaire-keywords'
 
 const BRETAGNE_DEPTS = [
   { code: '22', label: '22 — Côtes-d\'Armor' },
@@ -56,6 +58,9 @@ export default function AgenceFoncierTertiaire() {
   const [departement, setDepartement] = useState('29')
   const [famille, setFamille] = useState<BodaccFamille | 'all'>('all')
   const [tab, setTab] = useState<'bodacc' | 'permis'>('bodacc')
+  // Filtre "Tertiaire uniquement" — utile surtout sur procédures collectives
+  // pour identifier les locaux pro libérés (chantier rénovation à venir).
+  const [tertiaireOnly, setTertiaireOnly] = useState(false)
 
   const bodacc = useBodaccCached({
     departement,
@@ -70,6 +75,30 @@ export default function AgenceFoncierTertiaire() {
     days_back: 365,
     limit: 100,
   })
+
+  // Annotation tertiaire (heuristique sur dénomination — BODACC ne renvoie pas le NAF).
+  const annotated = useMemo(() => {
+    return (bodacc.data ?? []).map((a) => {
+      const secteur = classifyTertiaire(a.denomination)
+      return { ...a, _tertiaireSecteur: secteur }
+    })
+  }, [bodacc.data])
+
+  const filtered = useMemo(() => {
+    return tertiaireOnly ? annotated.filter((a) => a._tertiaireSecteur !== null) : annotated
+  }, [annotated, tertiaireOnly])
+
+  const tertiaireCount = useMemo(
+    () => annotated.filter((a) => a._tertiaireSecteur !== null).length,
+    [annotated],
+  )
+  const tertiaireLiquidationCount = useMemo(
+    () =>
+      annotated.filter(
+        (a) => a._tertiaireSecteur !== null && a.famille_avis === 'collectives',
+      ).length,
+    [annotated],
+  )
 
   return (
     <div className="p-4 lg:p-6 max-w-[1600px] mx-auto space-y-4">
@@ -140,6 +169,21 @@ export default function AgenceFoncierTertiaire() {
               <option value="collectives">Procédures collectives</option>
               <option value="radiations">Radiations</option>
             </select>
+            <label className="inline-flex items-center gap-2 text-xs font-medium text-slate-700 px-2 py-1.5 rounded-lg border border-slate-200 bg-white cursor-pointer hover:bg-slate-50">
+              <input
+                type="checkbox"
+                checked={tertiaireOnly}
+                onChange={(e) => setTertiaireOnly(e.target.checked)}
+                className="accent-emerald-600"
+              />
+              <Target size={12} className="text-emerald-600" />
+              Tertiaire uniquement
+              {tertiaireCount > 0 && (
+                <span className="ml-1 bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                  {tertiaireCount}
+                </span>
+              )}
+            </label>
             <button
               onClick={() =>
                 refreshBodacc.mutate({ departement, famille, days_back: 90, limit: 100 })
@@ -158,13 +202,43 @@ export default function AgenceFoncierTertiaire() {
         )}
       </div>
 
+      {/* Rapprochement KPI — tertiaire en liquidation = chantier rénovation potentiel */}
+      {tab === 'bodacc' && tertiaireLiquidationCount > 0 && (
+        <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 flex items-start gap-3">
+          <div className="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
+            <Target size={16} className="text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-emerald-900">
+              {tertiaireLiquidationCount} société{tertiaireLiquidationCount > 1 ? 's' : ''} tertiaire
+              {tertiaireLiquidationCount > 1 ? 's' : ''} en procédure collective
+            </p>
+            <p className="text-xs text-emerald-800 mt-0.5">
+              Restaurants, commerces, bureaux libérés = locaux à rénover. Ciblez en priorité ces
+              annonces pour décrocher des chantiers de transformation tertiaire.
+            </p>
+            {!tertiaireOnly && (
+              <button
+                onClick={() => {
+                  setFamille('collectives')
+                  setTertiaireOnly(true)
+                }}
+                className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-900 underline"
+              >
+                Filtrer ces opportunités →
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* BODACC tab */}
       {tab === 'bodacc' && (
         <>
           {bodacc.isLoading && (
             <p className="text-sm text-slate-400 text-center py-8">Chargement…</p>
           )}
-          {!bodacc.isLoading && (bodacc.data ?? []).length === 0 && (
+          {!bodacc.isLoading && filtered.length === 0 && (bodacc.data ?? []).length === 0 && (
             <div className="rounded-2xl border-2 border-dashed border-amber-200 bg-amber-50/30 p-8 text-center">
               <AlertTriangle size={32} className="mx-auto text-amber-400 mb-2" />
               <p className="text-sm font-semibold text-slate-700">Aucune alerte BODACC en cache</p>
@@ -173,21 +247,55 @@ export default function AgenceFoncierTertiaire() {
               </p>
             </div>
           )}
+          {!bodacc.isLoading && filtered.length === 0 && (bodacc.data ?? []).length > 0 && tertiaireOnly && (
+            <div className="rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50/30 p-8 text-center">
+              <Target size={32} className="mx-auto text-emerald-400 mb-2" />
+              <p className="text-sm font-semibold text-slate-700">
+                Aucune société tertiaire détectée sur ce filtre
+              </p>
+              <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                Élargissez la période ou désactivez le filtre tertiaire pour voir toutes les annonces.
+              </p>
+            </div>
+          )}
 
           <div className="space-y-2">
-            {(bodacc.data ?? []).map((a) => {
+            {filtered.map((a) => {
               const badge = FAMILLE_BADGE[a.famille_avis] ?? FAMILLE_BADGE.autres
               const { Icon } = badge
+              const tertiaireSecteur = a._tertiaireSecteur
+              const isTertiaireLiquidation =
+                tertiaireSecteur !== null && a.famille_avis === 'collectives'
               return (
                 <div
                   key={a.id_bodacc}
-                  className="bg-white rounded-xl border border-slate-200 hover:border-amber-300 p-4 transition"
+                  className={`bg-white rounded-xl border p-4 transition ${
+                    isTertiaireLiquidation
+                      ? 'border-emerald-300 ring-1 ring-emerald-200 hover:border-emerald-400'
+                      : 'border-slate-200 hover:border-amber-300'
+                  }`}
                 >
                   <div className="flex items-start justify-between gap-3 flex-wrap mb-2">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded border ${badge.cls}`}>
                         <Icon size={10} /> {badge.label}
                       </span>
+                      {tertiaireSecteur !== null && (
+                        <span
+                          className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded border ${
+                            isTertiaireLiquidation
+                              ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                              : 'bg-slate-100 text-slate-600 border-slate-200'
+                          }`}
+                          title={
+                            isTertiaireLiquidation
+                              ? 'Locaux pro libérés — opportunité chantier rénovation'
+                              : 'Société tertiaire'
+                          }
+                        >
+                          <Target size={10} /> {tertiaireSecteurLabel(tertiaireSecteur)}
+                        </span>
+                      )}
                       {a.type_avis && (
                         <span className="text-[10px] text-slate-500">{a.type_avis}</span>
                       )}
@@ -314,6 +422,8 @@ export default function AgenceFoncierTertiaire() {
 
       <div className="rounded-xl bg-amber-50/40 border border-amber-200/60 p-3 text-xs text-amber-900">
         <strong>Sources :</strong> BODACC (bodacc-datadila.opendatasoft.com — API officielle gratuite, 3 datasets) · Sit@del2 (data.gouv.fr CSV mensuel — ingestion Sprint E.bis pour V1+).
+        <br />
+        <strong>Rapprochement tertiaire :</strong> heuristique sur dénomination sociale (8 secteurs : restauration, commerce, hôtellerie, services, santé, enseignement, immobilier, services pro). BODACC n'expose pas le code NAF — précision ~85 % (V2 cross-réf SIRENE prévue).
       </div>
     </div>
   )

@@ -237,19 +237,19 @@ export default function AgenceDashboard() {
           {/* Classement Bretagne CTA */}
           <Link
             to="/agence/leaderboard"
-            className="block rounded-2xl p-5 text-white relative overflow-hidden hover:opacity-95 transition-opacity"
+            className="block rounded-2xl p-5 relative overflow-hidden hover:opacity-95 transition-opacity"
             style={{
               backgroundColor: '#003404',
               boxShadow: '0px 20px 40px rgba(27, 28, 28, 0.06)',
             }}
           >
-            <h3 className="font-display text-xl font-bold leading-tight">
+            <h3 className="font-display text-xl font-bold leading-tight text-white">
               Classement
               <br />
               Bretagne
             </h3>
-            <p className="text-[13px] text-white/80 mt-2 leading-snug">
-              Vous êtes actuellement <strong>12e</strong> dans le Morbihan.
+            <p className="text-[13px] mt-2 leading-snug" style={{ color: 'rgba(255,255,255,0.85)' }}>
+              Vous êtes actuellement <strong className="text-white">12e</strong> dans le Morbihan.
             </p>
             <span
               className="inline-flex mt-4 px-4 py-2 rounded-full text-[12px] font-bold"
@@ -275,7 +275,7 @@ export default function AgenceDashboard() {
         />
         <QuickAction
           icon={<ClipboardList size={22} strokeWidth={1.5} />}
-          label="Mes Mandats"
+          label="Mes Leads"
           to="/agence/leads"
         />
         <QuickAction

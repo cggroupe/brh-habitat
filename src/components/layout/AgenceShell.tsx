@@ -181,7 +181,9 @@ export default function AgenceShell() {
       >
         {/* Brand block */}
         <div className="px-6 mb-8">
-          <h1 className="font-display text-2xl font-bold tracking-tight">BRH Habitat</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-white">
+            BRH Habitat
+          </h1>
           <div className="mt-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-sm shrink-0">
               {user?.full_name?.charAt(0)?.toUpperCase() ?? 'A'}

@@ -486,7 +486,7 @@ export default function AgenceFoncierCarte() {
         </div>
 
         {/* Liste latérale parcelles sélectionnées */}
-        <div className="space-y-3">
+        <div className="space-y-3 min-w-0 [&>*]:break-words">
           <h2 className="text-sm font-semibold text-slate-700">
             Parcelles sélectionnées
             {selectedParcelles.length > 0 && (

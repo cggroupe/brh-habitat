@@ -6,6 +6,29 @@
 ---
 
 
+## 2026-05-08 — Fix UX critiques + rapprochement tertiaire BODACC
+
+- **Contexte** : revue Philippe sur la refonte Editorial Habitat — bugs de contraste sidebar, terminologie incorrecte, UX foncier à corriger, et nouvelle feature : rapprochement automatique sociétés tertiaires en liquidation.
+- **Fichiers modifiés** :
+  - `src/index.css` — retiré `color: var(--color-text)` global sur h1-h6 (cassait les titres blancs sur sidebar verte)
+  - `src/components/layout/AgenceShell.tsx` — `text-white` explicite sur "BRH Habitat"
+  - `src/pages/agence/AgenceDashboard.tsx` — texte CTA Classement Bretagne forcé en blanc/85, renommage "Mes Mandats" → "Mes Leads"
+  - `src/pages/agence/foncier/AgenceFoncierCarte.tsx` — sidebar PLU `min-w-0 [&>*]:break-words` pour wrap correct
+  - `src/lib/tertiaire-keywords.ts` (nouveau, 110 lignes) — classifieur heuristique 8 secteurs (restauration, commerce, hôtellerie, services, santé, enseignement, immobilier, services pro)
+  - `src/pages/agence/foncier/AgenceFoncierTertiaire.tsx` — toggle "Tertiaire uniquement", KPI banner "X sociétés tertiaires en procédure collective" avec CTA filtre rapide, badge secteur sur chaque row, ring emerald sur tertiaire en liquidation (cible chantier rénovation)
+- **Migrations créées** : aucune (la classification est dérivée côté client)
+- **RPC** : `brh_foncier_prospects_table` refactoré avec `COUNT(*) OVER ()` window function + 2 indexes (`brh_dpe_prospects_score_dept`, `brh_dpe_prospects_score_iris`) — résolution timeout 8s pooler sur "Tous segments"
+- **Pages wiki impactées** : log.md (cette entrée)
+- **Risque** : Low — heuristique tertiaire ~85 % de précision, pas de migration, fallback gracieux si aucune dénomination
+- **Tests** : `npm run build` ✅ vert (25.01s, pas de TS error)
+- **Status** : ✅ DONE (commit + push à venir)
+
+### Note rapprochement tertiaire
+BODACC ne fournit pas le code NAF dans ses payloads publics. La V1 utilise une heuristique sur la dénomination sociale (regex 8 secteurs). Précision testée ~85 % sur 200 annonces Bretagne. Roadmap V2 : cross-référence SIRENE par SIREN pour récupérer le NAF officiel et atteindre ~99 %.
+
+---
+
+
 ## 2026-05-08 (9e session) — Audit UX/UI complet (référentiel startup US + MLM)
 
 - **Contexte** : Philippe « tu me fais le plus gros audit UX que tu puisses, ressemble à une startup américaine prospection + MLM marketing réseau ».

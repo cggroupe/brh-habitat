@@ -130,7 +130,7 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    color: var(--color-text);
+    /* color non forcé : laisse le component décider (sidebar dark = white) */
     letter-spacing: -0.02em;
     font-weight: 700;
   }
