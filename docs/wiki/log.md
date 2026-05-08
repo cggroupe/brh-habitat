@@ -5,6 +5,74 @@
 
 ---
 
+## 2026-05-08 (suite) — Phase 11.1 complétée : Filosofi débloqué + ANAH OPAH + Sit@del2 + iris_code 99% + score_v2 recalc
+
+- **Contexte** : Reprise après-midi pour finir Phase 11.1. Découverte au passage que `brh_ext_iris` (1909 rows) et `brh_ext_commune` (1202 rows) avaient été créées le 01/05 et partiellement seedées (Filosofi 577, Enedis 1766, GRDF 906, Géorisques 1202, RGE 1202, **ZÉRO OPAH active, ZÉRO Sit@del2**). Score_v2 calculé sur 59 306 prospects mais 99.9% en `cold` parce que **220/59306 prospects seulement avaient un iris_code matché** → tous les bonus IRIS-based (couleur MPR, conso, précarité) silenced.
+
+### Sources débloquées
+- **Filosofi 2021 INSEE** : c'était une faute de frappe dans le slug hier — `BASE_TD_FILO_DISP_IRIS_2021_CSV.zip` n'existe pas, le bon est `BASE_TD_FILO_IRIS_2021_DISP_CSV.zip` (DEC=déclaré + DISP=disponible, 2 fichiers distincts). HTTP 200 confirmé. Re-vérification : 577 IRIS BZH déjà en DB (max 632 dans CSV, 59 IRIS exclus INSEE pour confidentialité <2k hab — limite normale).
+- **Enedis 2024 résidentiel** : endpoint correct `https://opendata.enedis.fr/api/explore/v2.1/catalog/datasets/consommation-annuelle-residentielle-par-adresse/records`. Filtré par `code_region='53'` + agg `group_by=code_iris` → 864 IRIS BZH 2024. Upsert : 1766→**1767** (refresh).
+- **GRDF 2024 résidentiel** : nom de dataset trouvé `consommation-annuelle-de-gaz-par-iris-et-code-naf0` (l'ancien était obsolète). Champs stockés en TEXT (pas numeric), agg locale Python obligatoire. 980 IRIS BZH résidentiel. Upsert : 906→**912**.
+
+### Sources Tier 2 ingérées (premières du Tier 2)
+- **ANAH OPAH actives Bretagne** : `liste-des-communes-couvertes-par-une-operation-programmee.csv` data.gouv (rafraîchi 2026-05-08 06:01) → 643/1202 communes BZH avec programme actif (fin ≥ 08/05/2026) : **101 OPAH classiques + 19 OPAH-RU + 523 PIG**. Tri prio OPAH-RU > OPAH > OPAH-CD > PIG, garde le programme avec la plus grande date de fin.
+- **Sit@del2 logements Bretagne** : `nombre-de-nouveaux-logements-crees-commune.csv` SDES (911 590 lignes France entière). Agrégat commune sur les 2 dernières années dispos (2022 + 2023 — pas de 2024 dans l'export du 12/03/2026). **35 997 nouveaux logements BZH 2022-2023 sur 1080 communes**. Top : Rennes 1720, Saint-Malo 1327, Quimper 719, Vannes 700, Brest 506.
+
+### Iris_code enrichment 59k prospects
+- **Contours IRIS 2024** via WFS Géoplateforme IGN : `STATISTICALUNITS.IRIS:contours_iris` filtré `CQL_FILTER=code_insee LIKE '<dept>%'`. 4 dépts BZH téléchargés en GeoJSON : 410 + 449 + 516 + 363 = **1738 polygones IRIS**.
+- Index spatial **STRtree shapely** + point-in-polygon Python sur 59 306 prospects (lat/lng existants).
+- Résultat : **59 285/59 306 prospects ont un iris_code** (99.96%, vs 220 avant). 21 prospects hors-BZH ou bbox aberrante non matchés (ex `min lat=-5.98` = données polluées historiques).
+
+### Score_v2 recalculé avec breakdown JSONB (12 règles)
+SQL `UPDATE brh_dpe_prospects SET score_v2 = ...` avec CTE `scored` joignant `brh_ext_iris` + `brh_ext_commune`. **Règles cumulatives** :
+- mutation_24m_FG (+35) — DVF mutation < 24m + DPE F/G
+- mpr_bleu (+20) / mpr_jaune (+15) — couleur MPR auto Filosofi
+- enedis_overuse (+15) — kwh/logt > 250
+- rga_fort (+10) — Géorisques retrait gonflement argile
+- radon_z3 (+10) — Radon catégorie 3
+- low_concurrence (+5) — < 5 RGE isolation
+- gentrif (+7) — prix m² growth 3y > 15%
+- pv_existing (-10) — PV ≥ 36 kW déjà installé
+- precarite_max (+15) — décile 1 + thermosens > 8000
+- **opah_active (+8) NEW Tier 2** — OPAH/PIG actif
+- **sitadel_dynamism (+5) NEW Tier 2** — > 50 nouveaux logts/2y
+- dpe_fg (+10) — DPE F ou G
+
+**Distribution finale** :
+| Segment | Avant 11.1 | Après 11.1 |
+|---------|-----------|------------|
+| ultra_chaud | 0 | **28** |
+| mpr_bleu_prio | 4 | **2 005** |
+| premium | 0 | 0 (tx_proprio non chargé Tier 2 Recensement) |
+| standard | 53 | **14 890** |
+| cold | 59 249 | 42 383 |
+
+### Fichiers créés
+- Migration `supabase/migrations/20260706490000_brh_phase_11_1b_iris_commune.sql` — colonnes score_v2 idempotent (les tables `brh_ext_iris`/`commune` étaient déjà créées 01/05)
+- Scripts standalone VPS `/tmp/brh-ext/` : `ingest_filosofi.py`, `ingest_enedis_grdf.py`, `enrich_iris_prospects.py`, `recalc_score_v2.sql`
+
+### Pages wiki impactées
+- ✅ `log.md` (cette entrée)
+- ✅ `foncier-pro-status.md` — Phase 11.1 100% pour Tier 1 + Tier 2 partiel
+- ⏸ `external-data-sources.md` — TODO mettre à jour Phase 11.1 status (de "🟡 partiel" → "✅ complète sauf Recensement IRIS Phase 11.2")
+- ⏸ `data-model.md` — TODO ajouter `score_v2_breakdown` JSONB + relations brh_ext_iris/commune
+
+### Risque : Low
+- Tous les ingest sont des UPSERT idempotents (re-runs OK)
+- RLS publique sur `brh_ext_*` = données publiques par nature
+- Aucun breaking change
+
+### Tests
+- ESLint à valider sur la migration (commit ci-dessous)
+- Migration appliquée prod via psql direct (idempotent IF NOT EXISTS)
+- Vérif SQL : 59 306 score_v2 recalculés, 28 ultra_chaud, 2 005 mpr_bleu_prio
+- Sample ultra_chaud (id=4436) breakdown cohérent : F + mut_24m + Bleu + radon_z3 + opah + sitadel = 93/100
+
+### Status
+✅ DONE — Phase 11.1 complétée. Reste Phase 11.2 = Recensement Logement IRIS 2022 (`tx_proprio`, `tx_avant_1975`) pour débloquer la règle `iris_proprio_ancien (+10)` + segment `premium`.
+
+---
+
 ## 2026-05-08 — Phase 11.1 démarrage : RGE Bretagne + Géorisques EF + tables brh_ext_*
 
 - **Contexte** : Philippe a rappelé la règle absolue Wiki Karpathy obligatoire (sauvée en mémoire globale `feedback_wiki_karpathy_obligatoire.md`) puis demandé le démarrage des 89 sources data Tier 1-4 documentées dans `external-data-sources.md` (Phase 11 jamais démarrée jusqu'à aujourd'hui).

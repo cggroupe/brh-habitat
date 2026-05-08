@@ -23,7 +23,7 @@
 
 **Total estimé** : 42-55 jours dev compressés.
 
-### État data Bretagne en prod (08/05/2026)
+### État data Bretagne en prod (08/05/2026 — Phase 11.1 complétée)
 
 | Source | Volume | État |
 |---|---|---|
@@ -32,10 +32,14 @@
 | SCI avec décès détecté | 522 | ✅ dont 27 < 6 mois, 47 < 1 an |
 | PLU communal pré-cache | 1 (Brest) | 🟡 V2 : Rennes/Nantes/Vannes/Quimper |
 | RGE artisans Bretagne | 5 335 / 14 810 qualifs | ✅ 663 communes couvertes |
-| Géorisques | EF cache à la demande | ✅ Brest testé (12 nat + 6 techno) |
-| Filosofi 2021 IRIS | 0 | 🔴 INSEE HTTP 500 le 08/05, à retry |
-| Enedis conso élec | 0 | 🟡 API endpoint à investiguer |
-| GRDF conso gaz | 0 | 🟡 dataset structure à mapper |
+| Géorisques | EF cache à la demande + 1202 communes snapshotées | ✅ |
+| **Filosofi 2021 IRIS** | **577 IRIS BZH** | ✅ débloqué (typo slug INSEE corrigée) |
+| **Enedis conso 2024** | **1 767 IRIS BZH** | ✅ via Opendatasoft v2.1 |
+| **GRDF conso 2024** | **912 IRIS BZH** | ✅ rural sans gaz exclu (normal) |
+| **ANAH OPAH/PIG actifs** | **643 communes BZH (101 OPAH + 19 OPAH-RU + 523 PIG)** | ✅ NEW Tier 2 |
+| **Sit@del2 logements 2022-2023** | **35 997 logts / 1 080 communes BZH** | ✅ NEW Tier 2 |
+| **iris_code prospects DPE** | **59 285 / 59 306 (99.96%)** | ✅ point-in-polygon WFS IGN |
+| **score_v2 distribution** | 28 ultra_chaud · 2 005 mpr_bleu_prio · 14 890 standard · 42 383 cold | ✅ recalcul SQL avec breakdown JSONB 12 règles |
 
 ---
 

@@ -558,13 +558,14 @@ describe('score-v2', () => {
 
 ## Statut d'implémentation
 
-- 🟡 Phase 11.0 : Plan rédigé (ce document) — 2026-05-01
-- ❌ Phase 11.1 : Tier 1 socle scoring — à démarrer
-- ❌ Phase 11.2 : Tier 2 contextualisation
-- ❌ Phase 11.3 : Régional Bretagne
-- ❌ Phase 11.4 : Technique avancé (USP vs Kelvin)
+- ✅ Phase 11.0 : Plan rédigé (ce document) — 2026-05-01
+- ✅ **Phase 11.1 : Tier 1 socle scoring — COMPLÉTÉE 2026-05-08** (Filosofi 577 IRIS, Enedis 1767, GRDF 912, RGE 14 810 qualifs, Géorisques 1202 communes, iris_code 59 285 prospects, score_v2 recalculé avec 12 règles)
+- 🟡 **Phase 11.2 : Tier 2 contextualisation — partiel** (ANAH OPAH 643 communes ✅ + Sit@del2 35 997 logts ✅ ; Recensement Logement IRIS 2022 ❌ + LOVAC ❌ + ANIL aides locales ❌ + DRIAS climat ❌)
+- ❌ Phase 11.3 : Régional Bretagne (DPE Rennes Métropole, Datarmor, RS Bretagne)
+- ❌ Phase 11.4 : Technique avancé (USP vs Kelvin) — LiDAR, BD TOPO, Météo-France, ABF
 - ❌ Phase 11.5 : Convention collectivité MAJIC/LOVAC (long terme)
 
 ## Mises à jour de cette page
 
 - **2026-05-01** : Création (recherche 89 sources + plan d'intégration 4 phases)
+- **2026-05-08** : Phase 11.1 complétée + démarrage Phase 11.2 (ANAH OPAH + Sit@del2). Cf. `log.md` entrées du 08/05.
