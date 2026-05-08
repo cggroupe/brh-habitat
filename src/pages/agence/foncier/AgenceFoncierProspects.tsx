@@ -59,9 +59,9 @@ const MPR_BADGE: Record<CouleurMpr, { label: string; cls: string }> = {
   rose: { label: 'Rose', cls: 'bg-pink-50 text-pink-800 border-pink-200' },
 }
 
-function escapeCsv(value: string | number | null | undefined): string {
+function escapeCsv(value: string | number | boolean | null | undefined): string {
   if (value === null || value === undefined) return ''
-  const s = String(value)
+  const s = typeof value === 'boolean' ? (value ? 'oui' : 'non') : String(value)
   if (s.includes(';') || s.includes('"') || s.includes('\n')) {
     return '"' + s.replace(/"/g, '""') + '"'
   }
