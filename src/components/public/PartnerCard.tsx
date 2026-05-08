@@ -38,7 +38,7 @@ export default function PartnerCard({ partner }: { partner: PublicPartner }) {
 
   return (
     <article
-      className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-emerald-300 hover:shadow-md transition-all"
+      className="bg-white rounded-xl border border-slate-200 p-5 hover:border-slate-300 hover:shadow-sm transition-all"
       itemScope
       itemType="https://schema.org/LocalBusiness"
     >
@@ -47,12 +47,15 @@ export default function PartnerCard({ partner }: { partner: PublicPartner }) {
           <img
             src={partner.logo_url}
             alt={`Logo ${partner.name}`}
-            className="w-12 h-12 rounded-xl object-cover bg-slate-50 shrink-0"
+            className="w-12 h-12 rounded-lg object-cover bg-slate-50 shrink-0 border border-slate-100"
             loading="lazy"
             itemProp="logo"
           />
         ) : (
-          <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shrink-0">
+          <div
+            className="w-12 h-12 rounded-lg flex items-center justify-center font-bold text-sm text-white shrink-0"
+            style={{ backgroundColor: '#003404' }}
+          >
             {initials(partner.name)}
           </div>
         )}
@@ -89,7 +92,7 @@ export default function PartnerCard({ partner }: { partner: PublicPartner }) {
             href={partner.website.startsWith('http') ? partner.website : `https://${partner.website}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-emerald-300 text-xs font-semibold text-slate-700 hover:text-emerald-700 transition"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-slate-200 hover:border-slate-400 text-xs font-semibold text-slate-700 transition"
             itemProp="url"
           >
             Site web <ExternalLink size={11} />
@@ -97,7 +100,8 @@ export default function PartnerCard({ partner }: { partner: PublicPartner }) {
         )}
         <Link
           to={`/contact?pro=${partner.id}`}
-          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-semibold transition"
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-white text-xs font-semibold transition hover:opacity-90"
+          style={{ backgroundColor: '#00600a' }}
         >
           <Mail size={11} />
           Contacter

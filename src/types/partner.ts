@@ -34,6 +34,8 @@ export interface BrhCompanyRow {
   total_ca_apporte: number
   is_active: boolean
   recruited_by: string | null
+  /** Phase G fix 2026-05-08 — opt-in annuaire public /partenaires */
+  is_public_partner: boolean
   created_at: string
   updated_at: string
 }

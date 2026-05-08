@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Building2, Heart, TrendingUp, Gift, Users, Euro, ArrowRight, Sparkles } from 'lucide-react'
+import { Building2, Heart, TrendingUp, Gift, Users, Euro, ArrowRight } from 'lucide-react'
 import { SEOHead } from '@/components/shared/SEOHead'
 import { usePublicPartenaires } from '@/hooks/queries/partenaires-public'
 import PartnerCard from '@/components/public/PartnerCard'
@@ -45,41 +45,44 @@ export default function PartenairesPage() {
       </section>
 
       {/* Annuaire public — proposition de valeur SEO pour les pros partenaires */}
-      <section className="py-16 px-4 bg-canvas border-b border-slate-100">
+      <section className="py-14 px-4 bg-white border-b border-slate-100">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold mb-3">
-              <Sparkles size={12} />
-              {hasPartners ? `${partners.length} partenaires actifs en Bretagne` : 'Réseau en pleine expansion'}
-            </div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 mb-3">
+              Notre réseau
+            </p>
             <h2 className="font-display text-3xl text-slate-900 mb-3 font-bold tracking-tight">
-              Notre réseau de professionnels
+              {hasPartners
+                ? `${partners.length} ${partners.length > 1 ? 'professionnels partenaires' : 'professionnel partenaire'} en Bretagne`
+                : 'Le réseau de professionnels BRH'}
             </h2>
             <p className="font-body text-slate-600 max-w-2xl mx-auto">
-              Architectes, agents immobiliers, maîtres d'œuvre et courtiers en travaux qui ont rejoint
-              BRH Habitat. Contactez-les directement pour vos projets de rénovation énergétique.
+              Architectes, agents immobiliers, maîtres d'œuvre et courtiers en travaux qui ont
+              rejoint BRH Habitat et accepté d'apparaître dans cet annuaire.
             </p>
           </div>
 
           {partnersLoading && (
             <div className="text-center py-8">
-              <div className="inline-block w-8 h-8 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
+              <div className="inline-block w-8 h-8 border-4 border-slate-200 border-t-slate-700 rounded-full animate-spin" />
             </div>
           )}
 
           {!partnersLoading && !hasPartners && (
-            <div className="text-center py-12 rounded-2xl border-2 border-dashed border-slate-200 bg-white max-w-2xl mx-auto">
-              <Building2 size={36} className="mx-auto text-slate-300 mb-3" />
-              <p className="font-display text-lg text-slate-700 font-bold">
-                Soyez le premier à rejoindre le réseau
+            <div className="text-center py-12 rounded-xl border border-slate-200 bg-slate-50 max-w-2xl mx-auto">
+              <Building2 size={36} className="mx-auto text-slate-400 mb-3" />
+              <p className="font-display text-lg text-slate-800 font-bold">
+                Le réseau démarre
               </p>
-              <p className="text-sm text-slate-500 mt-2 max-w-md mx-auto">
-                Le programme partenaire BRH Habitat démarre. Inscrivez-vous dès aujourd'hui pour
-                apparaître ici en première position et bénéficier d'une visibilité SEO sur la Bretagne.
+              <p className="text-sm text-slate-500 mt-2 max-w-md mx-auto leading-relaxed">
+                L'annuaire affichera ici les professionnels partenaires qui ont rejoint BRH Habitat
+                et activé leur visibilité publique. Soyez parmi les premiers et bénéficiez d'une
+                visibilité SEO sur la Bretagne.
               </p>
               <Link
                 to="/inscription/pro"
-                className="inline-flex items-center gap-2 mt-5 px-5 py-2.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 text-sm transition-colors"
+                className="inline-flex items-center gap-2 mt-5 px-5 py-2.5 text-white font-bold rounded-md text-sm transition-colors hover:opacity-90"
+                style={{ backgroundColor: '#003404' }}
               >
                 Devenir partenaire <ArrowRight size={14} />
               </Link>
@@ -93,15 +96,16 @@ export default function PartenairesPage() {
                   <PartnerCard key={p.id} partner={p} />
                 ))}
               </div>
-              <div className="mt-8 text-center">
+              <div className="mt-10 text-center">
                 <p className="text-sm text-slate-500 mb-3">
-                  Vous êtes architecte, agent immo, maître d'œuvre ou courtier ?
+                  Vous êtes architecte, agent immo, maître d'œuvre ou courtier en travaux ?
                 </p>
                 <Link
                   to="/inscription/pro"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 text-sm transition-colors"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 text-white font-bold rounded-md text-sm transition-colors hover:opacity-90"
+                  style={{ backgroundColor: '#003404' }}
                 >
-                  Apparaître dans cet annuaire <ArrowRight size={14} />
+                  Rejoindre le réseau <ArrowRight size={14} />
                 </Link>
               </div>
             </>

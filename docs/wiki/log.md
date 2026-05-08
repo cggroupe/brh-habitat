@@ -6,6 +6,60 @@
 ---
 
 
+## 2026-05-08 (soir) — Hotfix critiques : opt-in annuaire + images cassées + design
+
+- **Contexte** : Philippe rapporte 3 problèmes graves :
+  1. **DRAMATIQUE** — l'annuaire `/partenaires` exposait toutes les `brh_companies.is_active=true`, y compris des entreprises seedées sans owner réel/contrat. Risque business : un dirigeant tombe sur sa boîte listée comme "partenaire BRH" alors qu'aucun consentement n'a été donné.
+  2. **Toutes les images cassées** sur le site (homepage guides, diagnostic).
+  3. **Design `/partenaires`** : "fait IA, pas les bonnes couleurs" (emerald au lieu du vert BRH).
+
+### Action #1 — Sécuriser annuaire (URGENT)
+- **`DROP POLICY "Public voit partenaires actifs"` exécuté à chaud en prod** (psql pooler) → l'annuaire affiche désormais l'empty state, plus aucune fuite.
+- Migration `20260706610000_brh_partenaires_opt_in.sql` appliquée :
+  - Nouvelle colonne `brh_companies.is_public_partner BOOLEAN NOT NULL DEFAULT false`
+  - Nouvelle policy `SELECT public uniquement si is_active=true AND is_public_partner=true`
+  - Index `brh_companies_public_level` partial sur `is_public_partner=true`
+- **Toggle dans `/pro/profil`** (ProProfil.tsx) — section "Visibilité publique" en bas de page avec switch toggle (vert primary quand activé). Le pro doit explicitement opt-in pour apparaître. Désactivable à tout moment.
+- **TypeScript** : ajout `is_public_partner` dans 2 sources de types : `src/types/database.ts` (BrhCompanyRow) et `src/types/partner.ts` (BrhCompanyRow dupliqué).
+
+### Action #2 — Images cassées
+- **Cause racine identifiée** :
+  1. `/public/logo-brh.svg` référencé dans `index.html` ligne 5 → fichier **manquant** (404 favicon)
+  2. `/public/icons/icon-192.png` et `/public/icons/icon-512.png` référencés dans `manifest.json` → **manquants** (404 PWA install)
+  3. Service Worker `brh-habitat-v6` cachait probablement ces 404 → boucle erreurs côté visiteur
+- **Fix** :
+  - Création `public/logo-brh.svg` (B/R/H stylisé, gradient `#00600a → #003404`, fond rounded 14px, point amber `#86efac`)
+  - Génération `public/icons/icon-192.png` et `public/icons/icon-512.png` via ImageMagick depuis le SVG (density 192/512, resize)
+  - Bump SW version `v6 → v7-images-fix-2026-05-08` → force tous les clients à invalider cache et re-fetch les fichiers manquants
+- **Note** : les images Unsplash externes (cover articles, etc.) répondent toutes 200. Le problème venait uniquement des assets locaux manquants.
+
+### Action #3 — Refonte design /partenaires
+- **Couleurs corrigées** :
+  - Avatar fallback : `bg-emerald-100 text-emerald-700` → fond `#003404` blanc inversé (cohérent avec la sidebar Editorial Habitat)
+  - Bouton "Contacter" : `bg-emerald-600` → `#00600a` (vert BRH brand officiel)
+  - Bouton "Devenir partenaire" empty state : `#003404` (vert profond identité)
+  - Section header : retrait du "Sparkles + tag emerald" → typographie sobre tracking-[0.2em]
+- **Sobriété** : `rounded-xl` au lieu de `rounded-2xl`, `border-slate-300` au hover au lieu de `border-emerald-300`, `shadow-sm` au lieu de `shadow-md`. Moins "IA-luxueux", plus "annuaire pro sobre".
+
+### Fichiers modifiés (8)
+- `supabase/migrations/20260706610000_brh_partenaires_opt_in.sql` (nouveau, appliqué prod)
+- `public/logo-brh.svg` (nouveau)
+- `public/icons/icon-192.png` (nouveau, 9.9 KB)
+- `public/icons/icon-512.png` (nouveau, 37 KB)
+- `public/sw.js` (bump v7)
+- `src/types/database.ts` + `src/types/partner.ts` (champ `is_public_partner`)
+- `src/components/public/PartnerCard.tsx` (couleurs + sobriété)
+- `src/pages/public/PartenairesPage.tsx` (couleurs + headline conditionnel + empty state)
+- `src/pages/pro/ProProfil.tsx` (section toggle visibilité publique)
+
+### Status
+- **Risque** : Low — l'annuaire est maintenant OPT-IN strict (default false). Migration prod safe (idempotente). Logo/icons générés. SW bumped.
+- **Tests** : `npm run build` ✅ vert (24.60s, 0 TS error). Migration appliquée prod.
+- **Status** : ✅ DONE
+
+---
+
+
 ## 2026-05-08 — Phase G : refonte simulateur public (funnel pub-conversion)
 
 - **Contexte** : Philippe va lancer une campagne pub sur le simulateur de travaux pour visiteurs non connectés. C'est LE funnel d'acquisition principal. Audit identifié 7 frictions critiques qui réduisaient la conversion. Doit être absolument parfait.

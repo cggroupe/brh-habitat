@@ -239,6 +239,8 @@ export interface BrhCompanyRow {
   date_creation: string | null
   // Added by 20260403800000_recruitment_system
   recruited_by: string | null
+  // Added by 20260706610000_brh_partenaires_opt_in — opt-in annuaire public /partenaires
+  is_public_partner: boolean
 }
 
 export interface BrhCompanyMemberRow {

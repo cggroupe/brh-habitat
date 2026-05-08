@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="brhGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00600a"/>
+      <stop offset="100%" stop-color="#003404"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#brhGrad)"/>
+  <path d="M14 18 L14 46 L22 46 L32 32 L42 46 L50 46 L50 18 L42 18 L42 34 L32 22 L22 34 L22 18 Z" fill="#ffffff"/>
+  <circle cx="32" cy="52" r="3" fill="#86efac"/>
+</svg>

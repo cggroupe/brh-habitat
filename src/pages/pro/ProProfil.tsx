@@ -271,6 +271,53 @@ export default function ProProfil() {
           </div>
         </div>
       )}
+
+      {/* Visibilité publique annuaire /partenaires — opt-in explicite (Phase G fix 08/05) */}
+      <div className="mt-8 bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)] max-w-2xl">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex-1 min-w-[260px]">
+            <p className="text-[10px] uppercase tracking-widest font-bold text-text-light mb-1">
+              Visibilité publique
+            </p>
+            <h3 className="font-display text-lg font-bold text-text-primary mb-1">
+              Apparaître sur l'annuaire BRH Habitat
+            </h3>
+            <p className="text-sm text-text-secondary leading-relaxed">
+              Activez cette option pour figurer dans l'annuaire public{' '}
+              <code className="bg-background px-1 py-0.5 rounded text-xs">/partenaires</code>{' '}
+              avec votre logo, ville et profession. Visibilité SEO + leads naturels en provenance
+              du site BRH. Désactivable à tout moment.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              void updateCompany.mutateAsync({
+                id: company.id,
+                payload: { is_public_partner: !company.is_public_partner },
+              })
+            }}
+            disabled={updateCompany.isPending}
+            role="switch"
+            aria-checked={company.is_public_partner}
+            className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${
+              company.is_public_partner ? 'bg-primary' : 'bg-gray-300'
+            }`}
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                company.is_public_partner ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+        {company.is_public_partner && (
+          <p className="mt-4 text-xs font-semibold text-primary inline-flex items-center gap-1.5">
+            <Check size={12} />
+            Votre entreprise est visible sur /partenaires
+          </p>
+        )}
+      </div>
     </div>
   )
 }
