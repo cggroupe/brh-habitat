@@ -115,6 +115,25 @@ export default function PartDashboard() {
                   <ArrowRight size={12} />
                 </a>
               </div>
+
+              {/* 3 étapes pour démarrer */}
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  { n: 1, title: 'Copiez votre lien', desc: 'Votre code parrain unique au-dessus.' },
+                  { n: 2, title: 'Partagez à vos proches', desc: 'WhatsApp, SMS, email — quiconque a un projet rénovation.' },
+                  { n: 3, title: 'Encaissez 100 €', desc: 'Dès qu\'un chantier parrainé est signé.' },
+                ].map((s) => (
+                  <div key={s.n} className="rounded-xl bg-white/10 backdrop-blur border border-white/20 p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-6 h-6 rounded-full bg-amber-300 text-emerald-900 flex items-center justify-center text-xs font-bold">
+                        {s.n}
+                      </span>
+                      <p className="text-sm font-bold text-white">{s.title}</p>
+                    </div>
+                    <p className="text-[12px] text-emerald-50/85 leading-snug">{s.desc}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

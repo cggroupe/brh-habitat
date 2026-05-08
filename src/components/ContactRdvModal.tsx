@@ -119,7 +119,7 @@ export function ContactRdvModal({
         .map((d) => `${formatDateLabel(d.date)} — ${d.periode === 'matin' ? 'Matin (8h-12h)' : 'Apres-midi (14h-18h)'}`)
         .join('\n')
 
-      const { error: apptError } = await supabase
+      const { data: apptInserted, error: apptError } = await supabase
         .from('brh_appointments')
         .insert({
           type: 'diagnostic',
@@ -141,10 +141,18 @@ export function ContactRdvModal({
           status: 'demande',
           referral_code: referralCode || null,
         })
+        .select('id')
+        .single()
 
-      if (apptError) {
+      if (apptError || !apptInserted) {
         throw new Error('Erreur lors de l\'enregistrement du rendez-vous.')
       }
+
+      // Fire-and-forget : envoie 2 emails (client + admin) via EF send-rdv-confirmation.
+      // On n'attend pas la réponse — l'enregistrement DB est déjà acquis, l'email est best-effort.
+      void supabase.functions
+        .invoke('send-rdv-confirmation', { body: { appointment_id: apptInserted.id } })
+        .catch((e) => logError('send-rdv-confirmation invoke', e))
 
       setIsConfirmed(true)
     } catch (err) {

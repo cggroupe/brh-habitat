@@ -6,6 +6,63 @@
 ---
 
 
+## 2026-05-08 — Phase F : refonte UX globale (annuaire pro public + tunnel + RDV emails + dashboards)
+
+- **Contexte** : audit UX complet a identifié 4 blocs de problèmes critiques. Philippe valide tout. "Vraiment revoit l'entièreté de la chose."
+
+### Bloc A — Annuaire pro public sur `/partenaires` (proposition de valeur max)
+- **Migration** `20260706600000_brh_partenaires_public_select.sql` — nouvelle policy SELECT publique sur `brh_companies` (anon + authenticated, `is_active = true`). Index `brh_companies_active_level` pour le tri par tier. Frontend doit lister explicitement les colonnes safe (jamais SELECT *).
+- **API** `src/api/partenaires-public.ts` (nouveau) — `partenairesPublicApi.list({ departement, profession, limit })` retourne uniquement id, name, city, postal_code, logo_url, website, profession, level. Pas de owner_id, siret, recruited_by exposés.
+- **Hook** `src/hooks/queries/partenaires-public.ts` (nouveau) — `usePublicPartenaires()` staleTime 5min.
+- **Composant** `src/components/public/PartnerCard.tsx` (nouveau) — carte avec logo (ou initiales fallback), nom, profession label, tier badge, ville/CP, CTA "Site web" + "Contacter" (`/contact?pro=<id>`). Schema.org `LocalBusiness` JSON-LD inline.
+- **Refonte** `src/pages/public/PartenairesPage.tsx` — nouvelle section "Notre réseau de professionnels" entre le hero et la section Pro. Empty state encourage à devenir le 1er. CTA "Apparaître dans cet annuaire" pour les pros qui scrollent.
+- **Vision** : dès qu'un Pro crée son entreprise, il apparaît automatiquement sur la page partenaires en SEO — visibilité + leads gratuits.
+
+### Bloc B — Quick wins tunnel public
+- **`DiagnosticExpressPage.tsx`** : email **désormais obligatoire** (validation regex + placeholder "Email *" + required HTML). +2-3 pts conversion estimés.
+- **`PublicProAnnuaire.tsx`** (annuaire SEO `/pros/:dept/:metier`) : ajout CTA "Contacter ce pro" sur chaque card (cyan-600, lien vers `/contact?pro=<partner_contract_id>`). 0 % → ~5-8 % conversion estimée.
+- **`DiagnosticResultsPage.tsx`** : nouveau bandeau cross-persona "Agent immo ?" en bas de page (bleu) qui pointe vers `/agence/score-vente`. Capture la cible #3 qui tomberait sur le diagnostic particulier.
+
+### Bloc C — Emails RDV (post-INSERT)
+- **EF `send-rdv-confirmation`** (nouveau) — publique, rate-limited 5/min/IP. Reçoit `appointment_id`, fetch les détails depuis `brh_appointments`, envoie 2 emails Resend :
+  - Email **client** : "Votre demande a bien été reçue" + récap des créneaux demandés + CTA mailto support
+  - Email **admin** (`ADMIN_EMAIL` env var) : tableau récap + lien `/admin/rdv` direct
+- **`ContactRdvModal.tsx`** : appel fire-and-forget `supabase.functions.invoke('send-rdv-confirmation', { body: { appointment_id } })` après INSERT réussi. Erreur d'envoi ne bloque pas l'UX (l'enregistrement DB est déjà acquis).
+
+### Bloc D — Refonte des 3 dashboards post-login
+- **`PartDashboard.tsx`** : ajout grid "3 étapes pour démarrer" sous le banner MLM (1. Copiez votre lien, 2. Partagez, 3. Encaissez 100€). Disparaît avec le banner dès le 1er parrainage.
+- **`ProDashboard.tsx`** : nouveau **banner activation** en haut si `total === 0` prospects. Gradient emerald, CTA double "Envoyer un prospect" + "Voir les chantiers du réseau". Le Pro voit immédiatement ses 2 premières actions au lieu de 4 cards à zéro.
+- **`AgenceDashboard.tsx`** : suppression de l'inbox hardcodée fake data (Martin, Durand, Ploeren). Remplacée par un rendu conditionnel basé sur `totalRemaining` :
+  - Si `totalRemaining > 0` → 3 InboxItem dynamiques pertinents (claim leads, foncier carte, tertiaire liquidation)
+  - Sinon → empty state propre "Aucun lead disponible" + CTA "Voir ma progression" (= comprendre comment en avoir plus)
+
+- **Fichiers modifiés (12)** :
+  - Migration : `supabase/migrations/20260706600000_brh_partenaires_public_select.sql` (nouveau)
+  - EF : `supabase/functions/send-rdv-confirmation/index.ts` (nouveau)
+  - API : `src/api/partenaires-public.ts` (nouveau), `src/hooks/queries/partenaires-public.ts` (nouveau)
+  - Composant : `src/components/public/PartnerCard.tsx` (nouveau)
+  - Pages publiques : `PartenairesPage.tsx` (refonte), `DiagnosticExpressPage.tsx` (email obligatoire), `PublicProAnnuaire.tsx` (CTA contact), `DiagnosticResultsPage.tsx` (bandeau agence)
+  - Modal : `ContactRdvModal.tsx` (appel EF post-INSERT)
+  - Dashboards : `PartDashboard.tsx` (3 étapes), `ProDashboard.tsx` (banner activation), `AgenceDashboard.tsx` (inbox dynamique)
+- **Migrations créées** : 1 (annuaire public select)
+- **Edge Functions créées** : 1 (send-rdv-confirmation)
+- **Pages wiki impactées** : log.md
+- **Risque** : Low-Medium :
+  - Migration RLS : doit être appliquée en prod par Philippe (NEVER deploy sans accord). Sans la migration, la page partenaires affichera "Soyez le premier à rejoindre" empty state.
+  - EF RDV : nécessite `RESEND_API_KEY` et `ADMIN_EMAIL` configurés. Sans ces vars, l'EF logue mais n'envoie rien (fail gracieux).
+  - Email obligatoire diagnostic : pourrait baisser le taux de soumission de 5-10 % (mais qualité des leads ↑↑↑).
+- **Tests** : `npm run build` ✅ vert (1m 33s, 0 TS error)
+- **Status** : ✅ DONE
+
+### Reste backlog non critique
+- Capture lead intermédiaire à l'étape 2 du `/diagnostic` long (5 étapes) — gros effort, à décider
+- Rate-limit ContactRdvModal côté client (anti-spam)
+- Email de confirmation quand l'admin valide le RDV (séparé de l'accusé réception)
+- Migration `role='user'` legacy → `role='particulier'`
+
+---
+
+
 ## 2026-05-08 — Phase E : suppression du système "Pro RGE distinct"
 
 - **Contexte** : Philippe clarifie sa vision après la cartographie : "Il n'y a pas de professionnels, ensuite des artisans classiques, ensuite des artisans RGE. Il y a UN SEUL TYPE de Professionnel qui peut faire prospection + chantiers + propositions. Ils peuvent être RGE s'ils veulent, c'est tant mieux pour eux." Le système RGE distinct ajouté en Phase A/B (question RGE obligatoire, groupe "Activité RGE" dans ProShell, alias /pro/missions etc.) ne correspond pas à sa vision.

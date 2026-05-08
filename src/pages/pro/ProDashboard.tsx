@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { TrendingUp, Euro, UserPlus, CheckCircle, ChevronRight, ArrowUpRight } from 'lucide-react'
+import { TrendingUp, Euro, UserPlus, CheckCircle, ChevronRight, ArrowUpRight, Sparkles, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '@/hooks/useAuth'
@@ -154,8 +154,49 @@ export default function ProDashboard() {
 
   const firstName = user?.full_name?.split(' ')[0] ?? company.name
 
+  // Banner activation Pro "endormi" (zero prospect) — pousse à l'action principale.
+  const showActivationBanner = total === 0
+
   return (
     <div className="p-8 lg:p-10">
+
+      {showActivationBanner && (
+        <div className="mb-8 rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-800 text-white p-6 shadow-lg shadow-emerald-200/40">
+          <div className="flex items-start gap-4 flex-wrap">
+            <div className="w-12 h-12 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center shrink-0">
+              <Sparkles size={22} className="text-amber-200" />
+            </div>
+            <div className="flex-1 min-w-[260px]">
+              <p className="text-xs font-bold uppercase tracking-widest text-emerald-100 mb-1">
+                Démarrez votre activité partenaire
+              </p>
+              <h2 className="font-display text-xl lg:text-2xl font-bold leading-tight">
+                Créez votre 1<sup>er</sup> prospect en 2 minutes
+              </h2>
+              <p className="text-sm text-emerald-50/90 mt-2 leading-relaxed">
+                Apportez un projet (rénovation, audit énergie) à BRH Habitat. Dès la signature du
+                chantier, vous touchez votre commission ({commissionRate}% sur le CA HT).
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <a
+                  href="/pro/prospects/nouveau"
+                  className="inline-flex items-center gap-2 bg-white text-emerald-700 hover:bg-emerald-50 transition-colors px-4 py-2.5 rounded-lg text-sm font-bold"
+                >
+                  <UserPlus size={14} />
+                  Envoyer un prospect
+                  <ArrowRight size={12} />
+                </a>
+                <a
+                  href="/reseau/chantiers"
+                  className="inline-flex items-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur text-white transition-colors px-4 py-2.5 rounded-lg text-sm font-bold border border-white/20"
+                >
+                  Voir les chantiers du réseau
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Top bar ─────────────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">

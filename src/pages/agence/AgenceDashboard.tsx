@@ -8,7 +8,6 @@
  */
 import { Link } from 'react-router-dom'
 import {
-  Phone,
   PenLine,
   Search,
   AlertTriangle,
@@ -128,35 +127,55 @@ export default function AgenceDashboard() {
               Voir tout
             </Link>
           </div>
-          <div className="bg-surface rounded-2xl divide-y divide-border-strong/30 overflow-hidden">
-            <InboxItem
-              icon={<Phone size={18} className="text-info" strokeWidth={1.5} />}
-              iconBg="bg-info-soft"
-              title="Relance client Martin"
-              hint="Projet foncier Ploeren — Urgent"
-              to="/agence/leads"
-            />
-            <InboxItem
-              icon={<PenLine size={18} className="text-success" strokeWidth={1.5} />}
-              iconBg="bg-success-soft"
-              title="Signature Mandat Durand"
-              hint="Rendez-vous à l'agence à 14:00"
-              to="/agence/leads"
-            />
-            <InboxItem
-              icon={<Search size={18} className="text-info" strokeWidth={1.5} />}
-              iconBg="bg-info-soft"
-              title="Qualification Lead « Arzal »"
-              hint="Nouvelle demande reçue via le simulateur"
-              to="/agence/score-vente"
-            />
-            <InboxItem
-              icon={<AlertTriangle size={18} className="text-danger" strokeWidth={1.5} />}
-              iconBg="bg-danger-soft"
-              title="Relance facture impayée"
-              hint="Compta — SAS Ouest Immobilier"
-              to="/agence/leads"
-            />
+          <div className="bg-surface rounded-2xl overflow-hidden">
+            {totalRemaining !== null && totalRemaining > 0 ? (
+              <>
+                <InboxItem
+                  icon={<Search size={18} className="text-info" strokeWidth={1.5} />}
+                  iconBg="bg-info-soft"
+                  title={`${totalRemaining} lead${totalRemaining > 1 ? 's' : ''} disponible${totalRemaining > 1 ? 's' : ''} à claimer`}
+                  hint="Consultez les nouveaux prospects vendeurs F/G en Bretagne"
+                  to="/agence/leads"
+                />
+                <div className="border-t border-border-strong/30">
+                  <InboxItem
+                    icon={<PenLine size={18} className="text-success" strokeWidth={1.5} />}
+                    iconBg="bg-success-soft"
+                    title="Cartographier le foncier"
+                    hint="Cadastre, PLU, prospects DPE F/G par commune"
+                    to="/agence/foncier/carte"
+                  />
+                </div>
+                <div className="border-t border-border-strong/30">
+                  <InboxItem
+                    icon={<AlertTriangle size={18} className="text-warning" strokeWidth={1.5} />}
+                    iconBg="bg-warning-soft"
+                    title="Sociétés tertiaires en liquidation"
+                    hint="Opportunités chantier rénovation tertiaire"
+                    to="/agence/foncier/tertiaire"
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="p-8 text-center">
+                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-surface-low flex items-center justify-center">
+                  <AlertTriangle size={20} className="text-text-muted" strokeWidth={1.5} />
+                </div>
+                <p className="text-base font-bold text-text mb-1">
+                  Aucun lead disponible pour le moment
+                </p>
+                <p className="text-[13px] text-text-muted max-w-md mx-auto leading-relaxed">
+                  Vos leads sont automatiquement attribués selon votre charte (tier + bonus).
+                  Augmentez votre palier pour en recevoir davantage chaque mois.
+                </p>
+                <Link
+                  to="/agence/progression"
+                  className="inline-flex items-center gap-1.5 mt-4 text-sm font-bold text-emerald-700 hover:text-emerald-900 underline"
+                >
+                  Voir ma progression
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 

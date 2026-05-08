@@ -7,7 +7,7 @@
  */
 import { useMemo, useEffect } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
-import { Briefcase, MapPin, Award } from 'lucide-react'
+import { Briefcase, MapPin, Award, Mail } from 'lucide-react'
 import { useDiscoverPros } from '@/hooks/queries/reseau-discover'
 
 const VALID_DEPTS = ['22', '29', '35', '56', '44']
@@ -159,11 +159,18 @@ export default function PublicProAnnuaire() {
             </div>
             <p className="text-xs text-cyan-700 mb-2">{p.partner_type.replace(/_/g, ' ')}</p>
             {(p.city || p.postal_code) && (
-              <p className="text-xs text-slate-500 inline-flex items-center gap-1">
+              <p className="text-xs text-slate-500 inline-flex items-center gap-1 mb-3">
                 <MapPin size={11} />
                 {[p.city, p.postal_code].filter(Boolean).join(' ')}
               </p>
             )}
+            <Link
+              to={`/contact?pro=${p.partner_contract_id}`}
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-cyan-600 hover:bg-cyan-700 text-white text-[11px] font-bold transition-colors"
+            >
+              <Mail size={11} />
+              Contacter ce pro
+            </Link>
           </li>
         ))}
       </ul>

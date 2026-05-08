@@ -118,8 +118,13 @@ export default function DiagnosticExpressPage() {
   const handleSubmitLead = async () => {
     if (!result || !result.found) return
     setLeadError(null)
-    if (!lead.firstName || !lead.lastName || !lead.phone) {
-      setLeadError('Nom, prénom et téléphone obligatoires')
+    if (!lead.firstName || !lead.lastName || !lead.phone || !lead.email) {
+      setLeadError('Nom, prénom, téléphone et email obligatoires')
+      return
+    }
+    // Validation email basique
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lead.email)) {
+      setLeadError('Adresse email invalide')
       return
     }
     setSubmittingLead(true)
@@ -402,10 +407,11 @@ export default function DiagnosticExpressPage() {
                     />
                     <input
                       type="email"
-                      placeholder="Email (optionnel)"
+                      placeholder="Email *"
                       value={lead.email}
                       onChange={(e) => setLead({ ...lead, email: e.target.value })}
                       className="rounded-md border-0 px-3 py-2 text-sm text-gray-900 placeholder-gray-400"
+                      required
                     />
                   </div>
 

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { Info, RefreshCw, TrendingUp, Calendar, BookOpen, ChevronRight, Clock } from 'lucide-react'
+import { Info, RefreshCw, TrendingUp, Calendar, BookOpen, ChevronRight, Clock, ArrowRight } from 'lucide-react'
 
 import { useDiagnosticStore } from '@/stores/diagnosticStore'
 import { diagnosticTypes } from '@/data/diagnostic-types'
@@ -274,6 +274,32 @@ export default function DiagnosticResultsPage() {
 
         {/* Section 7 — CTA finale */}
         <DiagnosticCtaSection onShowContact={() => setShowContactModal(true)} />
+
+        {/* Bandeau cross-persona — agent immo qui passe par cette page */}
+        <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50 p-5">
+          <div className="flex items-start gap-4 flex-wrap">
+            <div className="flex-1 min-w-[280px]">
+              <p className="text-xs font-bold uppercase tracking-widest text-blue-700 mb-1">
+                Pour les professionnels de l'immobilier
+              </p>
+              <p className="font-display font-bold text-blue-900 text-lg leading-tight">
+                Agent immo, mandataire ou estimateur ?
+              </p>
+              <p className="text-sm text-blue-800 mt-1">
+                BRH propose un <strong>Score Vente IA</strong> spécialement pour vous : impact DPE
+                sur le prix de vente, simulateur travaux pour acquéreur, leads vendeurs F/G
+                qualifiés en Bretagne.
+              </p>
+            </div>
+            <a
+              href="/agence/score-vente"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold transition-colors shrink-0"
+            >
+              Découvrir Score Vente
+              <ArrowRight size={14} />
+            </a>
+          </div>
+        </div>
 
       </div>
 
