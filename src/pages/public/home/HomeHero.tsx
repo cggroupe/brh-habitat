@@ -25,19 +25,19 @@ export function HomeHero() {
             énergétique complet et gratuit pour valoriser votre patrimoine.
           </p>
 
-          {/* CTA buttons */}
+          {/* CTA buttons — Express promu en CTA primaire pour la conversion publicitaire */}
           <div className="flex flex-wrap gap-4 mt-4 justify-center">
             <Link
-              to="/diagnostic"
+              to="/diagnostic-express"
               className="flex items-center justify-center h-12 px-8 rounded-lg bg-primary hover:bg-primary-dark text-white text-base font-bold transition-all shadow-xl shadow-primary/30 hover:scale-105"
             >
-              Diagnostic gratuit
+              Estimation rapide en 2 min
             </Link>
             <Link
-              to="/services"
+              to="/diagnostic"
               className="flex items-center justify-center h-12 px-8 rounded-lg border-2 border-slate-200 text-slate-900 hover:border-primary hover:text-primary text-base font-bold transition-colors bg-white"
             >
-              En savoir plus
+              Diagnostic complet (5 min)
             </Link>
           </div>
 

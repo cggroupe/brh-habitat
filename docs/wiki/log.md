@@ -6,6 +6,46 @@
 ---
 
 
+## 2026-05-08 — Phase G : refonte simulateur public (funnel pub-conversion)
+
+- **Contexte** : Philippe va lancer une campagne pub sur le simulateur de travaux pour visiteurs non connectés. C'est LE funnel d'acquisition principal. Audit identifié 7 frictions critiques qui réduisaient la conversion. Doit être absolument parfait.
+- **Migration prod** : `20260706600000_brh_partenaires_public_select.sql` **appliquée en prod** via psql pooler (BEGIN → DROP POLICY → CREATE POLICY → COMMENT → CREATE INDEX → COMMIT). L'annuaire `/partenaires` est désormais opérationnel.
+- **Sprint 1 — Fix UX critique** :
+  - **Inputs Express invisibles** : `DiagnosticExpressPage.tsx` champs "Personnes au foyer" + "Revenu fiscal" avaient `border-gray-300` SANS classe `border` → invisibles. Ajout `border border-gray-300 rounded-lg bg-white px-3 py-2 focus:border-green-700 focus:ring-2 focus:ring-green-700/20`.
+  - **Inputs lead form** : 4 champs (firstName/lastName/phone/email) avaient `border-0` sur fond vert → confusion. Ajout `border border-white/40` + focus state visible.
+  - **Express promu en CTA primaire** : `HomeHero.tsx` — bouton primaire "Estimation rapide en 2 min" → `/diagnostic-express` (au lieu de "En savoir plus" → `/services` qui était hors-funnel). Bouton secondaire "Diagnostic complet (5 min)" → `/diagnostic`. Le trafic publicitaire est désormais routé vers le tunnel court.
+  - **Aides détaillées dépliées par défaut** : `<details>` retiré dans DiagnosticExpressPage. Les 4 déciles MaPrimeRénov'+CEE sont visibles immédiatement avec décile actuel mis en avant (✱ + ring).
+- **Sprint 2 — Tracking attribution publicitaire** :
+  - `DiagnosticExpressPage` : capture des params `utm_source/medium/campaign/content/term` + `gclid` (Google Ads) + `fbclid` (Facebook Ads) + `ref/recruiter` (affilié) au mount via `useSearchParams`. Persistés dans le payload du lead.
+  - EF `dpe-express-create-lead` : nouvelle interface `attribution` dans le RequestBody + injection dans `notesText` du prospect ("--- Attribution ---" + lignes Source/Medium/Campagne/Affilié/Click IDs). L'admin BRH voit immédiatement la source du lead dans `/admin/prospects`.
+  - Permet de mesurer le ROI des campagnes Facebook Ads / Google Ads et le revenue partagé avec les affiliés.
+  - **Validation email + téléphone inline** : feedback visuel pendant la saisie (border-red-400 + ring-red-200 si invalide). Plus d'erreur surprise au submit.
+- **Sprint 3 — CTA résultats simplifiés** :
+  - `DiagnosticCtaSection.tsx` : suppression du doublon "Être recontacté par email" (qui ouvrait le même modal RDV → confusion). CTA primaire "Prendre rendez-vous" très visible (font-bold, hover scale-105). Nouveau lien direct **`tel:+33219005305`** pour appel immédiat (mobile-first). Boutons secondaires "PDF" + "Refaire" en taille réduite (border-white/30 + text-xs).
+- **Edge Functions déployées** (via `supabase functions deploy`) :
+  - `send-rdv-confirmation` (nouveau, 53.55 kB)
+  - `dpe-express-create-lead` (mis à jour avec attribution, 53.71 kB)
+- **Fichiers modifiés (8)** :
+  - `src/pages/public/home/HomeHero.tsx` (CTA primaire Express)
+  - `src/pages/public/DiagnosticExpressPage.tsx` (inputs visibles + UTM + validation inline + aides dépliées)
+  - `src/pages/public/diagnostic-results/DiagnosticCtaSection.tsx` (CTA simplifiés + tel:)
+  - `supabase/functions/dpe-express-create-lead/index.ts` (attribution dans notes)
+- **Migrations créées** : 0 (juste déploiement de la migration Phase F)
+- **Pages wiki impactées** : log.md
+- **Risque** : Low. Les changements UX sont graduels (validation inline = bonus, pas blocage). EFs déployées avec contrat élargi (attribution est optionnel). Express devient CTA primaire = changement trafic, à mesurer.
+- **Tests** : `npm run build` ✅ vert (28.70s). EFs déployées. Migration appliquée.
+- **Status** : ✅ DONE
+
+### Backlog Phase H (sessions futures, non critique pour la pub)
+- Pré-remplissage BDNB (surface, type bien, année construction) à partir de l'adresse — Effy/Hellio le font, +qualité lead
+- A/B tests : "Devis en 48h" vs "Être rappelé en 24h" / Express avec autocomplete vs dropdown
+- Capture lead intermédiaire à l'étape 2 du `/diagnostic` long (5 étapes)
+- Phone auto-formatting "06 12 34 56 78" pendant la saisie
+- Migration `role='user'` legacy → `role='particulier'`
+
+---
+
+
 ## 2026-05-08 — Phase F : refonte UX globale (annuaire pro public + tunnel + RDV emails + dashboards)
 
 - **Contexte** : audit UX complet a identifié 4 blocs de problèmes critiques. Philippe valide tout. "Vraiment revoit l'entièreté de la chose."

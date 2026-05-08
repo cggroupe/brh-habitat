@@ -43,6 +43,17 @@ interface RequestBody {
     aidesTotal?: number
     resteACharge?: number
   }
+  /** Tracking attribution publicitaire (Phase F UX 08/05/2026). */
+  attribution?: {
+    utm_source?: string | null
+    utm_medium?: string | null
+    utm_campaign?: string | null
+    utm_content?: string | null
+    utm_term?: string | null
+    ref?: string | null
+    gclid?: string | null
+    fbclid?: string | null
+  }
 }
 
 Deno.serve(async (req) => {
@@ -123,6 +134,24 @@ Deno.serve(async (req) => {
       ]
         .filter(Boolean)
         .join('\n')
+    }
+    // Tracking attribution publicitaire — append au notes pour visibilité immédiate admin BRH.
+    // Permet de mesurer le ROI des campagnes Facebook Ads / Google Ads / affilié.
+    if (body.attribution) {
+      const a = body.attribution
+      const lines = [
+        a.utm_source ? `Source : ${a.utm_source}` : null,
+        a.utm_medium ? `Medium : ${a.utm_medium}` : null,
+        a.utm_campaign ? `Campagne : ${a.utm_campaign}` : null,
+        a.utm_content ? `Contenu : ${a.utm_content}` : null,
+        a.utm_term ? `Terme : ${a.utm_term}` : null,
+        a.ref ? `Affilié : ${a.ref}` : null,
+        a.gclid ? `Google Click ID : ${a.gclid}` : null,
+        a.fbclid ? `Facebook Click ID : ${a.fbclid}` : null,
+      ].filter(Boolean)
+      if (lines.length > 0) {
+        notesText = [notesText, '--- Attribution ---', ...lines].filter(Boolean).join('\n')
+      }
     }
 
     // Lead score basé sur la qualité du contact

@@ -7,7 +7,7 @@
  */
 
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Search, Loader, ArrowRight, MapPin, Home, Zap, TrendingDown, Euro, MessageCircle, CheckCircle, Phone } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
@@ -71,6 +71,22 @@ const INITIAL_LEAD: LeadFormState = {
 
 export default function DiagnosticExpressPage() {
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
+  // Tracking d'attribution publicitaire (Facebook Ads, Google Ads, affilié).
+  // Capturé au mount, persisté dans le payload du lead pour mesurer le ROI campagne.
+  const attribution = useMemo(
+    () => ({
+      utm_source: searchParams.get('utm_source'),
+      utm_medium: searchParams.get('utm_medium'),
+      utm_campaign: searchParams.get('utm_campaign'),
+      utm_content: searchParams.get('utm_content'),
+      utm_term: searchParams.get('utm_term'),
+      ref: searchParams.get('ref') || searchParams.get('recruiter'),
+      gclid: searchParams.get('gclid'), // Google Ads click ID
+      fbclid: searchParams.get('fbclid'), // Facebook Ads click ID
+    }),
+    [searchParams],
+  )
   const [address, setAddress] = useState('')
   const [foyer, setFoyer] = useState(2)
   const [rfr, setRfr] = useState(30000)
@@ -115,6 +131,16 @@ export default function DiagnosticExpressPage() {
     return result.dpe.projete_s2 as EtiquetteDpe
   }, [result])
 
+  // Validation inline — évite que l'utilisateur tape tout puis se prenne une erreur au submit.
+  const emailValid = useMemo(() => {
+    if (!lead.email) return null
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lead.email)
+  }, [lead.email])
+  const phoneValid = useMemo(() => {
+    if (!lead.phone) return null
+    return /^(\+33|0)[1-9](\s?\d{2}){4}$/.test(lead.phone.replace(/\s/g, ''))
+  }, [lead.phone])
+
   const handleSubmitLead = async () => {
     if (!result || !result.found) return
     setLeadError(null)
@@ -154,6 +180,9 @@ export default function DiagnosticExpressPage() {
             aidesTotal: result.aides ? result.aides.mpr + result.aides.cee : undefined,
             resteACharge: result.aides?.reste_a_charge,
           },
+          // Tracking attribution publicitaire (UTM + Google/Facebook click IDs + affilié).
+          // Persistés dans brh_prospects.notes ou colonne dédiée pour mesure ROI campagne.
+          attribution,
         },
       })
       if (efErr) throw efErr
@@ -205,7 +234,7 @@ export default function DiagnosticExpressPage() {
                   max="10"
                   value={foyer}
                   onChange={(e) => setFoyer(Number(e.target.value))}
-                  className="w-full rounded border-gray-300 text-sm"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-green-700 focus:outline-none focus:ring-2 focus:ring-green-700/20"
                 />
               </label>
               <label className="block">
@@ -217,7 +246,7 @@ export default function DiagnosticExpressPage() {
                   step="1000"
                   value={rfr}
                   onChange={(e) => setRfr(Number(e.target.value))}
-                  className="w-full rounded border-gray-300 text-sm"
+                  className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-green-700 focus:outline-none focus:ring-2 focus:ring-green-700/20"
                 />
               </label>
             </div>
@@ -332,29 +361,35 @@ export default function DiagnosticExpressPage() {
                   </div>
                 </div>
 
-                {/* Aides par décile */}
-                <details className="mt-4">
-                  <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
-                    Voir les aides selon votre niveau de revenus
-                  </summary>
-                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs md:grid-cols-4">
+                {/* Aides par décile — dépliées par défaut pour renforcer la confiance */}
+                <div className="mt-5">
+                  <p className="text-sm font-semibold text-gray-700 mb-2">
+                    Aides détaillées selon votre niveau de revenus
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 text-xs md:grid-cols-4">
                     {(['bleu', 'jaune', 'violet', 'rose'] as const).map((d) => (
                       <div
                         key={d}
-                        className={`rounded p-2 ${
+                        className={`rounded-lg p-2.5 ${
                           d === result.aides!.decile
-                            ? 'bg-green-100 border-2 border-green-700'
-                            : 'bg-gray-50'
+                            ? 'bg-green-100 border-2 border-green-700 ring-2 ring-green-700/20'
+                            : 'bg-gray-50 border border-gray-200'
                         }`}
                       >
-                        <div className="capitalize text-gray-500">Décile {d}</div>
-                        <div className="font-bold">
+                        <div className="capitalize text-gray-500 mb-0.5">
+                          Décile {d}
+                          {d === result.aides!.decile && <span className="ml-1 text-green-700">★</span>}
+                        </div>
+                        <div className="font-bold text-gray-900">
                           {Math.round(result.aides!.mpr_par_decile[d]).toLocaleString('fr-FR')} €
                         </div>
                       </div>
                     ))}
                   </div>
-                </details>
+                  <p className="text-[11px] text-gray-500 mt-1.5">
+                    Décile mis en avant = correspond à votre profil estimé. Aides MaPrimeRénov' + CEE confondus.
+                  </p>
+                </div>
               </div>
             )}
 
@@ -386,7 +421,7 @@ export default function DiagnosticExpressPage() {
                       placeholder="Prénom *"
                       value={lead.firstName}
                       onChange={(e) => setLead({ ...lead, firstName: e.target.value })}
-                      className="rounded-md border-0 px-3 py-2 text-sm text-gray-900 placeholder-gray-400"
+                      className="rounded-md border border-white/40 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/40"
                       required
                     />
                     <input
@@ -394,7 +429,7 @@ export default function DiagnosticExpressPage() {
                       placeholder="Nom *"
                       value={lead.lastName}
                       onChange={(e) => setLead({ ...lead, lastName: e.target.value })}
-                      className="rounded-md border-0 px-3 py-2 text-sm text-gray-900 placeholder-gray-400"
+                      className="rounded-md border border-white/40 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/40"
                       required
                     />
                     <input
@@ -402,7 +437,11 @@ export default function DiagnosticExpressPage() {
                       placeholder="Téléphone * (06 12 34 56 78)"
                       value={lead.phone}
                       onChange={(e) => setLead({ ...lead, phone: e.target.value })}
-                      className="rounded-md border-0 px-3 py-2 text-sm text-gray-900 placeholder-gray-400"
+                      className={`rounded-md border bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                        phoneValid === false
+                          ? 'border-red-400 focus:border-red-500 focus:ring-red-200'
+                          : 'border-white/40 focus:border-white focus:ring-white/40'
+                      }`}
                       required
                     />
                     <input
@@ -410,7 +449,11 @@ export default function DiagnosticExpressPage() {
                       placeholder="Email *"
                       value={lead.email}
                       onChange={(e) => setLead({ ...lead, email: e.target.value })}
-                      className="rounded-md border-0 px-3 py-2 text-sm text-gray-900 placeholder-gray-400"
+                      className={`rounded-md border bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 ${
+                        emailValid === false
+                          ? 'border-red-400 focus:border-red-500 focus:ring-red-200'
+                          : 'border-white/40 focus:border-white focus:ring-white/40'
+                      }`}
                       required
                     />
                   </div>

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { CheckCircle2, Calendar, ArrowRight, Printer, Mail, RefreshCw } from 'lucide-react'
+import { CheckCircle2, Calendar, ArrowRight, Printer, Phone, RefreshCw } from 'lucide-react'
 
 interface DiagnosticCtaSectionProps {
   onShowContact: () => void
@@ -34,43 +34,42 @@ export function DiagnosticCtaSection({ onShowContact }: DiagnosticCtaSectionProp
         ))}
       </div>
 
-      {/* Boutons */}
+      {/* Boutons — CTA principal très visible, secondaires sobres */}
       <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
         <button
           type="button"
           onClick={onShowContact}
-          className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white text-primary font-display text-sm rounded-xl hover:bg-green-50 transition-colors shadow-sm"
+          className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-primary font-display text-base font-bold rounded-xl hover:bg-green-50 transition-all shadow-lg hover:scale-105"
         >
-          <Calendar size={16} />
+          <Calendar size={18} />
           Prendre rendez-vous
         </button>
+        <a
+          href="tel:+33219005305"
+          className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border-2 border-white text-white font-display text-sm rounded-xl hover:bg-white/10 transition-colors"
+        >
+          <Phone size={16} />
+          02 19 00 53 05
+        </a>
         <button
           type="button"
           onClick={() => window.print()}
-          className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border-2 border-white text-white font-display text-sm rounded-xl hover:bg-white/10 transition-colors"
+          className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-white/30 text-white/80 font-display text-xs rounded-xl hover:bg-white/10 transition-colors"
         >
-          <Printer size={16} />
-          Telecharger en PDF
-        </button>
-        <button
-          type="button"
-          onClick={onShowContact}
-          className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border-2 border-white/60 text-white/90 font-display text-sm rounded-xl hover:bg-white/10 transition-colors"
-        >
-          <Mail size={16} />
-          Etre recontacte par email
+          <Printer size={14} />
+          PDF
         </button>
         <Link
           to="/diagnostic"
-          className="inline-flex items-center justify-center gap-2 px-7 py-3.5 border-2 border-white/40 text-white/70 font-display text-sm rounded-xl hover:bg-white/10 transition-colors"
+          className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-white/30 text-white/80 font-display text-xs rounded-xl hover:bg-white/10 transition-colors"
         >
-          <RefreshCw size={16} />
-          Refaire un diagnostic
+          <RefreshCw size={14} />
+          Refaire
         </Link>
       </div>
 
       <p className="mt-6 font-body text-xs text-green-200/70">
-        Diagnostic gratuit et sans engagement — Artisans certifies RGE Bretagne
+        Diagnostic gratuit et sans engagement — Artisans certifiés RGE Bretagne
       </p>
     </div>
   )
