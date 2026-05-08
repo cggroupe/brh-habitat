@@ -21,6 +21,12 @@ export interface DpeProspectMarker {
   /** Phase 11.1 — segment commercial calculé depuis score_v2 */
   score_v2_segment: 'ultra_chaud' | 'mpr_bleu_prio' | 'premium' | 'standard' | 'cold' | null
   iris_code: string | null
+  /** Phase 11.3 — flags commune enrichi via brh_ext_commune */
+  opah_active?: boolean | null
+  rga_alea?: 'faible' | 'moyen' | 'fort' | null
+  tlv_tendue?: boolean | null
+  audits_ademe_count?: number | null
+  delta_dju_2050?: number | null
 }
 
 export interface DpeBbox {
@@ -39,84 +45,84 @@ export interface DpeProspectFilters {
   scoreV2Min?: number
   /** Phase 11.1 — filtre par segment composite */
   segmentV2?: 'ultra_chaud' | 'mpr_bleu_prio' | 'premium' | 'standard' | 'cold'
+  /** Phase 11.3 — restreint aux communes avec OPAH/PIG actif */
+  opahOnly?: boolean
+  /** Phase 11.3 — restreint aux communes RGA fort (Géorisques) */
+  rgaFortOnly?: boolean
+  /** Phase 11.3 — restreint aux communes en zone tendue TLV */
+  tlvTendueOnly?: boolean
+  /** Phase 11.3 — restreint aux communes avec > 100 audits ADEME 2023+ */
+  auditsDynaOnly?: boolean
 }
 
 export const foncierDpeProspectsApi = {
   /**
    * Liste des prospects DPE dans un BBOX géo + filtres par rating.
-   * Utilise les colonnes lat/lng de brh_dpe_prospects (déjà géocodées Phase 6.2).
+   * Phase 11.3 : utilise la RPC `brh_foncier_prospects_filtered` qui joint brh_ext_commune
+   * pour permettre le filtrage par flags commune (OPAH/RGA/TLV/audits).
    */
   async listByBbox(filters: DpeProspectFilters): Promise<DpeProspectMarker[]> {
-    let q = supabase
-      .from('brh_dpe_prospects')
-      .select('id, latitude, longitude, etiquette_dpe, adresse, commune, surface_habitable, code_insee_commune, score_v2, score_v2_segment, iris_code')
-      .not('latitude', 'is', null)
-      .not('longitude', 'is', null)
-      .not('etiquette_dpe', 'is', null)
-      .limit(Math.min(filters.limit ?? 500, 2000))
-
-    // Filter ratings
+    if (!filters.bbox) return []
     const ratings = filters.ratings ?? ['F', 'G']
-    q = q.in('etiquette_dpe', ratings)
 
-    // BBOX
-    if (filters.bbox) {
-      q = q
-        .gte('latitude', filters.bbox.minLat)
-        .lte('latitude', filters.bbox.maxLat)
-        .gte('longitude', filters.bbox.minLng)
-        .lte('longitude', filters.bbox.maxLng)
-    }
-
-    if (filters.departement) {
-      q = q.eq('departement', filters.departement)
-    }
-
-    // Phase 11.1 — filtres scoring v2
-    if (filters.scoreV2Min != null) {
-      q = q.gte('score_v2', filters.scoreV2Min)
-    }
-    if (filters.segmentV2) {
-      q = q.eq('score_v2_segment', filters.segmentV2)
-    }
-
-    const { data, error } = await q
+    const { data, error } = await supabase.rpc('brh_foncier_prospects_filtered', {
+      p_min_lat: filters.bbox.minLat,
+      p_max_lat: filters.bbox.maxLat,
+      p_min_lng: filters.bbox.minLng,
+      p_max_lng: filters.bbox.maxLng,
+      p_ratings: ratings,
+      p_score_v2_min: filters.scoreV2Min ?? 0,
+      p_segment_v2: filters.segmentV2 ?? null,
+      p_opah_only: filters.opahOnly ?? false,
+      p_rga_fort_only: filters.rgaFortOnly ?? false,
+      p_tlv_tendue_only: filters.tlvTendueOnly ?? false,
+      p_audits_dyna_only: filters.auditsDynaOnly ?? false,
+      p_dept: filters.departement ?? null,
+      p_limit: Math.min(filters.limit ?? 500, 2000),
+    })
     if (error) throw error
 
     type RawRow = {
-      id: string
-      latitude: number | null
-      longitude: number | null
-      etiquette_dpe: string | null
+      id: number
+      lat: number
+      lng: number
+      dpe_rating: string | null
       adresse: string | null
       commune: string | null
-      surface_habitable: number | null
+      surface: number | null
       code_insee_commune: string | null
       score_v2: number | null
       score_v2_segment: string | null
       iris_code: string | null
+      opah_active: boolean | null
+      rga_alea: string | null
+      tlv_tendue: boolean | null
+      audits_ademe_count: number | null
+      delta_dju_2050: number | null
     }
 
     return ((data ?? []) as RawRow[])
       .filter(
-        (r): r is RawRow & { latitude: number; longitude: number; etiquette_dpe: DpeRating } =>
-          r.latitude !== null &&
-          r.longitude !== null &&
-          !!r.etiquette_dpe &&
-          ['A', 'B', 'C', 'D', 'E', 'F', 'G'].includes(r.etiquette_dpe),
+        (r): r is RawRow & { dpe_rating: DpeRating } =>
+          !!r.dpe_rating && ['A', 'B', 'C', 'D', 'E', 'F', 'G'].includes(r.dpe_rating),
       )
       .map((r) => ({
-        id: r.id,
-        lat: r.latitude,
-        lng: r.longitude,
-        dpe_rating: r.etiquette_dpe as DpeRating,
+        id: String(r.id),
+        lat: r.lat,
+        lng: r.lng,
+        dpe_rating: r.dpe_rating as DpeRating,
         adresse: r.adresse,
         commune: r.commune,
-        surface: r.surface_habitable,
+        surface: r.surface,
         code_insee_commune: r.code_insee_commune,
         score_v2: r.score_v2,
         score_v2_segment: (r.score_v2_segment as DpeProspectMarker['score_v2_segment']) ?? null,
         iris_code: r.iris_code,
+        opah_active: r.opah_active,
+        rga_alea: (r.rga_alea as DpeProspectMarker['rga_alea']) ?? null,
+        tlv_tendue: r.tlv_tendue,
+        audits_ademe_count: r.audits_ademe_count,
+        delta_dju_2050: r.delta_dju_2050,
       }))
   },
 }

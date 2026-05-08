@@ -5,6 +5,67 @@
 
 ---
 
+## 2026-05-08 (5e session) — Phase 11.3b : DPE tertiaire + Mérimée + Natura 2000 + RNB + RPC filtres + score 18 règles
+
+- **Contexte** : Philippe « go ». Continuer l'ingestion : sources géométriques + bâti + monuments historiques + filtres carte avancés.
+
+### Sources Tier 3 / 4 ingérées
+- **DPE tertiaire ADEME 2021+** : agrégats commune via API `values_agg` → **24 495 DPE bureaux/commerces BZH** sur 969 communes. Top : Rennes (2 181), Brest (1 ?). Stocké comme `dpe_tertiaire_count`.
+- **Base Mérimée Monuments Historiques POP Culture** (46 746 lignes France entière, 99 MB CSV) : **3 226 monuments BZH** sur 845 communes. Top : Rennes 98, Saint-Malo 87, Vitré 74, Dinan 72, Carnac 72. **152 communes BZH avec ≥ 5 MH** = secteur sauvegardé probable / ABF lourd.
+- **Natura 2000 SIC + ZPS** (1 355 SIC + 407 ZPS national via WFS Géoplateforme) → point-in-polygon des centroïdes communes BZH (conversion Lambert93 → WebMercator) → **14 communes BZH** dont centroïde tombe dans une zone Natura 2000 (Trégor-Goëlo, Ouessant-Molène, Elorn, étangs canal Ille-et-Rance…). NB : approche centroïde, ne capte pas les communes dont seulement une partie est en N2K. Pour cas border, voie lazy via apicarto.
+- **Référentiel National des Bâtiments (RNB)** : downloads CSV départementaux BZH (749 MB total compressés, 2.97M bâtiments) → extraction `cle_interop_ban` pour mapper INSEE → **2 974 619 bâtiments constructed BZH** sur 1 202 communes. Top : Brest 34 153, Rennes 31 840, Quimper 26 516, Saint-Malo 21 191, Vannes 16 962. Stocké `rnb_batiments_count` par commune.
+
+### RPC `brh_foncier_prospects_filtered` (Phase 11.3 — filtres avancés carte)
+Nouvelle fonction PostgreSQL SECURITY INVOKER `SET search_path = ''` qui joint `brh_dpe_prospects` ↔ `brh_ext_commune` côté serveur. Paramètres :
+- bbox (min/max lat/lng), ratings DPE
+- score_v2_min, segment_v2 (existants)
+- **NEW**: `opah_only`, `rga_fort_only`, `tlv_tendue_only`, `audits_dyna_only`
+- limit max 2000
+
+Retourne markers enrichis avec `opah_active`, `rga_alea`, `tlv_tendue`, `audits_ademe_count`, `delta_dju_2050` pour le popup.
+
+### UI Foncier carte enrichie
+- 3e ligne de filtres "Critères commune" : 4 boutons toggle (OPAH/PIG actif, Aléa argile fort, Zone tendue, Commune dynamique >100 audits)
+- Style sobre cohérent : `bg-emerald-50` + `border-emerald-300` + `text-emerald-800` quand actif
+- API `foncierDpeProspectsApi.listByBbox` rebasé sur la RPC (au lieu de query directe — passe les flags commune côté serveur)
+
+### Score_v2 18 règles (1 nouvelle)
+- **r18 abf_lourd (-5)** — `c.merimee_count >= 5` (secteur sauvegardé probable, surcoût rénovation ABF)
+
+| Segment | Phase 11.3 | **Phase 11.3b** | Δ |
+|---------|-----------|----------------|---|
+| ultra_chaud | 36 | 34 | -2 (ABF lourd Rennes/Saint-Malo) |
+| mpr_bleu_prio | 2 393 | 2 267 | -126 |
+| standard | 34 835 | 33 021 | -1 814 |
+| cold | 22 042 | 23 984 | +1 942 |
+
+Score max passe de 100 à 98 (cohérent : pas de prospect "parfait" en zone non-ABF). Distribution toujours **57.6% qualifiés** (≥standard) — l'ABF n'enlève que 5 pts et reste compatible avec score élevé hors centre historique.
+
+### Fichiers modifiés
+- `src/api/foncier-dpe-prospects.ts` — bascule RPC + 4 flags commune dans Marker
+- `src/pages/agence/foncier/AgenceFoncierCarte.tsx` — 4 boutons "Critères commune"
+- Nouvelle RPC `brh_foncier_prospects_filtered` (déployée prod)
+- `docs/wiki/log.md` (cette entrée)
+
+### Tables DB modifiées
+- `brh_ext_commune` : +6 colonnes (`dpe_tertiaire_count`, `merimee_count`, `merimee_classe`, `merimee_inscrit`, `natura2000_sic_count`, `natura2000_zps_count`, `natura2000_sample`, `rnb_batiments_count`)
+- `brh_dpe_prospects.score_v2*` : recalculé idempotent avec 18 règles
+
+### Risque : Low
+- ALTER TABLE idempotent
+- RPC SECURITY INVOKER (= utilise les RLS de l'appelant)
+- `SET search_path = ''` (règle anti-bug #12)
+
+### Tests
+- TypeScript build exit 0
+- ESLint exit 0 sur les 2 fichiers modifiés
+- RPC testée : filtre OPAH BBOX (-3,47.5,-2,48.5) + score >= 60 = 424 prospects retournés
+
+### Status
+✅ DONE — Phase 11.3b livrée. Sources reste Phase 11.4 : LiDAR HD toiture, BDNB CSTB enrichi, ABF batch SUP AC1, ANIL aides scraping, ZAER SHP, BD TOPO bâti.
+
+---
+
 ## 2026-05-08 (4e session) — Phase 11.3 partielle : LOVAC + TLV + audits ADEME + cadastres solaires + ménage UI
 
 - **Contexte** : Philippe : « continue, continue. Évite les icônes/emojis, c'est pro. »

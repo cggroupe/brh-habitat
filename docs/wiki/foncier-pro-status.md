@@ -52,6 +52,12 @@
 | **Audits énergétiques ADEME 2023+** | **175 611 audits BZH** sur 1 195 communes (médiane 146/commune) | ✅ Phase 11.3 |
 | **Cadastres solaires EPCI** | 8 EPCI BZH (Brest, Rennes, Lorient, Quimper, Saint-Malo, Vannes, Dinan, Saint-Brieuc) | ✅ Phase 11.3 NEW table |
 | **score_v2 distribution Phase 11.3** | **36 ultra_chaud · 2 393 mpr_bleu_prio · 34 835 standard · 22 042 cold** | ✅ Phase 11.3 (17 règles, 62.8% qualifiés) |
+| **DPE tertiaire ADEME 2021+** | **24 495 DPE tertiaire BZH** sur 969 communes | ✅ Phase 11.3b |
+| **Mérimée Monuments Historiques** | **3 226 MH BZH** / 845 communes (152 ≥5 MH = ABF lourd) | ✅ Phase 11.3b |
+| **Natura 2000 SIC+ZPS** | **14 communes BZH** centroïde dans N2K | ✅ Phase 11.3b |
+| **RNB Référentiel National Bâtiments** | **2 974 619 bâtiments constructed BZH** / 1 202 communes (top Brest 34 153) | ✅ Phase 11.3b |
+| **score_v2 distribution Phase 11.3b** | **34 ultra_chaud · 2 267 mpr_bleu_prio · 33 021 standard · 23 984 cold** | ✅ Phase 11.3b (18 règles, 59.6% qualifiés, ABF -5) |
+| **RPC `brh_foncier_prospects_filtered`** | filtres OPAH+RGA+TLV+audits côté serveur | ✅ Phase 11.3b |
 
 ---
 

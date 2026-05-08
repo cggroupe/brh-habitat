@@ -112,6 +112,11 @@ export default function AgenceFoncierCarte() {
   // Phase 11.1 — filtres scoring v2 (Filosofi + Enedis + Géorisques + ANAH + Sit@del2 + Recensement)
   const [scoreV2Min, setScoreV2Min] = useState<number>(0)
   const [segmentV2, setSegmentV2] = useState<'ultra_chaud' | 'mpr_bleu_prio' | 'standard' | ''>('')
+  // Phase 11.3 — filtres flags commune (OPAH / RGA fort / zone tendue / dynamisme audits)
+  const [opahOnly, setOpahOnly] = useState(false)
+  const [rgaFortOnly, setRgaFortOnly] = useState(false)
+  const [tlvTendueOnly, setTlvTendueOnly] = useState(false)
+  const [auditsDynaOnly, setAuditsDynaOnly] = useState(false)
 
   const searchMarkerRef = useRef<L.Marker | null>(null)
 
@@ -158,6 +163,10 @@ export default function AgenceFoncierCarte() {
       limit: 500,
       scoreV2Min: scoreV2Min > 0 ? scoreV2Min : undefined,
       segmentV2: segmentV2 || undefined,
+      opahOnly: opahOnly || undefined,
+      rgaFortOnly: rgaFortOnly || undefined,
+      tlvTendueOnly: tlvTendueOnly || undefined,
+      auditsDynaOnly: auditsDynaOnly || undefined,
     },
     showDpe && !!bbox && bbox.zoom >= 13,
   )
@@ -316,6 +325,30 @@ export default function AgenceFoncierCarte() {
                 }`}
               >
                 {s.l}
+              </button>
+            ))}
+          </div>
+        )}
+        {showDpe && (
+          <div className="flex items-center gap-3 flex-wrap pt-2 border-t border-slate-100">
+            <span className="font-semibold text-slate-700">Critères commune :</span>
+            {([
+              { k: opahOnly, set: setOpahOnly, l: 'OPAH/PIG actif' },
+              { k: rgaFortOnly, set: setRgaFortOnly, l: 'Aléa argile fort' },
+              { k: tlvTendueOnly, set: setTlvTendueOnly, l: 'Zone tendue' },
+              { k: auditsDynaOnly, set: setAuditsDynaOnly, l: 'Commune dynamique (>100 audits)' },
+            ] as const).map((f, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => f.set(!f.k)}
+                className={`px-2.5 py-1 rounded-md font-medium text-[11px] border transition ${
+                  f.k
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800 ring-1 ring-emerald-300'
+                    : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
+                }`}
+              >
+                {f.l}
               </button>
             ))}
           </div>
