@@ -1,0 +1,29 @@
+# BRH Habitat — robots.txt
+# Phase G+ 2026-05-08
+
+User-agent: *
+Allow: /
+
+# Pages d'authentification : pas indexer
+Disallow: /connexion
+Disallow: /admin/
+Disallow: /pro/
+Disallow: /particulier/
+Disallow: /agence/
+Disallow: /artisan/
+Disallow: /reseau/
+Disallow: /tableau-de-bord
+Disallow: /mes-logements
+Disallow: /mes-dossiers
+Disallow: /mes-rdv
+Disallow: /profil
+
+# Sitemap principal
+Sitemap: https://www.renovation-brh.fr/sitemap.xml
+
+# Crawl-delay pour bots peu prioritaires
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10

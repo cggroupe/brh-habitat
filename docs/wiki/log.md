@@ -6,6 +6,41 @@
 ---
 
 
+## 2026-05-08 (soir tardif) — SEO boost : +16 articles guides + 115 pages satellites pros + sitemap
+
+- **Contexte** : Philippe lance pub + veut booster le SEO local Bretagne. Demande 15+ nouveaux guides bien rédigés, et plus de pages satellites style "Plombier Brest" pour le longue traîne.
+- **Livré** :
+  - **16 nouveaux articles guides** ajoutés à `src/data/seo-strategy.ts` (publishOrder 11-26) + 16 fichiers `.md` rédigés dans `src/data/articles/` (~700-1500 mots chacun, contenu technique + DTU + tarifs 2026 + aides + ROI). Sujets : PAC air/eau, photovoltaïque, chauffe-eau thermodynamique, isolation combles ouate cellulose, ITE granit, test infiltrométrie, rénovation longère, DPE F/G loi Climat, audit énergétique, couverture ardoise, chauffage bois, combles aménageables, volets solaires, récupération eau pluie, VMC double flux vs simple, maison 1900-1948.
+  - **Pages SEO satellites enrichies** : `VALID_METIERS` passe de 15 à **23 métiers** (ajout photovoltaique, chauffage_bois, chauffe_eau_thermodynamique, vmc, audit_energetique, ite_bardage, ardoise, facade_chaux). Total combinaisons `/pros/:dept/:metier` : **115 pages** (5 dépts × 23 métiers) au lieu de 75.
+  - **Sitemap.xml** régénéré et étendu : 12 pages statiques + 26 articles + 1 hub /pros + 5 dépts + 115 satellites = **154 URLs total** (vs 81 précédemment). Script `scripts/generate-reseau-sitemap.ts` mis à jour.
+  - **`public/robots.txt`** créé : Allow:/ par défaut, Disallow sur les portails authentifiés, Sitemap référencé.
+- **Stratégie SEO** :
+  - Long-tail Bretagne ("PAC Brest", "ITE granit Quimper", "audit énergétique Vannes")
+  - Mots-clés différenciants vs concurrence nationale (climat océanique, patrimoine breton, vent dominant, granit)
+  - Schema.org `LocalBusiness` JSON-LD déjà présent sur les pages satellites pros
+  - Internal linking : chaque article lie 3 articles complémentaires
+- **Fichiers modifiés (21)** :
+  - `src/data/seo-strategy.ts` (+16 entrées articles)
+  - `src/data/articles/*.md` (16 nouveaux fichiers markdown)
+  - `src/pages/public/PublicProAnnuaire.tsx` (+8 métiers)
+  - `scripts/generate-reseau-sitemap.ts` (étendu : statiques + articles + métiers)
+  - `public/sitemap.xml` (régénéré, 958 lignes)
+  - `public/robots.txt` (nouveau)
+- **Migrations créées** : 0
+- **Pages wiki impactées** : log.md
+- **Risque** : None — contenu purement additif. Articles avec frontmatter cohérent avec les existants. Sitemap valide.
+- **Tests** : `npm run build` ✅ vert (21.61s, 0 TS error). Sitemap validé (XML well-formed).
+- **Status** : ✅ DONE
+
+### Impact SEO attendu (3-6 mois)
+- **+16 pages indexables** sur des mots-clés long-tail Bretagne (pompe à chaleur Brest, isolation combles ouate cellulose, etc.)
+- **+40 pages satellites** pros (8 nouveaux métiers × 5 dépts)
+- **Sitemap complet** soumissible à Google Search Console
+- **robots.txt** propre = meilleur crawl des bons contenus
+
+---
+
+
 ## 2026-05-08 (soir) — Hotfix critiques : opt-in annuaire + images cassées + design
 
 - **Contexte** : Philippe rapporte 3 problèmes graves :

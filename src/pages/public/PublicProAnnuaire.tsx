@@ -35,6 +35,15 @@ const VALID_METIERS = [
   'platrerie',
   'peinture',
   'carrelage',
+  // Phase G+ 2026-05-08 — métiers complémentaires Bretagne
+  'photovoltaique',
+  'chauffage_bois',
+  'chauffe_eau_thermodynamique',
+  'vmc',
+  'audit_energetique',
+  'ite_bardage',
+  'ardoise',
+  'facade_chaux',
 ]
 
 export default function PublicProAnnuaire() {
