@@ -1032,7 +1032,7 @@ export const articlesSEO: ArticleSEO[] = [
 
   {
     slug: "pompe-a-chaleur-air-eau-bretagne",
-    coverImage: "https://images.unsplash.com/photo-1605346576608-3eee31f5f55a?w=800&q=80",
+    coverImage: "https://images.unsplash.com/photo-1604754742629-3e5728249d73?w=800&q=80",
     keyword: "pompe à chaleur Bretagne",
     keywordVolume: "moyen",
     keywordDifficulty: "moyenne",
@@ -1124,7 +1124,7 @@ export const articlesSEO: ArticleSEO[] = [
   },
   {
     slug: "ite-granit-bretagne",
-    coverImage: "https://images.unsplash.com/photo-1556909114-44f86dabd5e2?w=800&q=80",
+    coverImage: "https://images.unsplash.com/photo-1582719188393-bb71ca45dbb9?w=800&q=80",
     keyword: "ITE Bretagne granit",
     keywordVolume: "faible",
     keywordDifficulty: "faible",
@@ -1147,7 +1147,7 @@ export const articlesSEO: ArticleSEO[] = [
   },
   {
     slug: "test-etancheite-air-infiltrometrie",
-    coverImage: "https://images.unsplash.com/photo-1632935190508-bc4abd7b25b9?w=800&q=80",
+    coverImage: "https://images.unsplash.com/photo-1495107334309-fcf20504a5ab?w=800&q=80",
     keyword: "test étanchéité à l'air maison",
     keywordVolume: "moyen",
     keywordDifficulty: "faible",
@@ -1170,7 +1170,7 @@ export const articlesSEO: ArticleSEO[] = [
   },
   {
     slug: "renovation-longere-bretonne",
-    coverImage: "https://images.unsplash.com/photo-1587502536263-1a3fd9b95e8c?w=800&q=80",
+    coverImage: "https://images.unsplash.com/photo-1567496898669-ee935f5f647a?w=800&q=80",
     keyword: "rénovation longère Bretagne",
     keywordVolume: "moyen",
     keywordDifficulty: "faible",
@@ -1239,7 +1239,7 @@ export const articlesSEO: ArticleSEO[] = [
   },
   {
     slug: "couverture-ardoise-bretagne-entretien",
-    coverImage: "https://images.unsplash.com/photo-1580687774429-74ee01ec5cda?w=800&q=80",
+    coverImage: "https://images.unsplash.com/photo-1542621334-a254cf47733d?w=800&q=80",
     keyword: "couverture ardoise Bretagne entretien",
     keywordVolume: "moyen",
     keywordDifficulty: "faible",
@@ -1262,7 +1262,7 @@ export const articlesSEO: ArticleSEO[] = [
   },
   {
     slug: "chauffage-bois-bretagne-granules-buches",
-    coverImage: "https://images.unsplash.com/photo-1545158539-08c1ad4ed8b3?w=800&q=80",
+    coverImage: "https://images.unsplash.com/photo-1551038247-3d9af20df552?w=800&q=80",
     keyword: "chauffage bois Bretagne",
     keywordVolume: "moyen",
     keywordDifficulty: "faible",
@@ -1332,7 +1332,7 @@ export const articlesSEO: ArticleSEO[] = [
   },
   {
     slug: "recuperation-eau-pluie-bretagne",
-    coverImage: "https://images.unsplash.com/photo-1586981084886-bd17b8ce26db?w=800&q=80",
+    coverImage: "https://images.unsplash.com/photo-1496180470114-6ef490f3ff22?w=800&q=80",
     keyword: "récupération eau de pluie Bretagne",
     keywordVolume: "moyen",
     keywordDifficulty: "faible",
