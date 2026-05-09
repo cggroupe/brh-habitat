@@ -80,18 +80,33 @@ export function useAuth() {
 
     void validateSession()
 
-    // onAuthStateChange ne charge plus le profil — il gère uniquement SIGNED_OUT.
-    // Le chargement du profil est la responsabilité des flux de login explicites
-    // (LoginPage, RegisterProPage, JoinCompanyPage) conformément à la règle CLAUDE.md.
+    // onAuthStateChange gère SIGNED_OUT + SIGNED_IN d'un compte différent
+    // (cas magic link entrant alors qu'une session précédente existe).
+    // Pour les flux login explicites (LoginPage, RegisterProPage…) le profil
+    // est déjà chargé en amont — le SIGNED_IN qui suit ne déclenche aucune
+    // action si l'user.id correspond déjà à l'utilisateur courant.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event) => {
+      (event, session) => {
         if (!mounted) return
         if (event === 'SIGNED_OUT') {
           setUser(null)
           initRef.current = false
+          return
         }
-        // Pour tous les autres événements (SIGNED_IN, TOKEN_REFRESHED, etc.),
-        // le profil est déjà chargé par le flux de login — rien à faire ici.
+        if (event === 'SIGNED_IN' && session?.user?.id) {
+          const currentUserId = useAppStore.getState().user?.id
+          // Si la session entrante est le même utilisateur déjà connecté
+          // (cas normal post-LoginPage), on ne refait rien — le profil
+          // a déjà été chargé par le flux de login explicite.
+          if (currentUserId === session.user.id) return
+          // Sinon : magic link reçu pour un autre compte (cas portail test
+          // ou changement de session via lien). On recharge le profil.
+          void fetchProfile(session.user.id).then((profile) => {
+            if (!mounted) return
+            if (profile) setUser(profileToUser(profile))
+            else setUser(null)
+          })
+        }
       },
     )
 
