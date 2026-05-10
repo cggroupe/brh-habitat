@@ -22,6 +22,7 @@ import {
   LogIn,
 } from 'lucide-react'
 import { logError } from '@/lib/error'
+import { isBrhEmployee } from '@/lib/brh-employees'
 
 const AUTH_ERROR_MAP: Record<string, string> = {
   'Invalid login credentials': 'Email ou mot de passe incorrect.',
@@ -35,7 +36,7 @@ function mapAuthError(msg: string): string {
 }
 
 interface PortalAccess {
-  id: 'particulier' | 'pro' | 'artisan' | 'agence' | 'admin' | 'user'
+  id: 'particulier' | 'pro' | 'artisan' | 'agence' | 'admin' | 'employe' | 'user'
   path: string
   label: string
   description: string
@@ -79,6 +80,13 @@ const PORTAL_META: Record<PortalAccess['id'], Omit<PortalAccess, 'id'>> = {
     Icon: ShieldCheck,
     accent: 'purple',
   },
+  employe: {
+    path: '/employe',
+    label: 'Cockpit Employé BRH',
+    description: 'Foncier, prospection, recrutement partenaires',
+    Icon: ShieldCheck,
+    accent: 'purple',
+  },
   user: {
     path: '/tableau-de-bord',
     label: 'Mon tableau de bord',
@@ -103,11 +111,17 @@ const ACCENT_HALO: Record<PortalAccess['accent'], string> = {
 async function listAccessiblePortals(
   userId: string,
   role: string,
+  email: string,
 ): Promise<PortalAccess[]> {
   const portals: PortalAccess[] = []
 
+  // Employé BRH (registre brh-employees.ts) → cockpit dédié, prioritaire sur /admin.
+  if (isBrhEmployee(email)) {
+    portals.push({ id: 'employe', ...PORTAL_META.employe })
+  }
+
   // Admin = priorité absolue (et persona unique en pratique).
-  if (role === 'admin') {
+  if (role === 'admin' && !isBrhEmployee(email)) {
     portals.push({ id: 'admin', ...PORTAL_META.admin })
   }
 
@@ -197,7 +211,7 @@ export default function LoginPage() {
         avatar_url: profile.avatar_url ?? undefined,
       })
 
-      const accessible = await listAccessiblePortals(profile.id, profile.role)
+      const accessible = await listAccessiblePortals(profile.id, profile.role, profile.email)
 
       // 1 seul portail → redirect direct (comportement historique).
       if (accessible.length === 1) {

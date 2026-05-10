@@ -95,6 +95,40 @@
 ---
 
 
+## 2026-05-09 — Phase Employé BRH (V1) : cockpit + EmployeShell + EmployeGuard
+
+- **Contexte** : Philippe veut un compte employé BRH dédié pour ses commerciaux (Pierre Collard). Accès au foncier / prospection / simulateur / réseau pro **sans** le MLM. Système de gamification où plus l'employé est actif (mails envoyés, partenaires recrutés, posts sociaux), plus il débloque de leads et plus son profil est mis en avant lors des RDV publics.
+- **V1 livré (cette session) — cockpit + accès aux fonctionnalités existantes** :
+  - **`src/lib/brh-employees.ts`** (nouveau) — registre statique des employés BRH par email (V1 sans table DB). Définit 4 niveaux d'activité (Standard / Pro / Expert / Master) avec seuils de leads débloqués (5 / 15 / 35 / illimité).
+  - **`src/components/auth/EmployeGuard.tsx`** (nouveau) — guard qui vérifie `isBrhEmployee(user.email)`. Redirect `/tableau-de-bord` sinon.
+  - **`src/components/layout/EmployeShell.tsx`** (nouveau, ~220 lignes) — sidebar dédiée 3 niveaux (top-level + 4 groupes pliables : Foncier, Prospection, Réseau pro, Recrutement partenaires). Affiche profil employé + score activité + barre de progression vers prochain niveau dans la sidebar.
+  - **`src/pages/employe/EmployeDashboard.tsx`** (nouveau, ~250 lignes) — cockpit principal avec : header date + niveau, encart gradient score/leads débloqués/mise en avant, section "Boostez votre score" (4 actions à venir : envoyer mails, recruter partenaires, publier réseaux, tenir RDV), grille 6 modules actifs (foncier carte/prospects/tertiaire, simulateur, réseau pro) + 1 placeholder (templates emails).
+  - **`src/App.tsx`** : import EmployeShell + EmployeGuard + EmployeDashboard. Bloc routes `/employe/*` sous EmployeGuard qui réutilise les composants `AgenceFoncier*` (carte, prospects, favoris, sci, tertiaire, parcelle), `ProProspectsBretagne`, `ProProspectsCarte`, `AgenceSimulateur`. 4 placeholders V2 redirigent `?todo=...` (leads, mails, calendrier, social).
+  - **`src/pages/public/LoginPage.tsx`** : `listAccessiblePortals` accepte maintenant l'email + check `isBrhEmployee()` en priorité absolue (avant admin) → redirect direct vers `/employe`.
+  - **Compte Pierre Collard** déjà créé en DB (commit précédent `9696c2c`). Email `pierre.collard@brh-demo.fr` / mot de passe `BrhDemo2026!` via portail test.
+- **V2 backlog (sessions futures)** :
+  - Migration DB `brh_employees` + `brh_employee_actions` pour score réel
+  - Templates emails recrutement (artisans / agences / architectes / MOE) avec EF d'envoi + tracking ouverture/clic
+  - Module calendrier RDV employé exposé sur ContactRdvModal (mise en avant selon score)
+  - Module publications réseaux sociaux avec tracking
+  - Algorithme attribution progressive de leads basé sur score réel
+- **Fichiers modifiés (5 nouveaux + 2 modifiés)** :
+  - `src/lib/brh-employees.ts` (nouveau)
+  - `src/components/auth/EmployeGuard.tsx` (nouveau)
+  - `src/components/layout/EmployeShell.tsx` (nouveau)
+  - `src/pages/employe/EmployeDashboard.tsx` (nouveau)
+  - `src/App.tsx` (imports + 18 routes employé)
+  - `src/pages/public/LoginPage.tsx` (signature + check isBrhEmployee)
+  - `/opt/brh-presentation/public/index.html` (encart "✅ Cockpit Employé livré" sur la section persona Pierre Collard)
+- **Migrations créées** : aucune (V1 sans DB, registre statique JS)
+- **Pages wiki impactées** : log.md
+- **Risque** : Low — toutes les routes existantes inchangées, EmployeGuard restreint à un registre fermé d'emails (Pierre Collard pour V1). Aucun impact RLS DB.
+- **Tests** : `npm run build` ✅ vert (38.81s, 0 TS error). Compte Pierre Collard se connecte → cockpit visible + score Standard 42 pts + accès aux 5 modules.
+- **Status** : ✅ DONE V1 (V2 en backlog)
+
+---
+
+
 ## 2026-05-08 — Phase G : refonte simulateur public (funnel pub-conversion)
 
 - **Contexte** : Philippe va lancer une campagne pub sur le simulateur de travaux pour visiteurs non connectés. C'est LE funnel d'acquisition principal. Audit identifié 7 frictions critiques qui réduisaient la conversion. Doit être absolument parfait.

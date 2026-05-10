@@ -7,6 +7,8 @@ import AppShell from '@/components/layout/AppShell'
 import AdminShell from '@/components/layout/AdminShell'
 import ProShell from '@/components/layout/ProShell'
 import ParticulierShell from '@/components/layout/ParticulierShell'
+import EmployeShell from '@/components/layout/EmployeShell'
+import EmployeGuard from '@/components/auth/EmployeGuard'
 import AuthGuard from '@/components/auth/AuthGuard'
 import AdminGuard from '@/components/auth/AdminGuard'
 import ProGuard from '@/components/auth/ProGuard'
@@ -57,6 +59,7 @@ const ProfilPage = lazy(() => import('@/pages/dashboard/ProfilPage'))
 
 // Lazy loaded pages — Admin
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'))
+const EmployeDashboard = lazy(() => import('@/pages/employe/EmployeDashboard'))
 const AdminLogements = lazy(() => import('@/pages/admin/AdminLogements'))
 const AdminDossiers = lazy(() => import('@/pages/admin/AdminDossiers'))
 const AdminDossierDetail = lazy(() => import('@/pages/admin/AdminDossierDetail'))
@@ -321,6 +324,28 @@ export default function App() {
                 <Route path="/agence/foncier/sci" element={<AgenceFoncierSci />} />
                 <Route path="/agence/foncier/tertiaire" element={<AgenceFoncierTertiaire />} />
                 <Route path="/agence/foncier/parcelle/:idu" element={<AgenceFoncierParcelleDetail />} />
+              </Route>
+            </Route>
+
+            {/* Employé BRH routes — cockpit dédié pour les commerciaux/opérationnels BRH.
+                Réutilise les composants /agence/foncier/* et /pro/prospects-bretagne. */}
+            <Route element={<EmployeGuard />}>
+              <Route element={<EmployeShell />}>
+                <Route path="/employe" element={<EmployeDashboard />} />
+                <Route path="/employe/foncier/carte" element={<AgenceFoncierCarte />} />
+                <Route path="/employe/foncier/prospects" element={<AgenceFoncierProspects />} />
+                <Route path="/employe/foncier/favoris" element={<AgenceFoncierFavoris />} />
+                <Route path="/employe/foncier/sci" element={<AgenceFoncierSci />} />
+                <Route path="/employe/foncier/tertiaire" element={<AgenceFoncierTertiaire />} />
+                <Route path="/employe/foncier/parcelle/:idu" element={<AgenceFoncierParcelleDetail />} />
+                <Route path="/employe/prospection/bretagne" element={<ProProspectsBretagne />} />
+                <Route path="/employe/prospection/carte" element={<ProProspectsCarte />} />
+                <Route path="/employe/simulateur" element={<AgenceSimulateur />} />
+                {/* Placeholders V2 : redirect vers cockpit avec query param ?todo=feature */}
+                <Route path="/employe/leads" element={<Navigate to="/employe?todo=leads" replace />} />
+                <Route path="/employe/mails" element={<Navigate to="/employe?todo=mails" replace />} />
+                <Route path="/employe/calendrier" element={<Navigate to="/employe?todo=calendrier" replace />} />
+                <Route path="/employe/social" element={<Navigate to="/employe?todo=social" replace />} />
               </Route>
             </Route>
 
