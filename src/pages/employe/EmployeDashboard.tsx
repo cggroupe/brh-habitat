@@ -18,23 +18,48 @@ import {
   Calendar,
   Zap,
 } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
-import { getBrhEmployee, ACTIVITY_THRESHOLDS, getNextLevel } from '@/lib/brh-employees'
+import { useMyEmployee } from '@/hooks/queries/brh-employees'
+import { LEVEL_LEADS_QUOTA, LEVEL_THRESHOLDS, type EmployeeLevel } from '@/api/brh-employees'
+
+const LEVEL_LABELS: Record<EmployeeLevel, string> = {
+  standard: 'Standard',
+  pro: 'Pro',
+  expert: 'Expert',
+  master: 'Master',
+}
+const LEVEL_COLORS: Record<EmployeeLevel, string> = {
+  standard: '#71717a',
+  pro: '#0284c7',
+  expert: '#7c3aed',
+  master: '#f59e0b',
+}
+
+function getNextLevel(current: EmployeeLevel): EmployeeLevel | null {
+  const order: EmployeeLevel[] = ['standard', 'pro', 'expert', 'master']
+  const idx = order.indexOf(current)
+  if (idx === -1 || idx === order.length - 1) return null
+  return order[idx + 1]
+}
 
 export default function EmployeDashboard() {
-  const { user } = useAuth()
-  const employee = getBrhEmployee(user?.email)
+  const { data: employee, isLoading } = useMyEmployee()
 
+  if (isLoading) {
+    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-emerald-200 border-t-emerald-700 rounded-full animate-spin" /></div>
+  }
   if (!employee) {
-    return <div className="p-8">Employé non reconnu.</div>
+    return <div className="p-8">Employé non reconnu — contactez l'admin.</div>
   }
 
-  const levelCfg = ACTIVITY_THRESHOLDS[employee.activity_level]
+  const levelColor = LEVEL_COLORS[employee.activity_level]
+  const levelLabel = LEVEL_LABELS[employee.activity_level]
+  const leadsQuota = LEVEL_LEADS_QUOTA[employee.activity_level]
   const nextLevelKey = getNextLevel(employee.activity_level)
-  const nextLevelCfg = nextLevelKey ? ACTIVITY_THRESHOLDS[nextLevelKey] : null
-  const pointsToNext = nextLevelCfg ? nextLevelCfg.min_score - employee.activity_score : 0
-  const progressPct = nextLevelCfg
-    ? Math.min(100, ((employee.activity_score - levelCfg.min_score) / (nextLevelCfg.min_score - levelCfg.min_score)) * 100)
+  const nextLevelMin = nextLevelKey ? LEVEL_THRESHOLDS[nextLevelKey] : null
+  const currentMin = LEVEL_THRESHOLDS[employee.activity_level]
+  const pointsToNext = nextLevelMin ? nextLevelMin - employee.activity_score : 0
+  const progressPct = nextLevelMin
+    ? Math.min(100, ((employee.activity_score - currentMin) / (nextLevelMin - currentMin)) * 100)
     : 100
 
   const today = new Date().toLocaleDateString('fr-FR', {
@@ -58,10 +83,10 @@ export default function EmployeDashboard() {
         </div>
         <div
           className="px-4 py-2 rounded-full text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2"
-          style={{ backgroundColor: levelCfg.color }}
+          style={{ backgroundColor: levelColor }}
         >
           <Award size={13} />
-          Niveau {levelCfg.label}
+          Niveau {levelLabel}
         </div>
       </div>
 
@@ -79,7 +104,7 @@ export default function EmployeDashboard() {
             </p>
             <p className="font-display text-4xl font-bold">{employee.activity_score} pts</p>
             <p className="text-sm text-white/80 mt-2">
-              Niveau actuel : <strong style={{ color: levelCfg.color }}>{levelCfg.label}</strong>
+              Niveau actuel : <strong style={{ color: levelColor }}>{levelLabel}</strong>
             </p>
           </div>
           <div>
@@ -87,11 +112,11 @@ export default function EmployeDashboard() {
               Leads débloqués / mois
             </p>
             <p className="font-display text-4xl font-bold">
-              {levelCfg.max_leads_month >= 999 ? '∞' : levelCfg.max_leads_month}
+              {leadsQuota >= 999 ? "∞" : leadsQuota}
             </p>
             <p className="text-sm text-white/80 mt-2">
-              {nextLevelCfg
-                ? `Passez ${nextLevelCfg.label} pour ${nextLevelCfg.max_leads_month >= 999 ? '∞' : nextLevelCfg.max_leads_month} leads/mois`
+              {nextLevelKey
+                ? `Passez ${LEVEL_LABELS[nextLevelKey]} pour ${LEVEL_LEADS_QUOTA[nextLevelKey] >= 999 ? '∞' : LEVEL_LEADS_QUOTA[nextLevelKey]} leads/mois`
                 : 'Niveau maximum atteint 🏆'}
             </p>
           </div>
@@ -106,10 +131,10 @@ export default function EmployeDashboard() {
           </div>
         </div>
 
-        {nextLevelCfg && (
+        {nextLevelKey && (
           <div className="mt-6 relative z-10">
             <div className="flex justify-between text-xs text-white/80 mb-2">
-              <span>Progression vers <strong>{nextLevelCfg.label}</strong></span>
+              <span>Progression vers <strong>{LEVEL_LABELS[nextLevelKey!]}</strong></span>
               <span className="font-bold">{pointsToNext} pts à gagner</span>
             </div>
             <div className="h-2 bg-white/15 rounded-full overflow-hidden">
@@ -135,10 +160,18 @@ export default function EmployeDashboard() {
           <ActionCard
             icon={<Mail size={20} className="text-blue-600" />}
             iconBg="bg-blue-50"
-            title="Envoyer 5 mails recrutement"
-            points="+25 pts"
-            description="Templates artisans, agences, architectes"
-            badge="Bientôt"
+            title="Envoyer un mail recrutement"
+            points="+5 pts / mail"
+            description="Templates artisans, agences, architectes, MOE"
+            href="/employe/mails"
+          />
+          <ActionCard
+            icon={<Calendar size={20} className="text-amber-600" />}
+            iconBg="bg-amber-50"
+            title="Activer mes créneaux RDV"
+            points="Mise en avant"
+            description="Plus actif = plus visible au RDV particulier"
+            href="/employe/calendrier"
           />
           <ActionCard
             icon={<Users size={20} className="text-emerald-600" />}
@@ -154,14 +187,6 @@ export default function EmployeDashboard() {
             title="Publier sur réseaux sociaux"
             points="+10 pts / post"
             description="LinkedIn / TikTok / Instagram"
-            badge="Bientôt"
-          />
-          <ActionCard
-            icon={<Calendar size={20} className="text-amber-600" />}
-            iconBg="bg-amber-50"
-            title="Tenir 3 RDV particuliers"
-            points="+30 pts"
-            description="Avec compte-rendu dans la plateforme"
             badge="Bientôt"
           />
         </div>
@@ -244,6 +269,7 @@ function ActionCard({
   points,
   description,
   badge,
+  href,
 }: {
   icon: React.ReactNode
   iconBg: string
@@ -251,9 +277,16 @@ function ActionCard({
   points: string
   description: string
   badge?: string
+  href?: string
 }) {
+  const Wrapper = href ? Link : 'div'
   return (
-    <div className="rounded-xl border border-border bg-canvas p-4 hover:border-emerald-300 hover:shadow-sm transition-all">
+    <Wrapper
+      to={href ?? ''}
+      className={`rounded-xl border border-border bg-canvas p-4 transition-all block ${
+        href ? 'hover:border-emerald-300 hover:shadow-sm cursor-pointer' : ''
+      }`}
+    >
       <div className="flex items-start justify-between mb-2">
         <div className={`w-10 h-10 rounded-lg ${iconBg} flex items-center justify-center`}>
           {icon}
@@ -263,13 +296,18 @@ function ActionCard({
             {badge}
           </span>
         )}
+        {href && !badge && (
+          <span className="text-[9px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-200 rounded px-1.5 py-0.5">
+            Actif
+          </span>
+        )}
       </div>
       <p className="text-[13px] font-bold text-text leading-tight">{title}</p>
       <p className="text-[11px] text-text-muted mt-1 leading-snug">{description}</p>
       <p className="text-xs font-bold mt-2" style={{ color: '#00600a' }}>
         {points}
       </p>
-    </div>
+    </Wrapper>
   )
 }
 

@@ -1,5 +1,5 @@
 import { logError } from '@/lib/error'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useScrollLock } from '@/hooks/useScrollLock'
 import { CalendarDays, CheckCircle2, Lock, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -71,8 +71,35 @@ export function ContactRdvModal({
   const [isLoading, setIsLoading] = useState(false)
   const [isConfirmed, setIsConfirmed] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  // Phase Employé V2.3 — sélection facultative d'un employé BRH
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null)
+  const [availableEmployees, setAvailableEmployees] = useState<Array<{ employee_id: string; full_name: string; role_label: string; activity_level: string }>>([])
 
   useScrollLock()
+
+  // Phase Employé V2.3 — fetch employés dispo dès qu'on a au moins un créneau
+  useEffect(() => {
+    if (dispos.length === 0) {
+      setAvailableEmployees([])
+      setSelectedEmployeeId(null)
+      return
+    }
+    // On utilise le 1er créneau pour la requête (tous les créneaux récurrents sont équivalents)
+    const firstDispo = dispos[0]
+    const [y, m, d] = firstDispo.date.split('-').map(Number)
+    const dayOfWeek = new Date(y, m - 1, d).getDay() // 0=dim, 6=sam
+    const period = firstDispo.periode === 'matin' ? 'morning' : 'afternoon'
+    let cancelled = false
+    void supabase
+      .rpc('brh_available_employees_for_slot', { p_day_of_week: dayOfWeek, p_period: period, p_limit: 3 })
+      .then(({ data }) => {
+        if (cancelled) return
+        setAvailableEmployees((data ?? []) as Array<{ employee_id: string; full_name: string; role_label: string; activity_level: string }>)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [dispos])
 
   const prenom = form.nom.trim().split(' ')[0] ?? form.nom.trim()
 
@@ -129,6 +156,8 @@ export function ContactRdvModal({
           contact_email: form.email.trim().toLowerCase(),
           requested_date: (() => { const [y, m, d] = dispos[0].date.split('-').map(Number); return new Date(y, m - 1, d, 12, 0, 0).toISOString() })(),
           preferred_slot: dispoText,
+          // Phase Employé V2.3 — assigne l'employé choisi (ou null si auto)
+          assigned_employee_id: selectedEmployeeId,
           notes: [
             `Disponibilites client :\n${dispoText}`,
             form.message.trim() ? `Message : ${form.message.trim()}` : null,
@@ -262,6 +291,50 @@ export function ContactRdvModal({
                   onSlotsChange={setDispos}
                 />
               </div>
+
+              {/* Phase Employé V2.3 — sélection facultative d'un employé BRH */}
+              {dispos.length > 0 && availableEmployees.length > 0 && (
+                <div>
+                  <label className="block font-display text-sm text-slate-800 mb-1.5">
+                    Avec qui souhaitez-vous l'entretien ? <span className="font-body text-slate-400 font-normal">(facultatif)</span>
+                  </label>
+                  <p className="font-body text-xs text-slate-400 mb-3">
+                    Voici les conseillers BRH disponibles à votre créneau. Sinon, l'équipe choisira pour vous.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedEmployeeId(null)}
+                      className={`p-3 rounded-xl border-2 text-left transition-all ${
+                        selectedEmployeeId === null
+                          ? 'border-primary bg-primary/5'
+                          : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                    >
+                      <p className="font-display text-sm font-semibold text-slate-800">Pas de préférence</p>
+                      <p className="font-body text-xs text-slate-500">L'équipe BRH attribue selon disponibilité</p>
+                    </button>
+                    {availableEmployees.map((emp) => (
+                      <button
+                        key={emp.employee_id}
+                        type="button"
+                        onClick={() => setSelectedEmployeeId(emp.employee_id)}
+                        className={`p-3 rounded-xl border-2 text-left transition-all ${
+                          selectedEmployeeId === emp.employee_id
+                            ? 'border-primary bg-primary/5'
+                            : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        <p className="font-display text-sm font-semibold text-slate-800">{emp.full_name}</p>
+                        <p className="font-body text-xs text-slate-500">
+                          {emp.role_label}
+                          <span className="ml-1 text-emerald-700 font-bold">· {emp.activity_level}</span>
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Message */}
               <div>

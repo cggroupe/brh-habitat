@@ -95,6 +95,78 @@
 ---
 
 
+## 2026-05-09 — Phase Employé V2.1 + V2.2 + V2.3 : DB + emails + calendrier RDV
+
+- **Contexte** : suite Phase Employé V1. Philippe valide GO V2 complet. Livraison en 3 vagues prioritaires (V2.4 publications sociales + V2.5 leads progressifs en backlog explicite).
+
+### V2.1 — Foundations DB
+- **Migration `20260706700000_brh_employees_foundation.sql`** appliquée prod :
+  - `brh_employees` (profile_id FK profiles, full_name, email, role_label, activity_score, activity_level, leads_received_this_month, signature_html, is_active)
+  - `brh_employee_actions` (employee_id, action_type ∈ email_sent/partner_recruited/social_post/rdv_completed/lead_converted/manual_admin, points, related_entity, notes, metadata)
+  - Fonctions SECURITY DEFINER avec `SET search_path=''` (règle anti-bug #12) : `brh_compute_employee_score(uuid)`, `brh_compute_employee_level(int)`
+  - Trigger `brh_employees_action_after_insert` : à chaque INSERT action → recalcule score + level auto
+  - 5 policies RLS (employé voit son profil + ses actions, employé update sa signature, admin manage all)
+  - Seed Pierre Collard + 1 action `manual_admin +42` reproduisant le score initial
+- **`src/api/brh-employees.ts`** : 4 endpoints (`getMine`, `listActive`, `myRecentActions`, `updateSignature`) + constantes `LEVEL_LEADS_QUOTA` / `LEVEL_THRESHOLDS`
+- **`src/hooks/queries/brh-employees.ts`** : `useMyEmployee`, `useActiveEmployees`, `useMyRecentActions`
+- **`EmployeDashboard.tsx`** refactoré pour utiliser DB live (au lieu du registre statique JS)
+
+### V2.2 — Templates emails recrutement
+- **Migration `20260706710000_brh_email_templates.sql`** appliquée prod :
+  - `brh_email_templates` (slug unique, target_audience ∈ artisan/agence_immo/architecte/maitre_oeuvre/autre, subject, body_html, variables JSONB)
+  - `brh_email_sends` (employee_id, template_id, recipient_email/name/company, subject, body_html, resend_message_id, sent_at, opened_at/clicked_at/replied_at, status)
+  - 4 templates seed : recrutement-artisan, recrutement-agence-immo, recrutement-architecte, recrutement-maitre-oeuvre (corps HTML structurés avec variables `{{nom_destinataire}}`, `{{ville}}`, `{{employe_nom}}`, `{{employe_signature}}`)
+  - RLS : employé lit templates actifs + ses propres envois, admin manage all, INSERT sends via service role uniquement (EF)
+- **EF `send-recruitment-email`** déployée (rate-limit 30/min/IP) :
+  - Vérifie l'employé actif via `brh_employees.profile_id`
+  - Render le template avec variables (signature par défaut si non personnalisée)
+  - Envoi Resend avec from `BRH Habitat <noreply@brh-habitat.fr>`
+  - Insert dans `brh_email_sends` (toujours, même si échec, pour traçabilité)
+  - **+5 pts** automatiquement via INSERT dans `brh_employee_actions` (action_type='email_sent') → trigger sync score
+- **`src/api/email-templates.ts`** + **`src/pages/employe/EmployeMails.tsx`** : composer 3 colonnes (templates / form destinataire / aperçu rendu HTML), historique récent des envois avec status visuel
+
+### V2.3 — Calendrier RDV exposé sur ContactRdvModal
+- **Migration `20260706720000_brh_employee_calendar.sql`** appliquée prod :
+  - `brh_employee_calendar` (employee_id, day_of_week 0-6, period morning/afternoon, status available/unavailable, UNIQUE(emp+day+period))
+  - Colonne `assigned_employee_id` ajoutée sur `brh_appointments`
+  - Fonction publique SECURITY DEFINER `brh_available_employees_for_slot(dow, period, limit)` → triés par activity_score DESC (mise en avant des plus actifs). GRANT EXECUTE TO anon, authenticated.
+  - Seed Pierre Collard : lundi-vendredi matin + après-midi (10 créneaux)
+- **`src/api/employee-calendar.ts`** + **`src/pages/employe/EmployeCalendrier.tsx`** : grille hebdo 7×2 toggleable (créneaux récurrents). UI optimiste + invalidation React Query.
+- **`src/components/ContactRdvModal.tsx`** patché :
+  - `useEffect` qui appelle la RPC dès qu'un créneau dispo est sélectionné
+  - Bloc UI "Avec qui souhaitez-vous l'entretien ?" affichant jusqu'à 3 employés dispo (option "Pas de préférence" + cards employés avec niveau)
+  - INSERT `brh_appointments.assigned_employee_id = selectedEmployeeId`
+
+### Routes employé branchées
+- `/employe/mails` → `EmployeMails` (V2.2 livré)
+- `/employe/calendrier` → `EmployeCalendrier` (V2.3 livré)
+- Sidebar `EmployeShell` : badges "Bientôt" retirés sur ces 2 entrées
+- `/employe/leads` et `/employe/social` restent placeholders V2.4/V2.5
+
+### Backlog V2.4 + V2.5 (sessions futures)
+- **V2.4** Publications réseaux sociaux (LinkedIn/TikTok/Instagram) avec templates BRH + tracking + +10 pts/post → table `brh_social_publications`
+- **V2.5** Algorithme attribution leads progressive — branchement réel sur `brh_employees.leads_received_this_month` + cron mensuel reset compteur + override RPC `brh_grant_lead_claim` pour employés
+
+### Fichiers modifiés (12 nouveaux + 3 modifiés)
+- 3 migrations : `20260706700000_brh_employees_foundation.sql`, `20260706710000_brh_email_templates.sql`, `20260706720000_brh_employee_calendar.sql`
+- 1 EF : `supabase/functions/send-recruitment-email/index.ts`
+- 3 API : `src/api/brh-employees.ts`, `src/api/email-templates.ts`, `src/api/employee-calendar.ts`
+- 1 hook : `src/hooks/queries/brh-employees.ts`
+- 2 pages : `src/pages/employe/EmployeMails.tsx`, `src/pages/employe/EmployeCalendrier.tsx`
+- Modifs : `src/App.tsx`, `src/components/layout/EmployeShell.tsx`, `src/pages/employe/EmployeDashboard.tsx`, `src/components/ContactRdvModal.tsx`
+
+### Migrations DB / EF déployées prod
+- 3 migrations appliquées via psql pooler (idempotentes)
+- 1 EF déployée via `supabase functions deploy send-recruitment-email`
+
+### Status & risque
+- **Risque** : Low — toutes les migrations idempotentes, RLS strict, EF rate-limited, fallback gracieux dans l'UI (employee non reconnu → message). Le test de Pierre montre 42 pts (cohérent V1) avec accès aux 2 nouveaux modules.
+- **Tests** : `npm run build` ✅ vert (19.86s), 0 TS error. Toutes les migrations OK en prod, EF déployée OK, RPC publique testée (`brh_available_employees_for_slot(1, 'morning', 5)` retourne Pierre).
+- **Status** : ✅ DONE V2.1 + V2.2 + V2.3 (V2.4 + V2.5 explicitement en backlog)
+
+---
+
+
 ## 2026-05-09 — Phase Employé BRH (V1) : cockpit + EmployeShell + EmployeGuard
 
 - **Contexte** : Philippe veut un compte employé BRH dédié pour ses commerciaux (Pierre Collard). Accès au foncier / prospection / simulateur / réseau pro **sans** le MLM. Système de gamification où plus l'employé est actif (mails envoyés, partenaires recrutés, posts sociaux), plus il débloque de leads et plus son profil est mis en avant lors des RDV publics.
