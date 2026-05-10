@@ -92,7 +92,7 @@ const GROUPS: NavGroup[] = [
     children: [
       { to: '/employe/mails', label: 'Templates emails', icon: Mail },
       { to: '/employe/calendrier', label: 'Mon calendrier RDV', icon: Calendar },
-      { to: '/employe/social', label: 'Mes publications', icon: Share2, badge: 'Bientôt' },
+      { to: '/employe/social', label: 'Mes publications', icon: Share2 },
     ],
   },
 ]

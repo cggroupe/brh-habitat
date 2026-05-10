@@ -10,7 +10,6 @@ import {
   Award,
   TrendingUp,
   Mail,
-  Users,
   Share2,
   ArrowRight,
   Sparkles,
@@ -174,20 +173,20 @@ export default function EmployeDashboard() {
             href="/employe/calendrier"
           />
           <ActionCard
-            icon={<Users size={20} className="text-emerald-600" />}
-            iconBg="bg-emerald-50"
-            title="Recruter 1 partenaire signé"
-            points="+50 pts"
-            description="Charte signée par un nouvel artisan ou agence"
-            badge="Bientôt"
-          />
-          <ActionCard
             icon={<Share2 size={20} className="text-purple-600" />}
             iconBg="bg-purple-50"
             title="Publier sur réseaux sociaux"
             points="+10 pts / post"
-            description="LinkedIn / TikTok / Instagram"
-            badge="Bientôt"
+            description="LinkedIn / TikTok / Instagram avec 6 templates BRH"
+            href="/employe/social"
+          />
+          <ActionCard
+            icon={<TrendingUp size={20} className="text-emerald-600" />}
+            iconBg="bg-emerald-50"
+            title="Mes leads attribués"
+            points={`${employee.leads_received_this_month} reçus / ${LEVEL_LEADS_QUOTA[employee.activity_level] >= 999 ? '∞' : LEVEL_LEADS_QUOTA[employee.activity_level]}`}
+            description="Quota mensuel selon votre niveau"
+            href="/employe/leads"
           />
         </div>
       </div>
@@ -246,16 +245,16 @@ export default function EmployeDashboard() {
       </div>
 
       {/* Roadmap */}
-      <div className="mt-8 rounded-2xl bg-amber-50 border border-amber-200 p-5">
-        <h3 className="text-sm font-bold text-amber-900 mb-2 flex items-center gap-2">
+      <div className="mt-8 rounded-2xl bg-emerald-50 border border-emerald-200 p-5">
+        <h3 className="text-sm font-bold text-emerald-900 mb-2 flex items-center gap-2">
           <Sparkles size={14} />
-          À développer dans les prochaines semaines
+          Tous les modules sont actifs ✅
         </h3>
-        <ul className="space-y-1.5 text-sm text-amber-800">
-          <li>📧 <strong>Templates emails de prospection</strong> (artisans, agences immo, architectes, MOE) avec signature personnalisée Pierre Collard et tracking ouverture/clic.</li>
-          <li>📅 <strong>Calendrier RDV employé</strong> exposé sur la prise de RDV particulier (ContactRdvModal). Plus le score est haut, plus le profil est mis en avant.</li>
-          <li>📱 <strong>Module publications réseaux sociaux</strong> (LinkedIn, TikTok, Instagram) avec templates de posts BRH et tracking.</li>
-          <li>🎯 <strong>Système d'attribution leads progressif</strong> branché sur le score réel (table brh_employee_actions à créer).</li>
+        <ul className="space-y-1.5 text-sm text-emerald-800">
+          <li>📧 <Link to="/employe/mails" className="underline font-semibold">Templates emails de recrutement</Link> · 4 templates · +5 pts par envoi · tracking dans la plateforme</li>
+          <li>📅 <Link to="/employe/calendrier" className="underline font-semibold">Calendrier RDV exposé</Link> · 7 jours × 2 périodes · vous apparaissez aux particuliers selon votre score</li>
+          <li>📱 <Link to="/employe/social" className="underline font-semibold">Publications réseaux sociaux</Link> · 6 templates BRH · +10 pts par publication</li>
+          <li>🎯 <Link to="/employe/leads" className="underline font-semibold">Leads progressifs</Link> · quota mensuel selon niveau · 5 → 15 → 35 → ∞</li>
         </ul>
       </div>
     </div>

@@ -62,6 +62,8 @@ const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'))
 const EmployeDashboard = lazy(() => import('@/pages/employe/EmployeDashboard'))
 const EmployeMails = lazy(() => import('@/pages/employe/EmployeMails'))
 const EmployeCalendrier = lazy(() => import('@/pages/employe/EmployeCalendrier'))
+const EmployeSocial = lazy(() => import('@/pages/employe/EmployeSocial'))
+const EmployeLeads = lazy(() => import('@/pages/employe/EmployeLeads'))
 const AdminLogements = lazy(() => import('@/pages/admin/AdminLogements'))
 const AdminDossiers = lazy(() => import('@/pages/admin/AdminDossiers'))
 const AdminDossierDetail = lazy(() => import('@/pages/admin/AdminDossierDetail'))
@@ -343,12 +345,11 @@ export default function App() {
                 <Route path="/employe/prospection/bretagne" element={<ProProspectsBretagne />} />
                 <Route path="/employe/prospection/carte" element={<ProProspectsCarte />} />
                 <Route path="/employe/simulateur" element={<AgenceSimulateur />} />
-                {/* Phase Employé V2.2 + V2.3 — Mails recrutement + calendrier (livrés) */}
+                {/* Phase Employé V2.2 + V2.3 + V2.4 + V2.5 — tous livrés */}
                 <Route path="/employe/mails" element={<EmployeMails />} />
                 <Route path="/employe/calendrier" element={<EmployeCalendrier />} />
-                {/* Placeholders V2.4+ */}
-                <Route path="/employe/leads" element={<Navigate to="/employe?todo=leads" replace />} />
-                <Route path="/employe/social" element={<Navigate to="/employe?todo=social" replace />} />
+                <Route path="/employe/social" element={<EmployeSocial />} />
+                <Route path="/employe/leads" element={<EmployeLeads />} />
               </Route>
             </Route>
 

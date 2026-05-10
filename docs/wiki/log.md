@@ -95,6 +95,63 @@
 ---
 
 
+## 2026-05-09 — Phase Employé V2.4 + V2.5 : publications sociales + leads progressifs
+
+- **Contexte** : suite Phase Employé V2.1-V2.3. Philippe valide GO V2.4 + V2.5 pour fermer le persona en complet.
+
+### V2.4 — Publications réseaux sociaux
+- **Migration `20260706730000_brh_social_publications.sql`** appliquée prod :
+  - `brh_social_publications` (employee_id, platform ∈ linkedin/tiktok/instagram/facebook/twitter/autre, content_text, publication_url, status pending/validated/rejected, reach_count, engagement_count)
+  - `brh_social_post_templates` avec **6 templates BRH** seedés : LinkedIn loi Climat, LinkedIn recrutement artisans, TikTok conseil DPE 30s, Instagram aides 2026, LinkedIn recrutement agences, Multi témoignage client (avec hashtags pré-remplis)
+  - Trigger `brh_social_publications_award` : INSERT publication validée → +10 pts auto via `brh_employee_actions` (action_type='social_post')
+  - 5 RLS policies
+- **`src/api/social-publications.ts`** + **`src/pages/employe/EmployeSocial.tsx`** :
+  - Composer 2 colonnes : sélecteur plateforme + textarea contenu + URL optionnelle / liste templates filtrable par plateforme
+  - Boutons "Copier" + "Utiliser ce template" (pré-remplit la zone de texte avec hashtags)
+  - Historique mes publications récentes avec icônes plateforme + statut + lien externe
+
+### V2.5 — Leads progressifs
+- **Migration `20260706740000_brh_employee_leads_progressive.sql`** appliquée prod :
+  - Trigger `brh_appointments_assigned_counter` : INSERT brh_appointments avec assigned_employee_id non null → incrémente `leads_received_this_month` + crée action `rdv_completed` (+10 pts)
+  - Trigger `brh_appointments_reassign` : UPDATE assigned_employee_id → décrémente l'ancien, incrémente le nouveau (gestion réassignation admin)
+  - Fonction `brh_reset_employee_leads_counter()` : à appeler par cron externe le 1er du mois (n8n / systemd timer / pg_cron)
+  - Recompute initial : aligne `leads_received_this_month` avec les RDV réels du mois courant
+- **`src/pages/employe/EmployeLeads.tsx`** :
+  - Encart quota gradient avec 3 KPIs (Quota mensuel / Utilisés / Restants)
+  - Barre de progression + alerte si quota dépassé
+  - Card "Boost niveau" avec liens directs vers /mails et /social pour gagner des pts
+  - Liste des RDV attribués avec contact_name + tel + email cliquables + créneau préféré + status
+
+### Cockpit + sidebar mis à jour
+- `EmployeDashboard` : section "Boostez votre score" remplace les badges "Bientôt" par des cards Actives qui pointent vers les vraies pages. Roadmap finale verte "Tous les modules sont actifs ✅".
+- Routes branchées : `/employe/social`, `/employe/leads` (sidebar EmployeShell sans badge "Bientôt")
+
+### Fichiers modifiés (8 nouveaux + 3 modifiés)
+- 2 migrations : `20260706730000_brh_social_publications.sql`, `20260706740000_brh_employee_leads_progressive.sql`
+- 1 API : `src/api/social-publications.ts`
+- 2 pages : `src/pages/employe/EmployeSocial.tsx`, `src/pages/employe/EmployeLeads.tsx`
+- Modifs : `src/App.tsx` (imports + routes), `src/components/layout/EmployeShell.tsx` (retrait badges), `src/pages/employe/EmployeDashboard.tsx` (cards actives + roadmap finale)
+
+### Status & risque
+- **Risque** : Low — RLS strict, triggers idempotents, logique d'opt-in clear (employé déclare lui-même ses publications, pas d'API LinkedIn/TikTok directe en V1).
+- **Tests** : `npm run build` ✅ vert (21.45s, 0 TS error). Migrations appliquées prod, recompute initial OK (Pierre = 0 leads ce mois car aucun RDV attribué encore).
+- **Status** : ✅ DONE V2.4 + V2.5 — **Persona Employé BRH complet en production**
+
+### Persona Employé BRH — bilan complet (V1 + V2.1 → V2.5)
+| Module | Page | Score gagné |
+|---|---|---|
+| Cockpit + score gamifié | `/employe` | — |
+| Foncier (5 pages) + Prospection (3) + Simulateur + Réseau pro | reuse composants existants | — |
+| Templates emails recrutement | `/employe/mails` | +5 pts/mail |
+| Calendrier RDV exposé | `/employe/calendrier` | mise en avant RDV |
+| Publications réseaux sociaux | `/employe/social` | +10 pts/post |
+| Leads progressifs (quota mensuel) | `/employe/leads` | +10 pts/RDV attribué |
+
+Tables : `brh_employees`, `brh_employee_actions`, `brh_email_templates`, `brh_email_sends`, `brh_employee_calendar`, `brh_social_publications`, `brh_social_post_templates`. EFs : `send-recruitment-email`. Triggers DB : 4. Fonctions SECURITY DEFINER : 5.
+
+---
+
+
 ## 2026-05-09 — Phase Employé V2.1 + V2.2 + V2.3 : DB + emails + calendrier RDV
 
 - **Contexte** : suite Phase Employé V1. Philippe valide GO V2 complet. Livraison en 3 vagues prioritaires (V2.4 publications sociales + V2.5 leads progressifs en backlog explicite).
