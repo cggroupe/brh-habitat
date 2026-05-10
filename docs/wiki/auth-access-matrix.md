@@ -10,7 +10,7 @@
 
 ---
 
-## 1. Personas (7 profils utilisateur — post Phase E)
+## 1. Personas (8 profils utilisateur — post Phase Employé V2)
 
 | # | Persona | Marqueur DB primaire | Marqueurs DB secondaires |
 |---|---------|---------------------|---------------------------|
@@ -20,7 +20,8 @@
 | 4 | **Professionnel** (BTP, RGE ou non) | `profiles.role='pro'` | `brh_companies.owner_id` — peut faire prospection + chantiers + propositions |
 | 5 | **Artisan legacy** | aucun `brh_companies` | `brh_artisans_rge.profile_id` (onboarding magic link historique — déprécié) |
 | 6 | **Agence immobilière** | `profiles.role='pro'` | `brh_partner_contracts.signer_profile_id` avec `partner_type='agence_immo'` + `status='active'` |
-| 7 | **Admin** | `profiles.role='admin'` | — |
+| 7 | **Employé BRH** ⭐ | `profiles.role='admin'` (V1) | `brh_employees.profile_id` actif + email dans registre statique `lib/brh-employees.ts` |
+| 8 | **Admin** | `profiles.role='admin'` | sans entrée dans `brh_employees` |
 
 **Suppressions Phase E** : "Pro RGE" et "User legacy" retirés de la matrice :
 - Pro RGE = simple Professionnel (RGE est un attribut profil optionnel, pas un persona). La table `brh_artisans_rge` reste utilisée par le marketplace (`/pro/marketplace-artisans`) pour suggérer des artisans certifiés à des clients.
@@ -115,7 +116,26 @@ Guard : `useQuery brh_artisans_rge.profile_id`. Fonctionnel uniquement pour arti
 
 Note ménage Phase D : un Pro RGE qui a ET `brh_companies` ET `brh_artisans_rge` est redirigé vers `/pro` au login. L'`ArtisanShell` reste accessible mais peu utilisé en pratique. Banner `ArtisanDashboard` propose explicitement de basculer vers `/pro`.
 
-### 2.8 Routes Admin (AdminShell + AdminGuard) — 23 routes
+### 2.8 Routes Employé BRH (EmployeShell + EmployeGuard) — 14 routes ⭐
+
+Guard : `isBrhEmployee(user.email)` via registre statique `src/lib/brh-employees.ts` (V1) — futur : table `brh_employees`.
+
+| Route | Employé BRH (Pierre Collard) | Admin pur (sans brh_employees) | Tous autres |
+|-------|------------------------------|--------------------------------|-------------|
+| `/employe` | ✅ Cockpit gamifié | 🔄 `/tableau-de-bord` | 🔄 |
+| `/employe/foncier/*` (carte, prospects, favoris, sci, tertiaire, parcelle) | ✅ (réutilise composants `/agence/foncier/*`) | 🔄 | 🔄 |
+| `/employe/prospection/*` (bretagne, carte) | ✅ (réutilise `ProProspects*`) | 🔄 | 🔄 |
+| `/employe/simulateur` | ✅ (réutilise `AgenceSimulateur`) | 🔄 | 🔄 |
+| `/employe/mails` | ✅ Templates emails recrutement | 🔄 | 🔄 |
+| `/employe/calendrier` | ✅ Créneaux RDV exposés au public | 🔄 | 🔄 |
+| `/employe/social` | ✅ Publications réseaux sociaux | 🔄 | 🔄 |
+| `/employe/leads` | ✅ Quota mensuel + RDV attribués | 🔄 | 🔄 |
+
+**Note importante** : LoginPage redirige les employés vers `/employe` **en priorité absolue avant `/admin`**. Un user dans le registre `BRH_EMPLOYEES` arrive donc directement sur son cockpit gamifié, pas sur la console admin.
+
+**Intégration cross-persona** : la fonction publique `brh_available_employees_for_slot(dow, period, limit)` est appelée par `ContactRdvModal` (sur `/diagnostic-express`) lors de la prise de RDV particulier → expose les employés dispo triés par `activity_score DESC`. C'est l'unique endroit où la donnée employé fuite vers l'utilisateur final.
+
+### 2.9 Routes Admin (AdminShell + AdminGuard) — 23 routes
 
 Guard : `role='admin'`.
 

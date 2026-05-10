@@ -95,6 +95,37 @@
 ---
 
 
+## 2026-05-09 — Documentation wiki Employé BRH (page dédiée + matrice + présentation)
+
+- **Contexte** : finalisation documentation après livraison V2 complète. Philippe demande "tout dans le wiki + page d'explication de la plateforme" — règle Karpathy non négociable (CLAUDE.md règle absolue n°1).
+- **Livré** :
+  - **`docs/wiki/employe-portal-status.md`** (nouveau, ~290 lignes) — page dédiée Employé BRH dans le pattern existant (cf. agence-portal-status.md, artisan-portal-status.md). 9 sections : résumé exécutif, architecture (routes/tables/triggers/fonctions/EFs), gamification, mise en avant RDV public, sécurité RLS, backlog, comment tester, références code, maintenance.
+  - **`docs/wiki/index.md`** : entrée ajoutée Partie 2 avec marqueur ⭐ (juste après artisan-portal-status.md).
+  - **`docs/wiki/auth-access-matrix.md`** :
+    - Section 1 personas : 7 → **8 profils** (ajout Employé BRH avec marqueur DB `brh_employees.profile_id` + registre statique `lib/brh-employees.ts`)
+    - Section 2.8 nouvelle : routes Employé BRH (14 routes) avec tableau ✅/🔄, note prioritaire LoginPage (employé > admin), mention intégration cross-persona via RPC `brh_available_employees_for_slot` exposée à `ContactRdvModal`
+    - Section 2.9 (ex-2.8) : Routes Admin renumérotées
+  - **Présentation Direction** (`/opt/brh-presentation/public/index.html`) : section Employé BRH **complètement refondue** (~150 lignes) :
+    - Header avec marqueur "⭐ Cockpit gamifié complet"
+    - Tableau visuel des 4 niveaux (Standard/Pro/Expert/Master) avec badges colorés et leads/mois
+    - Mockup cockpit gradient (score 42 pts + barre progression vers Pro)
+    - **Grille 2×2 des 4 modules** détaillés (templates emails, calendrier RDV, publications sociales, leads progressifs) avec route + description + bullets ROI
+    - Encart bonus modules réutilisés (foncier + prospection + simulateur sans MLM)
+    - **Encart architecture technique** gradient (7 tables, 4 triggers, 5 fonctions SECURITY DEFINER, 1 EF, 5 migrations, RLS strict)
+- **Fichiers modifiés** :
+  - `docs/wiki/employe-portal-status.md` (nouveau)
+  - `docs/wiki/index.md`
+  - `docs/wiki/auth-access-matrix.md`
+  - `/opt/brh-presentation/public/index.html` (hors repo, sur VPS port 8951)
+- **Migrations créées** : aucune
+- **Pages wiki impactées** : index.md, employe-portal-status.md, auth-access-matrix.md, log.md
+- **Risque** : None (documentation pure)
+- **Tests** : N/A
+- **Status** : ✅ DONE — alignement complet wiki Karpathy + présentation Direction
+
+---
+
+
 ## 2026-05-09 — Phase Employé V2.4 + V2.5 : publications sociales + leads progressifs
 
 - **Contexte** : suite Phase Employé V2.1-V2.3. Philippe valide GO V2.4 + V2.5 pour fermer le persona en complet.
