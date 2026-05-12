@@ -32,8 +32,8 @@ import HomePage from '@/pages/public/HomePage'
 const DiagnosticPage = lazy(() => import('@/pages/public/DiagnosticPage'))
 const DiagnosticExpressPage = lazy(() => import('@/pages/public/DiagnosticExpressPage'))
 const DiagnosticResultsPage = lazy(() => import('@/pages/public/DiagnosticResultsPage'))
-// Mode complet style CapRénov (Phase 2 à venir) — multi-objets façades/ouvertures.
-// const AuditCompletPage = lazy(() => import('@/pages/public/AuditComplet'))
+// Mode complet style CapRénov — wizard 8 étapes avec multi-objets façades/ouvertures.
+const AuditCompletPage = lazy(() => import('@/pages/public/AuditComplet'))
 const ArticlesPage = lazy(() => import('@/pages/public/ArticlesPage'))
 const ArticlePage = lazy(() => import('@/pages/public/ArticlePage'))
 const ContactPage = lazy(() => import('@/pages/public/ContactPage'))
@@ -238,6 +238,9 @@ export default function App() {
                  - Le mode "complet 25-30 min style CapRénov" sera /audit-complet (Phase 2). */}
               <Route path="/diagnostic" element={<DiagnosticPage />} />
               <Route path="/diagnostic-express" element={<DiagnosticExpressPage />} />
+              {/* Audit complet 25-30 min style CapRénov (Phase 2) — wizard 8 étapes
+                 avec multi-objets façades & ouvertures. Réutilise computeDpe(). */}
+              <Route path="/audit-complet" element={<AuditCompletPage />} />
               {/* Phase 13.6.5 — Magic link onboarding artisan (public, magic link Supabase) */}
               <Route path="/artisan/onboarding/:token" element={<ArtisanOnboarding />} />
               <Route path="/diagnostic/resultats/local" element={<DiagnosticResultsPage />} />

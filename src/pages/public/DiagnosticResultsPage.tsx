@@ -275,6 +275,32 @@ export default function DiagnosticResultsPage() {
         {/* Section 7 — CTA finale */}
         <DiagnosticCtaSection onShowContact={() => setShowContactModal(true)} />
 
+        {/* Upsell audit complet 25-30 min (style CapRénov) — proposé après le diagnostic rapide */}
+        <div className="mt-8 rounded-2xl border-2 border-slate-900 bg-slate-900 text-white p-5 lg:p-6">
+          <div className="flex items-start gap-4 flex-wrap">
+            <div className="flex-1 min-w-[280px]">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-amber-300 mb-1">
+                Vous voulez aller plus loin ?
+              </p>
+              <p className="font-display font-bold text-white text-lg leading-tight">
+                Audit énergétique approfondi (25-30 min)
+              </p>
+              <p className="text-sm text-white/80 mt-1">
+                Saisie détaillée façade par façade, fenêtre par fenêtre, équipements précis.
+                Vous obtenez votre <strong>étiquette DPE 3CL officielle</strong> et un chiffrage
+                travaux + aides personnalisé. Vos réponses sont sauvegardées localement à chaque étape.
+              </p>
+            </div>
+            <Link
+              to="/audit-complet"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white hover:bg-slate-100 text-slate-900 text-sm font-bold transition shrink-0"
+            >
+              Lancer l'audit complet
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+
         {/* Bandeau cross-persona — agent immo qui passe par cette page */}
         <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50 p-5">
           <div className="flex items-start gap-4 flex-wrap">
