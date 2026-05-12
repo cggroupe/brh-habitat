@@ -564,11 +564,19 @@ const EQUIPMENT_RECOMMENDATIONS: Record<string, Recommendation> = {
   },
 }
 
-function getUrgencyLevel(score: number): 'faible' | 'modere' | 'eleve' | 'critique' {
-  if (score >= 75) return 'critique'
-  if (score >= 50) return 'eleve'
-  if (score >= 25) return 'modere'
-  return 'faible'
+/**
+ * Mapping score → urgence.
+ *
+ * IMPORTANT (retour Philippe 12/05) : le score est désormais inversé à la
+ * sortie du moteur (`100 - urgency_score`) pour matcher l'interprétation
+ * utilisateur naturelle : « 24/100 c'est mauvais ». Donc score = santé
+ * (haut = bon, bas = critique).
+ */
+function getUrgencyLevel(healthScore: number): 'faible' | 'modere' | 'eleve' | 'critique' {
+  if (healthScore < 25) return 'critique' // 0-24  : intervention urgente
+  if (healthScore < 50) return 'eleve'    // 25-49 : préoccupant
+  if (healthScore < 75) return 'modere'   // 50-74 : à améliorer
+  return 'faible'                         // 75-100: bon état
 }
 
 // ---------------------------------------------------------------------------
@@ -684,10 +692,13 @@ export function analyzeDiagnostic(
       return order[a.priority] - order[b.priority]
     })
 
+    // INVERSION : on transforme l'urgency_score (haut = urgent) en healthScore
+    // (haut = bon). Plus intuitif pour l'utilisateur. Cf retour Philippe 12/05.
+    const healthScore = Math.max(0, 100 - score)
     typeResults.push({
       type,
-      score,
-      urgencyLevel: getUrgencyLevel(score),
+      score: healthScore,
+      urgencyLevel: getUrgencyLevel(healthScore),
       selectedSymptoms: selected,
       budgetMin,
       budgetMax,
@@ -706,14 +717,16 @@ export function analyzeDiagnostic(
     }
   }
 
+  // Score global = moyenne des healthScores des types (déjà inversés).
   const overallScore = typeResults.length > 0
     ? Math.round(typeResults.reduce((sum, tr) => sum + tr.score, 0) / typeResults.length)
-    : 0
+    : 100 // pas de problème détecté = état parfait
 
   return {
     overallScore,
     urgencyLevel: getUrgencyLevel(overallScore),
-    typeResults: typeResults.sort((a, b) => b.score - a.score),
+    // Tri par santé croissante : les plus problématiques en premier
+    typeResults: typeResults.sort((a, b) => a.score - b.score),
     totalBudgetMin,
     totalBudgetMax,
     recommendations: allRecommendations.sort((a, b) => {

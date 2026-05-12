@@ -179,10 +179,10 @@ export const HEALTH_DOMAIN_ICONS: Record<HealthDomain, string> = {
 }
 
 export const URGENCY_LABELS: Record<HealthUrgency, string> = {
-  faible: 'Etat satisfaisant',
-  modere: 'Attention recommandee',
-  eleve: 'Intervention conseillee',
-  critique: 'Intervention urgente',
+  faible: 'Bon état — surveillance',
+  modere: 'État moyen — à améliorer',
+  eleve: 'État préoccupant — intervention conseillée',
+  critique: 'État critique — agir maintenant',
 }
 
 export const URGENCY_COLORS: Record<HealthUrgency, { text: string; bg: string; border: string; bar: string }> = {

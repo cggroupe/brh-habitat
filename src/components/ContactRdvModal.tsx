@@ -141,46 +141,49 @@ export function ContactRdvModal({
           .eq('id', diagnosticId)
       }
 
-      // 2. Creer le RDV dans brh_appointments (plus d'appel CRM)
+      // 2. Création du RDV via RPC SECURITY DEFINER `brh_submit_public_appointment`
+      //    (cf migration 20260713300000) — contourne le bug RLS RETURNING qui
+      //    plantait le .insert().select() pour les visiteurs anonymes. Le RPC
+      //    valide les inputs anti-spam et retourne directement l'UUID.
       const dispoText = dispos
         .map((d) => `${formatDateLabel(d.date)} — ${d.periode === 'matin' ? 'Matin (8h-12h)' : 'Apres-midi (14h-18h)'}`)
         .join('\n')
 
-      const { data: apptInserted, error: apptError } = await supabase
-        .from('brh_appointments')
-        .insert({
-          type: 'diagnostic',
-          diagnostic_id: diagnosticId && diagnosticId !== 'local' ? diagnosticId : null,
-          contact_name: form.nom.trim(),
-          contact_phone: phoneClean,
-          contact_email: form.email.trim().toLowerCase(),
-          requested_date: (() => { const [y, m, d] = dispos[0].date.split('-').map(Number); return new Date(y, m - 1, d, 12, 0, 0).toISOString() })(),
-          preferred_slot: dispoText,
-          // Phase Employé V2.3 — assigne l'employé choisi (ou null si auto)
-          assigned_employee_id: selectedEmployeeId,
-          notes: [
-            `Disponibilites client :\n${dispoText}`,
-            form.message.trim() ? `Message : ${form.message.trim()}` : null,
-            diagnosticSummary ? `Diagnostic : ${diagnosticSummary}` : null,
-            resteACharge ? `Reste a charge estime : ${resteACharge}` : null,
-            referralCode ? `Source affilie : ${referralCode}` : null,
-          ]
-            .filter(Boolean)
-            .join('\n\n'),
-          status: 'demande',
-          referral_code: referralCode || null,
-        })
-        .select('id')
-        .single()
+      const requestedDate = (() => {
+        const [y, m, d] = dispos[0].date.split('-').map(Number)
+        return new Date(y, m - 1, d, 12, 0, 0).toISOString()
+      })()
 
-      if (apptError || !apptInserted) {
+      const notes = [
+        `Disponibilites client :\n${dispoText}`,
+        form.message.trim() ? `Message : ${form.message.trim()}` : null,
+        diagnosticSummary ? `Diagnostic : ${diagnosticSummary}` : null,
+        resteACharge ? `Reste a charge estime : ${resteACharge}` : null,
+        referralCode ? `Source affilie : ${referralCode}` : null,
+      ].filter(Boolean).join('\n\n')
+
+      const { data: appointmentId, error: rpcError } = await supabase.rpc('brh_submit_public_appointment', {
+        p_type: 'diagnostic',
+        p_contact_name: form.nom.trim(),
+        p_contact_phone: phoneClean,
+        p_contact_email: form.email.trim().toLowerCase(),
+        p_preferred_slot: dispoText,
+        p_notes: notes,
+        p_referral_code: referralCode || null,
+        p_diagnostic_id: diagnosticId && diagnosticId !== 'local' ? diagnosticId : null,
+        p_assigned_employee_id: selectedEmployeeId,
+        p_requested_date: requestedDate,
+      })
+
+      if (rpcError || !appointmentId) {
+        logError('brh_submit_public_appointment error', rpcError)
         throw new Error('Erreur lors de l\'enregistrement du rendez-vous.')
       }
 
       // Fire-and-forget : envoie 2 emails (client + admin) via EF send-rdv-confirmation.
       // On n'attend pas la réponse — l'enregistrement DB est déjà acquis, l'email est best-effort.
       void supabase.functions
-        .invoke('send-rdv-confirmation', { body: { appointment_id: apptInserted.id } })
+        .invoke('send-rdv-confirmation', { body: { appointment_id: appointmentId } })
         .catch((e) => logError('send-rdv-confirmation invoke', e))
 
       setIsConfirmed(true)

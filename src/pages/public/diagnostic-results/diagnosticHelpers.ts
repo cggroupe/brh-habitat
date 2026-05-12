@@ -11,38 +11,44 @@ export interface UrgencyConfig {
   icon: React.ComponentType<{ size?: number; className?: string }>
 }
 
+// Libellés anxiogènes pour pousser à la prise de RDV (retour Philippe 12/05).
+// Le score est désormais inversé en "score de santé" :
+//   0-24  → critique (alarme rouge — agir tout de suite)
+//   25-49 → eleve   (préoccupant — agir vite)
+//   50-74 → modere  (état moyen — à améliorer)
+//   75-100→ faible  (bon état — surveillance)
 export const URGENCY_CONFIG: Record<UrgencyLevel, UrgencyConfig> = {
+  critique: {
+    label: 'État critique — agir maintenant',
+    color: 'text-red-700',
+    bg: 'bg-red-50',
+    border: 'border-red-300',
+    bar: 'bg-red-600',
+    icon: AlertTriangle,
+  },
+  eleve: {
+    label: 'État préoccupant — intervention conseillée',
+    color: 'text-orange-700',
+    bg: 'bg-orange-50',
+    border: 'border-orange-300',
+    bar: 'bg-orange-500',
+    icon: TrendingUp,
+  },
+  modere: {
+    label: 'État moyen — à améliorer',
+    color: 'text-yellow-700',
+    bg: 'bg-yellow-50',
+    border: 'border-yellow-300',
+    bar: 'bg-yellow-500',
+    icon: Info,
+  },
   faible: {
-    label: 'Etat satisfaisant',
+    label: 'Bon état — surveillance',
     color: 'text-green-700',
     bg: 'bg-green-50',
     border: 'border-green-200',
     bar: 'bg-green-500',
     icon: CheckCircle2,
-  },
-  modere: {
-    label: 'Attention recommandee',
-    color: 'text-yellow-700',
-    bg: 'bg-yellow-50',
-    border: 'border-yellow-200',
-    bar: 'bg-yellow-500',
-    icon: Info,
-  },
-  eleve: {
-    label: 'Intervention conseillee',
-    color: 'text-orange-700',
-    bg: 'bg-orange-50',
-    border: 'border-orange-200',
-    bar: 'bg-orange-500',
-    icon: TrendingUp,
-  },
-  critique: {
-    label: 'Intervention urgente',
-    color: 'text-red-700',
-    bg: 'bg-red-50',
-    border: 'border-red-200',
-    bar: 'bg-red-500',
-    icon: AlertTriangle,
   },
 }
 
