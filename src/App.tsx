@@ -26,19 +26,14 @@ import { PermissionRoute } from '@/components/auth/PermissionRoute'
 import HomePage from '@/pages/public/HomePage'
 
 // Lazy loaded pages — Public
-// DiagnosticPage (ancien wizard 5 étapes) conservé dans le repo mais non monté
-// — `/diagnostic` pointe vers le hub Simulateur depuis le retour Philippe 12/05.
-// const DiagnosticPage = lazy(() => import('@/pages/public/DiagnosticPage'))
+// DiagnosticPage = wizard 5 étapes original (Domaines / Logement / Situation /
+// Équipements / Symptômes). C'est LE simulateur rapide existant. À conserver.
+// Le mode complet 25-30 min vient en UPSELL sur la page de résultat.
+const DiagnosticPage = lazy(() => import('@/pages/public/DiagnosticPage'))
 const DiagnosticExpressPage = lazy(() => import('@/pages/public/DiagnosticExpressPage'))
 const DiagnosticResultsPage = lazy(() => import('@/pages/public/DiagnosticResultsPage'))
-// Simulateur particulier (hub + flow problème + wizard complet 25-30 min).
-// Cf audit-ux-2026-05-12 #7 — porté depuis le moteur 3CL-DPE déjà livré.
-const SimulateurPage = lazy(() => import('@/pages/public/Simulateur'))
-const SimulateurProblemePage = lazy(() => import('@/pages/public/SimulateurProbleme'))
-const SimulateurCompletPage = lazy(() => import('@/pages/public/SimulateurComplet'))
-// Diag rapide V2 (contextuel selon problèmes cochés, sans jargon BDNB/CSTB —
-// retour Philippe 12/05 nuit + 5).
-const DiagnosticRapidePage = lazy(() => import('@/pages/public/DiagnosticRapide'))
+// Mode complet style CapRénov (Phase 2 à venir) — multi-objets façades/ouvertures.
+// const AuditCompletPage = lazy(() => import('@/pages/public/AuditComplet'))
 const ArticlesPage = lazy(() => import('@/pages/public/ArticlesPage'))
 const ArticlePage = lazy(() => import('@/pages/public/ArticlePage'))
 const ContactPage = lazy(() => import('@/pages/public/ContactPage'))
@@ -236,17 +231,13 @@ export default function App() {
             <Route element={<PublicShell />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/services" element={<ServicesPage />} />
-              {/* `/diagnostic` = entry point principal (le path historique).
-                 Pointe maintenant vers le hub Simulateur (3 cards : Problème / Rapide / Complet).
-                 L'ancien wizard 5 étapes DiagnosticPage reste dans le repo mais non monté
-                 (cf retour Philippe 12/05 — il ne veut plus partir directement sur le pré-rempli isolation). */}
-              <Route path="/diagnostic" element={<SimulateurPage />} />
+              {/* Retour Philippe 12/05 nuit (post mes-bourdes-V1-V2-V3) :
+                 - /diagnostic = LE wizard 5 étapes original (Domaines/Logement/Situation/
+                   Équipements/Symptômes) qu'il aime depuis le début. Ne pas y toucher.
+                 - /diagnostic-express = page legacy lookup BDNB (à déprécier mais conservée).
+                 - Le mode "complet 25-30 min style CapRénov" sera /audit-complet (Phase 2). */}
+              <Route path="/diagnostic" element={<DiagnosticPage />} />
               <Route path="/diagnostic-express" element={<DiagnosticExpressPage />} />
-              {/* Simulateur particulier — hub + flow problème + wizard complet (audit-ux-2026-05-12 #7) */}
-              <Route path="/simulateur" element={<SimulateurPage />} />
-              <Route path="/simulateur/probleme" element={<SimulateurProblemePage />} />
-              <Route path="/simulateur/complet" element={<SimulateurCompletPage />} />
-              <Route path="/diagnostic/rapide" element={<DiagnosticRapidePage />} />
               {/* Phase 13.6.5 — Magic link onboarding artisan (public, magic link Supabase) */}
               <Route path="/artisan/onboarding/:token" element={<ArtisanOnboarding />} />
               <Route path="/diagnostic/resultats/local" element={<DiagnosticResultsPage />} />

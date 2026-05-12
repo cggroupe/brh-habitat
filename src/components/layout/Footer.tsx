@@ -60,7 +60,7 @@ export default function Footer() {
               {[
                 { to: '/', label: 'Accueil' },
                 { to: '/services', label: 'Nos services' },
-                { to: '/diagnostic', label: 'Diagnostic & simulateur' },
+                { to: '/diagnostic', label: 'Diagnostic gratuit' },
                 { to: '/articles', label: 'Guides & Conseils' },
                 { to: '/contact', label: 'Contact' },
               ].map((link) => (
