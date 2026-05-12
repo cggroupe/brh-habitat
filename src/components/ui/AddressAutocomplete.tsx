@@ -7,13 +7,23 @@ interface AddressSuggestion {
   street: string
   postcode: string
   city: string
+  citycode: string // code INSEE commune (utile pour calculs DPE)
   context: string
+  lat: number | null
+  lng: number | null
 }
 
 interface Props {
   value: string
   onChange: (value: string) => void
-  onSelect?: (suggestion: { address: string; city: string; postalCode: string }) => void
+  onSelect?: (suggestion: {
+    address: string
+    city: string
+    postalCode: string
+    citycode: string
+    lat: number | null
+    lng: number | null
+  }) => void
   placeholder?: string
   className?: string
 }
@@ -54,13 +64,16 @@ export function AddressAutocomplete({
       if (!res.ok) throw new Error('API error')
       const data = await res.json()
       const results: AddressSuggestion[] = (data.features ?? []).map(
-        (f: { properties: Record<string, string> }) => ({
+        (f: { properties: Record<string, string>; geometry?: { coordinates?: [number, number] } }) => ({
           label: f.properties.label,
           housenumber: f.properties.housenumber ?? '',
           street: f.properties.street ?? f.properties.name ?? '',
           postcode: f.properties.postcode ?? '',
           city: f.properties.city ?? '',
+          citycode: f.properties.citycode ?? '',
           context: f.properties.context ?? '',
+          lng: f.geometry?.coordinates?.[0] ?? null,
+          lat: f.geometry?.coordinates?.[1] ?? null,
         })
       )
       setSuggestions(results)
@@ -98,6 +111,9 @@ export function AddressAutocomplete({
       address: fullAddress,
       city: suggestion.city,
       postalCode: suggestion.postcode,
+      citycode: suggestion.citycode,
+      lat: suggestion.lat,
+      lng: suggestion.lng,
     })
   }
 

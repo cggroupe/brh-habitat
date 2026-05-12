@@ -36,6 +36,9 @@ const DiagnosticResultsPage = lazy(() => import('@/pages/public/DiagnosticResult
 const SimulateurPage = lazy(() => import('@/pages/public/Simulateur'))
 const SimulateurProblemePage = lazy(() => import('@/pages/public/SimulateurProbleme'))
 const SimulateurCompletPage = lazy(() => import('@/pages/public/SimulateurComplet'))
+// Diag rapide V2 (contextuel selon problèmes cochés, sans jargon BDNB/CSTB —
+// retour Philippe 12/05 nuit + 5).
+const DiagnosticRapidePage = lazy(() => import('@/pages/public/DiagnosticRapide'))
 const ArticlesPage = lazy(() => import('@/pages/public/ArticlesPage'))
 const ArticlePage = lazy(() => import('@/pages/public/ArticlePage'))
 const ContactPage = lazy(() => import('@/pages/public/ContactPage'))
@@ -243,6 +246,7 @@ export default function App() {
               <Route path="/simulateur" element={<SimulateurPage />} />
               <Route path="/simulateur/probleme" element={<SimulateurProblemePage />} />
               <Route path="/simulateur/complet" element={<SimulateurCompletPage />} />
+              <Route path="/diagnostic/rapide" element={<DiagnosticRapidePage />} />
               {/* Phase 13.6.5 — Magic link onboarding artisan (public, magic link Supabase) */}
               <Route path="/artisan/onboarding/:token" element={<ArtisanOnboarding />} />
               <Route path="/diagnostic/resultats/local" element={<DiagnosticResultsPage />} />

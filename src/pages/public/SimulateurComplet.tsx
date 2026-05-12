@@ -24,6 +24,7 @@ import {
   Lock,
   HelpCircle,
 } from 'lucide-react'
+import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
 import { computeDpe } from '@/lib/dpe-engine'
 import type {
   AuditInputs,
@@ -405,17 +406,25 @@ export default function SimulateurComplet() {
         <div className="bg-white rounded-2xl border border-slate-200 p-5 lg:p-6 space-y-5">
           {step === 0 && (
             <>
-              <Field label="Code INSEE de votre commune" tooltip="5 chiffres officiels (ex : 29019 pour Brest). Vous le trouvez sur https://www.insee.fr/fr/recherche">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="\d{5}"
-                  maxLength={5}
-                  value={form.codeInsee}
-                  onChange={(e) => update('codeInsee', e.target.value.replace(/\D/g, '').slice(0, 5))}
-                  placeholder="29019"
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400"
+              <Field label="Adresse de votre logement" tooltip="Tapez le début, sélectionnez dans la liste. On récupère automatiquement la commune et le code INSEE pour le calcul.">
+                <AddressAutocomplete
+                  value={form.communeLabel}
+                  onChange={(v) => update('communeLabel', v)}
+                  onSelect={(sel) => {
+                    // Hydrate le state avec les bonnes valeurs cachées.
+                    setForm((prev) => ({
+                      ...prev,
+                      communeLabel: `${sel.address}, ${sel.postalCode} ${sel.city}`,
+                      codeInsee: sel.citycode,
+                    }))
+                  }}
+                  placeholder="Ex : 5 rue de Siam, 29200 Brest"
                 />
+                {form.codeInsee && (
+                  <p className="mt-1.5 text-[11px] text-emerald-700 inline-flex items-center gap-1">
+                    <CheckCircle2 size={11} /> Commune reconnue · code INSEE {form.codeInsee}
+                  </p>
+                )}
               </Field>
               <Field label="Altitude approximative (mètres)" tooltip="Compte pour le climat. 0 pour bord de mer, 50-100 en Bretagne intérieure, 500+ en montagne.">
                 <input

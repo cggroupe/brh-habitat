@@ -91,6 +91,9 @@ export default function SimulateurProbleme() {
 
   const needsComplet = selected.some((id) => PROBLEMS.find((p) => p.id === id)?.needsDeepAudit)
   const recommended: 'complet' | 'rapide' = needsComplet ? 'complet' : 'rapide'
+  // Query string propagée vers les modes rapide et complet pour que les recos
+  // soient adaptées aux problèmes cochés (cf retour Philippe 12/05).
+  const queryParam = selected.length > 0 ? `?p=${encodeURIComponent(selected.join(','))}` : ''
 
   if (!showReco) {
     return (
@@ -195,7 +198,7 @@ export default function SimulateurProbleme() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Mode COMPLET */}
           <Link
-            to="/simulateur/complet"
+            to={`/simulateur/complet${queryParam}`}
             className={`group relative rounded-2xl border-2 bg-white p-6 transition-all hover:shadow-lg flex flex-col ${
               recommended === 'complet' ? 'border-slate-900' : 'border-slate-200 hover:border-slate-400'
             }`}
@@ -227,7 +230,7 @@ export default function SimulateurProbleme() {
 
           {/* Mode RAPIDE */}
           <Link
-            to="/diagnostic-express"
+            to={`/diagnostic/rapide${queryParam}`}
             className={`group relative rounded-2xl border-2 bg-white p-6 transition-all hover:shadow-lg flex flex-col ${
               recommended === 'rapide' ? 'border-emerald-600' : 'border-slate-200 hover:border-slate-400'
             }`}
