@@ -26,9 +26,11 @@ import { PermissionRoute } from '@/components/auth/PermissionRoute'
 import HomePage from '@/pages/public/HomePage'
 
 // Lazy loaded pages — Public
-// DiagnosticPage = wizard 5 étapes original (Domaines / Logement / Situation /
-// Équipements / Symptômes). C'est LE simulateur rapide existant. À conserver.
-// Le mode complet 25-30 min vient en UPSELL sur la page de résultat.
+// UX confirmée par Philippe :
+//   /diagnostic            = HUB (cases problème + 2 propositions Rapide/Complet)
+//   /diagnostic/rapide     = wizard 5 étapes ORIGINAL (DiagnosticPage)
+//   /audit-complet         = wizard 8 étapes style CapRénov (25-30 min, lead-gating)
+const DiagnosticHubPage = lazy(() => import('@/pages/public/DiagnosticHub'))
 const DiagnosticPage = lazy(() => import('@/pages/public/DiagnosticPage'))
 const DiagnosticExpressPage = lazy(() => import('@/pages/public/DiagnosticExpressPage'))
 const DiagnosticResultsPage = lazy(() => import('@/pages/public/DiagnosticResultsPage'))
@@ -236,9 +238,12 @@ export default function App() {
                    Équipements/Symptômes) qu'il aime depuis le début. Ne pas y toucher.
                  - /diagnostic-express = page legacy lookup BDNB (à déprécier mais conservée).
                  - Le mode "complet 25-30 min style CapRénov" sera /audit-complet (Phase 2). */}
-              <Route path="/diagnostic" element={<DiagnosticPage />} />
+              {/* Hub : cases à cocher problème + 2 propositions Rapide/Complet. */}
+              <Route path="/diagnostic" element={<DiagnosticHubPage />} />
+              {/* Wizard 5 étapes original (Domaines/Logement/Situation/Équipements/Symptômes). */}
+              <Route path="/diagnostic/rapide" element={<DiagnosticPage />} />
               <Route path="/diagnostic-express" element={<DiagnosticExpressPage />} />
-              {/* Audit complet 25-30 min style CapRénov (Phase 2) — wizard 8 étapes
+              {/* Audit complet 25-30 min style CapRénov — wizard 8 étapes
                  avec multi-objets façades & ouvertures. Réutilise computeDpe(). */}
               <Route path="/audit-complet" element={<AuditCompletPage />} />
               {/* Phase 13.6.5 — Magic link onboarding artisan (public, magic link Supabase) */}
