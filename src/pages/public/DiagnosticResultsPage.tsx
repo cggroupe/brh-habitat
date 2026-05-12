@@ -272,8 +272,17 @@ export default function DiagnosticResultsPage() {
           </SectionCard>
         )}
 
-        {/* Section 7 — CTA finale */}
-        <DiagnosticCtaSection onShowContact={() => setShowContactModal(true)} />
+        {/* Section 7 — CTA finale + PDF téléchargement */}
+        <DiagnosticCtaSection
+          onShowContact={() => setShowContactModal(true)}
+          pdfResult={results ?? undefined}
+          pdfProperty={{
+            address: store.property.address,
+            year: store.property.year,
+            surface: store.property.surface,
+            type: store.property.type,
+          }}
+        />
 
         {/* Upsell audit complet 25-30 min — charte BRH (vert primary) */}
         <div className="mt-8 rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-green-50 to-emerald-50 p-5 lg:p-6">

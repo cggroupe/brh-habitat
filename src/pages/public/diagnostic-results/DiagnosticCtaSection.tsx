@@ -1,11 +1,18 @@
 import { Link } from 'react-router-dom'
-import { CheckCircle2, Calendar, ArrowRight, Printer, Phone, RefreshCw } from 'lucide-react'
+import { CheckCircle2, Calendar, ArrowRight, FileDown, Phone, RefreshCw, Loader2 } from 'lucide-react'
+import { PDFDownloadLink } from '@react-pdf/renderer'
+import { DiagnosticPdfReport } from '@/components/diagnostic-pdf/DiagnosticPdfReport'
+import type { DiagnosticResult } from '@/lib/diagnostic-engine'
 
 interface DiagnosticCtaSectionProps {
   onShowContact: () => void
+  /** Résultat du diagnostic — utilisé pour générer le PDF. */
+  pdfResult?: DiagnosticResult
+  /** Infos logement pour la page de couverture du PDF. */
+  pdfProperty?: { address?: string; year?: number; surface?: number; type?: string }
 }
 
-export function DiagnosticCtaSection({ onShowContact }: DiagnosticCtaSectionProps) {
+export function DiagnosticCtaSection({ onShowContact, pdfResult, pdfProperty }: DiagnosticCtaSectionProps) {
   return (
     <div className="rounded-2xl bg-gradient-to-br from-primary via-primary-green to-primary-light p-8 text-white text-center shadow-xl shadow-green-900/20 animate-fadeIn">
       <p className="font-body text-green-200 text-xs uppercase tracking-widest mb-2">Prochaines etapes</p>
@@ -51,14 +58,24 @@ export function DiagnosticCtaSection({ onShowContact }: DiagnosticCtaSectionProp
           <Phone size={16} />
           02 19 00 53 05
         </a>
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-white/30 text-white/80 font-display text-xs rounded-xl hover:bg-white/10 transition-colors"
-        >
-          <Printer size={14} />
-          PDF
-        </button>
+        {pdfResult ? (
+          <PDFDownloadLink
+            document={<DiagnosticPdfReport result={pdfResult} property={pdfProperty ?? {}} />}
+            fileName={`diagnostic-brh-${new Date().toISOString().slice(0, 10)}.pdf`}
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-white/30 text-white/80 font-display text-xs rounded-xl hover:bg-white/10 transition-colors"
+          >
+            {({ loading }) => loading ? (
+              <><Loader2 size={14} className="animate-spin" /> Génération…</>
+            ) : (
+              <><FileDown size={14} /> Télécharger le PDF</>
+            )}
+          </PDFDownloadLink>
+        ) : (
+          <span className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-white/30 text-white/40 font-display text-xs rounded-xl cursor-not-allowed">
+            <FileDown size={14} />
+            PDF
+          </span>
+        )}
         <Link
           to="/diagnostic"
           className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-white/30 text-white/80 font-display text-xs rounded-xl hover:bg-white/10 transition-colors"
