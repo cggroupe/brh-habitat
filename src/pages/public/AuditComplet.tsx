@@ -542,22 +542,19 @@ export default function AuditComplet() {
       return (
         <div className="min-h-screen bg-slate-50 py-12 px-4">
           <div className="max-w-2xl mx-auto bg-white rounded-2xl border border-slate-200 p-8 lg:p-12 text-center shadow-sm">
-            <div className="w-16 h-16 mx-auto rounded-full bg-amber-100 flex items-center justify-center mb-4">
-              <Lock size={28} className="text-amber-700" />
+            <div className="w-16 h-16 mx-auto rounded-full bg-emerald-50 flex items-center justify-center mb-4">
+              <Lock size={28} className="text-primary" />
             </div>
             <h1 className="font-display text-2xl lg:text-3xl font-bold text-slate-900 mb-2">
-              Votre audit complet est prêt !
+              Votre audit est prêt
             </h1>
             <p className="text-sm sm:text-base text-slate-600 max-w-md mx-auto mb-6">
-              Pour voir votre <strong className="text-slate-900">étiquette DPE officielle</strong>,
-              le <strong className="text-slate-900">détail des déperditions</strong> et les
-              <strong className="text-slate-900"> scénarios de travaux chiffrés</strong>, créez votre
-              compte gratuit. Vos 8 étapes de saisie restent sauvegardées localement.
+              Créez votre compte gratuit pour accéder à votre rapport complet.
             </p>
             <div className="inline-flex flex-col sm:flex-row gap-2">
               <Link
                 to="/inscription/particulier?ref=audit-complet"
-                className="inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold transition"
+                className="inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-xl bg-primary hover:bg-primary-dark text-white text-sm font-bold transition shadow-sm"
               >
                 Créer mon compte gratuit <ArrowRight size={14} />
               </Link>
@@ -569,8 +566,7 @@ export default function AuditComplet() {
               </Link>
             </div>
             <p className="mt-6 text-[11px] text-slate-500">
-              Réponses sauvegardées localement (clé <code className="bg-slate-100 px-1 rounded">{STORAGE_KEY}</code>) —
-              vous retrouverez votre audit après inscription.
+              Vous retrouverez votre audit après inscription.
             </p>
           </div>
         </div>
@@ -1414,7 +1410,7 @@ export default function AuditComplet() {
         </div>
 
         <p className="text-center mt-6 text-[11px] text-slate-500">
-          Vos {form.murs.length} façade{form.murs.length > 1 ? 's' : ''} et {form.ouvertures.length} ouverture{form.ouvertures.length > 1 ? 's' : ''} sont sauvegardées localement à chaque étape. Vous pouvez revenir plus tard.
+          Vous pouvez revenir plus tard, vos réponses sont conservées sur cet appareil.
         </p>
       </div>
     </div>

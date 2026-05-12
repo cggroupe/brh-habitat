@@ -601,22 +601,24 @@ function computeEquipmentBonuses(equipment: DiagnosticEquipment): EquipmentBonus
     extraRecommendations.push(EQUIPMENT_RECOMMENDATIONS['vmc_installation'])
   }
 
-  // Fenetres : simple vitrage → bonus isolation + menuiseries
+  // Fenetres : simple vitrage → IMPACT GLOBAL (pas juste par type)
+  // car même si menuiseries n'est pas coché, le simple vitrage compte.
   if (equipment.windowType === 'Simple vitrage (ancien)') {
     byType['isolation'] = (byType['isolation'] ?? 0) + 10
     byType['menuiseries'] = (byType['menuiseries'] ?? 0) + 18
+    globalBonus += 15 // ← simple vitrage = 10-15% déperditions, impact général critique
     extraRecommendations.push(EQUIPMENT_RECOMMENDATIONS['simple_vitrage_remplacement'])
   }
 
   // DPE F ou G → bonus global + recommandation renovation
   if (equipment.dpeRating === 'F ou G (tres mauvais)') {
-    globalBonus += 15
+    globalBonus += 20 // +5 vs avant : passoire thermique = signal d'alarme
     extraRecommendations.push(EQUIPMENT_RECOMMENDATIONS['dpe_fg_renovation'])
   }
 
   // DPE E → bonus global + recommandation amelioration
   if (equipment.dpeRating === 'E (passoire)') {
-    globalBonus += 10
+    globalBonus += 12 // +2 vs avant
     extraRecommendations.push(EQUIPMENT_RECOMMENDATIONS['dpe_e_renovation'])
   }
 
@@ -626,9 +628,27 @@ function computeEquipmentBonuses(equipment: DiagnosticEquipment): EquipmentBonus
     extraRecommendations.push(EQUIPMENT_RECOMMENDATIONS['renovation_ancienne'])
   }
 
-  // Chauffage fioul → recommandation remplacement
+  // Chauffage fioul → impact global majeur (énergie polluante + coûteuse)
+  // Avant cette correction : juste une recommandation, AUCUN impact sur score.
   if (equipment.heatingType === 'Fioul (chaudiere fioul)') {
+    globalBonus += 20 // ← énergie fossile la plus pénalisée DPE/GES
+    byType['isolation'] = (byType['isolation'] ?? 0) + 5
     extraRecommendations.push(EQUIPMENT_RECOMMENDATIONS['fioul_changement'])
+  }
+
+  // Chauffage gaz ancien → bonus modéré (gaz reste moins pénalisé que fioul)
+  if (equipment.heatingType === 'Gaz (chaudiere gaz standard)') {
+    globalBonus += 8
+  }
+
+  // Chauffage électrique direct (convecteurs) → bonus modéré
+  if (equipment.heatingType === 'Electrique (convecteurs grille-pain)') {
+    globalBonus += 12 // convecteurs = énergie chère + DPE pénalisé
+  }
+
+  // VMC absente → impact global (humidité + chauffage gaspillé)
+  if (equipment.ventilationType === 'Aucune (aerations naturelles uniquement)') {
+    globalBonus += 8
   }
 
   return { global: globalBonus, byType, extraRecommendations }
