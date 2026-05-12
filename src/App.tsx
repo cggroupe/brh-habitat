@@ -9,7 +9,7 @@ import ProShell from '@/components/layout/ProShell'
 import ParticulierShell from '@/components/layout/ParticulierShell'
 import EmployeShell from '@/components/layout/EmployeShell'
 import EmployeGuard from '@/components/auth/EmployeGuard'
-import AuthGuard from '@/components/auth/AuthGuard'
+import ParticulierDashboardGuard from '@/components/auth/ParticulierDashboardGuard'
 import AdminGuard from '@/components/auth/AdminGuard'
 import ProGuard from '@/components/auth/ProGuard'
 import ParticulierGuard from '@/components/auth/ParticulierGuard'
@@ -270,8 +270,11 @@ export default function App() {
               <Route path="/a/:agenceId" element={<AgenceVitrinePage />} />
             </Route>
 
-            {/* Authenticated user routes */}
-            <Route element={<AuthGuard />}>
+            {/* Tableau de bord particulier — protégé par ParticulierDashboardGuard
+               qui redirige automatiquement les agences/artisans/pros vers leur
+               propre portail. Fix cross-persona observé 12/05/2026 (Claire Pichon
+               agence voyait /tableau-de-bord particulier). Admin reste autorisé. */}
+            <Route element={<ParticulierDashboardGuard />}>
               <Route element={<AppShell />}>
                 <Route path="/tableau-de-bord" element={<DashboardPage />} />
                 <Route path="/mes-logements" element={<MesLogements />} />

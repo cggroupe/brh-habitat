@@ -78,12 +78,22 @@ interface OuvertureForm {
   label: string
   type: 'fenetre' | 'porte_fenetre' | 'baie_vitree' | 'velux' | 'porte'
   orientation: 'nord' | 'est' | 'sud' | 'ouest' | 'horizontal'
-  surface: number
+  /** Largeur en cm (saisie utilisateur — convertie en m² pour le moteur). */
+  largeurCm: number
+  /** Hauteur en cm. */
+  hauteurCm: number
+  /** Nombre de fenêtres identiques (pour regrouper la saisie). */
+  quantite: number
   menuiserie: 'pvc' | 'bois' | 'alu' | 'metal'
   vitrage: 'simple' | 'double' | 'triple' | 'survitrage'
   vir: boolean
   volet: 'sans' | 'persienne' | 'volet_battant_bois' | 'volet_ext_isolant'
   pose: 'tunnel' | 'nu_interieur' | 'nu_exterieur'
+}
+
+/** Convertit largeur×hauteur×quantité en surface m² total. */
+function ouvSurfaceM2(o: OuvertureForm): number {
+  return (o.largeurCm * o.hauteurCm * o.quantite) / 10000
 }
 
 type FormState = {
@@ -151,9 +161,9 @@ const DEFAULT_FORM: FormState = {
   plancherBasType: 'vide_sanitaire',
   plancherBasIsolation: 'sans',
   ouvertures: [
-    { id: 'ouv-1', label: 'Fenêtres salon', type: 'fenetre', orientation: 'sud', surface: 4, menuiserie: 'pvc', vitrage: 'double', vir: false, volet: 'volet_battant_bois', pose: 'tunnel' },
-    { id: 'ouv-2', label: 'Fenêtres chambres', type: 'fenetre', orientation: 'nord', surface: 4, menuiserie: 'pvc', vitrage: 'double', vir: false, volet: 'volet_battant_bois', pose: 'tunnel' },
-    { id: 'ouv-3', label: 'Porte d\'entrée', type: 'porte', orientation: 'nord', surface: 2, menuiserie: 'bois', vitrage: 'simple', vir: false, volet: 'sans', pose: 'tunnel' },
+    { id: 'ouv-1', label: 'Fenêtres salon', type: 'fenetre', orientation: 'sud', largeurCm: 120, hauteurCm: 130, quantite: 2, menuiserie: 'pvc', vitrage: 'double', vir: false, volet: 'volet_battant_bois', pose: 'tunnel' },
+    { id: 'ouv-2', label: 'Fenêtres chambres', type: 'fenetre', orientation: 'nord', largeurCm: 100, hauteurCm: 120, quantite: 2, menuiserie: 'pvc', vitrage: 'double', vir: false, volet: 'volet_battant_bois', pose: 'tunnel' },
+    { id: 'ouv-3', label: 'Porte d\'entrée', type: 'porte', orientation: 'nord', largeurCm: 90, hauteurCm: 215, quantite: 1, menuiserie: 'bois', vitrage: 'simple', vir: false, volet: 'sans', pose: 'tunnel' },
   ],
   ventilation: 'naturelle',
   qualiteVentilation: 'standard',
@@ -291,7 +301,7 @@ function formToInputs(f: FormState): AuditInputs {
 
   const ouvertures: OuvertureInput[] = f.ouvertures.map((o) => ({
     type: o.type,
-    surface: o.surface,
+    surface: ouvSurfaceM2(o),
     orientation: o.orientation,
     menuiserie: o.menuiserie,
     vitrage: o.vitrage,
@@ -418,7 +428,7 @@ export default function AuditComplet() {
       ...prev,
       ouvertures: [
         ...prev.ouvertures,
-        { id: newId('ouv'), label: `Ouverture ${prev.ouvertures.length + 1}`, type: 'fenetre', orientation: 'sud', surface: 2, menuiserie: 'pvc', vitrage: 'double', vir: false, volet: 'sans', pose: 'tunnel' },
+        { id: newId('ouv'), label: `Ouverture ${prev.ouvertures.length + 1}`, type: 'fenetre', orientation: 'sud', largeurCm: 100, hauteurCm: 120, quantite: 1, menuiserie: 'pvc', vitrage: 'double', vir: false, volet: 'sans', pose: 'tunnel' },
       ],
     }))
   }
@@ -630,20 +640,27 @@ export default function AuditComplet() {
         {step === 0 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-5 lg:p-6 space-y-5">
             <Field label="Adresse complète" tooltip="Tapez le début, sélectionnez dans la liste. La commune et la zone climatique sont déduites automatiquement.">
-              <AddressAutocomplete
-                value={form.adresse}
-                onChange={(v) => update('adresse', v)}
-                onSelect={(sel) => {
-                  setForm((prev) => ({
-                    ...prev,
-                    adresse: `${sel.address}, ${sel.postalCode} ${sel.city}`,
-                    codeInsee: sel.citycode,
-                  }))
-                }}
-                placeholder="Ex : 5 rue de Siam, 29200 Brest"
-              />
+              <div className="w-full">
+                <AddressAutocomplete
+                  value={form.adresse}
+                  onChange={(v) => update('adresse', v)}
+                  onSelect={(sel) => {
+                    setForm((prev) => ({
+                      ...prev,
+                      adresse: `${sel.address}, ${sel.postalCode} ${sel.city}`,
+                      codeInsee: sel.citycode,
+                    }))
+                  }}
+                  placeholder="Ex : 5 rue de Siam, 29200 Brest"
+                />
+              </div>
+              {form.adresse && (
+                <p className="mt-2 text-xs text-slate-700 break-words leading-snug">
+                  <span className="font-semibold">Adresse saisie :</span> {form.adresse}
+                </p>
+              )}
               {form.codeInsee && (
-                <p className="mt-2 text-[11px] text-emerald-700 inline-flex items-center gap-1">
+                <p className="mt-1 text-[11px] text-emerald-700 inline-flex items-center gap-1">
                   <CheckCircle2 size={11} /> Commune reconnue · code INSEE {form.codeInsee}
                 </p>
               )}
@@ -881,9 +898,20 @@ export default function AuditComplet() {
                     </select>
                   </Field>
                 </div>
-                <Field label="Surface (m²)" tooltip="Largeur × hauteur de l'ouverture, comptez la dimension extérieure totale.">
-                  <input type="number" step="0.1" min={0.5} max={50} value={o.surface} onChange={(e) => updateOuv(o.id, { surface: Number(e.target.value) })} className={inputCls()} />
-                </Field>
+                <div className="grid grid-cols-3 gap-3">
+                  <Field label="Largeur (cm)" tooltip="Largeur extérieure de l'ouverture en centimètres.">
+                    <input type="number" min={10} max={500} value={o.largeurCm} onChange={(e) => updateOuv(o.id, { largeurCm: Number(e.target.value) })} className={inputCls()} />
+                  </Field>
+                  <Field label="Hauteur (cm)" tooltip="Hauteur extérieure de l'ouverture en centimètres.">
+                    <input type="number" min={10} max={400} value={o.hauteurCm} onChange={(e) => updateOuv(o.id, { hauteurCm: Number(e.target.value) })} className={inputCls()} />
+                  </Field>
+                  <Field label="Nombre" tooltip="Si vous avez plusieurs fenêtres identiques (même façade, même dimensions), groupez-les ici.">
+                    <input type="number" min={1} max={50} value={o.quantite} onChange={(e) => updateOuv(o.id, { quantite: Number(e.target.value) })} className={inputCls()} />
+                  </Field>
+                </div>
+                <p className="text-[11px] text-slate-500 -mt-1">
+                  Surface totale : <strong className="tabular-nums text-slate-700">{ouvSurfaceM2(o).toFixed(2)} m²</strong>
+                </p>
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Matériau menuiserie">
                     <select value={o.menuiserie} onChange={(e) => updateOuv(o.id, { menuiserie: e.target.value as OuvertureForm['menuiserie'] })} className={inputCls()}>
@@ -919,11 +947,11 @@ export default function AuditComplet() {
                       <option value="volet_ext_isolant">Volet extérieur isolant</option>
                     </select>
                   </Field>
-                  <Field label="Pose">
+                  <Field label="Position dans le mur" tooltip="Comment la fenêtre est posée dans l'épaisseur du mur. Si vous ne savez pas, choisissez « Au milieu » (cas le plus fréquent).">
                     <select value={o.pose} onChange={(e) => updateOuv(o.id, { pose: e.target.value as OuvertureForm['pose'] })} className={inputCls()}>
-                      <option value="tunnel">En tunnel (sur dormant ancien)</option>
-                      <option value="nu_interieur">En applique intérieure</option>
-                      <option value="nu_exterieur">En applique extérieure</option>
+                      <option value="tunnel">Au milieu du mur (cas standard, rénovation)</option>
+                      <option value="nu_interieur">Côté intérieur (fenêtre alignée avec le mur intérieur)</option>
+                      <option value="nu_exterieur">Côté extérieur (fenêtre alignée avec la façade)</option>
                     </select>
                   </Field>
                 </div>
@@ -938,25 +966,26 @@ export default function AuditComplet() {
         {/* ── STEP 6 : VENTILATION ────────────────────────────────────── */}
         {step === 5 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-5 lg:p-6 space-y-5">
-            <Field label="Système de ventilation">
+            <Field label="Système de ventilation" tooltip="VMC = mécanique. Naturelle = grilles d'aération sans moteur. VMI = insufflation, plus rare mais utilisée en rénovation.">
               <select value={form.ventilation} onChange={(e) => update('ventilation', e.target.value as VentilationType)} className={inputCls()}>
                 <option value="naturelle">Ventilation naturelle (grilles, aérations)</option>
-                <option value="vmc_sf_auto_avant_1982">VMC simple flux auto avant 1982</option>
-                <option value="vmc_sf_auto_1982_2000">VMC simple flux auto 1982-2000</option>
-                <option value="vmc_sf_auto_apres_2000">VMC simple flux auto après 2000</option>
+                <option value="vmc_sf_auto_avant_1982">VMC simple flux autoréglable avant 1982</option>
+                <option value="vmc_sf_auto_1982_2000">VMC simple flux autoréglable 1982-2000</option>
+                <option value="vmc_sf_auto_apres_2000">VMC simple flux autoréglable après 2000</option>
                 <option value="vmc_sf_hygro_a">VMC simple flux hygro A</option>
                 <option value="vmc_sf_hygro_b_avant_2012">VMC simple flux hygro B avant 2012</option>
                 <option value="vmc_sf_hygro_b_apres_2012">VMC simple flux hygro B après 2012</option>
                 <option value="vmc_double_flux_sans_recup">VMC double flux sans récupération</option>
                 <option value="vmc_double_flux_avec_recup">VMC double flux avec récupération de chaleur</option>
-                <option value="vmc_gaz">VMC gaz</option>
+                <option value="vmc_gaz">VMC gaz (couplée à la chaudière)</option>
+                <option value="vmc_sf_auto_apres_2000">VMI — Ventilation mécanique par insufflation</option>
               </select>
             </Field>
-            <Field label="Qualité d'installation" tooltip="Une VMC mal entretenue ou mal posée perd 30-50% de son rendement.">
+            <Field label="État d'entretien" tooltip="Une VMC mal entretenue perd 30-50% de son rendement. L'entretien annuel est la norme professionnelle pour ne pas perdre l'efficacité.">
               <select value={form.qualiteVentilation} onChange={(e) => update('qualiteVentilation', e.target.value as FormState['qualiteVentilation'])} className={inputCls()}>
-                <option value="mediocre">Médiocre (encrassée, fuites)</option>
-                <option value="standard">Standard (entretien tous les 3-5 ans)</option>
-                <option value="bonne">Bonne (entretenue, équilibrée)</option>
+                <option value="bonne">Bonne — entretien tous les ans (norme)</option>
+                <option value="standard">Standard — entretien tous les 3-5 ans</option>
+                <option value="mediocre">Médiocre — entretien tous les 5-10 ans ou jamais</option>
               </select>
             </Field>
           </div>

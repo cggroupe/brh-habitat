@@ -3,7 +3,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { SEOHead } from '@/components/shared/SEOHead'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
-import { useDiagnosticStore } from '@/stores/diagnosticStore'
+import { useDiagnosticStore, type DiagnosticType } from '@/stores/diagnosticStore'
 import { analyzeDiagnostic } from '@/lib/diagnostic-engine'
 import { upsertDraftDiagnostic } from '@/api/diagnostics'
 import { useAuth } from '@/hooks/useAuth'
@@ -53,6 +53,36 @@ export default function DiagnosticPage() {
       setReferralCode(ref)
     }
   }, [searchParams, referralCode, setReferralCode])
+
+  // Pré-sélection des domaines depuis les problèmes cochés sur /diagnostic
+  // (query string ?p=froid,humidite,...). Cf retour Philippe 12/05 : « quand
+  // on clique sur trop froid, ça doit partir sur un diagnostic d'isolation ».
+  useEffect(() => {
+    const pParam = searchParams.get('p')
+    if (!pParam) return
+    const problemes = pParam.split(',').map((s) => s.trim()).filter(Boolean)
+    if (problemes.length === 0) return
+
+    // Mapping problème → domaines pertinents du diagnostic existant
+    const PROBLEM_TO_TYPES: Record<string, Array<'humidite' | 'isolation' | 'ventilation' | 'menuiseries' | 'electricite' | 'toiture' | 'plomberie'>> = {
+      froid: ['isolation', 'menuiseries'],
+      chaud: ['isolation', 'toiture'],
+      factures: ['isolation', 'menuiseries'],
+      humidite: ['humidite', 'ventilation'],
+      loi_climat: ['isolation', 'menuiseries', 'toiture', 'ventilation'],
+      vente: ['isolation', 'menuiseries', 'toiture', 'ventilation', 'humidite'],
+    }
+    const types = new Set<DiagnosticType>()
+    for (const p of problemes) {
+      for (const t of PROBLEM_TO_TYPES[p] ?? []) types.add(t)
+    }
+    if (types.size === 0) return
+    // Hydrate le store uniquement si rien n'a été coché manuellement
+    if (selectedTypes.length === 0) {
+      useDiagnosticStore.setState({ selectedTypes: Array.from(types) })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Sauvegarder le brouillon en DB (utilisateur connecté uniquement)
   const saveDraft = useCallback(async (nextStepValue?: number) => {
