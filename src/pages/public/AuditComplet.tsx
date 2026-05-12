@@ -64,8 +64,11 @@ import type {
   ParoiInput,
   OuvertureInput,
 } from '@/lib/dpe-engine/types'
+import { toast } from 'sonner'
 import { useAuth } from '@/hooks/useAuth'
 import { DpeLabelGauge } from '@/components/audit/DpeLabelGauge'
+import { useAidesLocales } from '@/hooks/queries/aides-locales'
+import { auditsApi } from '@/api/audits'
 
 const STORAGE_KEY = 'brh-audit-complet-v1'
 
@@ -406,6 +409,35 @@ export default function AuditComplet() {
   const [visionToiture, setVisionToiture] = useState<VisionToiture | null>(null)
   const [visionError, setVisionError] = useState<string | null>(null)
 
+  // Sauvegarde de l'audit dans le compte particulier (lead-magnet post-login)
+  const [saving, setSaving] = useState(false)
+  const [savedAuditId, setSavedAuditId] = useState<string | null>(null)
+
+  async function handleSaveAudit() {
+    if (!isAuthenticated || !result) return
+    setSaving(true)
+    try {
+      const inputs = formToInputs(form)
+      const audit = await auditsApi.createForUser(inputs, {
+        cep: result.cepKwhEpM2An,
+        ges: result.gesKgCo2M2An,
+        etiquetteDpe: result.etiquetteDpe,
+        parPoste: result.parPoste,
+        deperditions: result.deperditions,
+      } as unknown as Record<string, unknown>)
+      setSavedAuditId(audit.id)
+      toast.success('Audit sauvegardé', {
+        description: 'Vous pouvez le retrouver dans votre tableau de bord.',
+      })
+    } catch (err) {
+      toast.error('Impossible de sauvegarder', {
+        description: err instanceof Error ? err.message : 'Erreur inattendue',
+      })
+    } finally {
+      setSaving(false)
+    }
+  }
+
   useEffect(() => {
     const t = setTimeout(() => {
       setForm(loadFromStorage())
@@ -583,13 +615,54 @@ export default function AuditComplet() {
                 Pour un audit certifié ouvrant droit à MaPrimeRénov' Ampleur, contactez un pro RGE BRH.
               </p>
             </div>
+          </div>
 
+          {/* Détail par poste de consommation */}
+          {result.parPoste && (
+            <ResultPostesPanel parPoste={result.parPoste as unknown as ConsoParPoste} consoTotale={result.consoEfTotaleKwhAn ?? 0} />
+          )}
+
+          {/* Déperditions */}
+          {result.deperditions && (
+            <ResultDeperditionsPanel deperditions={result.deperditions as unknown as DeperditionsResult} />
+          )}
+
+          {/* Aides locales Bretagne (lecture dynamique depuis brh_aides_locales) */}
+          <ResultAidesLocalesPanel codeInsee={form.codeInsee} />
+
+          {/* CTAs */}
+          <div className="flex flex-col gap-2">
+            {/* Sauvegarder dans le compte (visible si pas encore sauvegardé) */}
+            {!savedAuditId && (
+              <button
+                type="button"
+                onClick={() => void handleSaveAudit()}
+                disabled={saving}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold transition disabled:opacity-60"
+              >
+                {saving ? (<><Loader2 size={14} className="animate-spin" /> Sauvegarde…</>) : (<><CheckCircle2 size={14} /> Sauvegarder cet audit dans mon compte</>)}
+              </button>
+            )}
+            {savedAuditId && (
+              <Link
+                to={`/audit-energetique/${savedAuditId}`}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold transition"
+              >
+                <CheckCircle2 size={14} /> Voir mon audit détaillé →
+              </Link>
+            )}
             <div className="flex flex-col sm:flex-row gap-2">
               <Link
                 to="/particulier"
-                className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold transition"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-sm font-semibold text-slate-700 transition"
               >
-                Voir mon tableau de bord
+                Mon tableau de bord
+              </Link>
+              <Link
+                to="/contact"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-sm font-semibold text-slate-700 transition"
+              >
+                Discuter avec un pro RGE
               </Link>
               <button
                 type="button"
@@ -598,9 +671,10 @@ export default function AuditComplet() {
                   setForm(DEFAULT_FORM)
                   setResult(null)
                   setStep(0)
+                  setSavedAuditId(null)
                   navigate('/diagnostic')
                 }}
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-sm font-bold text-slate-700 transition"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-sm font-semibold text-slate-700 transition"
               >
                 Nouvel audit
               </button>
@@ -1344,5 +1418,169 @@ export default function AuditComplet() {
         </p>
       </div>
     </div>
+  )
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// SOUS-COMPOSANTS RÉSULTAT
+// ──────────────────────────────────────────────────────────────────────────────
+
+interface ConsoParPoste {
+  chauffage?: number
+  ecs?: number
+  eclairage?: number
+  auxiliaires?: number
+  refroidissement?: number
+  [k: string]: number | undefined
+}
+
+function ResultPostesPanel({ parPoste, consoTotale }: { parPoste: ConsoParPoste; consoTotale: number }) {
+  const items = [
+    { key: 'chauffage', label: 'Chauffage', color: 'bg-amber-500' },
+    { key: 'ecs', label: 'Eau chaude sanitaire', color: 'bg-sky-500' },
+    { key: 'eclairage', label: 'Éclairage', color: 'bg-yellow-400' },
+    { key: 'auxiliaires', label: 'Auxiliaires', color: 'bg-slate-400' },
+    { key: 'refroidissement', label: 'Climatisation', color: 'bg-cyan-500' },
+  ].filter((i) => (parPoste[i.key] ?? 0) > 0)
+
+  const total = items.reduce((s, i) => s + (parPoste[i.key] ?? 0), 0) || 1
+
+  return (
+    <section className="bg-white rounded-2xl border border-slate-200 p-5 lg:p-6">
+      <h2 className="font-display text-lg font-bold text-slate-900 mb-3">
+        Répartition de votre consommation
+      </h2>
+      <p className="text-xs text-slate-500 mb-4">
+        Consommation totale annuelle : <strong className="tabular-nums text-slate-700">{Math.round(consoTotale).toLocaleString('fr-FR')} kWh/an</strong> (énergie finale)
+      </p>
+      <div className="space-y-2.5">
+        {items.map((i) => {
+          const value = parPoste[i.key] ?? 0
+          const pct = Math.round((value / total) * 100)
+          return (
+            <div key={i.key}>
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="font-semibold text-slate-700">{i.label}</span>
+                <span className="text-slate-500 tabular-nums">{Math.round(value).toLocaleString('fr-FR')} kWh/an · {pct}%</span>
+              </div>
+              <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div className={`h-full ${i.color} rounded-full transition-all`} style={{ width: `${pct}%` }} />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
+interface DeperditionsResult {
+  murs?: number
+  plancher_bas?: number
+  plancher_haut?: number
+  ouvertures?: number
+  ponts_thermiques?: number
+  renouvellement_air?: number
+  [k: string]: number | undefined
+}
+
+function ResultDeperditionsPanel({ deperditions }: { deperditions: DeperditionsResult }) {
+  const items = [
+    { key: 'murs', label: 'Murs', icon: '🧱' },
+    { key: 'plancher_haut', label: 'Toiture / plancher haut', icon: '🏠' },
+    { key: 'plancher_bas', label: 'Plancher bas', icon: '🟫' },
+    { key: 'ouvertures', label: 'Fenêtres & portes', icon: '🪟' },
+    { key: 'ponts_thermiques', label: 'Ponts thermiques', icon: '🌡️' },
+    { key: 'renouvellement_air', label: 'Ventilation (renouvellement air)', icon: '💨' },
+  ].filter((i) => (deperditions[i.key] ?? 0) > 0)
+
+  if (items.length === 0) return null
+
+  const total = items.reduce((s, i) => s + (deperditions[i.key] ?? 0), 0) || 1
+  const sorted = [...items].sort((a, b) => (deperditions[b.key] ?? 0) - (deperditions[a.key] ?? 0))
+
+  return (
+    <section className="bg-white rounded-2xl border border-slate-200 p-5 lg:p-6">
+      <h2 className="font-display text-lg font-bold text-slate-900 mb-1">
+        Où passe votre chaleur ?
+      </h2>
+      <p className="text-xs text-slate-500 mb-4">
+        Classement des principales déperditions thermiques de votre logement.
+        Les postes en tête sont les leviers prioritaires pour réduire votre facture.
+      </p>
+      <ol className="space-y-2">
+        {sorted.map((i, idx) => {
+          const value = deperditions[i.key] ?? 0
+          const pct = Math.round((value / total) * 100)
+          return (
+            <li key={i.key} className="flex items-center gap-3 text-sm">
+              <span className="w-6 text-center font-bold text-slate-500 tabular-nums">#{idx + 1}</span>
+              <span className="text-base shrink-0">{i.icon}</span>
+              <span className="flex-1 font-semibold text-slate-800">{i.label}</span>
+              <span className={`text-xs font-bold tabular-nums px-2 py-0.5 rounded ${
+                idx === 0 ? 'bg-red-100 text-red-800' :
+                idx === 1 ? 'bg-amber-100 text-amber-800' :
+                idx === 2 ? 'bg-yellow-100 text-yellow-800' :
+                'bg-slate-100 text-slate-700'
+              }`}>{pct}%</span>
+            </li>
+          )
+        })}
+      </ol>
+    </section>
+  )
+}
+
+function ResultAidesLocalesPanel({ codeInsee }: { codeInsee: string }) {
+  const { data: aides = [], isLoading } = useAidesLocales({ codeInsee })
+
+  // Pas en Bretagne (22/29/35/56) ou pas d'aide trouvée → pas d'affichage.
+  if (isLoading) {
+    return (
+      <section className="bg-white rounded-2xl border border-slate-200 p-5">
+        <p className="text-xs text-slate-500 inline-flex items-center gap-1.5">
+          <Loader2 size={12} className="animate-spin" /> Recherche des aides locales applicables…
+        </p>
+      </section>
+    )
+  }
+  if (aides.length === 0) return null
+
+  return (
+    <section className="bg-gradient-to-br from-emerald-50 to-emerald-100/40 border-2 border-emerald-200 rounded-2xl p-5 lg:p-6">
+      <h2 className="font-display text-lg font-bold text-emerald-900 mb-1 inline-flex items-center gap-1.5">
+        💶 Aides locales applicables ({aides.length})
+      </h2>
+      <p className="text-xs text-emerald-800 mb-4">
+        Aides du Conseil régional Bretagne, du département et de votre intercommunalité, cumulables avec MaPrimeRénov' et CEE.
+      </p>
+      <div className="space-y-2">
+        {aides.slice(0, 8).map((a) => (
+          <article key={a.id} className="bg-white rounded-xl border border-emerald-100 p-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-slate-900">{a.programme}</p>
+                <p className="text-[11px] text-slate-500">{a.organisme} · <span className="capitalize">{a.niveau}</span></p>
+              </div>
+              {a.forfait_euros && a.forfait_euros > 0 && (
+                <span className="shrink-0 text-xs font-bold text-emerald-700 tabular-nums">
+                  jusqu'à {a.forfait_euros.toLocaleString('fr-FR')} €
+                </span>
+              )}
+              {a.taux_pct && a.taux_pct > 0 && !a.forfait_euros && (
+                <span className="shrink-0 text-xs font-bold text-emerald-700 tabular-nums">
+                  jusqu'à {a.taux_pct}%
+                </span>
+              )}
+            </div>
+          </article>
+        ))}
+        {aides.length > 8 && (
+          <p className="text-[11px] text-emerald-700 text-center pt-1">
+            + {aides.length - 8} autres aides disponibles — visibles dans votre tableau de bord après inscription.
+          </p>
+        )}
+      </div>
+    </section>
   )
 }

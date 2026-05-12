@@ -13,11 +13,11 @@
 | API modules | **75** (src/api/) | `ls src/api/ \| wc -l` |
 | Stores Zustand | **2** | `appStore`, `diagnosticStore` |
 | Routes React | **165** (path= dans App.tsx) | `grep -c "path=" src/App.tsx` (+/diagnostic = hub, /diagnostic/rapide = wizard 5 étapes, /audit-complet = wizard 8 étapes CapRénov) |
-| Migrations | **102** (supabase/migrations/*.sql) | 2026-02-27 → 2026-07-13 (Phases 1→19 + Employé V2 + Admin V1 quotas + Phase 18 v2 pivot dispos + RDV anon RLS) |
+| Migrations | **103** (supabase/migrations/*.sql) | 2026-02-27 → 2026-07-13 (Phases 1→19 + Employé V2 + Admin V1 quotas + Phase 18 v2 pivot dispos + RDV anon RLS + user audit INSERT) |
 | Tables `brh_*` | **144** (DB + 1 `profiles` extension) | post Phases 11→19 + Employé V2 + Admin V1 + Phase 18 v2 (DPE + foncier + réseau + employés + quotas + disponibilites) |
 | Fonctions SQL | **57** (RPC + triggers + computed) | post cascade parrainage 5 niveaux + IA PLU/satellite + commissions cron + dispos expire |
 | Triggers | **30+** | post Phase 13.6.7 commission cascade + 16.1 cascade parrainage + employés + dispos updated_at |
-| Policies RLS | **378** (CREATE POLICY across migrations) | post 5 portails + cross-persona feed + agences signataires + dispos + RDV anon (12/05) |
+| Policies RLS | **380** (CREATE POLICY across migrations) | post 5 portails + cross-persona feed + agences signataires + dispos + RDV anon (12/05) + user audit INSERT/UPDATE (12/05 nuit) |
 | Edge Functions | **41** (+`_shared`) | `ls -d supabase/functions/*/ \| grep -v _shared` |
 | Storage buckets | **8+** | audits, brh-commission-invoices, company-logos, home-documents, message-attachments, prospect-files, reseau-media, rewards-catalog, social-screenshots |
 | Guards | **9** | AdminGuard, AuthGuard, ParticulierGuard, **ParticulierDashboardGuard** (12/05 fix cross-persona), ProGuard, ArtisanGuard, AgenceGuard, ReseauGuard, EmployeGuard |

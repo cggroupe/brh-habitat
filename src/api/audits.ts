@@ -66,6 +66,33 @@ export const auditsApi = {
   },
 
   /**
+   * Créer un audit côté PARTICULIER (user_id = auth.uid(), pro_user_id NULL).
+   * Permet de sauvegarder l'audit complet anonyme dans son compte après login.
+   * Cf migration 20260713200000_brh_audits_user_insert.sql
+   */
+  async createForUser(inputs: AuditInputs, results?: Record<string, unknown>): Promise<AuditRow> {
+    auditInputsSchema.parse(inputs)
+
+    const { data: userData, error: userErr } = await supabase.auth.getUser()
+    if (userErr) throw userErr
+    if (!userData.user) throw new Error('Non authentifié')
+
+    const { data, error } = await supabase
+      .from('brh_audits')
+      .insert({
+        inputs: inputs as unknown as Record<string, unknown>,
+        results: (results ?? {}) as unknown as Record<string, unknown>,
+        user_id: userData.user.id,
+        pro_user_id: null,
+        status: 'submitted',
+      })
+      .select()
+      .single()
+    if (error) throw error
+    return auditRowSchema.parse(data)
+  },
+
+  /**
    * Mise à jour partielle d'un audit (uniquement si status=draft via RLS).
    */
   async update(id: string, partial: Partial<AuditRow>): Promise<AuditRow> {

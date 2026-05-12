@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, CheckCircle2, Loader2 } from 'lucide-react'
 import { useDiagnosticStore } from '@/stores/diagnosticStore'
 import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
+import { fetchDpeForAddress, type DpeLookupResult } from '@/lib/audit-enrichment'
 
 interface StepPropertyProps {
   showYearError?: boolean
@@ -11,8 +12,43 @@ export function StepProperty({ showYearError = false }: StepPropertyProps) {
   const { property, setProperty } = useDiagnosticStore()
   const [yearTouched, setYearTouched] = useState(false)
 
+  // Pré-remplissage BDNB/ADEME — déclenché à la sélection d'adresse
+  const [enriching, setEnriching] = useState(false)
+  const [dpeData, setDpeData] = useState<DpeLookupResult | null>(null)
+
   const yearIsEmpty = !property.year
   const showError = showYearError || yearTouched
+
+  async function handleAddressSelect(s: { address: string; city: string; postalCode: string; citycode: string; lat: number | null; lng: number | null }) {
+    const fullAddress = `${s.address}, ${s.postalCode} ${s.city}`
+    setProperty({ address: fullAddress })
+    setDpeData(null)
+    if (s.lat == null || s.lng == null) return
+    setEnriching(true)
+    try {
+      const dpe = await fetchDpeForAddress({ query: fullAddress, lat: s.lat, lng: s.lng, postalCode: s.postalCode })
+      setDpeData(dpe)
+      if (dpe?.found && dpe.logement) {
+        const patch: Record<string, unknown> = {}
+        if (dpe.logement.surface_m2 && dpe.logement.surface_m2 > 10 && !property.surface) {
+          patch.surface = Math.round(dpe.logement.surface_m2)
+        }
+        if (dpe.logement.annee_construction && !property.year) {
+          patch.year = dpe.logement.annee_construction
+        }
+        if (dpe.logement.type && !property.type) {
+          const low = dpe.logement.type.toLowerCase()
+          if (low.includes('maison')) patch.type = 'Maison'
+          else if (low.includes('appartement')) patch.type = 'Appartement'
+        }
+        if (Object.keys(patch).length > 0) setProperty(patch as Partial<typeof property>)
+      }
+    } catch {
+      // fail-soft : on continue en saisie manuelle
+    } finally {
+      setEnriching(false)
+    }
+  }
 
   return (
     <>
@@ -57,9 +93,33 @@ export function StepProperty({ showYearError = false }: StepPropertyProps) {
           <AddressAutocomplete
             value={property.address ?? ''}
             onChange={(val) => setProperty({ address: val })}
-            onSelect={(s) => setProperty({ address: `${s.address}, ${s.postalCode} ${s.city}` })}
+            onSelect={(s) => void handleAddressSelect(s)}
             className="w-full px-5 py-4 pr-10 rounded-xl border border-slate-200 bg-white text-base text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
           />
+          {enriching && (
+            <p className="mt-2 text-xs text-slate-600 inline-flex items-center gap-1.5">
+              <Loader2 size={12} className="animate-spin" />
+              Recherche de la fiche DPE pour cette adresse…
+            </p>
+          )}
+          {!enriching && dpeData && dpeData.found && (
+            <div className="mt-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-xs text-emerald-800">
+              <p className="font-semibold inline-flex items-center gap-1">
+                <CheckCircle2 size={12} /> Fiche DPE trouvée — surface, année et type pré-remplis automatiquement
+              </p>
+              {dpeData.dpe?.actuel && (
+                <p className="mt-1 text-[11px] text-emerald-700">
+                  Étiquette DPE actuelle : <strong>{dpeData.dpe.actuel}</strong>
+                  {dpeData.dpe.conso_ep_actuelle && <> ({Math.round(dpeData.dpe.conso_ep_actuelle)} kWh/m²/an)</>}
+                </p>
+              )}
+            </div>
+          )}
+          {!enriching && dpeData && !dpeData.found && (
+            <p className="mt-2 text-xs text-slate-500">
+              Aucune fiche DPE trouvée pour cette adresse — remplissez les champs ci-dessous manuellement.
+            </p>
+          )}
         </div>
 
         {/* Surface + Year */}
