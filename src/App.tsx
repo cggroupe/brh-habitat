@@ -26,7 +26,9 @@ import { PermissionRoute } from '@/components/auth/PermissionRoute'
 import HomePage from '@/pages/public/HomePage'
 
 // Lazy loaded pages — Public
-const DiagnosticPage = lazy(() => import('@/pages/public/DiagnosticPage'))
+// DiagnosticPage (ancien wizard 5 étapes) conservé dans le repo mais non monté
+// — `/diagnostic` pointe vers le hub Simulateur depuis le retour Philippe 12/05.
+// const DiagnosticPage = lazy(() => import('@/pages/public/DiagnosticPage'))
 const DiagnosticExpressPage = lazy(() => import('@/pages/public/DiagnosticExpressPage'))
 const DiagnosticResultsPage = lazy(() => import('@/pages/public/DiagnosticResultsPage'))
 // Simulateur particulier (hub + flow problème + wizard complet 25-30 min).
@@ -231,7 +233,11 @@ export default function App() {
             <Route element={<PublicShell />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/services" element={<ServicesPage />} />
-              <Route path="/diagnostic" element={<DiagnosticPage />} />
+              {/* `/diagnostic` = entry point principal (le path historique).
+                 Pointe maintenant vers le hub Simulateur (3 cards : Problème / Rapide / Complet).
+                 L'ancien wizard 5 étapes DiagnosticPage reste dans le repo mais non monté
+                 (cf retour Philippe 12/05 — il ne veut plus partir directement sur le pré-rempli isolation). */}
+              <Route path="/diagnostic" element={<SimulateurPage />} />
               <Route path="/diagnostic-express" element={<DiagnosticExpressPage />} />
               {/* Simulateur particulier — hub + flow problème + wizard complet (audit-ux-2026-05-12 #7) */}
               <Route path="/simulateur" element={<SimulateurPage />} />

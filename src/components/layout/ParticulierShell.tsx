@@ -39,9 +39,9 @@ const partNavPrincipal: NavItemDef[] = [
 ]
 
 const partNavOutils: NavItemDef[] = [
-  // Audit DPE complet (wizard 25-30 min) — porté depuis le moteur 3CL-DPE (audit-ux-2026-05-12 #7).
-  // L'ancien /particulier/simulateur = générateur de liens de parrainage (label corrigé).
-  { to: '/simulateur', label: 'Audit DPE de mon logement', icon: Microscope },
+  // Audit DPE / simulateur — porté depuis le moteur 3CL-DPE (audit-ux-2026-05-12 #7).
+  // Path canonique = /diagnostic (l'historique). /simulateur reste accessible en alias.
+  { to: '/diagnostic', label: 'Audit DPE de mon logement', icon: Microscope },
   { to: '/particulier/simulateur', label: 'Mes liens de parrainage', icon: Link2, feature: 'simulationLinks' },
   { to: '/particulier/reseaux-sociaux', label: 'Reseaux sociaux', icon: Share2, feature: 'socialMediaPosts' },
   { to: '/particulier/vendeurs', label: 'Vendeurs', icon: UserPlus, feature: 'recruitmentPyramid' },
