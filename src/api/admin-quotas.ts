@@ -54,7 +54,9 @@ export const adminQuotasApi = {
       .order('tier')
     if (error) throw error
     return (data ?? []).map((row) => {
-      const company = (row as { brh_agences_immo: { raison_sociale: string; status: string } }).brh_agences_immo
+      // Supabase typegen renvoie brh_agences_immo en array (relation FK) — on prend [0].
+      const joined = (row as unknown as { brh_agences_immo: { raison_sociale: string; status: string }[] }).brh_agences_immo
+      const company = Array.isArray(joined) ? joined[0] : (joined as unknown as { raison_sociale: string; status: string } | undefined)
       return {
         target_type: 'agence' as const,
         target_id: row.agence_id as string,

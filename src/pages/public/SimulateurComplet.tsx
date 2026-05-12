@@ -312,9 +312,9 @@ export default function SimulateurComplet() {
 
           <div className="bg-white rounded-2xl border border-slate-200 p-6 lg:p-8 shadow-sm space-y-6">
             <div className="flex flex-col items-center gap-4">
-              <DpeLabelGauge classe={result.etiquetteCEP ?? 'D'} value={result.cepKWhEpM2An ?? 0} />
+              <DpeLabelGauge etiquette={result.etiquetteDpe ?? 'D'} value={result.cepKwhEpM2An ?? 0} unit="kWh/m²/an" />
               <p className="text-xs text-slate-500 text-center">
-                Consommation : <strong className="text-slate-900 tabular-nums">{Math.round(result.cepKWhEpM2An ?? 0)} kWh/m²/an</strong>
+                Consommation : <strong className="text-slate-900 tabular-nums">{Math.round(result.cepKwhEpM2An ?? 0)} kWh/m²/an</strong>
                 {result.gesKgCo2M2An !== undefined && (
                   <> · GES : <strong className="text-slate-900 tabular-nums">{Math.round(result.gesKgCo2M2An)} kg CO₂/m²/an</strong></>
                 )}

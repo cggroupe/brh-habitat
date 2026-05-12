@@ -95,10 +95,17 @@ export const disponibilitesApi = {
     if (error) throw error
 
     return (data ?? []).map((row) => {
-      const publisher = (row as { brh_partner_contracts: { partner_type: string; profiles: { full_name: string } } }).brh_partner_contracts
+      // Supabase typegen renvoie les relations FK en array — on déréf [0] pour both.
+      const joinedPub = (row as unknown as { brh_partner_contracts: { partner_type: string; profiles: { full_name: string } | { full_name: string }[] }[] | { partner_type: string; profiles: { full_name: string } } }).brh_partner_contracts
+      const publisher = Array.isArray(joinedPub) ? joinedPub[0] : joinedPub
+      const profile = publisher
+        ? Array.isArray(publisher.profiles)
+          ? publisher.profiles[0]
+          : publisher.profiles
+        : undefined
       return {
         ...(row as unknown as Disponibilite),
-        publisher_name: publisher?.profiles?.full_name ?? null,
+        publisher_name: profile?.full_name ?? null,
         publisher_partner_type: publisher?.partner_type ?? null,
       }
     })
