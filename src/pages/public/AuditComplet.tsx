@@ -41,6 +41,17 @@ import {
 } from 'lucide-react'
 import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
 import { computeDpe } from '@/lib/dpe-engine'
+import {
+  fetchDpeForAddress,
+  fetchParcelleAt,
+  analyzeToitureVision,
+  anneeToPeriode,
+  bdnbTypeToBatiment,
+  visionTypeToToitureForm,
+  type DpeLookupResult,
+  type ParcelleCadastre,
+  type VisionToiture,
+} from '@/lib/audit-enrichment'
 import type {
   AuditInputs,
   PeriodeConstruction,
@@ -384,6 +395,17 @@ export default function AuditComplet() {
   const [computing, setComputing] = useState(false)
   const [computeError, setComputeError] = useState<string | null>(null)
 
+  // ─── Enrichissement automatique post-sélection adresse ───────────────────
+  const [enriching, setEnriching] = useState(false)
+  const [dpeData, setDpeData] = useState<DpeLookupResult | null>(null)
+  const [parcelle, setParcelle] = useState<ParcelleCadastre | null>(null)
+  const [enrichmentError, setEnrichmentError] = useState<string | null>(null)
+
+  // Vision IA toiture (lancée à l'étape 4 sur clic explicite)
+  const [analyzingToiture, setAnalyzingToiture] = useState(false)
+  const [visionToiture, setVisionToiture] = useState<VisionToiture | null>(null)
+  const [visionError, setVisionError] = useState<string | null>(null)
+
   useEffect(() => {
     const t = setTimeout(() => {
       setForm(loadFromStorage())
@@ -639,17 +661,54 @@ export default function AuditComplet() {
         {/* ── STEP 1 : GÉO ────────────────────────────────────────────── */}
         {step === 0 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-5 lg:p-6 space-y-5">
-            <Field label="Adresse complète" tooltip="Tapez le début, sélectionnez dans la liste. La commune et la zone climatique sont déduites automatiquement.">
+            <Field label="Adresse complète" tooltip="Tapez le début, sélectionnez dans la liste. On essaie ensuite de récupérer automatiquement la fiche DPE existante et la parcelle cadastrale pour vous éviter de tout ressaisir.">
               <div className="w-full">
                 <AddressAutocomplete
                   value={form.adresse}
                   onChange={(v) => update('adresse', v)}
-                  onSelect={(sel) => {
+                  onSelect={async (sel) => {
+                    const fullAddress = `${sel.address}, ${sel.postalCode} ${sel.city}`
                     setForm((prev) => ({
                       ...prev,
-                      adresse: `${sel.address}, ${sel.postalCode} ${sel.city}`,
+                      adresse: fullAddress,
                       codeInsee: sel.citycode,
                     }))
+                    // Reset enrichissement précédent
+                    setDpeData(null)
+                    setParcelle(null)
+                    setVisionToiture(null)
+                    setEnrichmentError(null)
+                    setVisionError(null)
+
+                    if (sel.lat == null || sel.lng == null) return
+                    setEnriching(true)
+                    try {
+                      // 2 appels parallèles — fail-soft individuel
+                      const [dpe, parc] = await Promise.all([
+                        fetchDpeForAddress({ query: fullAddress, lat: sel.lat, lng: sel.lng, postalCode: sel.postalCode }),
+                        fetchParcelleAt(sel.lat, sel.lng),
+                      ])
+                      setDpeData(dpe)
+                      setParcelle(parc)
+                      // Pré-remplit le formulaire avec ce que BDNB renvoie
+                      if (dpe?.found && dpe.logement) {
+                        setForm((prev) => {
+                          const patch: Partial<FormState> = {}
+                          if (dpe.logement?.surface_m2 && dpe.logement.surface_m2 > 10) {
+                            patch.surfaceHabitable = Math.round(dpe.logement.surface_m2)
+                          }
+                          const periode = anneeToPeriode(dpe.logement?.annee_construction)
+                          if (periode) patch.periodeConstruction = periode
+                          const tb = bdnbTypeToBatiment(dpe.logement?.type)
+                          if (tb) patch.typeBatiment = tb
+                          return { ...prev, ...patch }
+                        })
+                      }
+                    } catch (err) {
+                      setEnrichmentError(err instanceof Error ? err.message : 'Erreur enrichissement')
+                    } finally {
+                      setEnriching(false)
+                    }
                   }}
                   placeholder="Ex : 5 rue de Siam, 29200 Brest"
                 />
@@ -665,6 +724,61 @@ export default function AuditComplet() {
                 </p>
               )}
             </Field>
+
+            {/* Feedback enrichissement automatique */}
+            {enriching && (
+              <div className="rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-700 inline-flex items-center gap-2">
+                <Loader2 size={14} className="animate-spin" />
+                Recherche de la fiche DPE et de la parcelle cadastrale…
+              </div>
+            )}
+            {!enriching && dpeData && dpeData.found && (
+              <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 space-y-1.5">
+                <p className="text-sm font-bold text-emerald-900 inline-flex items-center gap-1.5">
+                  <CheckCircle2 size={14} />
+                  Fiche DPE BDNB trouvée — pré-remplissage automatique
+                </p>
+                <ul className="text-xs text-emerald-800 space-y-0.5">
+                  {dpeData.logement?.surface_m2 && (
+                    <li>• Surface habitable : <strong>{Math.round(dpeData.logement.surface_m2)} m²</strong></li>
+                  )}
+                  {dpeData.logement?.annee_construction && (
+                    <li>• Année de construction : <strong>{dpeData.logement.annee_construction}</strong></li>
+                  )}
+                  {dpeData.logement?.type && (
+                    <li>• Type de bâtiment : <strong className="capitalize">{dpeData.logement.type}</strong></li>
+                  )}
+                  {dpeData.dpe?.actuel && (
+                    <li>
+                      • Étiquette DPE actuelle : <strong>{dpeData.dpe.actuel}</strong>
+                      {dpeData.dpe.conso_ep_actuelle && <> ({Math.round(dpeData.dpe.conso_ep_actuelle)} kWh/m²/an)</>}
+                    </li>
+                  )}
+                  {dpeData.dpe?.source && (
+                    <li className="text-[10px] italic opacity-70 pt-1">Source : {dpeData.dpe.source}</li>
+                  )}
+                </ul>
+                <p className="text-[11px] text-emerald-700 pt-1">
+                  Vous pourrez ajuster les valeurs aux étapes suivantes si nécessaire.
+                </p>
+              </div>
+            )}
+            {!enriching && dpeData && !dpeData.found && (
+              <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-800">
+                Aucune fiche DPE trouvée pour cette adresse — vous saisirez les caractéristiques manuellement aux étapes suivantes.
+              </div>
+            )}
+            {!enriching && parcelle && (
+              <div className="rounded-xl bg-violet-50 border border-violet-200 px-4 py-3 text-xs text-violet-800 inline-flex items-center gap-1.5">
+                <CheckCircle2 size={12} />
+                Parcelle cadastrale trouvée (IDU <code className="font-mono bg-white px-1 rounded">{parcelle.idu}</code>) — analyse de toiture par vision IA disponible à l'étape Toitures.
+              </div>
+            )}
+            {enrichmentError && (
+              <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-xs text-red-700">
+                Enrichissement automatique indisponible : {enrichmentError}. Vous pouvez quand même remplir manuellement.
+              </div>
+            )}
             <Field label="Altitude approximative (mètres)" tooltip="Compte pour le climat (Bch). 0 pour bord de mer, 50-150 en Bretagne intérieure, 500+ en montagne.">
               <input type="number" min={0} max={3000} value={form.altitude} onChange={(e) => update('altitude', Number(e.target.value))} className={inputCls()} />
             </Field>
@@ -803,6 +917,107 @@ export default function AuditComplet() {
         {/* ── STEP 4 : TOITURES / SOLS ────────────────────────────────── */}
         {step === 3 && (
           <div className="space-y-3">
+            {/* Vision IA toiture — disponible si une parcelle a été trouvée à l'étape 1. */}
+            {parcelle && (
+              <article className="bg-gradient-to-br from-violet-50 to-violet-100/50 border-2 border-violet-300 rounded-2xl p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <h3 className="text-sm font-bold text-violet-900 inline-flex items-center gap-1.5">
+                      <Microscope size={14} className="text-violet-600" />
+                      Analyse satellite IA de votre toiture
+                    </h3>
+                    <p className="text-[11px] text-violet-800 mt-1 leading-relaxed">
+                      Claude Sonnet 4.6 vision analyse l'orthophoto IGN de votre parcelle pour détecter
+                      le type de toit, l'orientation, la surface et le potentiel solaire. <strong>Gratuit, ~15-30 secondes.</strong>
+                    </p>
+                  </div>
+                  {!visionToiture && !analyzingToiture && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setAnalyzingToiture(true)
+                        setVisionError(null)
+                        try {
+                          const v = await analyzeToitureVision(parcelle.idu)
+                          if (v) {
+                            setVisionToiture(v)
+                            // Pré-remplit le formulaire avec ce que la vision IA détecte
+                            setForm((prev) => ({
+                              ...prev,
+                              toitureType: visionTypeToToitureForm(v.type_toiture),
+                            }))
+                          } else {
+                            setVisionError('Aucune analyse retournée — réessayez ou continuez en saisie manuelle.')
+                          }
+                        } catch (err) {
+                          setVisionError(err instanceof Error ? err.message : 'Erreur vision IA')
+                        } finally {
+                          setAnalyzingToiture(false)
+                        }
+                      }}
+                      className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-violet-700 hover:bg-violet-800 text-white text-xs font-bold transition"
+                    >
+                      <Microscope size={12} />
+                      Lancer l'analyse
+                    </button>
+                  )}
+                </div>
+
+                {analyzingToiture && (
+                  <div className="flex items-center gap-2 text-xs text-violet-800">
+                    <Loader2 size={14} className="animate-spin" />
+                    Analyse IA en cours (15-30s)…
+                  </div>
+                )}
+
+                {visionToiture && (
+                  <div className="bg-white rounded-xl border border-violet-200 p-3 space-y-2">
+                    <p className="text-[11px] uppercase font-bold tracking-widest text-violet-700">
+                      Résultat de l'analyse IA
+                    </p>
+                    <ul className="text-xs text-slate-700 space-y-0.5">
+                      {visionToiture.type_toiture !== 'indetermine' && (
+                        <li>• Type de toiture : <strong className="capitalize">{visionToiture.type_toiture.replace('_', ' ')}</strong></li>
+                      )}
+                      {visionToiture.nb_pans !== null && (
+                        <li>• Nombre de pans : <strong>{visionToiture.nb_pans}</strong></li>
+                      )}
+                      {visionToiture.orientation_principale && visionToiture.orientation_principale !== 'plat' && (
+                        <li>• Orientation principale : <strong>{visionToiture.orientation_principale}</strong></li>
+                      )}
+                      {visionToiture.surface_estimee_m2 && (
+                        <li>• Surface estimée : <strong>{Math.round(visionToiture.surface_estimee_m2)} m²</strong></li>
+                      )}
+                      {visionToiture.etat_apparent !== 'indetermine' && (
+                        <li>• État apparent : <strong className="capitalize">{visionToiture.etat_apparent.replace('_', ' ')}</strong></li>
+                      )}
+                      {visionToiture.ombre_solaire !== 'indetermine' && (
+                        <li>• Ombre solaire : <strong className="capitalize">{visionToiture.ombre_solaire}</strong></li>
+                      )}
+                      {visionToiture.veluxes_visibles !== null && visionToiture.veluxes_visibles > 0 && (
+                        <li>• Velux visibles : <strong>{visionToiture.veluxes_visibles}</strong></li>
+                      )}
+                      {visionToiture.potentiel_pv !== 'indetermine' && (
+                        <li>• Potentiel photovoltaïque : <strong className="capitalize">{visionToiture.potentiel_pv}</strong></li>
+                      )}
+                    </ul>
+                    {visionToiture.commentaires && (
+                      <p className="text-[11px] text-slate-600 italic pt-1 border-t border-violet-100">
+                        « {visionToiture.commentaires} »
+                      </p>
+                    )}
+                    <p className="text-[10px] text-violet-700 pt-1">
+                      Le type de toiture a été pré-rempli ci-dessous. Vous pouvez l'ajuster si besoin.
+                    </p>
+                  </div>
+                )}
+
+                {visionError && (
+                  <p className="text-[11px] text-red-700">{visionError}</p>
+                )}
+              </article>
+            )}
+
             <article className="bg-white rounded-2xl border border-slate-200 p-4 space-y-3">
               <h3 className="text-sm font-bold text-slate-900 inline-flex items-center gap-1.5">
                 <Layers size={14} className="text-slate-500" />
