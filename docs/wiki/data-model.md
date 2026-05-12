@@ -444,6 +444,26 @@ Cockpit gamifié commerciaux (Pierre Collard) — registre dynamique + scoring a
 | `brh_social_post_templates` | slug UNIQUE, platform, title, content, hashtags ARRAY (9 modèles BRH : Loi Climat, recrutement artisans, conseil DPE 30s, etc.) |
 | `brh_field_visits` | company_id FK, employee_id FK, target_type (prospect_dpe/artisan/agence_immo), target_id TEXT polymorphe, visit_type (door_to_door/consultation/rappel/rdv_signe), status, notes, lat/lng (tracking terrain Phase R1) |
 
+### Domaine 12 — RDV anonymes (fix critique 12/05/2026)
+
+Avant fix : la RLS `brh_appointments` exigeait `auth.uid() IS NOT NULL` pour `INSERT`. Conséquence : tout visiteur public terminant le diagnostic et essayant de prendre RDV via `ContactRdvModal` plantait silencieusement (RLS bloque, frontend affiche « Une erreur est survenue »).
+
+Migration `20260713100000` (appointments anon insert) ajoute la policy :
+
+```sql
+CREATE POLICY "Anonymous visitors can create public appointments" ON brh_appointments
+  FOR INSERT TO anon
+  WITH CHECK (
+    user_id IS NULL
+    AND contact_name IS NOT NULL AND length(trim(contact_name)) > 0
+    AND contact_email IS NOT NULL AND length(trim(contact_email)) > 0
+    AND contact_phone IS NOT NULL AND length(trim(contact_phone)) > 0
+    AND type IN ('diagnostic', 'contact')
+  );
+```
+
+Contraintes anti-spam : 3 champs de contact obligatoires + types limités. Le RGPD est conservé via headers logs Supabase (IP + user-agent) côté backend.
+
 ### Domaine 11 — Disponibilités pros (Phase 18 v2, pivot 12/05/2026)
 
 Audit-ux-2026-05-12 point #4 — Philippe valide la suppression du fil d'actu libre. Les tables `brh_feed_*` (posts, reactions, comments, impressions, reports) RESTENT en DB pour réversibilité mais ne sont plus exposées côté UI. Le réseau sert désormais à 2 actions structurées : publier un chantier (table existante `brh_chantier_offers`) OU signaler une disponibilité (NOUVELLE table `brh_disponibilites`).

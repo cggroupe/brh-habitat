@@ -7,20 +7,20 @@
 
 | Dimension | Valeur exacte | Vérification |
 |-----------|---------------|--------------|
-| Pages | **200** (.tsx dans src/pages/) | `find src/pages -name "*.tsx" \| wc -l` |
-| Composants | **100** (.tsx dans src/components/) | `find src/components -name "*.tsx" \| wc -l` |
+| Pages | **199** (.tsx dans src/pages/) | `find src/pages -name "*.tsx" \| wc -l` |
+| Composants | **101** (.tsx dans src/components/) | `find src/components -name "*.tsx" \| wc -l` (+ParticulierDashboardGuard 12/05 nuit) |
 | Hooks | **71** fichiers (4 base + 67 queries/domaines) | `find src/hooks -name "*.ts" \| wc -l` |
 | API modules | **75** (src/api/) | `ls src/api/ \| wc -l` |
 | Stores Zustand | **2** | `appStore`, `diagnosticStore` |
-| Routes React | **166** (path= dans App.tsx) | `grep -c "path=" src/App.tsx` |
-| Migrations | **101** (supabase/migrations/*.sql) | 2026-02-27 → 2026-07-12 (Phases 1→19 + Employé V2 + Admin V1 quotas + Phase 18 v2 pivot dispos) |
+| Routes React | **165** (path= dans App.tsx) | `grep -c "path=" src/App.tsx` (+/diagnostic = hub, /diagnostic/rapide = wizard 5 étapes, /audit-complet = wizard 8 étapes CapRénov) |
+| Migrations | **102** (supabase/migrations/*.sql) | 2026-02-27 → 2026-07-13 (Phases 1→19 + Employé V2 + Admin V1 quotas + Phase 18 v2 pivot dispos + RDV anon RLS) |
 | Tables `brh_*` | **144** (DB + 1 `profiles` extension) | post Phases 11→19 + Employé V2 + Admin V1 + Phase 18 v2 (DPE + foncier + réseau + employés + quotas + disponibilites) |
 | Fonctions SQL | **57** (RPC + triggers + computed) | post cascade parrainage 5 niveaux + IA PLU/satellite + commissions cron + dispos expire |
 | Triggers | **30+** | post Phase 13.6.7 commission cascade + 16.1 cascade parrainage + employés + dispos updated_at |
-| Policies RLS | **377** (CREATE POLICY across migrations) | post 5 portails + cross-persona feed + agences signataires + dispos |
+| Policies RLS | **378** (CREATE POLICY across migrations) | post 5 portails + cross-persona feed + agences signataires + dispos + RDV anon (12/05) |
 | Edge Functions | **41** (+`_shared`) | `ls -d supabase/functions/*/ \| grep -v _shared` |
 | Storage buckets | **8+** | audits, brh-commission-invoices, company-logos, home-documents, message-attachments, prospect-files, reseau-media, rewards-catalog, social-screenshots |
-| Guards | **8** | AdminGuard, AuthGuard, ParticulierGuard, ProGuard, ArtisanGuard, AgenceGuard, ReseauGuard, EmployeGuard |
+| Guards | **9** | AdminGuard, AuthGuard, ParticulierGuard, **ParticulierDashboardGuard** (12/05 fix cross-persona), ProGuard, ArtisanGuard, AgenceGuard, ReseauGuard, EmployeGuard |
 | Feature gates utilisés dans App.tsx | **10+** (via `<FeatureRoute>`) | `grep -oE 'feature="[a-z]+"' src/App.tsx \| sort -u` |
 | Feature flags définis | **18** | Dans `src/config/tier-presets.ts` |
 | Score santé | **9.8/10** (audit v7) · UX **5.4→9/10 cible** | ARCHITECTURE.md + [audit-ux-2026-05-08.md](audit-ux-2026-05-08.md) |

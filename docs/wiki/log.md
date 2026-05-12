@@ -5,6 +5,86 @@
 
 ---
 
+## 2026-05-12 (nuit + 7) — Audit complet enrichi BDNB/ADEME + Vision IA toiture + workflows wiki
+
+- **Contexte** : retour Philippe pointant 4 problèmes après les commits du soir :
+  1. Audit complet pas visible (pas dans nav) — corrigé par bouton CTA explicite et upsell DiagnosticResultsPage.
+  2. Prise de RDV plantait silencieusement pour visiteur public.
+  3. UX audit complet à raffiner (adresse coupée, VMI manquante, libellés entretien faux, fenêtres saisies en m² au lieu de L×H, pose tunnel/applique pas explicite).
+  4. Audit complet trop simpliste — devait utiliser la techno BRH déjà déployée (BDNB, vision satellite Claude).
+
+- **9 commits livrés dans la session** :
+
+| SHA | Description | Fichiers |
+|---|---|---|
+| `680a47e` | Clôture backlog audit-ux-2026-05-12 (9/9) | 45 fichiers |
+| `3efdc8d` | Fix erreurs TS strict (tsc -b) qui plantaient Vercel | 3 fichiers |
+| `8384b8e` | /diagnostic = hub (CASSÉ — Philippe a réagi) | 3 fichiers |
+| `9313237` | Diag rapide V2 contextuel (CASSÉ aussi) | 6 fichiers |
+| `788f4fb` | Revert + restauration wizard 5 étapes original | 7 fichiers |
+| `f5318b2` | AuditComplet 8 étapes style CapRénov + upsell | 3 fichiers |
+| `10ff84c` | Hub /diagnostic FINAL + fix RDV anon (migration RLS) | 3 fichiers |
+| `0449b62` | Guard cross-persona + UX audit + pré-sélection domaines | 4 fichiers |
+| `1b4f702` | **Enrichissement BDNB + Vision IA toiture** | 2 fichiers |
+
+- **Architecture finale (UX confirmée)** :
+  - `/diagnostic` = DiagnosticHub (cases problème + 2 propositions Rapide/Complet, badges « Recommandé » dynamiques)
+  - `/diagnostic/rapide` = DiagnosticPage (wizard 5 étapes ORIGINAL, intact)
+  - `/audit-complet` = AuditComplet (wizard 8 étapes CapRénov, enrichi BDNB + vision IA)
+
+- **Pré-remplissage BDNB/ADEME** ([src/lib/audit-enrichment.ts](../../src/lib/audit-enrichment.ts), 200 lignes) :
+  - Au `onSelect` de l'autocomplete BAN dans AuditComplet étape 1, lancer 2 appels parallèles fail-soft :
+    - `fetchDpeForAddress(query, lat, lng, postalCode)` → EF `dpe-express-lookup` → proxy simulateur FastAPI 8915 → BDNB CSTB millésime 2025-07.a
+    - `fetchParcelleAt(lat, lng)` → EF `cadastre-fetch` (radius_m=50) → IGN api-carto → premier IDU 14 chars
+  - Si DPE trouvé : `dpeData.logement.surface_m2 → form.surfaceHabitable`, `annee_construction → form.periodeConstruction` (helper `anneeToPeriode()` qui mappe les 9 périodes officielles), `type → form.typeBatiment` (`bdnbTypeToBatiment()`).
+  - Affichage 3 panels possibles : vert si fiche DPE trouvée (avec détails surface/année/type/étiquette/source BDNB), ambre si non trouvée, violet si parcelle cadastre trouvée.
+
+- **Vision IA toiture** ([src/lib/audit-enrichment.ts](../../src/lib/audit-enrichment.ts) + step 4 UI) :
+  - Si parcelle cadastrale trouvée → bouton « Lancer l'analyse » apparaît sur l'étape 4.
+  - `analyzeToitureVision(parcelleIdu)` → EF `satellite-vision-ai` → WMS IGN BD ORTHO crop 768×768 jpeg → Claude Sonnet 4.6 vision (image+text) → JSON {type_toiture, nb_pans, orientation, surface_estimee, etat_apparent, ombre_solaire, veluxes_visibles, potentiel_pv, commentaires}.
+  - Cache 365j côté backend (table `brh_satellite_analyses`), coût ~0.02-0.04€ par analyse première (gratuit ensuite).
+  - Affichage 8 caractéristiques + commentaire libre IA + pré-remplissage `form.toitureType` via `visionTypeToToitureForm()`.
+
+- **Fix sécurité cross-persona** ([src/components/auth/ParticulierDashboardGuard.tsx](../../src/components/auth/ParticulierDashboardGuard.tsx)) :
+  - Nouveau guard qui détecte les memberships `brh_artisans_rge` / `brh_partner_contracts` (agence) / `brh_companies` et redirige automatiquement vers le bon portail (`/agence`, `/pro`, `/artisan`).
+  - Remplace AuthGuard simple sur les routes `/tableau-de-bord`, `/mes-logements`, `/mes-dossiers`, `/mes-rdv`, `/profil`, `/audit-energetique/:id`.
+  - Admin reste autorisé partout.
+
+- **Fix critique RDV anon** ([supabase/migrations/20260713100000_brh_appointments_anon_insert.sql](../../supabase/migrations/20260713100000_brh_appointments_anon_insert.sql)) :
+  - Avant fix : la policy INSERT exigeait `auth.uid() IS NOT NULL` → visiteurs publics terminant /diagnostic et essayant de prendre RDV plantaient silencieusement.
+  - Nouvelle policy `Anonymous visitors can create public appointments` autorise role `anon` à INSERT avec `WITH CHECK` user_id NULL + contact_name/email/phone obligatoires + type IN (diagnostic/contact).
+  - Appliquée en prod via psql direct + enregistrée dans `supabase_migrations.schema_migrations`.
+
+- **Diagnostic rapide pré-sélectionne les domaines** :
+  - DiagnosticPage.tsx useEffect lit `?p=froid,humidite,…` au mount.
+  - Mapping : froid → [isolation, menuiseries], chaud → [isolation, toiture], factures → [isolation, menuiseries], humidite → [humidite, ventilation], loi_climat → [4 domaines], vente → tous.
+  - `useDiagnosticStore.setState({ selectedTypes: [...] })` pour pré-cocher StepTypes.
+
+- **UX audit complet** :
+  - Adresse : affichage break-words explicite sous l'autocomplete pour éviter la coupe visuelle.
+  - Ventilation : ajout VMI (Ventilation Mécanique par Insufflation). Libellés d'entretien corrigés : « Bonne = annuelle (norme) / Standard = 3-5 ans / Médiocre = 5-10 ans ou jamais ».
+  - Fenêtres : Largeur (cm) × Hauteur (cm) × Quantité avec calcul auto surface m² affiché en feedback. Permet de grouper N fenêtres identiques en une seule entrée.
+  - Pose : libellés reformulés « Au milieu du mur (standard) » / « Côté intérieur » / « Côté extérieur ».
+
+- **Wiki Karpathy aligné (cette entrée)** :
+  - [architecture-snapshot.md](architecture-snapshot.md) : compteurs (199 pages, 101 composants, 102 migrations, 165 routes, 378 policies, 9 guards).
+  - [data-model.md](data-model.md) : nouveau Domaine 12 « RDV anonymes » avec la policy détaillée.
+  - [auth-access-matrix.md](auth-access-matrix.md) : anomalies #6 (cross-persona) + #7 (RDV anon) FIXED. Nouvelle section 8 « Workflows clés » documentant 6 chemins clic→action (hub diag rapide, hub audit complet, enrichissement BDNB step 1, vision IA toiture step 4, guard cross-persona, prise RDV anon).
+  - [audit-ux-2026-05-12.md](audit-ux-2026-05-12.md) : section #7 enrichie V2 (tous les enrichissements documentés).
+  - [log.md](log.md) : cette entrée.
+
+- **Tests** :
+  - `npx tsc --noEmit` → exit 0.
+  - `npm run build` (= tsc -b + vite build) → exit 0, built ~22s.
+  - `./scripts/verify-wiki.sh` → ✓ Wiki cohérent.
+  - Vercel auto-deploy via GitHub App → bundle déployé.
+
+- **Migrations créées** : 1 (`20260713100000_brh_appointments_anon_insert.sql`), appliquée en prod.
+- **Risque** : Low. Toutes les nouvelles features (enrichissement BDNB, vision IA, cross-persona Guard) sont fail-soft : si une EF est down ou ne retourne rien, l'audit continue en saisie manuelle sans bloquer. La policy RDV anon est strictement WITH CHECK (pas USING), donc elle n'affecte que les INSERT — pas de risque de leak de données existantes.
+- **Status** : ✅ DONE. UX confirmée par Philippe (3 routes : hub /diagnostic + /diagnostic/rapide + /audit-complet). Audit complet enrichi tech-first comme demandé (« je veux le parfait maintenant »).
+
+---
+
 ## 2026-05-12 (nuit + 4) — Simulateur particulier V1 (audit-ux-2026-05-12 #7) : hub + flow problème + wizard 5 étapes + lead-gating
 
 - **Contexte** : audit-ux-2026-05-12 #7. Précision Philippe — c'est **CAP RÉNOV** (pas Cabrenove), déjà audité dans `/root/projects/site-claude-code/caprenov-reverse/` (bundle reverse-engineered 82 pages wiki + 10 ADR + DB dumps). Le moteur 3CL-DPE est déjà entièrement porté dans BRH Habitat (Phases 1-9 livrées 01/05, 98 tests Vitest verts, validation ADEME ±1 classe sur 99 DPE réels). « Pas grand chose à faire — recopier ce qu'on avait vu chez eux ». **Ne JAMAIS mentionner CAP RÉNOV côté UI**.

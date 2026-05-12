@@ -254,6 +254,8 @@ Le hub `/inscription` propage automatiquement le param à toutes les cards (`ref
 | 3 | Activation Artisan RGE = workflow manuel 48h | `RegisterProPage.tsx:90-105` | User signup avec `is_rge_intended=true` n'a accès qu'à `/pro` immédiatement | UI annonce déjà "validation 48h", à industrialiser via cron + email admin |
 | 4 | ~~`isBrhEmployee()` lisait UNIQUEMENT le seed statique `BRH_EMPLOYEES` (Pierre Collard demo)~~ **FIXED 2026-05-12** | `lib/brh-employees.ts` | Tout employé prod (autre que demo) bloqué sur `/tableau-de-bord` après login | ✅ Cache module-level Map hydraté par `loadBrhEmployeesFromDb()` (RLS auto, debounce 30s), appelé après `signInWithPassword` (LoginPage) et `validateSession` (useAuth). Cache purgé au signOut. |
 | 5 | ~~Message "Email de confirmation envoyé" affiché en rouge erreur dans RegisterPage~~ **FIXED 2026-05-12** | `RegisterPage.tsx` | UX trompeuse — l'utilisateur croit que l'inscription a échoué | ✅ Nouveau state `info` avec style bleu `bg-blue-50 border-blue-200 text-blue-700` distinct de l'erreur rouge |
+| 6 | ~~Cross-persona : Claire Pichon (agence immo loggée) voyait `/tableau-de-bord` particulier~~ **FIXED 2026-05-12 (nuit + 6)** | `auth/AuthGuard` ➔ `auth/ParticulierDashboardGuard` | Une agence pouvait taper `/tableau-de-bord` ou `/mes-logements` et accéder au dashboard particulier alors qu'elle a `/agence` dédié | ✅ Nouveau `ParticulierDashboardGuard` qui détecte les memberships `brh_artisans_rge`, `brh_partner_contracts` (agence), `brh_companies` et redirige automatiquement vers le bon portail. Admin reste autorisé partout. Affecte routes `/tableau-de-bord`, `/mes-logements`, `/mes-dossiers`, `/mes-rdv`, `/profil`, `/audit-energetique/:id`. |
+| 7 | ~~Visiteur public anonyme ne pouvait pas prendre RDV depuis ContactRdvModal~~ **FIXED 2026-05-12 (nuit + 6)** | `brh_appointments` RLS | Tout user non-connecté qui terminait son diagnostic et essayait de prendre RDV plantait silencieusement (RLS exigeait `auth.uid() IS NOT NULL`) | ✅ Migration `20260713100000_brh_appointments_anon_insert.sql` ajoute policy `Anonymous visitors can create public appointments` autorisant role `anon` à INSERT avec contraintes anti-spam (user_id NULL + nom/email/phone obligatoires + type IN diagnostic/contact). |
 
 ### 6.2 UX / cohérence
 
@@ -299,7 +301,120 @@ Le hub `/inscription` propage automatiquement le param à toutes les cards (`ref
 
 ---
 
-## 8. Maintenance de cette page
+## 8. Workflows clés diagnostic/audit (ajoutés 12/05/2026)
+
+Documentation explicite des chemins « clic → action » pour les flows utilisateur du diagnostic + audit complet. Source de vérité pour s'assurer qu'aucun parcours ne casse silencieusement.
+
+### 8.1 Hub `/diagnostic` → Mode rapide
+
+```
+1. Visiteur arrive sur /diagnostic
+   └─> DiagnosticHub (cases problème + 2 propositions)
+       └─> Visiteur coche « Trop froid l'hiver » + « Factures élevées »
+           └─> Le badge « Recommandé » s'affiche sur « Diagnostic rapide » (recommended='rapide')
+               └─> Clic sur la card Rapide
+                   └─> Navigate to /diagnostic/rapide?p=froid,factures
+                       └─> DiagnosticPage useEffect lit ?p=
+                           └─> PROBLEM_TO_TYPES → ['isolation', 'menuiseries']
+                               └─> useDiagnosticStore.setState({ selectedTypes: [isolation, menuiseries] })
+                                   └─> StepTypes affiche les 2 domaines déjà cochés
+                                       └─> Le wizard démarre à l'étape 1 avec contexte pertinent
+```
+
+### 8.2 Hub `/diagnostic` → Mode complet
+
+```
+Si « Loi Climat F/G » ou « Préparer la vente » coché → recommended='complet'
+   └─> Card Audit complet a le badge « Recommandé »
+       └─> Clic → /audit-complet?p=loi_climat,vente
+           └─> AuditComplet (wizard 8 étapes)
+               └─> LocalStorage hydrate à l'open (clé brh-audit-complet-v1)
+                   └─> Au final (étape 8) : si pas authentifié → écran "Créez un compte"
+                       └─> Si authentifié → DpeLabelGauge officielle + résultat complet
+```
+
+### 8.3 Audit complet — enrichissement automatique step 1 (Adresse)
+
+```
+Visiteur sélectionne une adresse dans l'autocomplete BAN
+   ├─> setForm({ adresse, codeInsee }) instantané
+   └─> setEnriching(true)
+       ├─> Promise.all([fetchDpeForAddress(), fetchParcelleAt()])
+       │   ├─> EF dpe-express-lookup → simulateur 8915 → BDNB CSTB
+       │   │   └─> Si trouvé : setDpeData({found, logement, dpe, …})
+       │   │       └─> Pré-remplit form.surfaceHabitable, .periodeConstruction, .typeBatiment
+       │   │       └─> Panel vert « Fiche DPE BDNB trouvée — pré-remplissage automatique »
+       │   │
+       │   └─> EF cadastre-fetch → IGN api-carto (lat,lng,radius_m=50)
+       │       └─> setParcelle({idu, commune, centroid_lat, centroid_lng})
+       │           └─> Panel violet « Parcelle cadastrale trouvée (IDU XXX) — analyse vision IA disponible »
+       │
+       └─> setEnriching(false)
+```
+
+### 8.4 Audit complet — Vision IA toiture step 4
+
+```
+Si parcelle a été trouvée à l'étape 1, panel violet en haut de l'étape 4 avec bouton « Lancer l'analyse »
+   └─> Clic
+       └─> setAnalyzingToiture(true)
+           └─> EF satellite-vision-ai (parcelle_idu, force_refresh=false)
+               ├─> Backend Edge Function :
+               │   ├─> Lecture brh_parcelles_cache pour centroid + contenance
+               │   ├─> WMS IGN BD ORTHO → crop 768×768 jpeg
+               │   ├─> Claude Sonnet 4.6 vision (image + prompt JSON)
+               │   ├─> Parse JSON {type_toiture, nb_pans, orientation, surface, etat, ombre, veluxes, potentiel_pv, commentaires}
+               │   └─> Upsert brh_satellite_analyses (cache 365j)
+               │
+               └─> setVisionToiture(result) + pré-remplit form.toitureType
+                   └─> Affiche panel résultat (8 caractéristiques + commentaire libre IA)
+```
+
+### 8.5 Cross-persona Guard — `/tableau-de-bord` accédé par agence
+
+```
+Claire Pichon (signataire agence) tape /tableau-de-bord directement dans l'URL
+   └─> <Route element={<ParticulierDashboardGuard />}>
+       └─> useAuth → user.role='pro', isAuthenticated=true
+           └─> useQuery detectMemberships(user.id) — 3 lookups parallèles
+               ├─> brh_artisans_rge.profile_id      → null
+               ├─> brh_partner_contracts (agence)   → ROW (Claire = signataire)
+               └─> brh_companies.owner_id           → null
+                   └─> hasAgence=true
+                       └─> <Navigate to="/agence" replace />
+                           └─> Claire arrive sur son portail agence (correct)
+
+Admin : role='admin' → bypass tous les checks, accès libre /tableau-de-bord
+Particulier sans membership : Outlet render normal → dashboard particulier OK
+```
+
+### 8.6 Prise de RDV anonyme (fix 12/05)
+
+```
+Visiteur public termine /diagnostic/rapide → arrive sur DiagnosticResultsPage
+   └─> Clic sur « Prendre RDV »
+       └─> ContactRdvModal s'ouvre (no auth required)
+           └─> Sélectionne 2-3 créneaux flous (matin/après-midi)
+               └─> Remplit nom + tel + email
+                   └─> handleSubmit()
+                       ├─> supabase.from('brh_appointments').insert({
+                       │     user_id: null,  ← anon, c'est ok depuis policy 12/05
+                       │     type: 'diagnostic',
+                       │     contact_name, contact_email, contact_phone,
+                       │     preferred_slot, notes, status: 'demande'
+                       │   })
+                       │   └─> RLS « Anonymous visitors can create public appointments »
+                       │       check: user_id IS NULL + contact_name/email/phone NOT NULL + type IN (diagnostic,contact)
+                       │       → INSERT OK (depuis 20260713100000)
+                       │
+                       └─> EF send-rdv-confirmation (fire-and-forget)
+                           ├─> Email client : « Votre demande de RDV est bien reçue »
+                           └─> Email admin : tableau détails (nom/tel/email/créneaux/diagnostic)
+```
+
+---
+
+## 9. Maintenance de cette page
 
 À mettre à jour quand :
 - Une route est ajoutée / supprimée / déplacée dans `src/App.tsx`
@@ -307,6 +422,7 @@ Le hub `/inscription` propage automatiquement le param à toutes les cards (`ref
 - Un shell est créé / modifié / supprimé dans `src/components/layout/*Shell.tsx`
 - La logique d'inscription change (ex: nouveau persona, nouveau champ obligatoire)
 - La logique du LoginPage workspace switcher change
+- Un workflow utilisateur clic→action est créé / modifié (section 8)
 
 **Process** : éditer cette page, ajouter une entrée dans [`log.md`](log.md), pas de migration DB requise (pure documentation).
 
