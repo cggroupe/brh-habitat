@@ -5,6 +5,36 @@
 
 ---
 
+## 2026-05-12 (nuit + 8) — Vrai PDF design 5 pages (remplace window.print)
+
+- **Contexte** : Philippe — "Allez c'est bon, attaque le PDF maintenant". Le bouton "Télécharger PDF" du résultat diagnostic appelait `window.print()` → impression navigateur moche (chrome ouvert, headers/footers parasites, mise en page non maîtrisée). Réutilisation du composant @react-pdf/renderer déjà installé pour les rapports Pro.
+
+- **Fichiers modifiés** :
+  - `src/components/diagnostic-pdf/DiagnosticPdfReport.tsx` (nouveau, 420 lignes) — 5 pages Document `@react-pdf/renderer` :
+    1. **Couverture** — score circulaire coloré (rouge<25 / orange<50 / amber<75 / vert≥75) + bandeau urgence + bloc adresse/type/surface/année + budget estimé range
+    2. **Analyse par domaine** — une carte par TypeResult (label + score 0-100 + 3 problèmes top)
+    3. **Plan de rénovation** — top 8 recos triées par priorité (Critique/Important/Recommandé) avec impact + économies
+    4. **Aides financières** — 5 dispositifs (MaPrimeRénov', CEE, Éco-PTZ, TVA 5,5 %, aides Bretagne) + estimation reste à charge
+    5. **Prochaines étapes** — 3 steps (validation expert 24h / visite gratuite / devis personnalisé) + bloc CTA vert avec téléphone + URL
+  - `src/pages/public/diagnostic-results/DiagnosticCtaSection.tsx` — remplace bouton `window.print()` par `<PDFDownloadLink>` avec état loading (spinner Loader2 + texte "Génération…"). Désactivé en gris si `pdfResult` absent.
+  - `src/pages/public/DiagnosticResultsPage.tsx` — propage `pdfResult={diagnosticResult}` + `pdfProperty={{ address, year, surface, type }}` à `<DiagnosticCtaSection>`.
+
+- **Migrations créées** : aucune (UI/PDF only).
+
+- **Pages wiki impactées** : log.md (cette entrée).
+
+- **Risque** : Low — fonctionnalité ajoutée, fallback existant si pdfResult absent (état désactivé), aucun impact serveur.
+
+- **Tests** : `npm run build` OK (21,48s, bundle `index-BpXD9TdG.js`). Vercel auto-deploy déclenché par push.
+
+- **Commit** : `b6e23e1` — feat(pdf): vrai PDF design 5 pages @react-pdf/renderer (remplace window.print)
+
+- **Status** : ✅ DONE
+
+- **Charte design** : Helvetica/Helvetica-Bold, vert BRH `#1c7b1d` (primaire), `#15803d` (foncé), `#dcfce7` (vert clair), header/footer fixes sur les 5 pages, format A4 portrait. Pas d'emoji, pas d'image (poids minimal).
+
+---
+
 ## 2026-05-12 (nuit + 7) — Audit complet enrichi BDNB/ADEME + Vision IA toiture + workflows wiki
 
 - **Contexte** : retour Philippe pointant 4 problèmes après les commits du soir :
