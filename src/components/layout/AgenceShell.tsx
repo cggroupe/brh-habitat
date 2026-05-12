@@ -36,7 +36,7 @@ import {
   Home,
   type LucideIcon,
 } from 'lucide-react'
-import { Trophy, Search } from 'lucide-react'
+import { Trophy, Search, CalendarCheck } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
 import PortalMobileNav from '@/components/shared/PortalMobileNav'
@@ -86,11 +86,11 @@ const GROUPS: NavGroup[] = [
     icon: Globe,
     matchPaths: ['/reseau'],
     items: [
-      { to: '/reseau', label: 'Fil d’actualité', icon: Home, end: true },
+      { to: '/reseau', label: 'Publier', icon: Home, end: true },
+      { to: '/reseau/chantiers', label: 'Chantiers publiés', icon: Briefcase },
+      { to: '/reseau/disponibilites', label: 'Pros disponibles', icon: CalendarCheck },
       { to: '/reseau/connexions', label: 'Mes connexions', icon: Users },
-      { to: '/reseau/chantiers', label: 'Chantiers partagés', icon: Briefcase },
       { to: '/reseau/messages', label: 'Messages', icon: MessageCircle },
-      { to: '/reseau/decouvrir', label: 'Découvrir', icon: MapIcon },
     ],
   },
   {

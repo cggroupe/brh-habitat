@@ -5,6 +5,323 @@
 
 ---
 
+## 2026-05-12 (nuit + 4) — Simulateur particulier V1 (audit-ux-2026-05-12 #7) : hub + flow problème + wizard 5 étapes + lead-gating
+
+- **Contexte** : audit-ux-2026-05-12 #7. Précision Philippe — c'est **CAP RÉNOV** (pas Cabrenove), déjà audité dans `/root/projects/site-claude-code/caprenov-reverse/` (bundle reverse-engineered 82 pages wiki + 10 ADR + DB dumps). Le moteur 3CL-DPE est déjà entièrement porté dans BRH Habitat (Phases 1-9 livrées 01/05, 98 tests Vitest verts, validation ADEME ±1 classe sur 99 DPE réels). « Pas grand chose à faire — recopier ce qu'on avait vu chez eux ». **Ne JAMAIS mentionner CAP RÉNOV côté UI**.
+
+- **Décisions Philippe (sondé en début de session)** :
+  - Mode complet 25-30 min : **hybride** — anonyme pour le wizard (save localStorage), login obligatoire pour voir étiquette/scénarios/aides (lead-magnet).
+  - Flow « J'ai un problème » : **toujours le choix à la fin** (recommandation visible mais user décide).
+
+- **3 pages publiques créées** :
+  - **[`/simulateur` → Simulateur.tsx](../../src/pages/public/Simulateur.tsx)** (~180 lignes) — hub d'accueil avec 3 cards exclusives (Problème / Rapide / Complet), badges « Recommandé pour la plupart » sur le mode rapide, features list par card, garanties en bas (3CL-DPE officiel · aucune donnée vendue · gratuit).
+  - **[`/simulateur/probleme` → SimulateurProbleme.tsx](../../src/pages/public/SimulateurProbleme.tsx)** (~240 lignes) — flow 2 étapes en interne (state local `showReco`) : 6 cases à cocher avec icônes (Snowflake/Sun/Euro/Droplets/AlertTriangle/Home) → page récap qui marque « Recommandé pour votre cas » sur le mode adapté. Règle : si « Loi Climat F/G » OU « Préparer la vente » coché → Complet recommandé, sinon → Rapide. User décide toujours.
+  - **[`/simulateur/complet` → SimulateurComplet.tsx](../../src/pages/public/SimulateurComplet.tsx)** (~500 lignes) — wizard multi-step 5 étapes (Localisation / Logement / Isolation / Fenêtres / Chauffage), réutilise `computeDpe()` du moteur DPE existant via `formToInputs()` (copie de la struct depuis ProAuditEditor pro). Vocabulaire grand public + composant `Tooltip` interne (HelpCircle au hover avec aide sur INSEE, inertie, plancher bas, surface murs, vitrage, etc.). Progress bar avec %. **LocalStorage `brh-simulateur-complet-v1`** : `loadFromStorage()` à l'hydratation (setTimeout 0 pour respecter règle anti-bug #5) + `saveToStorage()` sur chaque change + step. **Lead-magnet** : utilise `useAuth()` ; si pas authentifié → écran « Votre audit est prêt — créez un compte gratuit pour voir l'étiquette DPE + scénarios + aides » avec CTA `/inscription/particulier?ref=simulateur-complet` + lien login. Si loggé → affiche directement `DpeLabelGauge` + CEP + GES + lien dashboard + bouton « Nouvelle simulation » qui purge le localStorage.
+
+- **Routes** :
+  - `App.tsx` : ajout 3 lazy imports + 3 `<Route>` publiques (`/simulateur`, `/simulateur/probleme`, `/simulateur/complet`).
+
+- **Navigation** :
+  - `ParticulierShell.tsx` : ajout en tête du groupe Outils du lien « **Audit DPE de mon logement** » (icône Microscope) → `/simulateur`. L'ancien lien `/particulier/simulateur` renommé « **Mes liens de parrainage** » (label corrigé — la page = générateur de liens d'affiliation, pas un audit DPE).
+  - `Footer.tsx` : ajout « **Simulateur énergie** » dans la colonne Navigation publique entre Services et Diagnostic gratuit.
+
+- **Fichiers code modifiés/créés** (6) :
+  - **Nouveau** : `src/pages/public/Simulateur.tsx`, `src/pages/public/SimulateurProbleme.tsx`, `src/pages/public/SimulateurComplet.tsx`.
+  - **Modifié** : `src/App.tsx` (3 lazy + 3 routes), `src/components/layout/ParticulierShell.tsx` (sidebar Outils refondue), `src/components/layout/Footer.tsx` (lien public).
+
+- **Pages wiki impactées** :
+  - [audit-ux-2026-05-12.md](audit-ux-2026-05-12.md) — section #7 marquée ✅ FIXED 2026-05-12 (V1 livré) avec détail complet des 3 pages + V2 à venir (persistance DB post-signup, mode rapide refondu, PDF particulier). Status récap : **9/9 fermés** — backlog audit complet bouclé.
+  - [architecture-snapshot.md](architecture-snapshot.md) — Pages 197→200, Routes 163→166.
+  - [log.md](log.md) — cette entrée.
+
+- **Tests** :
+  - `npx tsc --noEmit` → exit 0.
+  - `npx vite build` → exit 0, built in 23.48s.
+  - `./scripts/verify-wiki.sh` → ✓ Wiki cohérent.
+
+- **Migrations créées** : aucune (UI only, moteur de calcul déjà déployé).
+- **Risque** : Low. Réutilisation du moteur 3CL-DPE déjà validé ADEME (98 tests verts). LocalStorage purge automatique sur « Nouvelle simulation ». Garde-fou anonyme : le calcul s'exécute mais le résultat est gating-login (lead-magnet). Aucun composant existant touché côté `/diagnostic-express` (mode rapide conservé tel quel).
+- **Status** : ✅ DONE. **Backlog audit-ux-2026-05-12 : 9/9 fermés**. V2 à itérer selon retours : (1) persistance audit en DB post-signup (récupération localStorage → `brh_audits` côté backend), (2) PDF particulier vocabulaire adapté (PDF pro 5 pages existe déjà), (3) mode rapide refondu via la même UI que le mode complet pour cohérence visuelle.
+
+---
+
+## 2026-05-12 (nuit + 3) — Pivot Phase 18 V2 : feed libre désactivé + entité disponibilites + hub action
+
+- **Contexte** : décision Philippe confirmée — audit-ux-2026-05-12 #4. Le fil d'actualité libre type LinkedIn était « allé trop loin » pour le réseau pro BTP. Refonte du Réseau (`/reseau`) en UX d'action structurée à **2 chemins exclusifs** :
+  1. **Publier un chantier** (table existante `brh_chantier_offers`, déjà OK avec `visibility public/reseau/prive`).
+  2. **Signaler une disponibilité** (NOUVELLE entité `brh_disponibilites`).
+  Toggle audience explicite à chaque publication (public = tous partenaires BRH / reseau = connexions seulement / prive = brouillon owner).
+
+- **Migration** `20260712200000_brh_disponibilites.sql` :
+  - Nouvelle table `brh_disponibilites` (pro_id FK brh_partner_contracts, periode_debut/periode_fin DATE avec contrainte cohérence, metiers_proposes TEXT[], departements TEXT[], description, capacite_chantiers, contract_mode_pref CHECK 4 valeurs, visibility CHECK public/reseau/prive aligné avec brh_chantier_offers, status draft/active/archived/expired, expires_at, archived_at).
+  - Indexes GIN sur metiers_proposes + departements pour filtres rapides côté liste.
+  - Trigger `brh_disponibilites_set_updated_at` SECURITY DEFINER.
+  - RLS complète (alignée avec brh_chantier_offers) : owner + admin lit toujours ; sinon (visibility='public' AND status='active') OU (visibility='reseau' AND status='active' AND brh_pro_in_network(viewer, owner)). Insert/update/delete owner only (ou admin).
+  - Helper SQL `brh_expire_old_disponibilites()` SECURITY DEFINER — passe en status='expired' les dispos dont periode_fin est dépassée. À appeler par cron quotidienne.
+  - **Pas d'ALTER `brh_chantier_offers`** : la colonne `visibility` existait déjà (CHECK public|reseau|prive) depuis la migration 18.1. Zéro casse côté chantiers.
+
+- **API + hooks** :
+  - `src/api/disponibilites.ts` (160 lignes) : list / listMine / getById / create / update / archive / delete + filtres typés (visibility, dept, metier, contractMode, période, search).
+  - `src/hooks/queries/disponibilites.ts` : 7 hooks React Query (queries + mutations avec invalidation auto).
+
+- **3 nouvelles pages** :
+  - **ReseauHub.tsx** (`/reseau`) — page d'action : 2 grosses cards exclusives noires (Publier chantier slate-900 / Signaler dispo emerald-700) + liens secondaires (consulter Chantiers / Dispos / Connexions / Messages) + bandeau messagerie discret. Badge dynamique « X dispo active » si l'utilisateur en a déjà publié. **Remplace l'ancienne page ReseauFeed.**
+  - **ReseauDisponibilites.tsx** (`/reseau/disponibilites`) — liste filtrable (audience public/réseau, département breton 22/29/35/56, métier 10 BTP, search libre). Empty state riche avec CTA double (réinitialiser filtres OU déposer ma dispo). Cards par dispo avec période + zone + capacité + métiers tags + description. Loader2 standardisé.
+  - **ReseauDisponibiliteNew.tsx** (`/reseau/disponibilites/nouvelle`) — form complet avec validation client (période cohérente, métiers ≥1, départements ≥1), sélecteurs métiers BTP (10 choix toggle) et départements (4 choix), 3 cards audience explicatives (Public Globe2 / Réseau Users / Brouillon Lock), mode contrat, capacité chantiers, description. Toast Sonner succès/erreur avec descriptions. Garde-fou contractId requis (sinon bandeau amber « Contrat partenaire requis »).
+
+- **Routes App.tsx** :
+  - `<Route path="/reseau">` pointe maintenant vers `ReseauHub` (au lieu de `ReseauFeed`).
+  - Ajout `<Route path="/reseau/disponibilites">` + `<Route path="/reseau/disponibilites/nouvelle">`.
+  - **Rétrocompat** : `<Route path="/reseau/decouvrir" element={<Navigate to="/reseau" replace />} />` — les liens externes / bookmarks vers /reseau/decouvrir continuent de fonctionner (redirect immédiat).
+  - **Composants conservés** : ReseauFeed et ReseauDecouvrir restent dans le repo (réversibilité), simplement plus importés via lazy(). Aucune table SQL supprimée.
+
+- **Sidebars** mises à jour :
+  - `ReseauShell.tsx` : « Fil d'actualité » → « Publier » (icône Home, end=true). Retrait de « Découvrir » (Map). Ajout « Disponibilités » (CalendarCheck) entre Chantiers et Connexions.
+  - `AgenceShell.tsx` (groupe Réseau) : nouveau ordre Publier / Chantiers publiés / Pros disponibles / Mes connexions / Messages. Retrait du sous-item Découvrir.
+
+- **Fichiers code modifiés/créés** (8) :
+  - **Nouveau** : `supabase/migrations/20260712200000_brh_disponibilites.sql`, `src/api/disponibilites.ts`, `src/hooks/queries/disponibilites.ts`, `src/pages/reseau/ReseauHub.tsx`, `src/pages/reseau/ReseauDisponibilites.tsx`, `src/pages/reseau/ReseauDisponibiliteNew.tsx`.
+  - **Modifié** : `src/App.tsx` (3 routes ajoutées + 1 redirect + imports refactorés), `src/components/layout/ReseauShell.tsx`, `src/components/layout/AgenceShell.tsx`.
+
+- **Pages wiki impactées** :
+  - [audit-ux-2026-05-12.md](audit-ux-2026-05-12.md) — section #4 marquée FIXED avec détail complet du V2 livré. Décision Philippe enregistrée. Récap status : 8/9 fermés.
+  - [data-model.md](data-model.md) — nouveau Domaine 11 « Disponibilités pros (Phase 18 v2) » avec table + helper SQL.
+  - [architecture-snapshot.md](architecture-snapshot.md) — Pages 194→197, Migrations 100→101, Tables 143→144, Hooks 70→71, API 73→75, Routes 160→163, Policies 372→377.
+  - [reseau-social-status.md](reseau-social-status.md) — encart « PIVOT V2 livré 12/05 » au-dessus du tableau de livraison V1, mention conservation tables + repositionnement subscriptions Premium/Featured à arbitrer.
+  - [log.md](log.md) — cette entrée.
+
+- **Tests** :
+  - `npx tsc --noEmit` → exit 0.
+  - `npx vite build` → exit 0, built in 27.86s.
+  - `./scripts/verify-wiki.sh` → ✓ Wiki cohérent.
+
+- **Migrations créées** : 1 (`20260712200000_brh_disponibilites.sql`). À déployer en prod via `supabase db push` quand Philippe valide.
+- **Risque** : Medium côté UX (rupture visuelle : disparition du feed pour les rares utilisateurs qui l'utilisaient) mais Low côté technique (tables conservées + redirect rétrocompat + composants conservés). Les subscriptions Premium/Featured 19€/49€ deviennent moins justifiables tant qu'on ne les recible pas sur la mise en avant de chantiers/dispos — point à arbitrer V2.5.
+- **Status** : ✅ DONE. **Backlog audit-ux-2026-05-12 : 8/9 fermés**. Reste : **#7 simulateur Cabrenove** (L effort 5-7 jours, brief produit attendu sur wizard 15-20 questions + scénarios multi-variantes).
+
+---
+
+## 2026-05-12 (nuit + 2) — Polish UX vague 2 : héro CTA dashboards + spinners standardisés
+
+- **Contexte** : poursuite du backlog [audit-ux-2026-05-12.md](audit-ux-2026-05-12.md) point #9 vague 2. Philippe insiste sur l'UX parfaite pour les pros qui n'ont pas le temps ; l'action principale de chaque dashboard doit être immédiatement actionnable, pas noyée parmi des cartes équivalentes.
+
+- **AgenceDashboard** ✅ héro CTA noir conditionnel :
+  - N'apparaît que si `totalRemaining > 0` (leads à claimer).
+  - Bandeau slate-900 pleine largeur au-dessus de l'inbox avec icône Flame ambre + titre « X leads disponibles à claimer » + sous-texte « chaque jour qui passe = un voisin qui claim avant vous » + bouton blanc « Voir les leads → ».
+  - Cohérence avec les principes Stripe/Linear de l'audit du 08/05 (action #1 nette).
+
+- **ArtisanDashboard** ✅ banner amber + toasts respond :
+  - Banner amber pleine largeur « X leads à traiter — acceptez ou refusez rapidement » avec icône AlertTriangle + bouton ambre vers ancre `#leads-list` (scroll smooth).
+  - N'apparaît que si `stats.pending > 0`.
+  - Ancrage `id="leads-list"` + `scroll-mt-6` sur le bloc Leads reçus.
+  - `handleAction` enrichi : import `toast` Sonner + map des 6 actions (accept/decline/quote/sign/complete/cancel → labels FR) + `toast.success` au succès + `toast.error` au catch avec description (l'error banner silencieux ne couvrait que la moitié des cas).
+
+- **EmployeDashboard** ✅ héro CTA noir contextuel :
+  - Si `leads_received_this_month > 0` → bandeau noir « X leads attribués ce mois — contactez-les en priorité » + bouton blanc → `/employe/leads`.
+  - Sinon → bandeau noir « Aucun lead attribué pour le moment — envoyez des emails recrutement +5 pts/envoi » + bouton blanc → `/employe/mails`.
+  - Le hero pousse le commercial vers l'action qui lui rapporte le plus selon son état actuel.
+
+- **Spinners standardisés** :
+  - `EmployeDashboard` et `EmployeLeads` passent du CSS border-4 émeraude custom (incohérent) à `<Loader2 size={28} className="text-slate-400 animate-spin" />` de lucide-react.
+  - Cohérence avec les autres pages (AgenceLeads, AdminQuotas etc.) qui utilisaient déjà Loader2.
+
+- **Fichiers code modifiés** (4) :
+  - `src/pages/agence/AgenceDashboard.tsx` (héro CTA conditionnel)
+  - `src/pages/artisan/ArtisanDashboard.tsx` (banner amber + ancrage + import toast + handleAction enrichi avec 6 labels)
+  - `src/pages/employe/EmployeDashboard.tsx` (héro CTA contextuel + import Loader2 + spinner standardisé)
+  - `src/pages/employe/EmployeLeads.tsx` (import Loader2 + spinner standardisé)
+
+- **Pages wiki impactées** :
+  - [audit-ux-2026-05-12.md](audit-ux-2026-05-12.md) — section #9 enrichie avec « vague 2 » et liste des 4 fixes livrés.
+  - [log.md](log.md) — cette entrée.
+
+- **Tests** :
+  - `npx tsc --noEmit` → exit 0.
+  - `npx vite build` → exit 0, built in 23.54s.
+  - `./scripts/verify-wiki.sh` → ✓ Wiki cohérent.
+
+- **Migrations créées** : aucune (UI only).
+- **Risque** : None. Tous les héros sont conditionnels (n'apparaissent que quand pertinent) et viennent SE RAJOUTER aux pages existantes — zéro régression visuelle si les conditions ne sont pas remplies. Les toasts utilisent Sonner déjà monté dans main.tsx depuis longtemps.
+- **Status** : ✅ DONE. **Backlog audit-ux-2026-05-12 : 7 fermés sur 9** + vague 2 du #9 finalisée. Reste : #4 Phase 18 (décision Philippe), #7 simulateur Cabrenove (brief produit), #9 vague 3 (filtres pré-cochés autres pages) intercalé selon besoin.
+
+---
+
+## 2026-05-12 (nuit) — Sprint UX clôture : templates emails OK + polish vague 1 + admin quotas granulaires V1
+
+- **Contexte** : Philippe confirme orientation marque/produit ambitieux (« on va en faire une marque à part entière, partenaires marketing, UX absolument parfaite »). 3ème vague du backlog [audit-ux-2026-05-12.md](audit-ux-2026-05-12.md). Traitement des points #8, #9 (1ère vague), #5 en lot. Décision : on ne lance pas #4 (pivot Phase 18) ni #7 (simulateur Cabrenove) sans décision produit explicite — ce sont des XL/L chantiers.
+
+- **#8 Templates emails employés** ✅ VÉRIFIÉ :
+  - DB confirmée : migration `20260706710000_brh_email_templates.sql` seeded 4 templates initiaux (artisan, agence_immo, architecte, maitre_oeuvre) avec slugs explicites et variables `{{nom_destinataire}}`, `{{ville}}`, `{{employe_nom}}`, `{{employe_signature}}`.
+  - EF `send-recruitment-email` opérationnelle (vérif employé actif + render variables + Resend + gamification +5 pts).
+  - Page `/employe/mails` complète : choix template, formulaire destinataire, preview rendu, envoi, historique.
+  - **Petit fix** : ajout d'un empty state explicite dans [`EmployeMails.tsx`](../../src/pages/employe/EmployeMails.tsx) si la table est vide (« Aucun template disponible — contactez un admin »).
+
+- **#9 Polish UX 1ère vague** ✅ 4 fixes livrés :
+  - **Empty state `AgenceFoncierProspects`** : « Aucun prospect » remplacé par card centrée + icône Search + bouton « Réinitialiser les filtres » qui reset 9 filtres d'un coup.
+  - **Empty state `AgenceContributions`** : icône émeraude + texte riche + CTA « Apporter ma 1ère contribution » qui ouvre le form + scroll to top.
+  - **Toasts Sonner unifiés** : `AgenceLeads.handleLogAttempt/handleRelease` et `AgenceScoreVente.handleClaim`. La bannière custom bottom-right (`claimToast` state) supprimée et remplacée par `toast.success(... description)`. Cohérence avec les autres pages.
+  - **Filtre défaut `scoreV2Min`** : 0 → 40 dans `AgenceFoncierCarte` (0 inondait la carte de markers gris peu actionnables).
+
+- **#5 Admin quotas granulaires** ✅ Fondation V1 livrée :
+  - **Migration** `20260712100000_brh_admin_quotas_granulaires.sql` : ALTER `brh_agence_subscriptions`, `brh_employees`, `brh_artisans_rge` ADD `custom_quota INTEGER NULL` + `quota_period TEXT CHECK (weekly|monthly)`. Nouvelle table `brh_admin_profile_warnings` (target_type/id polymorphe, severity info/warning/critical, message, metadata JSONB, audit trail resolved_at/by/notes).
+  - **3 RPC SECURITY DEFINER** :
+    - `brh_admin_set_custom_quota(target_type, target_id, custom_quota, quota_period)` — vérif admin obligatoire, update colonne typée, insert warning info auto (audit trail des changements).
+    - `brh_detect_dormant_profiles(threshold_days DEFAULT 60)` — détecte agences sans claim lead depuis N jours, idempotente (skip si warning ouvert).
+    - `brh_effective_quota(tier_quota, custom_quota)` IMMUTABLE — helper qui renvoie le quota effectif.
+  - **API** [`src/api/admin-quotas.ts`](../../src/api/admin-quotas.ts) (160 lignes) : `listAgences/listArtisans/listEmployes` (avec usage courant + état), `setCustomQuota`, `listWarnings`, `resolveWarning`, `detectDormant`.
+  - **UI** [`/admin/quotas`](../../src/pages/admin/AdminQuotas.tsx) (320 lignes) : 3 onglets agences/artisans/employés, search par nom/email, edit inline du quota custom + période, bandeau warnings ouverts avec résolution rapide, bouton « Détecter dormants 60j » (cron-like manuel). Lien dans `AdminShell` sidebar.
+
+- **Fichiers code modifiés/créés** (10) :
+  - **Nouveau** : `supabase/migrations/20260712100000_brh_admin_quotas_granulaires.sql`, `src/api/admin-quotas.ts`, `src/pages/admin/AdminQuotas.tsx`.
+  - **Modifié** : `src/App.tsx` (route /admin/quotas + lazy import), `src/components/layout/AdminShell.tsx` (lien sidebar), `src/pages/employe/EmployeMails.tsx` (empty state), `src/pages/agence/foncier/AgenceFoncierProspects.tsx` (empty state + import Search), `src/pages/agence/AgenceContributions.tsx` (empty state riche + CTA), `src/pages/agence/AgenceLeads.tsx` (imports + handleLogAttempt/handleRelease toast), `src/pages/agence/AgenceScoreVente.tsx` (toast Sonner unifié, suppression claimToast custom), `src/pages/agence/foncier/AgenceFoncierCarte.tsx` (scoreV2Min=40 default).
+
+- **Pages wiki impactées** :
+  - [audit-ux-2026-05-12.md](audit-ux-2026-05-12.md) — sections #5, #8, #9 marquées FIXED + détail des fixes. Status récap : 7 fermés / 2 ouverts.
+  - [data-model.md](data-model.md) — nouveau Domaine 10 « Admin Quotas Granulaires » avec `brh_admin_profile_warnings` + ALTER cols documentées.
+  - [architecture-snapshot.md](architecture-snapshot.md) — Pages 193→194, Migrations 99→100, Tables 142→143, Phases mises à jour.
+  - [log.md](log.md) — cette entrée.
+
+- **Tests** :
+  - `npx tsc --noEmit` → exit 0.
+  - `npx vite build` → exit 0, built in 22.13s.
+  - `./scripts/verify-wiki.sh` → ✓ Wiki cohérent.
+
+- **Migrations créées** : 1 (`20260712100000_brh_admin_quotas_granulaires.sql`). À déployer en prod via `supabase db push` quand Philippe valide.
+- **Risque** : Low. La migration est additive (ADD COLUMN IF NOT EXISTS + nouvelle table). RPC SECURITY DEFINER vérifient admin auth.uid(). Cascade quota : `custom_quota` NULL = utilise tier default existant (zéro impact runtime sur les agences existantes). UI admin seulement.
+- **Status** : ✅ DONE. **Backlog audit-ux-2026-05-12 : 7 fermés sur 9** (#1, #2, #3, #5, #6, #8, #9-vague1). Ouverts : #4 (pivot Phase 18, décision Philippe requise) et #7 (simulateur Cabrenove, décision produit + 5-7 jours).
+
+---
+
+## 2026-05-12 (soir tardif) — Quick wins UX : marker cadastre + PLUi pleine largeur + RDV créneaux polish
+
+- **Contexte** : 2ème vague du backlog [audit-ux-2026-05-12.md](audit-ux-2026-05-12.md). Trois points UX visibles immédiats traités en lot : #3 (marker cadastre non cliquable), #2 (résumé PLUi qui déborde la sidebar étroite), #6 (RDV créneaux flous mal présentés visuellement).
+
+- **Fix #3 — marker cadastre [AgenceFoncierCarte.tsx](../../src/pages/agence/foncier/AgenceFoncierCarte.tsx)** :
+  - `handleAddressSelect` : l'ouverture du popup est maintenant déclenchée **dans le `onSuccess` du `fetchParcelle.mutate`** (après que `selectedParcelles[0]` soit set), via `setTimeout(0)` pour laisser React commit le marker avant `openPopup()`.
+  - Ajout d'un `eventHandlers.click` explicite sur le `<Marker>` qui force `openPopup()` au clic. Avant : Leaflet toggle natif faisait croire que le marker ne réagissait pas — Philippe devait cliquer le polygone parcelle pour avoir la fiche.
+
+- **Fix #2 — PLUi qui déborde [PluSummaryCard.tsx](../../src/components/foncier/PluSummaryCard.tsx) + [AgenceFoncierParcelleDetail.tsx](../../src/pages/agence/foncier/AgenceFoncierParcelleDetail.tsx)** :
+  - `PluSummaryCard` : nouveau state `syntheseExpanded`. Si la synthèse dépasse 220 chars, on affiche 200 chars + « … » + bouton toggle « Voir la synthèse complète / Réduire » avec chevrons. Sinon affichée intégralement comme avant.
+  - `AgenceFoncierParcelleDetail` : `PluSummaryCard` déplacé de la **sidebar droite** (col-span-1, étroite) vers la **colonne principale** (col-span-2, 2/3 width). La sidebar conserve `CommuneSociodemoCard` et `SatelliteAnalysisCard`.
+  - Résultat : le cas Brest KR0202 cité par Philippe (capture d'écran avec gros bloc texte qui déborde) est résolu — la synthèse tient dans la zone large + collapsible si vraiment énorme.
+
+- **Fix #6 — RDV créneaux polish [CalendarWidget.tsx](../../src/components/shared/CalendarWidget.tsx)** :
+  - Constat technique : le système utilise DÉJÀ `DispoSlot { date, periode: 'matin'|'apres-midi' }` (créneaux flous matin/après-midi). Pas d'heure précise. Le retour Philippe portait sur l'**esthétique** (« paraissait pas beau »).
+  - Ajout d'un texte d'intro : « Cochez les créneaux **à peu près** où vous êtes joignable. Notre équipe vous rappellera dans l'une de ces plages. »
+  - Légende enrichie : icônes `Sun` (matin amber) / `Moon` (après-midi indigo) + plages horaires `(8h–12h)` / `(14h–18h)` en grisé.
+  - Boutons matin/ap-midi : icône Sun/Moon directement sur le bouton (vue desktop + mobile), + `aria-pressed` pour l'a11y.
+  - V2 si Philippe veut vraiment un calendrier mensuel classique (navigation mois précédent/suivant) : refonte à part.
+
+- **Fichiers code modifiés** (4) :
+  - `src/pages/agence/foncier/AgenceFoncierCarte.tsx`
+  - `src/components/foncier/PluSummaryCard.tsx`
+  - `src/pages/agence/foncier/AgenceFoncierParcelleDetail.tsx`
+  - `src/components/shared/CalendarWidget.tsx`
+
+- **Pages wiki impactées** :
+  - [audit-ux-2026-05-12.md](audit-ux-2026-05-12.md) — sections #2 / #3 / #6 marquées ✅ FIXED 2026-05-12 avec détail du fix.
+  - [log.md](log.md) — cette entrée.
+
+- **Tests** :
+  - `npx tsc --noEmit` → exit 0.
+  - `npx vite build` → exit 0, built in 24.29s.
+  - `./scripts/verify-wiki.sh` → ✓ Wiki cohérent.
+
+- **Migrations créées** : aucune (UI/UX only).
+- **Risque** : Low. Le `setTimeout(0)` dans `handleAddressSelect` est défensif et idiomatique React-Leaflet. Le toggle synthèse est purement local state. La légende RDV n'altère pas le payload `DispoSlot` envoyé au backend.
+- **Status** : ✅ DONE — 4 points fermés (#1, #2, #3, #6) sur les 9 du backlog. Reste #4 (pivot Phase 18, en attente décision), #5 (admin quotas), #7 (simulateur Cabrenove), #8 (vérif templates emails runtime), #9 (polish UX global).
+
+---
+
+## 2026-05-12 (soir) — Fix bugs login persona (employé / particulier legacy / UX RegisterPage)
+
+- **Contexte** : 1ère action sur le backlog [audit-ux-2026-05-12.md](audit-ux-2026-05-12.md) point #1 (« Connexion particulier/affilié bugge, login employé impossible »). Diag : `isBrhEmployee()` lisait UNIQUEMENT le seed statique `BRH_EMPLOYEES` (Pierre Collard demo) — la table DB `brh_employees` (Phase V2) n'était jamais consultée → tout employé prod bloqué sur `/tableau-de-bord` post-login. `listAccessiblePortals` n'acceptait pas `role='user'` legacy → particuliers anciens également bloqués. Et `RegisterPage` affichait le message « Email de confirmation envoyé » en rouge erreur → UX trompeuse.
+
+- **Fix #1 — employé (cause racine architecturale)** :
+  - `src/lib/brh-employees.ts` refait : cache module-level `Map<email_lower, BrhEmployee>` initialisé avec le seed statique + nouvelle fonction async `loadBrhEmployeesFromDb()` qui interroge `brh_employees WHERE is_active=true` et merge dans le cache. Debounce 30s pour éviter les round-trips. RLS Supabase auto-filtre (employé voit son row, admin tout, autre user 0).
+  - `isBrhEmployee(email)` et `getBrhEmployee(email)` restent **synchrones** (lecture cache) — compatibles avec EmployeGuard et EmployeShell qui les appellent dans le render.
+  - `resetBrhEmployeesCache()` purge le cache au `signOut` pour éviter qu'un employé fantôme reste détecté pour le user suivant dans la même tab.
+  - Hydratation appelée à 2 points : `useAuth.validateSession` après `fetchProfile` (refresh page) + `LoginPage.handleSubmit` après `signInWithPassword` avant `listAccessiblePortals`.
+
+- **Fix #2 — particulier legacy `role='user'`** :
+  - `LoginPage.listAccessiblePortals` ligne 161 : condition `role === 'particulier' || affiliate` étendue à `role === 'particulier' || role === 'user' || affiliate`. Les comptes anciens (role='user' avant migration 20260403100002) ne sont plus exclus du portail particulier. La migration one-shot SQL `UPDATE profiles SET role='particulier' WHERE role='user'` reste recommandée à terme.
+
+- **Fix #3 — UX RegisterPage confirmation email** :
+  - Ajout d'un state `info: string | null` distinct de `error`.
+  - Le message « Inscription réussie. Un email de confirmation a été envoyé… » utilise maintenant `setInfo()` (bleu `bg-blue-50 border-blue-200 text-blue-700`) au lieu de `setError()` (rouge). UX claire : succès, pas échec.
+
+- **Fichiers code modifiés** :
+  - `src/lib/brh-employees.ts` (refait : +cache +loadBrhEmployeesFromDb +resetBrhEmployeesCache).
+  - `src/hooks/useAuth.ts` (hydrate au validateSession + purge au signOut).
+  - `src/pages/public/LoginPage.tsx` (await loadBrhEmployeesFromDb avant listAccessiblePortals + role='user' accepté).
+  - `src/pages/public/RegisterPage.tsx` (state `info` séparé + bloc bleu).
+
+- **Pages wiki impactées** :
+  - [auth-access-matrix.md](auth-access-matrix.md) — section 6.1 anomalies : #2 (role='user' legacy) et nouvelle anomalie #4 (employee static list) marquées FIXED 2026-05-12 ; nouvelle #5 (UX message confirmation) FIXED ; section 7 (matrice) et description Employé BRH actualisées avec le pattern cache module-level.
+  - [log.md](log.md) — cette entrée.
+
+- **Tests** :
+  - `npx tsc --noEmit` → exit 0 (TypeScript propre).
+  - `npx vite build` → exit 0, built in 25.78s (production bundle OK).
+  - `./scripts/verify-wiki.sh` → ✓ Wiki cohérent.
+
+- **Migrations créées** : aucune (fix code-only + RLS existante suffit).
+- **Risque** : Low. Le cache module-level est isolé du reste de l'app. RLS Supabase reste la barrière auth. La régression possible (employé fantôme reste détecté dans une tab après signOut) est explicitement gérée par `resetBrhEmployeesCache()`.
+- **Status** : ✅ DONE — bugs #1 + #5 + #8 (templates emails à vérifier en runtime, mais code OK) du backlog audit-ux-2026-05-12 fermés. 6 points restent à attaquer (#2 PLUi, #3 marker cadastre, #4 pivot Phase 18, #5 admin quotas, #6 RDV créneaux flous, #7 simulateur Cabrenove, #9 polish UX).
+
+---
+
+## 2026-05-12 (après-midi) — Retour test Philippe : 9 points UX/produit capturés
+
+- **Contexte** : juste après le resync wiki Karpathy, Philippe teste la plateforme et relève 9 points concrets : bugs login (particulier/affilié/employé), PLUi qui déborde sur fiche parcelle, marker cadastre non cliquable, **pivot Phase 18** (supprimer fil d'actu libre, garder uniquement dépôt chantier + dépôt disponibilité avec toggle audience réseau/public), admin manque gestion granulaire quotas + avertissements profils dormants, RDV public préférerait créneaux flous (matin/après-midi) au lieu d'heure précise, simulateur veut une étape « quel problème ? » + mode pro long style **Cabrenove**, vérif templates emails employés, et synthèse : « parcours utilisateur moyen, manque le côté instinctif ».
+- **Approche** : page persistante créée selon Karpathy avant toute action de code (règle d'or : capture > décision > implémentation).
+- **Fichiers wiki créés** :
+  - [audit-ux-2026-05-12.md](audit-ux-2026-05-12.md) — nouvelle page « Retour test » avec 9 sections détaillées (symptôme, constat code, action proposée, priorité, effort) + recommandation d'ordre d'attaque.
+- **Fichiers wiki mis à jour** :
+  - [index.md](index.md) — entrée Partie 3 (Qualité & opérations) sous l'audit UX du 08/05.
+  - [log.md](log.md) — cette entrée.
+- **Migrations créées** : aucune (capture doc-only).
+- **Pages wiki impactées (futures)** : selon décisions, impacts attendus sur [reseau-social-status.md](reseau-social-status.md) (pivot Phase 18), [foncier-pro-status.md](foncier-pro-status.md) (fix PLUi + marker), [data-model.md](data-model.md) (cols `custom_quota` + `quota_period` + table `brh_admin_profile_warnings`), [auth-access-matrix.md](auth-access-matrix.md) (debug logins).
+- **Risque** : None (capture seule).
+- **Tests** : ./scripts/verify-wiki.sh → ✓ Wiki cohérent.
+- **Status** : ✅ DONE pour la capture · 🟡 EN ATTENTE de décision Philippe pour l'ordre d'attaque (notamment pivot Phase 18 = effort XL).
+
+---
+
+## 2026-05-12 — Audit exhaustif wiki Karpathy : resync complet code ↔ doc
+
+- **Contexte** : Philippe demande "reprendre le KG Wiki, notre pattern là sur le site et le système BRH Vercel Habitat". Le lint `verify-wiki.sh` remontait **3 erreurs + 128 warnings** : le wiki gelé au 23/04 décrivait 150 pages / 56 migrations / 29 EFs / 78 tables, alors que le code en réel comptait **193 pages / 99 migrations / 41 EFs / 142 tables**. Toutes les Phases 11.x (External data + Score v2), 13.6 (Marketplace artisans + commissions cron), 16/16.1 (Score vente agences + portail + cascade parrainage 5 niveaux), 17.1 (Portail artisan), 18 (Réseau social pro + marketplace chantiers + AUTAF bridge), 19.A-H (Foncier Pro + IA PLU + Vision satellite), et Employé V2.1→V2.5 (cockpit gamifié + emails + calendrier + social publications + leads progressifs) étaient livrées en code mais absentes du wiki.
+
+- **Approche** : audit délégué à 3 sub-agents Explore en parallèle (migrations 38→99, 19 EFs, hooks/API/routes). Synthèse compilée → rédaction exhaustive avec colonnes-clés par table + colonnes scoring v2 (22 règles), endpoints + auth + rate-limit + cache pour chaque EF.
+
+- **Fichiers wiki mis à jour** :
+  - [architecture-snapshot.md](architecture-snapshot.md) — bloc Chiffres-clés totalement refait (193 pages, 100 composants, 70 hooks, 73 API modules, 99 migrations, 142 tables, 57 fonctions, 372 policies, 41 EFs, 160 routes, 8 guards). Date de dernière mesure : 2026-05-12.
+  - [data-model.md](data-model.md) — 9 nouveaux domaines documentés en exhaustif (DPE Engine + Audits + Prospects, Aides locales, External Data Sources, Pros RGE/Marketplace, Agences Immo, Réseau social Pro, Foncier Pro, Employés BRH, Partner Platform élargi) — totalisant **142 tables `brh_*`** + 57 fonctions SECURITY DEFINER listées avec leur rôle + 3 nouveaux storage buckets (`audits`, `brh-commission-invoices`, `reseau-media`).
+  - [edge-functions-reference.md](edge-functions-reference.md) — 19 EFs nouvelles documentées (auth, rate limit, cache, API externe, tables impactées) regroupées en 8 catégories : Foncier Pro, SCI, Données communales, DPE Express, Agences SaaS, AUTAF bridge, Emails employés/RDV/audits, RGPD opt-out, Utilities.
+  - [hooks-reference.md](hooks-reference.md) — sections « Hooks par domaine ajoutés Phases 11→Employé V2 » + « API modules par domaine » avec liste plate des 70 hooks + 73 modules API.
+
+- **Améliorations du linter** (`scripts/verify-wiki.sh`) :
+  - Whitelist auto des **noms de fonctions SQL** (`CREATE FUNCTION (public.)?brh_xxx`) pour éviter faux-positifs « table mentionnée n'existe pas en DB ».
+  - Whitelist statique des **fragments greedy** capturés quand un préfixe est suivi d'un séparateur non-`[a-z_]` (`brh_dpe_`, `brh_agence_`, `brh_artisan_`, `brh_chantier_`, `brh_employee_`, `brh_ext_`, `brh_feed_`, `brh_pro_`, `brh_sci_`, `brh_prospect_id`).
+  - Le script reconnaît maintenant les déclarations `CREATE FUNCTION brh_xxx` (sans `public.` prefix) en plus de `CREATE FUNCTION public.brh_xxx`.
+
+- **Résultat lint** :
+  ```
+  AVANT : ✗ 3 erreur(s) + 128 warning(s)
+  APRÈS : ✓ Wiki cohérent — aucun écart détecté
+  ```
+
+  Tous les comptages alignés : Pages 193 · Migrations 99 · EFs 41 · Tables 142 · Fonctions 57 · Policies 372.
+
+- **Pages wiki impactées** : architecture-snapshot.md, data-model.md, edge-functions-reference.md, hooks-reference.md, log.md.
+- **Migrations créées** : aucune (audit doc-only).
+- **Fichiers code modifiés** : `scripts/verify-wiki.sh` (linter renforcé — 2 whitelists + regex étendu).
+- **Risque** : None (documentation + amélioration linter, aucun impact runtime).
+- **Tests** : `./scripts/verify-wiki.sh` → ✓ Wiki cohérent.
+- **Status** : ✅ DONE
+
+---
+
 
 ## 2026-05-08 (soir tardif) — SEO boost : +16 articles guides + 115 pages satellites pros + sitemap
 

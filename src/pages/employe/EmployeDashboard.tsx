@@ -16,6 +16,7 @@ import {
   Target,
   Calendar,
   Zap,
+  Loader2,
 } from 'lucide-react'
 import { useMyEmployee } from '@/hooks/queries/brh-employees'
 import { LEVEL_LEADS_QUOTA, LEVEL_THRESHOLDS, type EmployeeLevel } from '@/api/brh-employees'
@@ -44,7 +45,11 @@ export default function EmployeDashboard() {
   const { data: employee, isLoading } = useMyEmployee()
 
   if (isLoading) {
-    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-emerald-200 border-t-emerald-700 rounded-full animate-spin" /></div>
+    return (
+      <div className="p-8 flex items-center justify-center">
+        <Loader2 size={28} className="text-slate-400 animate-spin" />
+      </div>
+    )
   }
   if (!employee) {
     return <div className="p-8">Employé non reconnu — contactez l'admin.</div>
@@ -145,6 +150,56 @@ export default function EmployeDashboard() {
           </div>
         )}
       </div>
+
+      {/* Hero CTA — action contextuelle #1 selon état de l'employé.
+         Cf audit-ux-2026-05-12 #9 : pros n'ont pas le temps, l'action #1
+         doit être immédiate (un commercial avec leads les traite ; sans leads
+         il en génère via mails). */}
+      {employee.leads_received_this_month > 0 ? (
+        <Link
+          to="/employe/leads"
+          className="mb-6 rounded-2xl border border-slate-900 bg-slate-900 text-white p-5 lg:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between hover:bg-slate-800 transition shadow-sm group"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+              <TrendingUp size={20} className="text-emerald-300" strokeWidth={2} />
+            </div>
+            <div>
+              <p className="font-display text-lg font-bold leading-tight">
+                {employee.leads_received_this_month} lead{employee.leads_received_this_month > 1 ? 's' : ''} attribué{employee.leads_received_this_month > 1 ? 's' : ''} ce mois
+              </p>
+              <p className="text-[13px] text-white/70 mt-0.5">
+                Contactez-les en priorité — chaque conversion fait monter votre niveau et débloque plus de leads
+              </p>
+            </div>
+          </div>
+          <span className="shrink-0 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-white text-slate-900 text-sm font-bold group-hover:bg-slate-100 transition">
+            Contacter mes leads →
+          </span>
+        </Link>
+      ) : (
+        <Link
+          to="/employe/mails"
+          className="mb-6 rounded-2xl border border-slate-900 bg-slate-900 text-white p-5 lg:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between hover:bg-slate-800 transition shadow-sm group"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+              <Mail size={20} className="text-blue-300" strokeWidth={2} />
+            </div>
+            <div>
+              <p className="font-display text-lg font-bold leading-tight">
+                Aucun lead attribué pour le moment
+              </p>
+              <p className="text-[13px] text-white/70 mt-0.5">
+                Envoyez des emails recrutement (+5 pts / envoi) pour monter en niveau et débloquer plus de leads
+              </p>
+            </div>
+          </div>
+          <span className="shrink-0 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-white text-slate-900 text-sm font-bold group-hover:bg-slate-100 transition">
+            Démarrer un email →
+          </span>
+        </Link>
+      )}
 
       {/* Actions à faire pour gagner des points */}
       <div className="bg-surface border border-border rounded-2xl p-6 mb-6">

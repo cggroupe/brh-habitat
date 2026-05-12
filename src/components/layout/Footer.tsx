@@ -60,6 +60,7 @@ export default function Footer() {
               {[
                 { to: '/', label: 'Accueil' },
                 { to: '/services', label: 'Nos services' },
+                { to: '/simulateur', label: 'Simulateur énergie' },
                 { to: '/diagnostic', label: 'Diagnostic gratuit' },
                 { to: '/articles', label: 'Guides & Conseils' },
                 { to: '/contact', label: 'Contact' },

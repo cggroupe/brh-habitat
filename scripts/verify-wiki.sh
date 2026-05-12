@@ -161,16 +161,30 @@ if [ -f "$DM" ]; then
   done
 
   # Tables dans wiki mais pas dans code (mentions suspectes)
-  # Whitelist : tables explicitement signalées comme n'existant pas (ex: brh_admin_emails)
+  # Whitelist statique : tables explicitement signalées comme n'existant pas
   WIKI_WHITELIST=("brh_admin_emails")
+  # Whitelist dynamique : noms de fonctions SQL (CREATE FUNCTION public.brh_xxx)
+  # — évite de confondre fonctions mentionnées dans le wiki avec des tables fantômes
+  REAL_FUNCTIONS_LIST=$(grep -hE "CREATE (OR REPLACE )?FUNCTION (public\.)?brh_" supabase/migrations/*.sql 2>/dev/null | grep -oE "brh_[a-z_]+" | sort -u)
+  # Whitelist de fragments fréquents (préfixes capturés greedy quand suivis d'un séparateur non-[a-z_])
+  WIKI_FRAGMENT_WHITELIST=("brh_dpe_" "brh_agence_" "brh_artisan_" "brh_chantier_" "brh_employee_" "brh_ext_" "brh_feed_" "brh_pro_" "brh_sci_" "brh_prospect_id")
   WIKI_TABLES_LIST=$(grep -oE "brh_[a-z_]+" "$DM" | sort -u)
   for t in $WIKI_TABLES_LIST; do
-    # Skip whitelist
+    # Skip whitelist statique
     skip=false
     for w in "${WIKI_WHITELIST[@]}"; do
       [ "$t" = "$w" ] && skip=true && break
     done
     $skip && continue
+    # Skip fragments génériques (préfixes capturés greedy)
+    for w in "${WIKI_FRAGMENT_WHITELIST[@]}"; do
+      [ "$t" = "$w" ] && skip=true && break
+    done
+    $skip && continue
+    # Skip si c'est un nom de fonction SQL réelle
+    if echo "$REAL_FUNCTIONS_LIST" | grep -q "^$t$"; then
+      continue
+    fi
     if ! echo "$REAL_TABLES_LIST" | grep -q "^$t$"; then
       warn "Table '$t' mentionnée dans data-model.md mais n'existe pas en DB"
     fi

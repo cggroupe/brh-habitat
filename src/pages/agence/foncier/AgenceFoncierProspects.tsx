@@ -12,7 +12,7 @@
  */
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ClipboardList } from 'lucide-react'
+import { ClipboardList, Search } from 'lucide-react'
 import { useFoncierProspectsTable } from '@/hooks/queries/foncier-prospects-table'
 import type {
   CouleurMpr,
@@ -377,8 +377,34 @@ export default function AgenceFoncierProspects() {
               })}
               {rows.length === 0 && !isLoading && (
                 <tr>
-                  <td colSpan={13} className="px-3 py-12 text-center text-slate-500">
-                    Aucun prospect ne correspond à ces filtres.
+                  <td colSpan={13} className="px-3 py-16 text-center">
+                    <div className="max-w-sm mx-auto space-y-3">
+                      <div className="w-12 h-12 mx-auto rounded-full bg-slate-100 flex items-center justify-center">
+                        <Search size={20} className="text-slate-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800">Aucun prospect ne correspond</p>
+                        <p className="text-xs text-slate-500 mt-1">Les filtres actuels sont peut-être trop restrictifs. Essayez d'élargir la zone, le segment ou le score minimum.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDept('')
+                          setSegment('')
+                          setScoreMin(40)
+                          setCouleurMpr('')
+                          setOpahOnly(false)
+                          setRgaFortOnly(false)
+                          setTlvTendueOnly(false)
+                          setAuditsDynaOnly(false)
+                          setSearch('')
+                          setPage(0)
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition"
+                      >
+                        Réinitialiser les filtres
+                      </button>
+                    </div>
                   </td>
                 </tr>
               )}

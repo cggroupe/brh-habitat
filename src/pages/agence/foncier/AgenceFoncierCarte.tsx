@@ -110,7 +110,9 @@ export default function AgenceFoncierCarte() {
   const [bbox, setBbox] = useState<{ minLat: number; minLng: number; maxLat: number; maxLng: number; zoom: number } | null>(null)
 
   // Phase 11.1 — filtres scoring v2 (Filosofi + Enedis + Géorisques + ANAH + Sit@del2 + Recensement)
-  const [scoreV2Min, setScoreV2Min] = useState<number>(0)
+  // Défaut à 40 plutôt que 0 : les prospects sous-40 sont rarement actionnables
+  // commercialement, et 0 inonde la carte de markers gris (cf audit-ux-2026-05-12 #9).
+  const [scoreV2Min, setScoreV2Min] = useState<number>(40)
   const [segmentV2, setSegmentV2] = useState<'ultra_chaud' | 'mpr_bleu_prio' | 'standard' | ''>('')
   // Phase 11.3 — filtres flags commune (OPAH / RGA fort / zone tendue / dynamisme audits)
   const [opahOnly, setOpahOnly] = useState(false)
@@ -175,13 +177,18 @@ export default function AgenceFoncierCarte() {
     setSearchMarker(point)
     setMapCenter([point.lat, point.lng])
     setMapZoom(18)
-    // Auto-fetch parcelle au point sélectionné
+    // Auto-fetch parcelle au point sélectionné. Le popup du marker est ouvert
+    // explicitement APRÈS que selectedParcelles soit set (sinon timing race :
+    // popup ouvert vide « Chargement… », user ferme avant la fiche complète,
+    // doit re-cliquer sur le polygone — cf audit-ux-2026-05-12 bug #3).
     fetchParcelle.mutate(
       { lat: point.lat, lng: point.lng },
       {
         onSuccess: (res) => {
           if (res.parcelles.length > 0) {
             setSelectedParcelles(res.parcelles)
+            // Tick suivant pour laisser React commit le marker avant openPopup.
+            setTimeout(() => searchMarkerRef.current?.openPopup(), 0)
           }
         },
       },
@@ -421,6 +428,15 @@ export default function AgenceFoncierCarte() {
                 position={[searchMarker.lat, searchMarker.lng]}
                 icon={defaultIcon}
                 ref={(r) => { searchMarkerRef.current = r }}
+                eventHandlers={{
+                  click: () => {
+                    // Force l'ouverture du popup au click sur l'aiguille.
+                    // Sans ça Leaflet ouvre/ferme en toggle et l'user qui
+                    // re-clique pense que le marker ne réagit pas
+                    // (cf audit-ux-2026-05-12 bug #3).
+                    searchMarkerRef.current?.openPopup()
+                  },
+                }}
               >
                 <Popup minWidth={280} maxWidth={360}>
                   <div className="text-xs space-y-2">

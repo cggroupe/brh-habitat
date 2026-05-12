@@ -22,8 +22,8 @@
 import { NavLink, Outlet, Link } from 'react-router-dom'
 import {
   Home,
-  Map,
   Briefcase,
+  CalendarCheck,
   Users,
   MessageSquare,
   Link2,
@@ -43,10 +43,13 @@ interface NavItemDef {
   end?: boolean
 }
 
+// Phase 18 v2 (pivot 12/05/2026, audit-ux-2026-05-12 #4) : le fil d'actualité libre
+// et la page « Découvrir » sont retirés. Le réseau sert UNIQUEMENT à 2 actions :
+// publier un chantier OU signaler une dispo.
 const RESEAU_NAV: NavItemDef[] = [
-  { to: '/reseau', label: 'Fil d\'actualité', icon: Home, end: true },
-  { to: '/reseau/decouvrir', label: 'Découvrir', icon: Map },
+  { to: '/reseau', label: 'Publier', icon: Home, end: true },
   { to: '/reseau/chantiers', label: 'Chantiers', icon: Briefcase },
+  { to: '/reseau/disponibilites', label: 'Disponibilités', icon: CalendarCheck },
   { to: '/reseau/connexions', label: 'Connexions', icon: Users },
   { to: '/reseau/messages', label: 'Messages', icon: MessageSquare },
   { to: '/reseau/parametres/autaf', label: 'Bridge AUTAF', icon: Link2 },

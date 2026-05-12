@@ -29,6 +29,11 @@ import HomePage from '@/pages/public/HomePage'
 const DiagnosticPage = lazy(() => import('@/pages/public/DiagnosticPage'))
 const DiagnosticExpressPage = lazy(() => import('@/pages/public/DiagnosticExpressPage'))
 const DiagnosticResultsPage = lazy(() => import('@/pages/public/DiagnosticResultsPage'))
+// Simulateur particulier (hub + flow problème + wizard complet 25-30 min).
+// Cf audit-ux-2026-05-12 #7 — porté depuis le moteur 3CL-DPE déjà livré.
+const SimulateurPage = lazy(() => import('@/pages/public/Simulateur'))
+const SimulateurProblemePage = lazy(() => import('@/pages/public/SimulateurProbleme'))
+const SimulateurCompletPage = lazy(() => import('@/pages/public/SimulateurComplet'))
 const ArticlesPage = lazy(() => import('@/pages/public/ArticlesPage'))
 const ArticlePage = lazy(() => import('@/pages/public/ArticlePage'))
 const ContactPage = lazy(() => import('@/pages/public/ContactPage'))
@@ -85,6 +90,7 @@ const AdminCommissionsArtisans = lazy(() => import('@/pages/admin/AdminCommissio
 const AdminCommissions = lazy(() => import('@/pages/admin/AdminCommissions'))
 const AdminCatalogue = lazy(() => import('@/pages/admin/AdminCatalogue'))
 const AdminParametres = lazy(() => import('@/pages/admin/AdminParametres'))
+const AdminQuotas = lazy(() => import('@/pages/admin/AdminQuotas'))
 
 // Lazy loaded pages — Pro
 const ProDashboard = lazy(() => import('@/pages/pro/ProDashboard'))
@@ -131,12 +137,16 @@ const ArtisanReseauxSociaux = lazy(() => import('@/pages/artisan/ArtisanReseauxS
 const ArtisanQRCode = lazy(() => import('@/pages/artisan/ArtisanQRCode'))
 const ArtisanProgression = lazy(() => import('@/pages/artisan/ArtisanProgression'))
 // Phase 18.4 — Réseau social pro (transverse 4 personae)
-const ReseauFeed = lazy(() => import('@/pages/reseau/ReseauFeed'))
+// Phase 18 v2 (pivot 12/05/2026) : ReseauFeed et ReseauDecouvrir conservés
+// dans le repo pour réversibilité mais retirés du router. Le hub `/reseau`
+// est maintenant ReseauHub (page d'action structurée : publier chantier OU dispo).
+const ReseauHub = lazy(() => import('@/pages/reseau/ReseauHub'))
 const ReseauProfil = lazy(() => import('@/pages/reseau/ReseauProfil'))
-const ReseauDecouvrir = lazy(() => import('@/pages/reseau/ReseauDecouvrir'))
 const ReseauChantiers = lazy(() => import('@/pages/reseau/ReseauChantiers'))
 const ReseauChantierNew = lazy(() => import('@/pages/reseau/ReseauChantierNew'))
 const ReseauChantierDetail = lazy(() => import('@/pages/reseau/ReseauChantierDetail'))
+const ReseauDisponibilites = lazy(() => import('@/pages/reseau/ReseauDisponibilites'))
+const ReseauDisponibiliteNew = lazy(() => import('@/pages/reseau/ReseauDisponibiliteNew'))
 const ReseauAbonnement = lazy(() => import('@/pages/reseau/ReseauAbonnement'))
 const ReseauConnexions = lazy(() => import('@/pages/reseau/ReseauConnexions'))
 const ReseauMessages = lazy(() => import('@/pages/reseau/ReseauMessages'))
@@ -223,6 +233,10 @@ export default function App() {
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/diagnostic" element={<DiagnosticPage />} />
               <Route path="/diagnostic-express" element={<DiagnosticExpressPage />} />
+              {/* Simulateur particulier — hub + flow problème + wizard complet (audit-ux-2026-05-12 #7) */}
+              <Route path="/simulateur" element={<SimulateurPage />} />
+              <Route path="/simulateur/probleme" element={<SimulateurProblemePage />} />
+              <Route path="/simulateur/complet" element={<SimulateurCompletPage />} />
               {/* Phase 13.6.5 — Magic link onboarding artisan (public, magic link Supabase) */}
               <Route path="/artisan/onboarding/:token" element={<ArtisanOnboarding />} />
               <Route path="/diagnostic/resultats/local" element={<DiagnosticResultsPage />} />
@@ -290,16 +304,20 @@ export default function App() {
                 /reseau/profil/:slug reste public-friendly (vitrine) — utilise PublicShell. */}
             <Route element={<ReseauGuard />}>
               <Route element={<ReseauPortalShell />}>
-                <Route path="/reseau" element={<ReseauFeed />} />
-                <Route path="/reseau/decouvrir" element={<ReseauDecouvrir />} />
+                {/* Hub action (Phase 18 v2) — remplace l'ancien feed libre. */}
+                <Route path="/reseau" element={<ReseauHub />} />
                 <Route path="/reseau/chantiers" element={<ReseauChantiers />} />
                 <Route path="/reseau/chantiers/nouveau" element={<ReseauChantierNew />} />
                 <Route path="/reseau/chantiers/:id" element={<ReseauChantierDetail />} />
+                <Route path="/reseau/disponibilites" element={<ReseauDisponibilites />} />
+                <Route path="/reseau/disponibilites/nouvelle" element={<ReseauDisponibiliteNew />} />
                 <Route path="/reseau/connexions" element={<ReseauConnexions />} />
                 <Route path="/reseau/messages" element={<ReseauMessages />} />
                 <Route path="/reseau/parametres/autaf" element={<ReseauParamsAutaf />} />
                 <Route path="/reseau/profil/:slug" element={<ReseauProfil />} />
                 <Route path="/reseau/abonnement" element={<ReseauAbonnement />} />
+                {/* Redirects rétrocompat depuis Phase 18 v1 (feed libre supprimé). */}
+                <Route path="/reseau/decouvrir" element={<Navigate to="/reseau" replace />} />
               </Route>
             </Route>
 
@@ -378,6 +396,7 @@ export default function App() {
                 <Route path="/admin/commissions" element={<AdminCommissions />} />
                 <Route path="/admin/catalogue" element={<AdminCatalogue />} />
                 <Route path="/admin/parametres" element={<AdminParametres />} />
+                <Route path="/admin/quotas" element={<AdminQuotas />} />
                 <Route path="/admin/publications" element={<AdminPublications />} />
               </Route>
             </Route>

@@ -7,6 +7,7 @@
  */
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { toast } from 'sonner'
 import {
   ClipboardList,
   Loader,
@@ -137,16 +138,26 @@ export default function AgenceLeads() {
 
   async function handleLogAttempt() {
     if (!selectedLead) return
-    await logAttemptMut.mutateAsync({ id: selectedLead.id, outcome, notes })
-    setLogOpen(false)
-    setNotes('')
+    try {
+      await logAttemptMut.mutateAsync({ id: selectedLead.id, outcome, notes })
+      toast.success('Tentative enregistrée')
+      setLogOpen(false)
+      setNotes('')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Impossible d\'enregistrer')
+    }
   }
 
   async function handleRelease() {
     if (!selectedLead) return
     if (!confirm('Libérer ce lead ? Il pourra être claim par une autre agence.')) return
-    await releaseMut.mutateAsync(selectedLead.id)
-    closeStudy()
+    try {
+      await releaseMut.mutateAsync(selectedLead.id)
+      toast.success('Lead libéré — disponible pour les autres agences')
+      closeStudy()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Impossible de libérer le lead')
+    }
   }
 
   return (

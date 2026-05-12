@@ -1,25 +1,30 @@
 /**
- * Liste des employés BRH (V1 — registre statique).
+ * Registre employés BRH — V2 : cache hydraté depuis la table DB `brh_employees`
+ * (Phase Employé V1+V2.1→V2.5, migration `20260706700000_brh_employees_foundation`).
  *
- * Plus tard : remplacer par une table `brh_employees` en DB avec :
- *   - profile_id (FK profiles)
- *   - role_label (ex: 'commercial', 'opérationnel', 'direction')
- *   - calendar_url (lien Calendly ou table brh_employee_calendar)
- *   - signature_html (signature email personnalisée)
- *   - activity_score (calculé auto via brh_employee_actions)
- *   - active (bool)
+ * Schéma DB : profile_id (FK profiles), full_name, email UNIQUE, role_label,
+ * activity_score INTEGER (trigger auto via brh_employee_actions),
+ * activity_level CHECK (standard|pro|expert|master), is_active BOOLEAN, etc.
  *
- * Pour l'instant : check par email. Permet de basculer Pierre Collard
- * et toute future personne BRH sur EmployeShell sans migration DB.
+ * Le cache module-level est hydraté par `loadBrhEmployeesFromDb()` :
+ *   - au refresh de session (useAuth.validateSession)
+ *   - après signInWithPassword (LoginPage)
+ *
+ * `isBrhEmployee` / `getBrhEmployee` restent SYNC (lecture cache) pour rester
+ * compatibles avec EmployeGuard et EmployeShell qui les appellent dans le render.
+ *
+ * Le seed statique (BRH_EMPLOYEES) sert de fallback pour dev/test local quand
+ * la DB n'est pas reachable, et garantit que Pierre Collard demo reste détecté
+ * même si le cache n'a pas encore été hydraté.
  */
+
+import { supabase } from '@/lib/supabase'
 
 export interface BrhEmployee {
   email: string
   full_name: string
   role_label: string
-  /** Score d'activité fake pour V1 — à remplacer par calcul DB */
   activity_score: number
-  /** Niveau dérivé du score : standard / pro / expert / master */
   activity_level: 'standard' | 'pro' | 'expert' | 'master'
 }
 
@@ -31,21 +36,78 @@ export const BRH_EMPLOYEES: BrhEmployee[] = [
     activity_score: 42,
     activity_level: 'standard',
   },
-  // Ajouter les autres employés ici quand ils seront onboardés
 ]
+
+// Cache module-level — clé = email lowercase, valeur = employé.
+// Initialisé avec le seed statique, étendu par loadBrhEmployeesFromDb().
+const _cache = new Map<string, BrhEmployee>(
+  BRH_EMPLOYEES.map((e) => [e.email.toLowerCase(), e]),
+)
+
+let _lastLoadedAt = 0
+const LOAD_DEBOUNCE_MS = 30_000
+
+/**
+ * Charge la liste des employés actifs depuis la table `brh_employees` et hydrate
+ * le cache module-level. Idempotent + debounced (30s) pour éviter les rounds-trips
+ * inutiles si appelé plusieurs fois en parallèle.
+ *
+ * Les RLS de `brh_employees` limitent ce que chaque user peut lire :
+ *   - employé : son propre row
+ *   - admin   : tous les rows
+ * Le cache reçoit donc {0, 1+} rows selon la persona — suffisant pour `isBrhEmployee`
+ * (qui ne s'intéresse qu'à savoir si l'email courant est un employé).
+ *
+ * À appeler après login et après validateSession. Sans-op si appel < 30s.
+ */
+export async function loadBrhEmployeesFromDb(): Promise<void> {
+  const now = Date.now()
+  if (now - _lastLoadedAt < LOAD_DEBOUNCE_MS) return
+  _lastLoadedAt = now
+
+  const { data, error } = await supabase
+    .from('brh_employees')
+    .select('email, full_name, role_label, activity_score, activity_level')
+    .eq('is_active', true)
+
+  if (error) return
+  if (!data) return
+
+  for (const row of data) {
+    const key = String(row.email ?? '').toLowerCase()
+    if (!key) continue
+    _cache.set(key, {
+      email: row.email as string,
+      full_name: (row.full_name as string) ?? '',
+      role_label: (row.role_label as string) ?? 'Employé BRH',
+      activity_score: (row.activity_score as number) ?? 0,
+      activity_level: (row.activity_level as BrhEmployee['activity_level']) ?? 'standard',
+    })
+  }
+}
+
+/**
+ * Vide le cache (à appeler au signOut pour éviter qu'un employé "fantôme"
+ * reste détecté pour le user suivant qui se logge dans la même tab).
+ */
+export function resetBrhEmployeesCache(): void {
+  _cache.clear()
+  for (const e of BRH_EMPLOYEES) _cache.set(e.email.toLowerCase(), e)
+  _lastLoadedAt = 0
+}
 
 /**
  * Retourne true si l'utilisateur est un employé BRH (par email).
- * Utilisé par EmployeGuard et le LoginPage workspace switcher.
+ * Lit le cache module-level. Synchronous — pour EmployeGuard / EmployeShell.
  */
 export function isBrhEmployee(email: string | null | undefined): boolean {
   if (!email) return false
-  return BRH_EMPLOYEES.some((e) => e.email.toLowerCase() === email.toLowerCase())
+  return _cache.has(email.toLowerCase())
 }
 
 export function getBrhEmployee(email: string | null | undefined): BrhEmployee | null {
   if (!email) return null
-  return BRH_EMPLOYEES.find((e) => e.email.toLowerCase() === email.toLowerCase()) ?? null
+  return _cache.get(email.toLowerCase()) ?? null
 }
 
 /**

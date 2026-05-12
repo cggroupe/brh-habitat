@@ -1,7 +1,8 @@
 /**
  * Phase 19 Sprint D — Carte résumé PLUi (Claude Sonnet 4.6).
  */
-import { Building, Sparkles, Loader2, RefreshCcw, AlertCircle, ExternalLink } from 'lucide-react'
+import { useState } from 'react'
+import { Building, Sparkles, Loader2, RefreshCcw, AlertCircle, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react'
 import { useCachedPlu, useSummarizePlu } from '@/hooks/queries/foncier-ia'
 
 interface PluSummaryCardProps {
@@ -12,6 +13,9 @@ interface PluSummaryCardProps {
 export default function PluSummaryCard({ codeInsee, compact = false }: PluSummaryCardProps) {
   const cached = useCachedPlu(codeInsee)
   const summarize = useSummarizePlu()
+  // Synthèse longue collapsée par défaut (sinon déborde la sidebar étroite —
+  // cf audit-ux-2026-05-12 bug #2 « Résumé PLUi qui déborde »).
+  const [syntheseExpanded, setSyntheseExpanded] = useState(false)
 
   const plu = cached.data
 
@@ -103,12 +107,26 @@ export default function PluSummaryCard({ codeInsee, compact = false }: PluSummar
         </button>
       </div>
 
-      {/* Synthèse */}
-      {s.synthese && (
-        <p className="text-xs text-slate-700 leading-relaxed bg-violet-50/40 p-2 rounded-lg italic">
-          "{s.synthese}"
-        </p>
-      )}
+      {/* Synthèse — collapse au-delà de 220 chars pour ne pas déborder la sidebar */}
+      {s.synthese && (() => {
+        const isLong = s.synthese.length > 220
+        const shown = isLong && !syntheseExpanded ? s.synthese.slice(0, 200).trimEnd() + '…' : s.synthese
+        return (
+          <div className="bg-violet-50/40 p-2 rounded-lg">
+            <p className="text-xs text-slate-700 leading-relaxed italic">"{shown}"</p>
+            {isLong && (
+              <button
+                type="button"
+                onClick={() => setSyntheseExpanded((v) => !v)}
+                className="mt-1.5 inline-flex items-center gap-0.5 text-[10px] font-semibold text-violet-700 hover:text-violet-900 transition"
+              >
+                {syntheseExpanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+                {syntheseExpanded ? 'Réduire' : 'Voir la synthèse complète'}
+              </button>
+            )}
+          </div>
+        )
+      })()}
 
       {/* Zones principales */}
       {s.zones_principales && s.zones_principales.length > 0 && (

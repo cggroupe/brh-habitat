@@ -510,13 +510,26 @@ export default function AgenceContributions() {
             <Loader className="animate-spin text-emerald-600" />
           </div>
         ) : contributions.length === 0 ? (
-          <div className="bg-white border border-neutral-light rounded-xl p-8 text-center">
-            <TrendingUp size={28} className="mx-auto mb-2 text-text-light" />
-            <p className="text-text-secondary font-medium">Aucune contribution pour le moment</p>
-            <p className="text-xs text-text-light mt-1">
-              Référez votre 1er vendeur intéressé par la rénovation pour passer Bronze → Argent
-              (3 chantiers signés)
+          <div className="bg-white border border-neutral-light rounded-xl p-10 text-center">
+            <div className="w-14 h-14 mx-auto rounded-full bg-emerald-50 flex items-center justify-center mb-3">
+              <TrendingUp size={26} className="text-emerald-600" />
+            </div>
+            <p className="text-base font-bold text-text">Aucune contribution pour le moment</p>
+            <p className="text-sm text-text-secondary mt-1.5 max-w-md mx-auto">
+              Référez un vendeur intéressé par la rénovation et faites passer votre agence
+              <strong className="text-emerald-700"> Bronze → Argent</strong> (3 chantiers signés).
             </p>
+            <button
+              type="button"
+              onClick={() => {
+                setFormOpen(true)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition"
+            >
+              <TrendingUp size={14} />
+              Apporter ma 1ère contribution
+            </button>
           </div>
         ) : (
           <div className="space-y-2">

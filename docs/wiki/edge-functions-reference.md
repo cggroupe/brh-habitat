@@ -1,7 +1,7 @@
 # BRH Habitat — Edge Functions Reference
 
-> Source : `supabase/functions/`.
-> **Dernière mesure** : 2026-05-02 · **Total** : 24 fonctions + `_shared/` (+ Phase 13.6.7.2 `send-commission-invoice`).
+> Source : `supabase/functions/` + lint `scripts/verify-wiki.sh`.
+> **Dernière mesure** : 2026-05-12 · **Total** : **41 fonctions** + `_shared/` (post Phases 16→19 + Employé V2 + Foncier Pro IA).
 
 ## Convention globale
 
@@ -148,6 +148,74 @@ Stratégie hybride : **Clerk** gère l'UI d'authentification, **Supabase** garde
 - Expiry 30 jours (auto-marqué `expired` au prochain verify post-deadline)
 - 1 artisan ne peut être lié qu'à 1 seul `profile_id` (UNIQUE constraint)
 - Helper SQL avec `FOR UPDATE` lock + `SECURITY DEFINER` + `SET search_path = ''`
+
+### 🏠 Foncier Pro — Phase 19 (4)
+
+Cadastre + IA PLU + Vision satellite + cache parcelles. Voir [foncier-pro-status.md](foncier-pro-status.md).
+
+| Fonction | Rôle | Auth | Rate limit | Cache |
+|----------|------|------|------------|-------|
+| `cadastre-fetch` | Parcelles IGN api-carto (3 modes : par IDU, INSEE+section+numéro, GPS) | JWT | 60 req/min | 90j (`brh_parcelles_cache`) |
+| `permis-fetch` | Permis construire Sit@del2 (cache-only V1 ; ingestion CSV ~500 MB = script standalone mensuel) | JWT | 60 req/min | DB-only |
+| `plu-summarize-ai` | PLU résumé via Claude Sonnet 4.6 (PDF GPU → JSONB zones + ABF + mentions). HEAD check 32 MB max → 413 sinon. | JWT | 10 req/min | 180j (`brh_plu_summaries`) — ~0.01-0.03 €/résumé |
+| `satellite-vision-ai` | Analyse toiture aérienne BD ORTHO IGN (WMS crop 768×768 jpeg) → Claude Sonnet 4.6 vision → roof_area, orientation, tilt, tree_shade, solar_potential_kwh_year | JWT | 15 req/min | 365j (`brh_satellite_analyses`) — ~0.02-0.04 €/analyse |
+
+### 🏢 SCI & Successions — Phase 19.B (2)
+
+| Fonction | Rôle | Auth | Rate limit | API externe |
+|----------|------|------|------------|-------------|
+| `sci-search` | Recherche entreprises gratuit (`recherche-entreprises.api.gouv.fr`) — mode SIREN exact ou query libre filtré nature_juridique=6540,6541,6543,6551, etat_administratif=A. Fire-and-forget matching décès pour dirigeants ≥60 ans via `EdgeRuntime.waitUntil`. | JWT | 30 req/min | recherche-entreprises (cache 30j `brh_sci_companies`) |
+| `sci-deces-match` | Matching décès gratuit (`deces.matchid.io`) sur chaque dirigeant → update `est_decede` + `latest_deces_date`. RPC `brh_sci_recompute_succession_score`. | JWT | 20 req/min | matchid.io (live, audit trail `brh_sci_deces_matches`) |
+
+### 🌍 Données communales Phase 19.C+E (3)
+
+| Fonction | Rôle | Auth | Rate limit | Cache |
+|----------|------|------|------------|-------|
+| `commune-sociodemo-fetch` | geo.api.gouv.fr (décimalage, population, épci) + RPC `brh_dvf_commune_stats` (gentrification score) | JWT | 30 req/min | 90j (`brh_communes_sociodemo`) |
+| `georisques-fetch` | API `georisques.gouv.fr/api/v1/resultats_rapport_risque` (risques naturels + technologiques, gratuit illimité) | JWT | 60 req/min | 90j (`brh_ext_cache`) |
+| `bodacc-fetch` | BODACC datadila opendatasoft (ventes commerciales, procédures collectives, radiations RCS) — filtre INSEE/dept/famille/days_back | JWT | 30 req/min | 7j (`brh_bodacc_alerts` upsert) |
+
+### 🎯 DPE Express — Phase 11 lead capture (2)
+
+Captures rapides depuis pages publiques diagnostic-express + simulateur public.
+
+| Fonction | Rôle | Auth | Rate limit |
+|----------|------|------|------------|
+| `dpe-express-create-lead` | INSERT `brh_prospects` (service_role bypass RLS anonymes), lead_score computed (30 base + bonus email/address/budget/urgency), attribution UTM/gclid/fbclid dans notes | Optionnel (anon ou JWT) | 3 req/min/IP |
+| `dpe-express-lookup` | Proxy stateless du simulateur `/api/dpe-virtuel` (FastAPI 8915) pour bypass CORS | Public | 30 req/min |
+
+### 💎 Agences SaaS — Phase 16 (2)
+
+| Fonction | Rôle | Auth | Rate limit | API externe |
+|----------|------|------|------------|-------------|
+| `agence-checkout` | Stripe Checkout subscription pour upgrade tier (standard/premium/expert). Métadonnées `agence_id`, `tier`, `subscription_id`. Preview-safe (503 si `STRIPE_SECRET_KEY` absent). | JWT | 10 req/min | Stripe `/v1/checkout/sessions` |
+| `monthly-audit-agencies` | Cron MENSUELLE (header `x-brh-admin-token`, **pas JWT**) — RPC `brh_generate_monthly_audits(p_audit_month)` sample 5% leads contactés → emails Resend best-effort (V1 emails reportés jusqu'à `brh_proprietaires` Phase 16.x) | Admin token | n/a | Resend (optionnel) |
+
+### 🔗 AUTAF Bridge — Phase 18.8 (1)
+
+| Fonction | Rôle | Auth | Rate limit | API externe |
+|----------|------|------|------------|-------------|
+| `autaf-recommendations-fetch` | Fetch recommandations AUTAF live via token OAuth chiffré (Bearer). Update `brh_autaf_link.last_error` + `last_sync_at`. Retourne `bridge_inactive` / `scope_missing` / `autaf_unavailable` gracieusement. | JWT | 60 req/min | `autaf.fr/wp-json/autaf/v1/recommendations/{id}` |
+
+### 📧 Emails employés / RDV / audits — Phase Employé V2 (3)
+
+| Fonction | Rôle | Auth | Rate limit |
+|----------|------|------|------------|
+| `send-recruitment-email` | Recharge employé (vérif `brh_employees.is_active=true`) + template `brh_email_templates.slug` + render variables → Resend → INSERT `brh_email_sends` + INSERT `brh_employee_actions` (+5 pts gamification) | JWT (employé actif) | 30 req/min |
+| `send-audit-email` | Vérif caller = `brh_audits.pro_user_id` ou admin → signed URL 30j PDF Storage `audits/{auditId}/audit.pdf` → Resend HTML (template DPE couleur A-G + CEP kWh) → log `brh_audit_emails` | JWT | 5 req/min |
+| `send-rdv-confirmation` | Fire-and-forget depuis ContactRdvModal — envoie email CLIENT (récap créneaux) + email ADMIN (tableau détails). RESEND_API_KEY absent = warn log, ne bloque pas appointment. | Public | 5 req/min/IP |
+
+### 🛡️ RGPD opt-out (1)
+
+| Fonction | Rôle | Auth | Rate limit |
+|----------|------|------|------------|
+| `submit-optout` | Capture source_ip + user_agent (preuve eIDAS) → best-effort match `brh_dpe_prospects` (code_postal+commune) → INSERT `brh_optout_requests` (RLS anon allowed) → email confirmation best-effort. Deadline +30j (Art. 21 RGPD). | Public | 5 req/IP/heure |
+
+### 🛠️ Utilities (1)
+
+| Fonction | Rôle | Auth | Rate limit | Cache |
+|----------|------|------|------------|-------|
+| `fetch-fx-rate` | Taux change USD→EUR via `api.frankfurter.app` (ECB rates) pour pricing Anthropic EUR. Fallback 0.92 si API down. | Public | 60 req/min | 24h (`brh_ext_cache` source='frankfurter_fx') |
 
 ## Variables d'environnement
 

@@ -27,6 +27,7 @@ export default function RegisterPage() {
   const [form, setForm] = useState({ fullName: '', email: '', phone: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [info, setInfo] = useState<string | null>(null)
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
@@ -36,6 +37,7 @@ export default function RegisterPage() {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    setInfo(null)
 
     if (!form.fullName || !form.email || !form.password) {
       setError('Tous les champs marques * sont obligatoires.'); setLoading(false); return
@@ -52,9 +54,11 @@ export default function RegisterPage() {
       if (authError) { setError(mapAuthError(authError.message)); setLoading(false); return }
       if (!data.user) { setError('Inscription impossible, reessayez.'); setLoading(false); return }
 
-      // Si confirmation email requise (data.session null) : afficher message
+      // Si confirmation email requise (data.session null) : message INFO (pas erreur).
+      // Avant ce fix, le message s'affichait en rouge erreur — UX faisait croire à
+      // un bug d'inscription. Cf audit-ux-2026-05-12 bug #1 particulier/affilié.
       if (!data.session) {
-        setError(`Un email de confirmation a ete envoye a ${form.email}. Cliquez sur le lien pour activer votre compte puis connectez-vous.`)
+        setInfo(`Inscription réussie. Un email de confirmation a été envoyé à ${form.email}. Cliquez sur le lien pour activer votre compte puis connectez-vous.`)
         setLoading(false)
         return
       }
@@ -99,6 +103,9 @@ export default function RegisterPage() {
 
           {error && (
             <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 font-body">{error}</div>
+          )}
+          {info && (
+            <div className="mb-6 px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-700 font-body">{info}</div>
           )}
 
           <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">

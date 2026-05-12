@@ -1,29 +1,29 @@
-# BRH Habitat — Snapshot architecture (2026-05-04)
+# BRH Habitat — Snapshot architecture (2026-05-12)
 
-> Source : `ARCHITECTURE.md` (audit v7 du 2026-04-14) + inspection directe du code.
-> **Dernière mesure** : 2026-05-04 (post Refonte R1-R12 + Phase 16.0.1-9 + audit admin).
+> Source : `ARCHITECTURE.md` (audit v7 du 2026-04-14) + inspection directe du code + lint `scripts/verify-wiki.sh`.
+> **Dernière mesure** : 2026-05-12 (audit exhaustif post Phases 11→19 + Employé V2.1→V2.5).
 
-## Chiffres-clés (mesurés 2026-05-04 — re-mesure post-refonte/Phase16)
+## Chiffres-clés (mesurés 2026-05-12 — audit exhaustif)
 
 | Dimension | Valeur exacte | Vérification |
 |-----------|---------------|--------------|
-| Pages | **150** (.tsx dans src/pages/) | `find src/pages -name "*.tsx" \| wc -l` |
-| Composants | **67** (.tsx dans src/components/) | `find src/components -name "*.tsx" \| wc -l` |
-| Hooks | **15+** fichiers (4 base + 11+ queries) | `find src/hooks -name "*.ts" \| wc -l` |
-| API modules | **25+** (src/api/) | `ls src/api/ \| wc -l` |
+| Pages | **200** (.tsx dans src/pages/) | `find src/pages -name "*.tsx" \| wc -l` |
+| Composants | **100** (.tsx dans src/components/) | `find src/components -name "*.tsx" \| wc -l` |
+| Hooks | **71** fichiers (4 base + 67 queries/domaines) | `find src/hooks -name "*.ts" \| wc -l` |
+| API modules | **75** (src/api/) | `ls src/api/ \| wc -l` |
 | Stores Zustand | **2** | `appStore`, `diagnosticStore` |
-| Routes React | **80+** (path= dans App.tsx) | `grep -c "path=" src/App.tsx` |
-| Migrations | **56** (supabase/migrations/*.sql) | 2026-02-27 → 2026-05-03 (Phase16 + Refonte R1) |
-| Tables DB | **78+** (`brh_*` + 1 `profiles`) | post Phase 16 + R1 (audit-agences/lead-assignments/optout/contracts/agences-immo/field-visits/score-vente/agence-subscriptions/audits) |
-| Fonctions SQL | **28+** | + brh_user_can, brh_grant_lead_claim, brh_release_expired_assignments, brh_generate_monthly_audits, brh_reset_agence_monthly_quotas, brh_generate_commission_invoices, etc. |
-| Triggers | **30+** | post Phase 13.6.7 commission cascade + R1 |
-| Policies RLS | **160+** | post Phase 16 + R1 (estimation) |
-| Edge Functions | **29** (+`_shared`) | `ls -d supabase/functions/*/ \| grep -v _shared` |
-| Storage buckets | **6** | company-logos, home-documents, message-attachments, prospect-files, rewards-catalog, social-screenshots |
-| Guards | **6** | AdminGuard, AuthGuard, ParticulierGuard, ProGuard, ArtisanGuard (R4), AgenceGuard (Phase 16.0.6) |
-| Feature gates utilisés dans App.tsx | **10** (via `<FeatureRoute>`) | `grep -oE 'feature="[a-z]+"' src/App.tsx \| sort -u` |
+| Routes React | **166** (path= dans App.tsx) | `grep -c "path=" src/App.tsx` |
+| Migrations | **101** (supabase/migrations/*.sql) | 2026-02-27 → 2026-07-12 (Phases 1→19 + Employé V2 + Admin V1 quotas + Phase 18 v2 pivot dispos) |
+| Tables `brh_*` | **144** (DB + 1 `profiles` extension) | post Phases 11→19 + Employé V2 + Admin V1 + Phase 18 v2 (DPE + foncier + réseau + employés + quotas + disponibilites) |
+| Fonctions SQL | **57** (RPC + triggers + computed) | post cascade parrainage 5 niveaux + IA PLU/satellite + commissions cron + dispos expire |
+| Triggers | **30+** | post Phase 13.6.7 commission cascade + 16.1 cascade parrainage + employés + dispos updated_at |
+| Policies RLS | **377** (CREATE POLICY across migrations) | post 5 portails + cross-persona feed + agences signataires + dispos |
+| Edge Functions | **41** (+`_shared`) | `ls -d supabase/functions/*/ \| grep -v _shared` |
+| Storage buckets | **8+** | audits, brh-commission-invoices, company-logos, home-documents, message-attachments, prospect-files, reseau-media, rewards-catalog, social-screenshots |
+| Guards | **8** | AdminGuard, AuthGuard, ParticulierGuard, ProGuard, ArtisanGuard, AgenceGuard, ReseauGuard, EmployeGuard |
+| Feature gates utilisés dans App.tsx | **10+** (via `<FeatureRoute>`) | `grep -oE 'feature="[a-z]+"' src/App.tsx \| sort -u` |
 | Feature flags définis | **18** | Dans `src/config/tier-presets.ts` |
-| Score santé | **9.8/10** (audit v7) | ARCHITECTURE.md |
+| Score santé | **9.8/10** (audit v7) · UX **5.4→9/10 cible** | ARCHITECTURE.md + [audit-ux-2026-05-08.md](audit-ux-2026-05-08.md) |
 
 ## Stack (versions vérifiées 2026-04-23)
 

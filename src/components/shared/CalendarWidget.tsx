@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { Sun, Moon } from 'lucide-react'
 import { formatLocalDate } from '@/lib/utils'
 
 export interface DispoSlot {
@@ -97,19 +98,25 @@ export function CalendarWidget({ onSlotsChange, selectedSlots }: CalendarWidgetP
 
   return (
     <div className="w-full">
+      {/* Intro courte : on précise qu'il s'agit d'une plage indicative, pas
+         un horaire précis (cf audit-ux-2026-05-12 bug #6). */}
+      <p className="font-body text-xs text-slate-500 mb-3">
+        Cochez les créneaux <strong className="text-slate-700">à peu près</strong> où vous êtes joignable.
+        Notre équipe vous rappellera dans l'une de ces plages.
+      </p>
       {/* Legende periode */}
-      <div className="flex items-center gap-4 mb-3">
+      <div className="flex flex-wrap items-center gap-4 mb-3">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-primary/20 border border-primary/40" />
-          <span className="font-body text-xs text-slate-500">Matin (8h-12h)</span>
+          <Sun size={13} className="text-amber-500" strokeWidth={2.2} />
+          <span className="font-body text-xs text-slate-500">Matin <span className="text-slate-400">(8h–12h)</span></span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-primary/20 border border-primary/40" />
-          <span className="font-body text-xs text-slate-500">Apres-midi (14h-18h)</span>
+          <Moon size={13} className="text-indigo-500" strokeWidth={2.2} />
+          <span className="font-body text-xs text-slate-500">Après-midi <span className="text-slate-400">(14h–18h)</span></span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-primary border border-primary" />
-          <span className="font-body text-xs text-slate-500">Selectionne</span>
+          <span className="font-body text-xs text-slate-500">Sélectionné</span>
         </div>
       </div>
 
@@ -152,12 +159,14 @@ export function CalendarWidget({ onSlotsChange, selectedSlots }: CalendarWidgetP
                       type="button"
                       onClick={() => toggleSlot(day, 'matin')}
                       disabled={past}
-                      className={`w-full py-1.5 rounded-lg text-xs font-body transition-all mb-1.5 border ${
+                      aria-pressed={matinSel}
+                      className={`w-full py-1.5 rounded-lg text-xs font-body inline-flex items-center justify-center gap-1 transition-all mb-1.5 border ${
                         matinSel
                           ? 'bg-primary text-white border-primary'
                           : 'bg-white text-slate-600 border-slate-200 hover:border-primary/50 hover:bg-green-50/50'
                       } disabled:pointer-events-none`}
                     >
+                      <Sun size={11} strokeWidth={2.4} className={matinSel ? 'text-white' : 'text-amber-500'} />
                       Matin
                     </button>
 
@@ -166,12 +175,14 @@ export function CalendarWidget({ onSlotsChange, selectedSlots }: CalendarWidgetP
                       type="button"
                       onClick={() => toggleSlot(day, 'apres-midi')}
                       disabled={past}
-                      className={`w-full py-1.5 rounded-lg text-xs font-body transition-all border ${
+                      aria-pressed={apremSel}
+                      className={`w-full py-1.5 rounded-lg text-xs font-body inline-flex items-center justify-center gap-1 transition-all border ${
                         apremSel
                           ? 'bg-primary text-white border-primary'
                           : 'bg-white text-slate-600 border-slate-200 hover:border-primary/50 hover:bg-green-50/50'
                       } disabled:pointer-events-none`}
                     >
+                      <Moon size={11} strokeWidth={2.4} className={apremSel ? 'text-white' : 'text-indigo-500'} />
                       Ap-midi
                     </button>
                   </div>
@@ -214,24 +225,28 @@ export function CalendarWidget({ onSlotsChange, selectedSlots }: CalendarWidgetP
                         type="button"
                         onClick={() => toggleSlot(day, 'matin')}
                         disabled={past}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-body transition-all border ${
+                        aria-pressed={matinSel}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-body inline-flex items-center gap-1 transition-all border ${
                           matinSel
                             ? 'bg-primary text-white border-primary'
                             : 'bg-white text-slate-600 border-slate-200 hover:border-primary/50'
                         }`}
                       >
+                        <Sun size={12} strokeWidth={2.4} className={matinSel ? 'text-white' : 'text-amber-500'} />
                         Matin
                       </button>
                       <button
                         type="button"
                         onClick={() => toggleSlot(day, 'apres-midi')}
                         disabled={past}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-body transition-all border ${
+                        aria-pressed={apremSel}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-body inline-flex items-center gap-1 transition-all border ${
                           apremSel
                             ? 'bg-primary text-white border-primary'
                             : 'bg-white text-slate-600 border-slate-200 hover:border-primary/50'
                         }`}
                       >
+                        <Moon size={12} strokeWidth={2.4} className={apremSel ? 'text-white' : 'text-indigo-500'} />
                         Ap-midi
                       </button>
                     </div>

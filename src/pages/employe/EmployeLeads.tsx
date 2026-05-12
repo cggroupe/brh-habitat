@@ -9,7 +9,7 @@
  */
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { TrendingUp, Calendar, Phone, Mail, MapPin, AlertCircle, Award } from 'lucide-react'
+import { TrendingUp, Calendar, Phone, Mail, MapPin, AlertCircle, Award, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useMyEmployee } from '@/hooks/queries/brh-employees'
 import { LEVEL_LEADS_QUOTA, LEVEL_THRESHOLDS, type EmployeeLevel } from '@/api/brh-employees'
@@ -61,7 +61,11 @@ export default function EmployeLeads() {
   })
 
   if (loadingEmp || !employee) {
-    return <div className="p-8 flex items-center justify-center"><div className="w-8 h-8 border-4 border-emerald-200 border-t-emerald-700 rounded-full animate-spin" /></div>
+    return (
+      <div className="p-8 flex items-center justify-center">
+        <Loader2 size={28} className="text-slate-400 animate-spin" />
+      </div>
+    )
   }
 
   const quota = LEVEL_LEADS_QUOTA[employee.activity_level]

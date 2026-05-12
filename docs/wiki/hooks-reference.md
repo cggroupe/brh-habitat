@@ -1,7 +1,7 @@
 # BRH Habitat — Hooks & API Reference
 
 > Source : `src/hooks/` + `src/api/`.
-> **Dernière mesure** : 2026-04-23 · **14 hooks** + **25 API modules**.
+> **Dernière mesure** : 2026-05-12 · **70 hooks** + **73 API modules** (post Phases 11→19 + Employé V2).
 
 ## Conventions globales
 
@@ -242,6 +242,86 @@ schemas.ts                  ← Zod
 appointments · articles · cases · chiffrages · contacts · dashboard · diagnostics · health · homes · profiles
 
 C'est un pattern **intentionnel**, pas un doublon. Les analyses de duplication doivent l'ignorer (cf [AUDIT-DOUBLONS-2026-04-29.md](../../AUDIT-DOUBLONS-2026-04-29.md)).
+
+## Hooks par domaine ajoutés Phases 11→Employé V2 (audit 2026-05-12)
+
+> Liste plate à jour. Chaque hook utilise React Query (queryKey scopé par domaine + invalidation par mutation). Voir les fichiers `src/hooks/*.ts` pour les détails.
+
+### Auth / Profile / Membership (3)
+- `profiles.ts` — read/update `profiles`
+- `agence-membership.ts` — `brh_partner_contracts` agence du user
+- `membership.ts` — cross-context : `brh_agence_members` + `brh_company_members`
+
+### Agence (11)
+- `agence-contributions.ts` — `brh_agence_contributions` + `brh_agence_progression`
+- `agence-lead-economy.ts` — RPC `brh_get_my_lead_breakdown` + `brh_grant_lead_claim`
+- `agence-members.ts` — `brh_agence_members` + invitations
+- `agence-referrals.ts` — `brh_agence_referral_commissions` (cascade 5 niveaux)
+- `agence-simulations.ts` — `brh_agence_simulations`
+- `agence-social.ts` — `brh_agence_social_posts`
+- `agence-subscriptions.ts` — `brh_agence_subscriptions` (4 tiers Stripe)
+- `agences-immo.ts` — annuaire `brh_agences_immo` (public)
+- `agence-leaderboard.ts` — leaderboard MLM Bretagne
+- `admin-commissions.ts` — `brh_artisans_rge`, `brh_commission_*` (admin)
+- `score-vente.ts` — `brh_score_vente_v1`
+
+### Artisan (3)
+- `artisan-portal.ts` — `brh_artisan_leads`, `brh_artisans_rge`
+- `artisans-rge.ts` — annuaire public `brh_artisans_rge`
+- `audits.ts` — `brh_audits` + variantes + factures
+
+### Employé BRH (2)
+- `brh-employees.ts` — `brh_employees` + `brh_employee_actions`
+- `field-visits.ts` — `brh_field_visits` (visites terrain)
+
+### Foncier Pro / Prospection (9)
+- `foncier-dpe-prospects.ts` — `brh_dpe_prospects` + `brh_ext_commune`
+- `foncier-favoris.ts` — `brh_agence_favoris_parcelles`
+- `foncier-ia.ts` — `brh_plu_summaries` + `brh_satellite_analyses`
+- `foncier-parcelles.ts` — `brh_parcelles_cache` (IDU)
+- `foncier-prospects-table.ts` — RPC `brh_foncier_prospects_table` (13 filtres)
+- `foncier-sci.ts` — `brh_sci_companies`
+- `foncier-sociodemo.ts` — `brh_communes_sociodemo` + `brh_dvf_archive`
+- `foncier-tertiaire.ts` — `brh_bodacc_alerts`
+- `aides-locales.ts` — `brh_aides_locales` + `brh_ext_commune`
+
+### Réseau social Pro (9)
+- `reseau-posts.ts` — `brh_feed_posts`
+- `reseau-reactions.ts` — `brh_feed_reactions`
+- `reseau-connections.ts` — `brh_pro_connections`
+- `reseau-chantiers.ts` — `brh_chantier_offers`
+- `reseau-chantier-applications.ts` — `brh_chantier_applications`
+- `reseau-endorsements.ts` — `brh_pro_endorsements`
+- `reseau-impressions.ts` — `brh_feed_impressions` (analytics)
+- `reseau-discover.ts` — suggestions feed
+- `reseau-subscriptions.ts` — `brh_reseau_subscriptions` (Premium/Featured)
+
+### DPE / Diagnostic / Enrichment (3)
+- `diagnostics.ts` — `brh_diagnostics`
+- `enrichment.ts` — proxy `brh_ext_*` (IRIS + commune + RGE)
+- `pro-subscription.ts` — `brh_pro_subscriptions` (Phase 15 SaaS)
+
+### Partner Platform (9 hooks regroupés dans `partners/`)
+- `partners/companies.ts`, `members.ts`, `affiliates.ts`, `quotes.ts`, `recruitment.ts`, `rewards.ts`, `prospects.ts`, `social.ts`, `index.ts`
+
+### Misc historiques (~14)
+appointments, articles, cases, chiffrages, contacts, dashboard, homes, profiles, health, lead-assignments, pro-analytics, partenaires-public.
+
+## API modules par domaine (73 modules — audit 2026-05-12)
+
+Mêmes regroupements que les hooks (pattern API ↔ Hooks volontaire — voir section suivante). Liste exhaustive dans [src/api/](../../src/api/) :
+
+- **Admin & modération** (3) : `admin-commissions`, `admin-reseau-moderation`, `score-vente`
+- **Agence** (10) : `agence-contributions`, `-lead-economy`, `-leaderboard`, `-members`, `-referrals`, `-simulations`, `-social`, `-subscriptions`, `agences-immo`
+- **Artisan** (4) : `artisan-invitations`, `artisan-portal`, `artisans-rge`, `audits`
+- **Employé** (3) : `brh-employees`, `employee-calendar`, `field-visits`
+- **Foncier / Prospection** (9) : `foncier-dpe-prospects`, `-favoris`, `-ia`, `-parcelles`, `-prospects-table`, `-sci`, `-sociodemo`, `-tertiaire`, `prospects-bretagne`
+- **Réseau social** (9) : `reseau-posts`, `-reactions`, `-connections`, `-chantiers`, `-chantier-applications`, `-endorsements`, `-impressions`, `-discover`, `-autaf`
+- **Partner Platform** (8) : `affiliates`, `companies`, `company-members`, `quotes`, `recruitment`, `rewards`, `partenaires-public`, `invitations`
+- **Général** (7) : `appointments`, `articles`, `cases`, `chiffrages`, `dashboard`, `diagnostics`, `homes`
+- **Intégrations & emails** (3) : `email-templates`, `enrichment`, `external-data`
+- **Pro VRP** (2) : `pro-analytics`, `pro-subscription`
+- **Misc** (8) : `prospects`, `prospect-letters`, `social-posts`, `social-publications`, `work-history`, `home-documents`, `health-records`, `lead-assignments`
 
 ## Dette technique typage Supabase (B01 — 2026-04-29)
 

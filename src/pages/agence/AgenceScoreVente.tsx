@@ -8,6 +8,7 @@
  *   - Slide-in panel droit : étude prospect (DPE strip + 3 scénarios + aides + claim)
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { MapContainer, TileLayer, CircleMarker, Marker, Popup, useMap } from 'react-leaflet'
 import { getDpeIcon, type DpeRating } from '@/lib/foncier/dpe-colors'
 import 'leaflet/dist/leaflet.css'
@@ -110,7 +111,6 @@ export default function AgenceScoreVente() {
   const [study, setStudy] = useState<ProspectStudy | null>(null)
   const [loadingStudy, setLoadingStudy] = useState(false)
   const [studyError, setStudyError] = useState<string | null>(null)
-  const [claimToast, setClaimToast] = useState<string | null>(null)
 
   // Map flyTo
   const [flyTarget, setFlyTarget] = useState<{ center: [number, number]; zoom: number } | null>(
@@ -259,11 +259,14 @@ export default function AgenceScoreVente() {
         referral: 'votre bonus parrainage',
         social: 'votre bonus réseaux sociaux',
       }
-      setClaimToast(`Lead claimé via ${sourceLabels[result.consumedFrom]}.`)
+      toast.success('Lead claimé', {
+        description: `Consommé sur ${sourceLabels[result.consumedFrom]}.`,
+      })
       setStudy(null)
-      setTimeout(() => setClaimToast(null), 4500)
     } catch (err) {
-      setStudyError(err instanceof Error ? err.message : 'Erreur claim')
+      const msg = err instanceof Error ? err.message : 'Erreur claim'
+      setStudyError(msg)
+      toast.error('Impossible de claimer le lead', { description: msg })
     }
   }
 
@@ -728,14 +731,6 @@ export default function AgenceScoreVente() {
         />
       ) : null}
 
-      {claimToast ? (
-        <div className="fixed bottom-6 right-6 z-[80] bg-gradient-to-br from-emerald-500 to-emerald-700 text-white px-5 py-4 rounded-2xl shadow-2xl shadow-emerald-500/40 max-w-sm animate-in slide-in-from-bottom-4 duration-300">
-          <p className="text-xs uppercase tracking-widest font-bold opacity-90 mb-0.5">
-            ✓ Lead claimé
-          </p>
-          <p className="text-sm">{claimToast}</p>
-        </div>
-      ) : null}
     </div>
   )
 }

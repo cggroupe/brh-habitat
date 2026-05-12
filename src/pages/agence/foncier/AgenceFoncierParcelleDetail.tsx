@@ -150,6 +150,12 @@ export default function AgenceFoncierParcelleDetail() {
 
             <ParcelleDetailCard parcelle={parcelle} />
 
+            {/* Résumé PLUi en pleine largeur principale (2/3) plutôt que sidebar
+               étroite — la synthèse longue débordait visuellement (cf audit-ux-2026-05-12 bug #2). */}
+            {parcelle.code_insee && (
+              <PluSummaryCard codeInsee={parcelle.code_insee} />
+            )}
+
             {/* DVF historique */}
             <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-2">
               <div className="flex items-center gap-2 mb-2">
@@ -194,13 +200,12 @@ export default function AgenceFoncierParcelleDetail() {
             </div>
           </div>
 
-          {/* Colonne droite : enrichissements (sociodémo + IA) */}
+          {/* Colonne droite : enrichissements (sociodémo + IA vision toiture).
+             PLUi est déplacé en colonne principale (gauche) pour laisser
+             respirer la synthèse longue — cf audit-ux-2026-05-12 bug #2. */}
           <div className="space-y-4">
             {parcelle.code_insee && (
               <CommuneSociodemoCard codeInsee={parcelle.code_insee} />
-            )}
-            {parcelle.code_insee && (
-              <PluSummaryCard codeInsee={parcelle.code_insee} />
             )}
             <SatelliteAnalysisCard parcelleIdu={parcelle.idu} />
           </div>

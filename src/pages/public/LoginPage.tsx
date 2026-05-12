@@ -22,7 +22,7 @@ import {
   LogIn,
 } from 'lucide-react'
 import { logError } from '@/lib/error'
-import { isBrhEmployee } from '@/lib/brh-employees'
+import { isBrhEmployee, loadBrhEmployeesFromDb } from '@/lib/brh-employees'
 
 const AUTH_ERROR_MAP: Record<string, string> = {
   'Invalid login credentials': 'Email ou mot de passe incorrect.',
@@ -158,7 +158,9 @@ async function listAccessiblePortals(
   }
 
   // Particulier + affilié = un seul espace pour l'instant (Phase C couvrira le mode MLM).
-  if (role === 'particulier' || affiliate) {
+  // role='user' = legacy ancienne valeur par défaut profiles avant 2026-04 — accepté
+  // ici pour ne pas bloquer ces comptes (cf audit-ux-2026-05-12 bug #1 particulier/affilié).
+  if (role === 'particulier' || role === 'user' || affiliate) {
     portals.push({ id: 'particulier', ...PORTAL_META.particulier })
   }
 
@@ -210,6 +212,11 @@ export default function LoginPage() {
         role: profile.role,
         avatar_url: profile.avatar_url ?? undefined,
       })
+
+      // Hydrate le cache brh_employees AVANT listAccessiblePortals — sinon
+      // isBrhEmployee(email) renvoie false sur tous les employés qui ne sont pas
+      // dans le seed statique. Cf audit-ux-2026-05-12 bug #1 (employé pas reconnu).
+      await loadBrhEmployeesFromDb()
 
       const accessible = await listAccessiblePortals(profile.id, profile.role, profile.email)
 

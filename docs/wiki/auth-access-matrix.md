@@ -20,7 +20,7 @@
 | 4 | **Professionnel** (BTP, RGE ou non) | `profiles.role='pro'` | `brh_companies.owner_id` — peut faire prospection + chantiers + propositions |
 | 5 | **Artisan legacy** | aucun `brh_companies` | `brh_artisans_rge.profile_id` (onboarding magic link historique — déprécié) |
 | 6 | **Agence immobilière** | `profiles.role='pro'` | `brh_partner_contracts.signer_profile_id` avec `partner_type='agence_immo'` + `status='active'` |
-| 7 | **Employé BRH** ⭐ | `profiles.role='admin'` (V1) | `brh_employees.profile_id` actif + email dans registre statique `lib/brh-employees.ts` |
+| 7 | **Employé BRH** ⭐ | `profiles.role='admin'` (V1) | Email présent dans cache `lib/brh-employees.ts` hydraté depuis `brh_employees` DB (`is_active=true`) — fallback seed statique pour dev |
 | 8 | **Admin** | `profiles.role='admin'` | sans entrée dans `brh_employees` |
 
 **Suppressions Phase E** : "Pro RGE" et "User legacy" retirés de la matrice :
@@ -118,7 +118,7 @@ Note ménage Phase D : un Pro RGE qui a ET `brh_companies` ET `brh_artisans_rge`
 
 ### 2.8 Routes Employé BRH (EmployeShell + EmployeGuard) — 14 routes ⭐
 
-Guard : `isBrhEmployee(user.email)` via registre statique `src/lib/brh-employees.ts` (V1) — futur : table `brh_employees`.
+Guard : `isBrhEmployee(user.email)` lit le **cache module-level** `src/lib/brh-employees.ts` (Map email→BrhEmployee), hydraté par `loadBrhEmployeesFromDb()` depuis la table `brh_employees` (Phase Employé V2). RLS auto-filtre : un employé voit son row, un admin voit tous, un autre user voit 0. Debounce 30s. Cache purgé au `signOut`. Fallback seed statique pour Pierre Collard demo.
 
 | Route | Employé BRH (Pierre Collard) | Admin pur (sans brh_employees) | Tous autres |
 |-------|------------------------------|--------------------------------|-------------|
@@ -250,8 +250,10 @@ Le hub `/inscription` propage automatiquement le param à toutes les cards (`ref
 | # | Issue | Fichier | Impact | Action |
 |---|-------|---------|--------|--------|
 | 1 | Admin n'a pas accès à `/reseau` (ReseauGuard) | `auth/ReseauGuard.tsx:33-50` | Admin doit créer une fake company pour modérer | Si modération désirée, ajouter clause `role='admin'` |
-| 2 | `role='user'` legacy reste bloqué sur `/tableau-de-bord` | DB historique | Aucun portail spécialisé ne l'accepte | Migration one-shot : `UPDATE profiles SET role='particulier' WHERE role='user'` |
+| 2 | ~~`role='user'` legacy reste bloqué sur `/tableau-de-bord`~~ **FIXED 2026-05-12** | `LoginPage.tsx:listAccessiblePortals` | Aucun portail spécialisé ne l'accepte | ✅ `listAccessiblePortals` accepte maintenant `role === 'user'` au check particulier — migration one-shot DB toujours recommandée |
 | 3 | Activation Artisan RGE = workflow manuel 48h | `RegisterProPage.tsx:90-105` | User signup avec `is_rge_intended=true` n'a accès qu'à `/pro` immédiatement | UI annonce déjà "validation 48h", à industrialiser via cron + email admin |
+| 4 | ~~`isBrhEmployee()` lisait UNIQUEMENT le seed statique `BRH_EMPLOYEES` (Pierre Collard demo)~~ **FIXED 2026-05-12** | `lib/brh-employees.ts` | Tout employé prod (autre que demo) bloqué sur `/tableau-de-bord` après login | ✅ Cache module-level Map hydraté par `loadBrhEmployeesFromDb()` (RLS auto, debounce 30s), appelé après `signInWithPassword` (LoginPage) et `validateSession` (useAuth). Cache purgé au signOut. |
+| 5 | ~~Message "Email de confirmation envoyé" affiché en rouge erreur dans RegisterPage~~ **FIXED 2026-05-12** | `RegisterPage.tsx` | UX trompeuse — l'utilisateur croit que l'inscription a échoué | ✅ Nouveau state `info` avec style bleu `bg-blue-50 border-blue-200 text-blue-700` distinct de l'erreur rouge |
 
 ### 6.2 UX / cohérence
 

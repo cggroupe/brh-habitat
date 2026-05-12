@@ -9,6 +9,7 @@
 
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { toast } from 'sonner'
 import {
   Wrench,
   Loader,
@@ -102,9 +103,22 @@ export default function ArtisanDashboard() {
       const res = await respond.mutateAsync({ leadId, action, ...opts })
       if (!res.success) {
         setActionError(res.message)
+        toast.error('Action impossible', { description: res.message })
+        return
       }
+      const labels: Record<LeadAction, string> = {
+        accept: 'Lead accepté',
+        decline: 'Lead refusé',
+        quote: 'Devis enregistré',
+        sign: 'Chantier signé',
+        complete: 'Chantier marqué terminé',
+        cancel: 'Lead annulé',
+      }
+      toast.success(labels[action] ?? 'Action enregistrée')
     } catch (e) {
-      setActionError(e instanceof Error ? e.message : String(e))
+      const msg = e instanceof Error ? e.message : String(e)
+      setActionError(msg)
+      toast.error('Erreur', { description: msg })
     }
   }
 
@@ -248,6 +262,32 @@ export default function ArtisanDashboard() {
         </div>
       </div>
 
+      {/* Hero alert quand des leads sont à traiter — cf audit-ux-2026-05-12 #9.
+         L'artisan arrive pour traiter les pending, pas pour lire les stats. */}
+      {stats.pending > 0 && (
+        <div className="rounded-2xl border border-amber-400 bg-gradient-to-br from-amber-50 to-amber-100/60 p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">
+              <AlertTriangle size={20} className="text-white" strokeWidth={2} />
+            </div>
+            <div>
+              <p className="font-bold text-base text-amber-900 leading-tight">
+                {stats.pending} lead{stats.pending > 1 ? 's' : ''} à traiter
+              </p>
+              <p className="text-[13px] text-amber-800/80 mt-0.5">
+                Acceptez ou refusez rapidement — les pros RGE attendent votre retour pour engager le chantier
+              </p>
+            </div>
+          </div>
+          <a
+            href="#leads-list"
+            className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-700 text-white text-sm font-bold hover:bg-amber-800 transition"
+          >
+            Voir mes leads ↓
+          </a>
+        </div>
+      )}
+
       {/* KPI stats */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <KpiCard label="Total leads" value={stats.total} color="gray" />
@@ -267,7 +307,7 @@ export default function ArtisanDashboard() {
       )}
 
       {/* Liste leads */}
-      <div>
+      <div id="leads-list" className="scroll-mt-6">
         <h2 className="mb-3 text-lg font-bold text-gray-900">Leads reçus</h2>
         {lLoading ? (
           <div className="flex items-center justify-center rounded-lg border border-gray-200 bg-white p-12">

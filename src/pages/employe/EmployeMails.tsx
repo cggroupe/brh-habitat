@@ -119,6 +119,14 @@ export default function EmployeMails() {
           <h2 className="font-display text-base font-bold mb-3">Choisir un template</h2>
           {loadingTemplates ? (
             <Loader2 className="animate-spin text-text-muted" size={20} />
+          ) : templates.length === 0 ? (
+            <div className="rounded-xl border-2 border-dashed border-amber-300 bg-amber-50 p-4 text-center">
+              <AlertCircle size={20} className="mx-auto text-amber-600 mb-2" />
+              <p className="text-sm font-semibold text-amber-900">Aucun template disponible</p>
+              <p className="text-xs text-amber-700 mt-1">
+                Contactez un administrateur — la table <code className="bg-amber-100 px-1 rounded">brh_email_templates</code> n'a pas de seed actif.
+              </p>
+            </div>
           ) : (
             <div className="space-y-2">
               {templates.map((tpl) => {

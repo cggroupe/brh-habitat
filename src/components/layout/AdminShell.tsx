@@ -49,6 +49,7 @@ const adminNavItems = [
   { to: '/admin/commissions', label: 'Commissions vendeurs', icon: Euro },
   { to: '/admin/commissions-artisans', label: 'Commissions artisans', icon: Wrench },
   { to: '/admin/catalogue', label: 'Catalogue', icon: Gift },
+  { to: '/admin/quotas', label: 'Quotas profils', icon: SlidersHorizontal },
   { to: '/admin/parametres', label: 'Parametres', icon: SlidersHorizontal },
   { to: '/admin/publications', label: 'Publications', icon: Share2 },
 ]

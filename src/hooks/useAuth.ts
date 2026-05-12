@@ -11,6 +11,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/appStore'
 import { useDiagnosticStore } from '@/stores/diagnosticStore'
+import { loadBrhEmployeesFromDb, resetBrhEmployeesCache } from '@/lib/brh-employees'
 import type { UserRole } from '@/types/database'
 
 interface ProfileData {
@@ -65,7 +66,11 @@ export function useAuth() {
           if (mounted && useAppStore.getState().user) setUser(null)
         } else {
           const profile = await fetchProfile(session.user.id)
-          if (mounted && profile) setUser(profileToUser(profile))
+          if (mounted && profile) {
+            setUser(profileToUser(profile))
+            // Hydrate brh_employees cache pour EmployeGuard (sync). Debounce 30s + RLS auto.
+            void loadBrhEmployeesFromDb()
+          }
           else if (mounted && !profile) setUser(null)
         }
       } catch (err) {
@@ -123,6 +128,9 @@ export function useAuth() {
     queryClient.clear()
     useDiagnosticStore.getState().reset()
     useAppStore.getState().closeDrawer()
+    // Purge le cache employés pour éviter qu'un employé "fantôme" reste
+    // détecté pour le user suivant qui se logge dans la même tab.
+    resetBrhEmployeesCache()
   }
 
   const loading = !user && !isInitialized

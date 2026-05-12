@@ -112,6 +112,33 @@ export default function AgenceDashboard() {
         />
       </div>
 
+      {/* Hero CTA — action principale quand des leads sont à claimer.
+         Cf audit-ux-2026-05-12 #9 : pros n'ont pas le temps, l'action #1 doit
+         être visible immédiatement, pas noyée dans l'inbox. */}
+      {totalRemaining !== null && totalRemaining > 0 && (
+        <div className="mb-6 rounded-2xl border border-slate-900 bg-slate-900 text-white p-5 lg:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+              <Flame size={20} className="text-amber-300" strokeWidth={2} />
+            </div>
+            <div>
+              <p className="font-display text-lg font-bold leading-tight">
+                {totalRemaining} lead{totalRemaining > 1 ? 's' : ''} disponible{totalRemaining > 1 ? 's' : ''} à claimer
+              </p>
+              <p className="text-[13px] text-white/70 mt-0.5">
+                Prospects vendeurs DPE F/G en Bretagne — chaque jour qui passe = un voisin qui claim avant vous
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/agence/leads"
+            className="shrink-0 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-white text-slate-900 text-sm font-bold hover:bg-slate-100 transition"
+          >
+            Voir les leads →
+          </Link>
+        </div>
+      )}
+
       {/* Section principale 2/3 + 1/3 — matched Stitch */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Inbox du jour 2/3 */}

@@ -1,25 +1,35 @@
 # BRH Habitat — Modèle de données
 
-> Source : migrations `supabase/migrations/*.sql` vérifiées ligne par ligne.
-> **Dernière mesure** : 2026-04-30 (Phase 1 DPE Engine) · **79 tables** (78 `brh_*` + 1 `profiles`).
+> Source : migrations `supabase/migrations/*.sql` vérifiées ligne par ligne + lint `scripts/verify-wiki.sh`.
+> **Dernière mesure** : 2026-05-12 (audit exhaustif Phases 11→19 + Employé V2) · **143 tables** (142 `brh_*` + 1 `profiles`).
 
 ## Chiffres vérifiés (`grep CREATE ... migrations/*.sql`)
 
 | Objet | Compte |
 |-------|--------|
-| Tables `brh_*` | **78** (30 métier + 45 `brh_dpe_*` réf + 3 audits) |
+| Tables `brh_*` | **142** (8 domaines — voir section dédiée plus bas) |
 | `profiles` (extend auth.users) | 1 |
-| Policies RLS | **~160** (142 historiques + nouvelles DPE) |
-| Fonctions SQL | **20** |
-| Triggers | **25** (6 métier + 17 `updated_at` + 2 autres) |
-| Storage buckets | **6** |
+| Policies RLS | **372** (CREATE POLICY dans migrations) |
+| Fonctions SQL | **57** (RPC + computed + triggers helper) |
+| Triggers | **30+** (updated_at + cascade parrainage + commission + employé scoring) |
+| Storage buckets | **8+** (audits, brh-commission-invoices, company-logos, home-documents, message-attachments, prospect-files, reseau-media, rewards-catalog, social-screenshots) |
 
-## Familles de tables
+## Familles de tables (vue d'ensemble)
 
-- **30 tables métier** `brh_*` (homes, cases, diagnostics, prospects, companies, ...)
-- **45 tables référentiels** `brh_dpe_*` (3CL-DPE 2021, ajoutées Phase 1 DPE Engine)
-- **3 tables audit** `brh_audits`, `brh_audit_variantes`, `brh_audit_factures`
-- **1 table catalogue** `brh_dpe_solutions`
+Voir la section [Tables par domaine (Phases 11→Employé V2)](#tables-par-domaine-phases-11employé-v2) pour le détail exhaustif.
+
+- **Tables métier historiques** (~30) : homes, cases, diagnostics, prospects, companies, affiliates, quotes, messages, notifications, ...
+- **Référentiels DPE 3CL 2021** (~45) : tables préfixées `brh_dpe_<element>` (umur, upb, uph, ug, uw, sw, deltar, ujn, uporte, uvue, ue, coef_*, zones_climatiques, seuils, seer, scop_ch, scop_ecs, temp_fonc, etc.)
+- **DPE solutions catalogue** : `brh_dpe_solutions` (prix unitaires HT)
+- **DPE prospects** : `brh_dpe_prospects` (59k F/G Bretagne) + cache `brh_prospect_studies`
+- **Audits énergétiques** : `brh_audits`, `brh_audit_variantes`, `brh_audit_factures`, `brh_audit_emails`
+- **Aides** : `brh_aides_locales`, `brh_ext_aides_anil`
+- **External data sources** (Phase 11) : `brh_ext_*` (cache, iris, commune, rge_companies, immo_companies, outils_communaux)
+- **Pros RGE / Marketplace** (Phase 13.6) : `brh_artisans_rge`, `brh_artisan_*` (8 tables Phase 17.1) + commissions
+- **Agences immo** (Phase 16/16.1) : `brh_agences_immo`, `brh_agence_*` (12 tables Phase 16.1 portail complet)
+- **Réseau social pro** (Phase 18) : `brh_feed_*`, `brh_pro_*`, `brh_chantier_*`, `brh_autaf_link`, `brh_reseau_subscriptions`
+- **Foncier Pro** (Phase 19) : `brh_parcelles_cache`, `brh_sci_*`, `brh_dvf_archive`, `brh_communes_sociodemo`, `brh_plu_summaries`, `brh_satellite_analyses`, `brh_bodacc_alerts`, `brh_permis_construire`
+- **Employés BRH** (Phase Employé V2) : `brh_employees`, `brh_employee_*`, `brh_email_templates`, `brh_email_sends`, `brh_social_publications`, `brh_social_post_templates`
 
 ## Conventions
 
@@ -245,6 +255,258 @@ CREATE POLICY "{table}_admin_all" ON brh_{table}
 Activé sur 2 tables (migration `20260403600000`) :
 - `brh_messages` → channel par thread
 - `brh_notifications` → channel par user
+
+## Tables par domaine (Phases 11→Employé V2)
+
+> Audit exhaustif 2026-05-12 — toutes les tables `brh_*` créées entre la migration 38 (Phase 1 DPE) et la 99 (Phase Employé V2.5) sont documentées ici, regroupées par domaine logique. Pour les ~30 tables historiques pré-Phase 11, voir la liste exhaustive dans la section [Les 29 tables `brh_*`](#les-29-tables-brh_-liste-exhaustive) plus haut.
+
+### Domaine 1 — DPE Engine 3CL 2021 + Audits + Prospects
+
+Référentiels thermiques officiels (Phase 1 — migrations 04/30-05/01) :
+
+| Table | Colonnes clés |
+|-------|---------------|
+| `brh_dpe_umur` | coef U mur (matériau, épaisseur, lambda) |
+| `brh_dpe_upb` | coef U plancher bas |
+| `brh_dpe_uph` | coef U plancher haut |
+| `brh_dpe_ug` | coef U vitrage (gaz, espaceur) |
+| `brh_dpe_uw` | coef U menuiserie (cadre+vitrage) |
+| `brh_dpe_sw` | facteur solaire vitrage |
+| `brh_dpe_deltar` | delta R isolation (rapportée) |
+| `brh_dpe_ujn` | coef U baie nuit (volets) |
+| `brh_dpe_uporte` | coef U porte (matériau) |
+| `brh_dpe_uvue` | coef U véranda |
+| `brh_dpe_ue` | coef U équivalent (parois) |
+| `brh_dpe_coef_reduction_deperdition` | coefficients réduction déperditions |
+| `brh_dpe_coef_masque_proche` | coef masque proche (auvent) |
+| `brh_dpe_coef_masque_lointain_homogene` | coef masque lointain homogène |
+| `brh_dpe_coef_masque_lointain_non_homogene` | coef masque lointain non-homogène |
+| `brh_dpe_coef_orientation_pv` | coef orientation photovoltaïque |
+| `brh_dpe_zones_climatiques` | 8 zones (H1a-H3) → DJU |
+| `brh_dpe_seuils` | seuils étiquettes A-G (CEP/GES) |
+| `brh_dpe_seer` | SEER clim |
+| `brh_dpe_scop_ch` | SCOP chauffage (PAC) |
+| `brh_dpe_scop_ecs` | SCOP ECS (PAC) |
+| `brh_dpe_temp_fonc_` | température fonctionnement |
+| `brh_dpe_coef_reduction_deperdition_copi` | coef réduction déperditions COPI |
+| `brh_dpe_coef_reduction_deperdition_ets` | coef réduction déperditions ETS |
+| `brh_dpe_coef_reduction_deperdition_lnc` | coef réduction déperditions LNC (local non chauffé) |
+| `brh_dpe_coef_transparence_ets` | coef transparence ETS |
+| `brh_dpe_debits_ventilation` | débits ventilation (VMC simple/double flux, hygro) |
+| `brh_dpe_facteur_couverture_solaire` | facteur couverture solaire (CESI/SSC) |
+| `brh_dpe_generateur_combustion` | générateurs combustion (chaudière fioul/gaz/bois) |
+| `brh_dpe_intermittence` | coef intermittence chauffage |
+| `brh_dpe_pertes_stockage` | pertes stockage ECS |
+| `brh_dpe_pont_thermique` | coef ponts thermiques |
+| `brh_dpe_q` | débits Q (échangeurs air-air) |
+| `brh_dpe_rendement_distribution_ch` | rendement distribution chauffage |
+| `brh_dpe_rendement_distribution_ecs` | rendement distribution ECS |
+| `brh_dpe_rendement_emission` | rendement émission (radiateurs/plancher chauffant) |
+| `brh_dpe_rendement_generation` | rendement génération (chaudière/PAC) |
+| `brh_dpe_rendement_regulation` | rendement régulation (thermostat) |
+| `brh_dpe_reseau_chaleur_` | facteur émission CO₂ réseaux de chaleur urbains |
+
+Audits saisie pro (Phase 1) :
+
+| Table | Colonnes clés |
+|-------|---------------|
+| `brh_audits` | UUID, diagnostic_id, user_id, pro_user_id, home_id, inputs JSONB, results JSONB, CEP, GES, étiquettes A-G |
+| `brh_audit_variantes` | audit_id FK, delta_inputs JSONB, scenarios 3CL, cout_total_ttc_cents BIGINT, aides_total_cents BIGINT, economie_annuelle_cents BIGINT |
+| `brh_audit_factures` | audit_id FK, consommations réelles électricité/gaz/fioul/bois |
+| `brh_audit_emails` | sent_by, recipient_email, status, resend_id (audit trail RGPD) |
+| `brh_dpe_solutions` | type_element, prix_unit_ht_cents INTEGER, param JSONB (catalogue prix isolation/ECS/chauffage) |
+
+Prospects DPE (Phase 11 — score v2 composite 22 règles) :
+
+| Table | Colonnes clés |
+|-------|---------------|
+| `brh_dpe_prospects` | SERIAL id, numero_dpe UNIQUE, étiquettes DPE/GES, adresse, géoloc, aides Kelvin-parity JSONB, chiffrage TTC JSONB, saut DPE s1/s2/s3 JSONB, brh_prospect_id FK, iris_code FK, score_v2 INTEGER, score_v2_segment, score_v2_breakdown JSONB (22 règles), enedis_kwh_logt, dvf_mutation_24m, has_pv_36kw, abf_required |
+| `brh_prospect_studies` | prospect_id BIGINT PK FK, study_json JSONB (sortie complète simulateur 8915 : DPE + S1/S2/S3 + aides MPR + DVF), fetched_at — cache études populé via script Node VPS pour 500 prospects |
+
+### Domaine 2 — Aides Bretagne (régionales + locales)
+
+| Table | Colonnes clés |
+|-------|---------------|
+| `brh_aides_locales` | niveau (regional/dept/intercommune/commune), geste_id, forfait_euros, taux_pct, couleurs_eligibles ARRAY, cumul_mpr/cee/eco_ptz BOOLEAN — seed 8 collectivités bretonnes |
+| `brh_ext_aides_anil` | scraped ANIL aides Bretagne (Phase 11.2, complément aides_locales) |
+
+### Domaine 3 — External Data Sources (Phase 11 — score v2 composite)
+
+Cache générique + IRIS + commune Bretagne (2.8k IRIS + 1.2k communes) :
+
+| Table | Colonnes clés |
+|-------|---------------|
+| `brh_ext_cache` | source TEXT, cache_key, payload JSONB, TTL 30j (cache générique APIs externes) |
+| `brh_ext_iris` | IRIS_CODE PK, Filosofi 2021 (med/d1/d9), couleur_mpr, tx_proprio, Enedis conso_resid, GRDF conso_gaz, Recensement 2021 (5 cols) |
+| `brh_ext_commune` | INSEE PK, radon_categorie, rga_alea, opah_active, nb_rge_*, dju_18, delta_dju_2050, prix_m2_median_3y, prix_m2_growth_3y, Sit@del2 dynamisme, DVF, LOVAC, TLV, MERIMEE, BASIAS, BASOL, ICPE, fiscalité (TFB/TFNB/TH/TEOM), Cat-Nat inond/tempête/sécheresse, audits ADEME, SRU (assujettie/déficitaire/carencée + taux LLS), ZNIEFF 1/2 count, ABF AC1, lignes HT, population (2008/2016/2022) |
+| `brh_ext_rge_companies` | SIRET, nom, adresse, code_qualification, domaine (RGE ADEME 14.8k qualifs) |
+| `brh_ext_immo_companies` | SIREN, SIRET, activite, code_insee (companies immobilières) |
+| `brh_ext_outils_communaux` | cadastres solaires communaux |
+
+### Domaine 4 — Pros RGE / Marketplace (Phases 13.6 + 17.1)
+
+Marketplace artisans bretons RGE + magic link onboarding + commissions auto-facturées :
+
+| Table | Colonnes clés |
+|-------|---------------|
+| `brh_artisans_rge` | SIRET CHAR(14) UNIQUE, nom_entreprise, email/telephone, géoloc, geste_specialites TEXT[], rge_certifications JSONB, score_qualite 0-100, taux_conversion_brh NUMERIC, marketplace_active/premium BOOLEAN, profile_id UUID UNIQUE FK |
+| `brh_artisan_leads` | artisan_id FK, prospect_id BIGINT FK, geste, estimated_chantier_ttc, expected_commission, status (pending/accepted/declined/quoted/signed/completed/canceled) |
+| `brh_artisan_invitations` | artisan_id FK, token TEXT UNIQUE (64 hex), email_to, status (pending/sent/accepted/expired/revoked), expires_at +30j (magic link onboarding) |
+| `brh_commission_invoices` | artisan_id FK, period_year/month, nb_leads_completed, total_chantiers_ttc_eur, commission_pct DEFAULT 0.05, total_commission_due_eur, status (pending/invoiced/paid/reconciled/canceled/disputed), stripe_invoice_id |
+| `brh_commission_lead_links` | invoice_id FK, lead_id FK, chantier_ttc_eur, commission_eur (audit trail facturation) |
+| `brh_cron_runs` | job_name, status, invoices_created, total_commission_eur (log pg_cron) |
+
+Portail artisan enrichi (Phase 17.1, calque structural de Phase 16.1) :
+
+| Table | Colonnes clés |
+|-------|---------------|
+| `brh_artisan_contributions` | artisan_id FK, propriétaire (nom/email), adresse bien, travaux, budget, urgence, status, commission |
+| `brh_artisan_progression` | artisan_id PK FK, tier (bronze/silver/gold/platinum), contributions_count, chantiers_signes |
+| `brh_artisan_simulations` | artisan_id FK, inputs/result/scenarios JSONB |
+| `brh_artisan_chiffrages` | artisan_id FK, chiffrage Batichiffrage |
+| `brh_artisan_social_posts` | artisan_id FK, platform, post_url, status |
+| `brh_artisan_referral_commissions` | artisan_id FK, parrainage 100€/charte signée |
+
+### Domaine 5 — Agences Immobilières (Phases 16 + 16.1)
+
+Score vente + opt-out + lead assignments + subscriptions 4 tiers :
+
+| Table | Colonnes clés |
+|-------|---------------|
+| `brh_agences_immo` | SIRET UNIQUE, raison_sociale, adresse, code_postal/commune, géoloc, carte_T_numero/validite, status (prospect/contacted/partenaire/refused), referred_by_agence_id FK |
+| `brh_score_vente_v1` | prospect_id BIGINT PK FK, score 0-100, segment (tres_chaud/chaud/tiede/froid), rules_breakdown JSONB (13 règles), proba_6m NUMERIC 0-1, algo_version |
+| `brh_optout_requests` | adresse, email, request_type (opposition/suppression/rectification), matched_prospect_id, processed_at, deadline +30j (Art. 21 RGPD) |
+| `brh_lead_assignments` | prospect_id BIGINT FK, agence_id FK, status (pending/released/claimed/contacted/attempted/signed/completed), claimed_at, released_at, contact_log JSONB |
+| `brh_agence_subscriptions` | agence_id UUID UNIQUE FK, signer_profile_id FK, tier (discovery/standard/premium/expert), monthly_lead_quota INTEGER, stripe_* (paliers 0€/5 leads, 390€/30, 990€/100, 2490€/illimité) |
+| `brh_agence_audits` | audit_id, agence_id FK, prospect_id FK, status, email_sent_at (audits aléatoires 5% leads contactés, cron mensuelle) |
+
+Portail agence complet (Phase 16.1) :
+
+| Table | Colonnes clés |
+|-------|---------------|
+| `brh_agence_contributions` | agence_id FK, propriétaire (nom/email/telephone), adresse bien, travaux_envisages TEXT[], budget_estime, urgence, status (submitted/qualified/audit_done/quote_signed/completed/rejected), chantier_montant_ttc_cents BIGINT, commission_pct DEFAULT 5, brh_prospect_id FK |
+| `brh_agence_progression` | agence_id UUID PK FK, tier (bronze/silver/gold/platinum), contributions_count, chantiers_signes, commissions_earned_cents, social_unlocked/consumed, contribution_unlocked/consumed, referral_unlocked/consumed, bonuses_period_start TIMESTAMPTZ |
+| `brh_agence_simulations` | agence_id FK, created_by FK, lead_assignment_id FK, prospect_dpe_id BIGINT FK, titre, adresse, inputs/result/scenarios JSONB, etiquette_dpe, cep_kwh |
+| `brh_agence_social_posts` | agence_id FK, submitted_by FK, platform (facebook/instagram/linkedin/tiktok/google_business), post_url, reward_leads DEFAULT 5, status (en_attente/en_cours_verification/validee/refusee/expiree) |
+| `brh_agence_referral_commissions` | recruiter_agence_id FK, recruited_agence_id FK, commission_amount_cents DEFAULT 10000, chain_level (1-5), leads_bonus_amount, status (pending/validated/paid/cancelled) — cascade 5 niveaux : N1 100€+5l, N2 25€+3l, N3 10€+2l, N4-5 5€+1l (145€+12leads max par charte) |
+| `brh_agence_referral_audit` | commission_id FK, old_status/new_status, actor_profile_id, notes, commission_amount_cents snapshot, chain_level snapshot (append-only audit fraud detection) |
+| `brh_agence_members` | agence_id FK, profile_id FK, member_role (signer/employee), permissions JSONB, invited_at, joined_at |
+| `brh_agence_favoris_parcelles` | agence_id FK, idu FK, tags TEXT[], notes (Phase 19 Sprint A — favorites cadastrales) |
+
+### Domaine 6 — Réseau Social Pro (Phase 18)
+
+Cross-persona (agences/artisans/architectes/apporteurs) + marketplace chantiers + abonnements Stripe :
+
+| Table | Colonnes clés |
+|-------|---------------|
+| `brh_pro_connections` | profile_a FK, profile_b FK, status (pending/accepted/rejected), created_at |
+| `brh_pro_follows` | follower_id FK, followed_id FK, created_at |
+| `brh_pro_endorsements` | endorser FK, endorsed FK, skill, comment (capital social) |
+| `brh_pro_subscriptions` | profile_id UUID UNIQUE FK, tier (free/pro/expert), quota_letters_per_month INTEGER, letters_used_this_period, period_start/end TIMESTAMPTZ, stripe_* (SaaS pro RGE Phase 15) |
+| `brh_feed_posts` | author_id FK, type (8 types), title, body, media JSONB, tenant_id, audience, visibility |
+| `brh_feed_reactions` | post_id FK, profile_id FK, type (like/recommande/expert) |
+| `brh_feed_comments` | post_id FK, parent_id FK (threadés), author_id FK, body |
+| `brh_feed_impressions` | post_id FK, viewer_id FK, source, dwell_ms (analytics feed) |
+| `brh_feed_reports` | post_id FK, reporter_id FK, reason, status (modération) |
+| `brh_chantier_offers` | author_id FK, title, description, location, budget_ttc_cents BIGINT, deadline, status (KILLER marketplace, commission 5% HT) |
+| `brh_chantier_applications` | offer_id FK, applicant_id FK, message, status (pending/accepted/rejected) |
+| `brh_autaf_link` | profile_id FK UNIQUE, autaf_user_id, api_token_encrypted, scopes, last_sync_at, last_error (bridge OAuth AUTAF) |
+| `brh_reseau_subscriptions` | profile_id UUID UNIQUE FK, pro_id FK, tier (free/premium/featured/enterprise), stripe_*, amount_cents BIGINT, benefits JSONB cache (V2 Pro Premium 19€, Featured 49€) |
+
+### Domaine 7 — Foncier Pro (Phase 19 A→H)
+
+Cadastre IGN + SCI succession + DVF archive + sociodémo + IA PLU/satellite + BODACC + permis :
+
+| Table | Colonnes clés |
+|-------|---------------|
+| `brh_parcelles_cache` | IDU CHAR(14) PK, code_insee/prefixe/section/numero, commune, adresse, surface REAL, usage_dominant, revenu_cadastral NUMERIC, proprietaire_info, fetched_at, TTL 90j |
+| `brh_sci_companies` | SIREN CHAR(9) PK, denomination, forme_juridique, date_creation/radiation, adresse, dirigeants JSONB [{nom, prenom, date_naissance, est_decede, deces_match_score}], has_deceased_dirigeant BOOLEAN, succession_probable_score 0-100, deces_last_checked_at, latest_deces_date, capital_social_cents BIGINT |
+| `brh_sci_deces_matches` | siren FK, match_score, audit trail matchid.io (admin only) |
+| `brh_dvf_archive` | ID_MUTATION TEXT PK, date_mutation, nature, valeur_fonciere_cents BIGINT, type_local, surface_reelle_bati, parcelle_idu FK, lat/lng, source_year, archive_batch_id (anti-suppression DVF 4-5 ans) |
+| `brh_communes_sociodemo` | INSEE CHAR(5) PK, loyers_median_cents BIGINT, taux_vacance_log, elus JSONB, elections JSONB, gentrification_label, gentrification_score |
+| `brh_plu_summaries` | code_insee PK, gpu_document_id/type/date, summary JSONB (zones_principales, abf_zones, mentions, synthese), ai_model, ai_tokens_input/output, ai_cost_cents, TTL 180j (résumé PDF via Claude Sonnet 4.6) |
+| `brh_satellite_analyses` | parcelle_idu PK, roof_area_m2, roof_age_estimate, orientation, tilt_angle, tree_shade, solar_potential_kwh_year, ai_model, cache 365j (Vision IA aérienne BD ORTHO IGN) |
+| `brh_bodacc_alerts` | id_bodacc TEXT PK, famille_avis (commerciales/collectives/radiations/autres), type_avis, date_publication, siren, denomination, prix_cession_cents BIGINT, bodacc_url |
+| `brh_permis_construire` | Sit@del2 permis + déclarations préalables (filtre INSEE/dept/idu) |
+
+### Domaine 8 — Employés BRH (Phase Employé V1+V2.1→V2.5)
+
+Cockpit gamifié commerciaux (Pierre Collard) — registre dynamique + scoring auto + templates emails + calendrier RDV + publications sociales + leads progressifs :
+
+| Table | Colonnes clés |
+|-------|---------------|
+| `brh_employees` | profile_id UUID UNIQUE FK, full_name, email UNIQUE, role_label, activity_score 0-100 (trigger auto via actions), activity_level (standard/pro/expert/master), leads_received_this_month INTEGER reset cron, signature_html, is_active |
+| `brh_employee_actions` | employee_id FK, action_type (email_sent/partner_recruited/social_post/rdv_completed/lead_converted/manual_admin), points INTEGER (gamification +5 par email, +10 par social) |
+| `brh_employee_calendar` | employee_id FK, day_of_week 0-6, period (morning/afternoon), status (available/unavailable), UNIQUE(employee, dow, period) — créneaux récurrents hebdo |
+| `brh_email_templates` | slug UNIQUE, target_audience (artisan/agence_immo/architecte/maitre_oeuvre/autre), subject, body_html, variables JSONB (templates recrutement) |
+| `brh_email_sends` | employee_id FK, template_id FK, recipient_email/name/company, resend_message_id, status (sent/opened/clicked/replied/bounced/failed) |
+| `brh_social_publications` | employee_id FK, platform (linkedin/tiktok/instagram/facebook/twitter), content_text, publication_url, status (pending/validated/rejected), reach/engagement count |
+| `brh_social_post_templates` | slug UNIQUE, platform, title, content, hashtags ARRAY (9 modèles BRH : Loi Climat, recrutement artisans, conseil DPE 30s, etc.) |
+| `brh_field_visits` | company_id FK, employee_id FK, target_type (prospect_dpe/artisan/agence_immo), target_id TEXT polymorphe, visit_type (door_to_door/consultation/rappel/rdv_signe), status, notes, lat/lng (tracking terrain Phase R1) |
+
+### Domaine 11 — Disponibilités pros (Phase 18 v2, pivot 12/05/2026)
+
+Audit-ux-2026-05-12 point #4 — Philippe valide la suppression du fil d'actu libre. Les tables `brh_feed_*` (posts, reactions, comments, impressions, reports) RESTENT en DB pour réversibilité mais ne sont plus exposées côté UI. Le réseau sert désormais à 2 actions structurées : publier un chantier (table existante `brh_chantier_offers`) OU signaler une disponibilité (NOUVELLE table `brh_disponibilites`).
+
+| Table | Colonnes clés |
+|-------|---------------|
+| `brh_disponibilites` | pro_id UUID FK brh_partner_contracts(id), periode_debut/periode_fin DATE (contrainte coherent), metiers_proposes TEXT[], departements TEXT[], description, capacite_chantiers INTEGER, contract_mode_pref CHECK (sous_traitance/co_traitance/apport/tous), visibility CHECK (public/reseau/prive) DEFAULT 'reseau', status CHECK (draft/active/archived/expired), expires_at TIMESTAMPTZ, archived_at TIMESTAMPTZ. Indexes GIN sur metiers/depts pour filtres rapides. Trigger updated_at. RLS alignée avec brh_chantier_offers (helper brh_pro_in_network pour visibility='reseau'). |
+
+Helper SQL ajouté : `brh_expire_old_disponibilites()` SECURITY DEFINER — passe en status='expired' les dispos dont periode_fin est dépassée. À appeler par cron quotidienne.
+
+### Domaine 10 — Admin Quotas Granulaires (Phase Admin V1)
+
+Override admin du quota leads par profil + détection automatique des profils dormants (audit-ux-2026-05-12 point #5) :
+
+| Table | Colonnes clés |
+|-------|---------------|
+| `brh_admin_profile_warnings` | target_type (agence/artisan/employe), target_id UUID polymorphe, warning_type (dormant_no_lead/quota_unused/inactive_login/manual), severity (info/warning/critical), message, metadata JSONB, created_at, created_by, resolved_at, resolved_by, resolved_notes — audit trail des overrides admin + alertes profils dormants 60j |
+
+ALTER cols ajoutées : `custom_quota INTEGER NULL` + `quota_period TEXT DEFAULT 'monthly' CHECK (weekly|monthly)` sur `brh_agence_subscriptions`, `brh_employees`, `brh_artisans_rge`. NULL = use tier default (5/30/100/∞ agences, 5/15/35/∞ employés). RPC `brh_admin_set_custom_quota(target_type, target_id, custom_quota, quota_period)` SECURITY DEFINER admin-only avec audit trail automatique. RPC `brh_detect_dormant_profiles(threshold_days)` idempotente pour cron mensuelle.
+
+### Domaine 9 — Partner Platform élargi (post-Phase R1)
+
+Tables ajoutées ou étendues depuis le partner platform initial :
+
+| Table | Notes |
+|-------|-------|
+| `brh_partner_contracts` | Étendu Phase 18 : partner_type CHECK +architecte, maitre_oeuvre, apporteur_affaires, courtier, syndic, autre (9 types total). Multi-tenant : tenant_id IN ('brh','idf','paca','autaf') |
+| `brh_prospect_letters` | prospect_id BIGINT FK, generated_by UUID, subject TEXT, body_md TEXT, signature, score_v2_snapshot, signaux_used JSONB, status (draft/edited/sent/archived), model_used, input/output/cache tokens, generation_duration_ms (Phase 13 IA killer — courriers prospect auto Claude) |
+| `brh_prospect_studies` | Voir Domaine 1 (cache études) |
+
+### Fonctions SECURITY DEFINER ajoutées (Phases 11→19 + Employé)
+
+Liste non-exhaustive des RPC ajoutées (57 fonctions au total, voir `grep -hE "CREATE.*FUNCTION public\." supabase/migrations/*.sql`) :
+
+- `brh_user_pro_id()` — UUID pro du user courant (Phase 11)
+- `brh_foncier_prospects_filtered()` — RPC filtres prospects (Phase 11.1b)
+- `brh_foncier_prospects_table()` — RPC paginé 13 filtres (Phase 11.4)
+- `brh_artisan_respond_lead()` — accept/decline/quote/sign/complete lead atomique (Phase 13.6)
+- `brh_artisans_set_updated_at()` — trigger updated_at
+- `brh_artisan_invite_accept(token)` — vérifie token + lie profile (Phase 13.6.5)
+- `brh_gen_artisan_token()` — 32 bytes → 64 hex
+- `brh_generate_commission_invoices(year, month, pct)` — agrège chantiers completed mensuel (Phase 13.6.7)
+- `brh_cron_generate_previous_month_commissions()` — wrapper pg_cron mensuel
+- `brh_user_is_active_agence_signer()` — true si user signataire charte agence active (Phase 16.0.6 fix)
+- `brh_get_public_agence()` — infos publiques minimales agence pour vitrine QR (Phase 16.1.1.7)
+- `brh_grant_lead_claim()` — consomme lead depuis (tier → contribution → referral → social) atomique, retourne (assignment_id, consumed_from TEXT) (Phase 16.1 + Step C)
+- `brh_get_my_lead_breakdown()` — détail 4 sources disponibles agence courante (Phase 16.1)
+- `brh_agence_credit_referral_leads()` — trigger plafond 30 leads/mois/parrain anti-abus MLM (Phase 16.1 Step C)
+- `brh_agence_referral_notify_recruiter()` — trigger notification cloche Realtime (Phase 16.1 Step C)
+- `brh_agence_social_reward_trigger()` — crédite bonus_leads_unlocked à validation post social
+- `brh_agence_subs_set_quota()` — trigger set quota selon tier (5/30/100/NULL)
+- `brh_reset_agence_monthly_quotas()` — cron release expired + reset quota
+- `brh_generate_monthly_audits(p_audit_month)` — sample 5% leads contactés (Phase 16.0.8)
+- `brh_sci_recompute_succession_score(p_siren)` — recalcul score succession après matching décès (Phase 19.B)
+- `brh_dvf_commune_stats` — RPC score gentrification (Phase 19.C)
+
+### Storage buckets ajoutés (Phases 1→Employé V2)
+
+| Bucket | Usage | Limite | Privé/Public |
+|--------|-------|--------|--------------|
+| `audits` | PDFs audits DPE (path `{auditId}/audit.pdf`) | 20 MB | privé (signed URL 30j) |
+| `brh-commission-invoices` | PDFs factures commissions artisans (path `{artisan.id}/{year}/{month}.pdf`) | 10 MB | privé |
+| `reseau-media` | Images posts feed (jpeg/png/webp) | 10 MB | privé (signed URLs, RLS : auth lit _public.jpg, owner lit _original.jpg) |
 
 ## Diagramme relationnel (Mermaid)
 

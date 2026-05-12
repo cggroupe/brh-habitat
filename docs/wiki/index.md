@@ -75,6 +75,7 @@
 | [tests.md](tests.md) | ⭐ État tests (aucun auto), roadmap implémentation Vitest/Playwright |
 | [playbooks.md](playbooks.md) | ⭐ 10 playbooks : RLS debug, Clerk flow, migrations, commissions cascade |
 | [audit-ux-2026-05-08.md](audit-ux-2026-05-08.md) | 🔍 **Audit UX/UI complet (08/05/2026)** — Référentiel startup US (Stripe/Linear/Pipedrive/Apollo) + MLM (doTerra/Beachbody). Score actuel **5.4/10** → cible 9/10. Top 25 problèmes priorisés. Roadmap 5 sprints / 30 tâches / 14 jours. Gap critique MLM **2/10** vs cible business 20k€ MRR. |
+| [audit-ux-2026-05-12.md](audit-ux-2026-05-12.md) | 🔥 **Retour test Philippe (12/05/2026)** — 9 points (bugs login particulier/affilié/employé, PLUi qui déborde, marker cadastre, pivot Phase 18 feed → chantiers/dispo only, admin quotas granulaires, RDV créneaux flous, simulateur Cabrenove, templates emails, polish UX global). Ordre d'attaque proposé : bugs → quick wins → admin → simu → décision pivot. |
 
 ### Partie 4 — Méta
 

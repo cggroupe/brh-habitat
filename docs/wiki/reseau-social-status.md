@@ -1,8 +1,13 @@
 # Réseau social pro `/reseau` — Status livraison Phase 18
 
-> **Status global** : 🟡 Étape 1/12 livrée (audit AUTAF + blueprint). Aucun code applicatif écrit à ce jour.
+> **Status global** : 🔄 **PIVOT V2 livré le 12/05/2026** (audit-ux-2026-05-12 #4) — le fil d'actu libre est retiré côté UI au profit d'une UX d'action structurée à 2 chemins exclusifs : publier un chantier OU signaler une dispo. Les tables `brh_feed_*` (posts, reactions, comments, impressions, reports) sont conservées en DB pour réversibilité mais ne sont plus exposées via le router. Voir [audit-ux-2026-05-12.md](audit-ux-2026-05-12.md) section #4 pour le détail du pivot.
 >
-> Voir : [reseau-social-blueprint.md](reseau-social-blueprint.md) (architecture cible) · [log.md](log.md) (journal append).
+> **Avant pivot (V1)** : Étapes 1-12 livrées (06/05) — feed + composer + algo + modération min + marketplace chantiers + bridge AUTAF + SEO + monétisation Premium/Featured.
+> **Après pivot (V2)** : feed désactivé du router, nouvelle entité `brh_disponibilites`, hub `/reseau` refondu en page d'action avec 2 grosses cards.
+>
+> **Subscriptions Premium/Featured** (`brh_reseau_subscriptions`) : tables conservées. Repositionnement V2 à arbitrer (les abonnements ciblaient le feed libre — à recibler sur la mise en avant des chantiers et dispos).
+>
+> Voir : [reseau-social-blueprint.md](reseau-social-blueprint.md) (architecture cible V1, en partie obsolète) · [log.md](log.md) (journal append) · [audit-ux-2026-05-12.md](audit-ux-2026-05-12.md) (décisions pivot).
 
 ---
 
