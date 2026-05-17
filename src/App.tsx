@@ -71,6 +71,10 @@ const EmployeMails = lazy(() => import('@/pages/employe/EmployeMails'))
 const EmployeCalendrier = lazy(() => import('@/pages/employe/EmployeCalendrier'))
 const EmployeSocial = lazy(() => import('@/pages/employe/EmployeSocial'))
 const EmployeLeads = lazy(() => import('@/pages/employe/EmployeLeads'))
+// Refonte UX 2026-05-17 — versions unifiées liste+filtres+toggle carte (cf. wiki log.md)
+const AgenceLeadsV2 = lazy(() => import('@/pages/agence/AgenceLeadsV2'))
+const ArtisanLeadsV2 = lazy(() => import('@/pages/artisan/ArtisanLeadsV2'))
+const EmployeLeadsV2 = lazy(() => import('@/pages/employe/EmployeLeadsV2'))
 const AdminLogements = lazy(() => import('@/pages/admin/AdminLogements'))
 const AdminDossiers = lazy(() => import('@/pages/admin/AdminDossiers'))
 const AdminDossierDetail = lazy(() => import('@/pages/admin/AdminDossierDetail'))
@@ -295,7 +299,11 @@ export default function App() {
                 {/* Phase 17.1 — 7 nouvelles entrées (skeletons cliquables) */}
                 <Route path="/artisan/simulateur" element={<ArtisanSimulateur />} />
                 <Route path="/artisan/chiffrage" element={<ArtisanChiffrage />} />
-                <Route path="/artisan/leads" element={<ArtisanLeads />} />
+                {/* Refonte UX 2026-05-17 : route principale = vue unifiée. Ancienne version
+                    accessible via /leads-legacy pour rollback éventuel. */}
+                <Route path="/artisan/leads" element={<ArtisanLeadsV2 />} />
+                <Route path="/artisan/leads-legacy" element={<ArtisanLeads />} />
+                <Route path="/artisan/leads-v2" element={<ArtisanLeadsV2 />} />
                 <Route path="/artisan/reseau" element={<ArtisanReseau />} />
                 <Route path="/artisan/reseaux-sociaux" element={<ArtisanReseauxSociaux />} />
                 <Route path="/artisan/qr-code" element={<ArtisanQRCode />} />
@@ -337,7 +345,9 @@ export default function App() {
             <Route element={<AgenceGuard />}>
               <Route element={<AgenceShell />}>
                 <Route path="/agence" element={<AgenceDashboard />} />
-                <Route path="/agence/leads" element={<AgenceLeads />} />
+                <Route path="/agence/leads" element={<AgenceLeadsV2 />} />
+                <Route path="/agence/leads-legacy" element={<AgenceLeads />} />
+                <Route path="/agence/leads-v2" element={<AgenceLeadsV2 />} />
                 <Route path="/agence/leaderboard" element={<AgenceLeaderboard />} />
                 <Route path="/agence/score-vente" element={<AgenceScoreVente />} />
                 <Route path="/agence/simulateur" element={<AgenceSimulateur />} />
@@ -379,7 +389,9 @@ export default function App() {
                 <Route path="/employe/mails" element={<EmployeMails />} />
                 <Route path="/employe/calendrier" element={<EmployeCalendrier />} />
                 <Route path="/employe/social" element={<EmployeSocial />} />
-                <Route path="/employe/leads" element={<EmployeLeads />} />
+                <Route path="/employe/leads" element={<EmployeLeadsV2 />} />
+                <Route path="/employe/leads-legacy" element={<EmployeLeads />} />
+                <Route path="/employe/leads-v2" element={<EmployeLeadsV2 />} />
               </Route>
             </Route>
 

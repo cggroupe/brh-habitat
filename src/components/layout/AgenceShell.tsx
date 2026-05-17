@@ -41,6 +41,8 @@ import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
 import PortalMobileNav from '@/components/shared/PortalMobileNav'
 import CommandPalette from '@/components/shared/CommandPalette'
+import { useMyAgenceMembership } from '@/hooks/queries/agence-membership'
+import { useActiveCountForAgence } from '@/hooks/queries/lead-assignments'
 import { supabase } from '@/lib/supabase'
 
 interface NavLeaf {
@@ -139,6 +141,14 @@ function computeOpenGroups(pathname: string): Record<NavGroup['id'], boolean> {
 export default function AgenceShell() {
   const { user } = useAuth()
   const location = useLocation()
+  const { data: membership } = useMyAgenceMembership()
+  const { data: activeLeadsCount } = useActiveCountForAgence(membership?.agenceId)
+
+  // Badges dynamiques par route — visible immédiatement dans la sidebar (pattern Linear/Stripe).
+  // null = pas de badge affiché (utile pour cacher quand 0).
+  const sidebarBadges: Record<string, number | null> = {
+    '/agence/leads': activeLeadsCount && activeLeadsCount > 0 ? activeLeadsCount : null,
+  }
 
   // Lazy init du state à partir du pathname courant — pas de useMemo nécessaire,
   // pas de eslint-disable, et compatible React 19 compiler.
@@ -210,23 +220,34 @@ export default function AgenceShell() {
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto">
           {/* Top-level */}
-          {TOP_LEVEL.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                `flex items-center gap-3 py-3 px-6 transition-all ${
-                  isActive
-                    ? 'text-white font-bold border-l-4 border-white bg-white/5'
-                    : 'text-white/70 hover:text-white hover:bg-white/10'
-                }`
-              }
-            >
-              <item.icon size={18} />
-              <span className="text-sm">{item.label}</span>
-            </NavLink>
-          ))}
+          {TOP_LEVEL.map((item) => {
+            const badge = sidebarBadges[item.to]
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 py-3 px-6 transition-all ${
+                    isActive
+                      ? 'text-white font-bold border-l-4 border-white bg-white/5'
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
+                  }`
+                }
+              >
+                <item.icon size={18} />
+                <span className="text-sm flex-1">{item.label}</span>
+                {badge != null && (
+                  <span
+                    aria-label={`${badge} en cours`}
+                    className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-white/20 text-white text-[11px] font-bold tabular-nums"
+                  >
+                    {badge}
+                  </span>
+                )}
+              </NavLink>
+            )
+          })}
 
           {/* Section header "OUTILS EXPERTS" */}
           <div className="mt-8 px-6 mb-2">
