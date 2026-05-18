@@ -168,6 +168,7 @@ const FicheAdressePage = lazy(() => import('@/pages/leads/FicheAdressePage'))
 const FicheEntreprisePage = lazy(() => import('@/pages/leads/FicheEntreprisePage'))
 const FichePersonnePage = lazy(() => import('@/pages/leads/FichePersonnePage'))
 const RecherchePage = lazy(() => import('@/pages/leads/RecherchePage'))
+const FavorisPage = lazy(() => import('@/pages/leads/FavorisPage'))
 const AgenceFoncierCarte = lazy(() => import('@/pages/agence/foncier/AgenceFoncierCarte'))
 const AgenceFoncierFavoris = lazy(() => import('@/pages/agence/foncier/AgenceFoncierFavoris'))
 // Phase 11.4 — Tableau prospects DPE F/G filtrable
@@ -313,6 +314,7 @@ export default function App() {
                 <Route path="/artisan/leads/entreprise/:siren" element={<FicheEntreprisePage profile="artisan" />} />
                 <Route path="/artisan/leads/personne/:nameOrId" element={<FichePersonnePage profile="artisan" />} />
                 <Route path="/artisan/recherche" element={<RecherchePage profile="artisan" />} />
+                <Route path="/artisan/favoris" element={<FavorisPage profile="artisan" />} />
                 <Route path="/artisan/reseau" element={<ArtisanReseau />} />
                 <Route path="/artisan/reseaux-sociaux" element={<ArtisanReseauxSociaux />} />
                 <Route path="/artisan/qr-code" element={<ArtisanQRCode />} />
@@ -361,6 +363,7 @@ export default function App() {
                 <Route path="/agence/leads/entreprise/:siren" element={<FicheEntreprisePage profile="agence" />} />
                 <Route path="/agence/leads/personne/:nameOrId" element={<FichePersonnePage profile="agence" />} />
                 <Route path="/agence/recherche" element={<RecherchePage profile="agence" />} />
+                <Route path="/agence/favoris" element={<FavorisPage profile="agence" />} />
                 <Route path="/agence/leaderboard" element={<AgenceLeaderboard />} />
                 <Route path="/agence/score-vente" element={<AgenceScoreVente />} />
                 <Route path="/agence/simulateur" element={<AgenceSimulateur />} />
@@ -409,6 +412,7 @@ export default function App() {
                 <Route path="/employe/leads/entreprise/:siren" element={<FicheEntreprisePage profile="employe" />} />
                 <Route path="/employe/leads/personne/:nameOrId" element={<FichePersonnePage profile="employe" />} />
                 <Route path="/employe/recherche" element={<RecherchePage profile="employe" />} />
+                <Route path="/employe/favoris" element={<FavorisPage profile="employe" />} />
               </Route>
             </Route>
 

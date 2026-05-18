@@ -8,6 +8,7 @@ import { User, Building2, Skull, Calendar, Briefcase } from 'lucide-react'
 import FicheBreadcrumb from './FicheBreadcrumb'
 import FicheSection from './FicheSection'
 import FicheEntityLink from './FicheEntityLink'
+import FavoriButton from './FavoriButton'
 import { useFichePersonneByName } from '@/hooks/queries/useFiche'
 import { canSee, type LeadProfile } from '@/lib/rgpd/lead-visibility'
 
@@ -90,12 +91,20 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                   {identity.death_date && <>Décédé(e) le {identity.death_date}</>}
                 </p>
               </div>
-              {isDeceased && (
-                <div className="flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-800">
-                  <Skull className="h-3.5 w-3.5" />
-                  Succession active
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                <FavoriButton
+                  entity_type="personne"
+                  entity_id={nameOrId}
+                  label={identity.full_name}
+                  sublabel={identity.birth_date ? `Né(e) ${identity.birth_date}` : null}
+                />
+                {isDeceased && (
+                  <div className="flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-800">
+                    <Skull className="h-3.5 w-3.5" />
+                    Succession active
+                  </div>
+                )}
+              </div>
             </div>
           </header>
 

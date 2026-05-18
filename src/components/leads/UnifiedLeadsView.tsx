@@ -76,6 +76,10 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
     navigate(`${profileBasePath(profile)}/adresse/${lead.id}`)
   }, [navigate, profile])
 
+  // En vue carte on charge plus de pins (max 200 côté RPC) ; en liste on pagine.
+  const effectiveLimit = view === 'map' ? 200 : PAGE_SIZE
+  const effectiveOffset = view === 'map' ? 0 : page * PAGE_SIZE
+
   const { data, isLoading } = useFoncierProspectsUnified({
     dept: dept || undefined,
     segmentV2: segment || undefined,
@@ -84,8 +88,8 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
     filterAvecSci: filterSCI,
     filterSuccession: filterSuccession,
     search: search || undefined,
-    limit: PAGE_SIZE,
-    offset: page * PAGE_SIZE,
+    limit: effectiveLimit,
+    offset: effectiveOffset,
   })
 
   // Le RPC renvoie un tableau de lignes, total_count inclus dans chaque ligne

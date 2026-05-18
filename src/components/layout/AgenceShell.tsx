@@ -36,7 +36,7 @@ import {
   Home,
   type LucideIcon,
 } from 'lucide-react'
-import { Trophy, Search, CalendarCheck } from 'lucide-react'
+import { Trophy, Search, CalendarCheck, Bookmark } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
 import PortalMobileNav from '@/components/shared/PortalMobileNav'
@@ -66,6 +66,7 @@ const TOP_LEVEL: NavLeaf[] = [
   { to: '/agence/score-vente', label: 'Score Vente', icon: Flame },
   { to: '/agence/leads', label: 'Mes leads', icon: ClipboardList },
   { to: '/agence/recherche', label: 'Recherche', icon: Search },
+  { to: '/agence/favoris', label: 'Favoris', icon: Bookmark },
   { to: '/agence/leaderboard', label: 'Classement Bretagne', icon: Trophy },
 ]
 

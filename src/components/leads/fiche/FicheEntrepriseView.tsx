@@ -6,6 +6,7 @@ import { Building2, User, Home, AlertTriangle, Skull } from 'lucide-react'
 import FicheBreadcrumb from './FicheBreadcrumb'
 import FicheSection from './FicheSection'
 import FicheEntityLink from './FicheEntityLink'
+import FavoriButton from './FavoriButton'
 import { useFicheEntreprise } from '@/hooks/queries/useFiche'
 import { canSee, type LeadProfile } from '@/lib/rgpd/lead-visibility'
 
@@ -68,12 +69,20 @@ export default function FicheEntrepriseView({ siren, profile }: Props) {
                   {sci.date_creation ? ` · créée le ${sci.date_creation}` : ''}
                 </p>
               </div>
-              {sci.has_deceased_dirigeant && (
-                <div className="flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-800">
-                  <Skull className="h-3.5 w-3.5" />
-                  Succession probable
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                <FavoriButton
+                  entity_type="entreprise"
+                  entity_id={sci.siren}
+                  label={sci.denomination}
+                  sublabel={`SIREN ${sci.siren}`}
+                />
+                {sci.has_deceased_dirigeant && (
+                  <div className="flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-800">
+                    <Skull className="h-3.5 w-3.5" />
+                    Succession probable
+                  </div>
+                )}
+              </div>
             </div>
           </header>
 

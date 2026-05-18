@@ -7,6 +7,7 @@ import { Home, FileText, Building2, Skull, Wallet, Phone, Users, Flame } from 'l
 import FicheBreadcrumb from './FicheBreadcrumb'
 import FicheSection from './FicheSection'
 import FicheEntityLink from './FicheEntityLink'
+import FavoriButton from './FavoriButton'
 import { useFicheAdresse } from '@/hooks/queries/useFiche'
 import { canSee, displayName, type LeadProfile } from '@/lib/rgpd/lead-visibility'
 import type { Dirigeant } from '@/types/fiche'
@@ -78,12 +79,20 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
                   {dpe.departement ? ` · ${dpe.departement}` : ''}
                 </p>
               </div>
-              {dpe.score_v2 != null && (
-                <div className="flex items-center gap-1.5 rounded-md border border-orange-200 bg-orange-50 px-3 py-1.5 text-sm font-semibold text-orange-800">
-                  <Flame className="h-4 w-4" />
-                  Score {dpe.score_v2}/100
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                <FavoriButton
+                  entity_type="adresse"
+                  entity_id={String(dpe.id)}
+                  label={dpe.adresse ?? `DPE #${dpe.id}`}
+                  sublabel={`${dpe.code_postal ?? ''} ${dpe.commune ?? ''}`.trim() || null}
+                />
+                {dpe.score_v2 != null && (
+                  <div className="flex items-center gap-1.5 rounded-md border border-orange-200 bg-orange-50 px-3 py-1.5 text-sm font-semibold text-orange-800">
+                    <Flame className="h-4 w-4" />
+                    Score {dpe.score_v2}/100
+                  </div>
+                )}
+              </div>
             </div>
           </header>
 

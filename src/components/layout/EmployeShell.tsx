@@ -23,6 +23,7 @@ import {
   Share2,
   Award,
   Search,
+  Bookmark,
   LogOut,
   ChevronDown,
   ChevronRight,
@@ -51,6 +52,7 @@ const TOP_NAV: NavLeaf[] = [
   { to: '/employe', label: 'Cockpit', icon: LayoutDashboard, end: true },
   { to: '/employe/leads', label: 'Mes leads', icon: TrendingUp },
   { to: '/employe/recherche', label: 'Recherche', icon: Search },
+  { to: '/employe/favoris', label: 'Favoris', icon: Bookmark },
 ]
 
 const GROUPS: NavGroup[] = [
