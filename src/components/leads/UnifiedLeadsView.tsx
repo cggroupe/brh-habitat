@@ -81,22 +81,72 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
     navigate(`${profileBasePath(profile)}/adresse/${lead.id}`)
   }, [navigate, profile])
 
+  // Filtres "appliqués" séparés des filtres UI : on n'envoie au RPC que sur clic
+  // "Rechercher" (sauf en vue carte, où le changement de view re-fetch directement,
+  // et au mount initial avec valeurs par défaut).
+  type AppliedFilters = {
+    dept: string
+    segment: ScoreV2Segment | ''
+    scoreMin: number
+    filterFioul: boolean
+    filterSCI: boolean
+    filterParticulier: boolean
+    filterSuccession: boolean
+    search: string
+  }
+  const [applied, setApplied] = useState<AppliedFilters>({
+    dept: '',
+    segment: '',
+    scoreMin: 0,
+    filterFioul: false,
+    filterSCI: false,
+    filterParticulier: false,
+    filterSuccession: false,
+    search: '',
+  })
+
   // En vue carte on charge plus de pins (max 200 côté RPC) ; en liste on pagine.
   const effectiveLimit = view === 'map' ? 200 : PAGE_SIZE
   const effectiveOffset = view === 'map' ? 0 : page * PAGE_SIZE
 
-  const { data, isLoading } = useFoncierProspectsUnified({
-    dept: dept || undefined,
-    segmentV2: segment || undefined,
-    scoreV2Min: scoreMin || undefined,
-    filterFioul: filterFioul,
-    filterAvecSci: filterSCI,
-    filterParticulier: filterParticulier,
-    filterSuccession: filterSuccession,
-    search: search || undefined,
+  const { data, isLoading, isFetching } = useFoncierProspectsUnified({
+    dept: applied.dept || undefined,
+    segmentV2: applied.segment || undefined,
+    scoreV2Min: applied.scoreMin || undefined,
+    filterFioul: applied.filterFioul,
+    filterAvecSci: applied.filterSCI,
+    filterParticulier: applied.filterParticulier,
+    filterSuccession: applied.filterSuccession,
+    search: applied.search || undefined,
     limit: effectiveLimit,
     offset: effectiveOffset,
   })
+
+  // Detection "filtres modifiés mais pas encore appliqués" : indique au bouton
+  // Rechercher qu'il y a quelque chose à valider.
+  const filtersAreDirty =
+    dept !== applied.dept ||
+    segment !== applied.segment ||
+    scoreMin !== applied.scoreMin ||
+    filterFioul !== applied.filterFioul ||
+    filterSCI !== applied.filterSCI ||
+    filterParticulier !== applied.filterParticulier ||
+    filterSuccession !== applied.filterSuccession ||
+    search !== applied.search
+
+  const applyFilters = useCallback(() => {
+    setApplied({
+      dept,
+      segment,
+      scoreMin,
+      filterFioul,
+      filterSCI,
+      filterParticulier,
+      filterSuccession,
+      search,
+    })
+    setPage(0)
+  }, [dept, segment, scoreMin, filterFioul, filterSCI, filterParticulier, filterSuccession, search])
 
   // Le RPC renvoie un tableau de lignes, total_count inclus dans chaque ligne
   const rows: LeadRow[] = data ?? []
@@ -119,7 +169,8 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
       {/* Header */}
       <header className="flex items-center gap-4 border-b border-slate-200 bg-white px-6 py-3 shadow-sm">
         <h1 className="text-lg font-semibold text-slate-900">{title}</h1>
-        <span className="rounded-full bg-slate-100 px-3 py-0.5 text-xs font-medium text-slate-700">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-0.5 text-xs font-medium text-slate-700">
+          {isFetching && <Loader2 className="h-3 w-3 animate-spin text-slate-500" />}
           {total.toLocaleString('fr-FR')} résultats
         </span>
 
@@ -130,11 +181,11 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Adresse, nom, SIREN, SCI..."
+            placeholder="Adresse, nom, SIREN, SCI... (Entrée pour appliquer)"
             value={search}
-            onChange={(e) => {
-              setSearch(e.target.value)
-              setPage(0)
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') applyFilters()
             }}
             className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-3 text-sm focus:border-slate-500 focus:outline-none"
           />
@@ -165,7 +216,8 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
 
       <div className="flex flex-1 overflow-hidden">
         {/* Colonne filtres */}
-        <aside className="w-72 shrink-0 overflow-y-auto border-r border-slate-200 bg-white p-4">
+        <aside className="flex w-72 shrink-0 flex-col border-r border-slate-200 bg-white">
+          <div className="overflow-y-auto p-4">
           <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900">
             <Filter className="h-4 w-4" />
             Filtres
@@ -359,6 +411,43 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
               {profile === 'artisan' && 'Vue technique RGE — DPE+isolation+ventilation'}
               {profile === 'notaire' && 'Vue spécialisée succession'}
             </div>
+          </div>
+          </div>
+
+          {/* Footer sticky : bouton Rechercher */}
+          <div className="border-t border-slate-200 bg-white p-3">
+            <button
+              type="button"
+              onClick={applyFilters}
+              disabled={isFetching && !filtersAreDirty}
+              className={`flex w-full items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition ${
+                filtersAreDirty
+                  ? 'bg-slate-900 text-white hover:bg-slate-700'
+                  : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+              } ${isFetching ? 'cursor-wait opacity-80' : ''}`}
+            >
+              {isFetching ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Recherche en cours…
+                </>
+              ) : filtersAreDirty ? (
+                <>
+                  <Search className="h-4 w-4" />
+                  Appliquer la recherche
+                </>
+              ) : (
+                <>
+                  <Search className="h-4 w-4" />
+                  Rechercher
+                </>
+              )}
+            </button>
+            {filtersAreDirty && !isFetching && (
+              <div className="mt-1.5 text-center text-[11px] text-amber-700">
+                Filtres modifiés — cliquez pour appliquer
+              </div>
+            )}
           </div>
         </aside>
 
