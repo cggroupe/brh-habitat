@@ -52,4 +52,13 @@ export interface LeadRow extends FoncierProspectRow {
 
   // Score vente (BRH interne)
   score_vente?: number | null
+
+  // PII enrichies particuliers (Sprint 10) — depuis brh_lead_pii_enriched (table
+  // peuplée par /opt/stack/scripts/brh-import-pii.py depuis entity-hub).
+  // RGPD : visible uniquement employé BRH via lead-visibility.ts.
+  pii_full_name?: string | null
+  pii_telephone?: string | null
+  pii_email?: string | null
+  pii_ca_total_eur?: number | null
+  pii_source?: string | null
 }

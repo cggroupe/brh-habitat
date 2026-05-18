@@ -634,6 +634,16 @@ function LeadCard({
               <Building2 className="h-3 w-3" />
               {lead.owner_name ?? lead.owner_siren}
             </Link>
+          ) : lead.pii_full_name ? (
+            <Link
+              to={`${profileBasePath(profile)}/personne/${encodeURIComponent(lead.pii_full_name)}`}
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-800 hover:bg-emerald-100"
+              title="Voir la fiche personne (client BRH enrichi)"
+            >
+              <UserIcon className="h-3 w-3" />
+              {lead.pii_full_name}
+            </Link>
           ) : lead.owner_name ? (
             <Link
               to={`${profileBasePath(profile)}/personne/${encodeURIComponent(lead.owner_name)}`}
@@ -645,6 +655,14 @@ function LeadCard({
               {lead.owner_name}
             </Link>
           ) : null}
+          {lead.pii_source === 'brh_clients_v2' && lead.pii_ca_total_eur != null && (
+            <span
+              className="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-800"
+              title="Client BRH avec historique CA"
+            >
+              Client BRH · {(lead.pii_ca_total_eur / 1000).toFixed(0)} k€
+            </span>
+          )}
         </div>
       </div>
 
@@ -656,16 +674,16 @@ function LeadCard({
             <span className="font-bold">{lead.score_v2}</span>
           </div>
         )}
-        {showPhone && lead.telephone && (
+        {showPhone && (lead.pii_telephone || lead.telephone) && (
           <span className="flex items-center gap-1 text-emerald-600">
             <Phone className="h-3 w-3" />
-            <span className="font-mono">{lead.telephone}</span>
+            <span className="font-mono">{lead.pii_telephone ?? lead.telephone}</span>
           </span>
         )}
-        {showEmail && lead.email && (
+        {showEmail && (lead.pii_email || lead.email) && (
           <span className="flex items-center gap-1 text-sky-600">
             <Mail className="h-3 w-3" />
-            <span className="truncate max-w-[150px]">{lead.email}</span>
+            <span className="truncate max-w-[150px]">{lead.pii_email ?? lead.email}</span>
           </span>
         )}
         <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-slate-700" />
