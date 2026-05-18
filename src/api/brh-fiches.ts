@@ -116,12 +116,11 @@ export const brhFichesApi = {
     const [last, ...rest] = fullName.split(/\s+/).filter(Boolean)
     const first = rest.join(' ')
 
-    // Recherche dans dirigeants SCI via JSONB ?@>
-    const { data: sciHits, error: e1 } = await supabase
-      .from('brh_sci_companies')
-      .select('siren, denomination, dirigeants, is_active, has_deceased_dirigeant')
-      .ilike('dirigeants::text', `%"${last}"%`)
-      .limit(30)
+    // Recherche via RPC dédiée (PostgREST ne sait pas caster jsonb→text dans .ilike)
+    const { data: sciHits, error: e1 } = await supabase.rpc('brh_sci_search_dirigeant', {
+      p_name: last,
+      p_limit: 30,
+    })
     if (e1) throw e1
 
     const roles: FichePersonne['roles'] = []

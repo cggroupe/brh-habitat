@@ -98,15 +98,13 @@ export const brhRechercheApi = {
     if (eE) throw eE
 
     // ── 3. Recherche dirigeants (extraction JSONB des matches SCI) ─────────
-    // On réutilise les résultats entreprises + fait une recherche supplémentaire
-    // sur le JSONB dirigeants pour récupérer les SCI dont un dirigeant matche.
+    // RPC dédiée car PostgREST ne sait pas caster jsonb→text dans .ilike.
     const dirigeants: RechercheDirigeantHit[] = []
     if (!isSiren && !isCp && q.length >= 3) {
-      const { data: sciByDirigeant, error: eD } = await supabase
-        .from('brh_sci_companies')
-        .select('siren, denomination, dirigeants, is_active')
-        .ilike('dirigeants::text', `%"${q}"%`)
-        .limit(15)
+      const { data: sciByDirigeant, error: eD } = await supabase.rpc('brh_sci_search_dirigeant', {
+        p_name: q,
+        p_limit: 15,
+      })
       if (!eD && sciByDirigeant) {
         for (const sciRow of sciByDirigeant) {
           const dirs = Array.isArray(sciRow.dirigeants) ? (sciRow.dirigeants as Array<Record<string, unknown>>) : []
