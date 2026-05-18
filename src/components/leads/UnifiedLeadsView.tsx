@@ -10,7 +10,8 @@
  * Profils supportés : 'employe' | 'agence' | 'artisan' | 'notaire'
  * Cf. /src/lib/rgpd/lead-visibility.ts pour la matrice RGPD.
  */
-import { lazy, Suspense, useMemo, useState } from 'react'
+import { lazy, Suspense, useMemo, useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Search, Filter, List, Map as MapIcon, ChevronRight, Loader2,
   Flame, Phone, Mail,
@@ -20,6 +21,16 @@ import type { ScoreV2Segment } from '@/api/foncier-prospects-table'
 import type { LeadRow } from '@/types/lead'
 import { canSee, type LeadProfile } from '@/lib/rgpd/lead-visibility'
 import LeadDetailModal from './LeadDetailModal'
+
+function profileBasePath(profile: LeadProfile): string {
+  switch (profile) {
+    case 'employe': return '/employe/leads'
+    case 'artisan': return '/artisan/leads'
+    case 'notaire': return '/notaire/leads'
+    case 'agence':
+    default: return '/agence/leads'
+  }
+}
 
 // Carte lazy-loaded : ne charge Leaflet que si l'utilisateur clique sur "Carte"
 const UnifiedLeadsMap = lazy(() => import('./UnifiedLeadsMap'))
@@ -60,6 +71,10 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
   const [filterSuccession, setFilterSuccession] = useState(false)
   const [page, setPage] = useState(0)
   const [selectedLead, setSelectedLead] = useState<LeadRow | null>(null)
+  const navigate = useNavigate()
+  const openFicheAdresse = useCallback((lead: LeadRow) => {
+    navigate(`${profileBasePath(profile)}/adresse/${lead.id}`)
+  }, [navigate, profile])
 
   const { data, isLoading } = useFoncierProspectsUnified({
     dept: dept || undefined,
@@ -272,7 +287,7 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
               page={page}
               setPage={setPage}
               total={total}
-              onSelect={setSelectedLead}
+              onSelect={openFicheAdresse}
             />
           ) : (
             <Suspense

@@ -5,6 +5,36 @@
 
 ---
 
+## 2026-05-18 (suite) — Sprint 1 : graph navigable, pages routes drill-down adresse/entreprise/personne
+
+- **Contexte** : feedback Philippe 18/05 « tout doit être relié, la moindre information doit être reliée ». Refonte de l'UX leads pour passer du modal slide-in V2 (qui écrase) à des pages routes drill-down avec deep-link et breadcrumb. Architecture cible : graph navigable bidirectionnel 1 hop direct + sections dépliables lazy (cf [`brh_graph_navigable_decisions.md`](../../.. /memory/brh_graph_navigable_decisions.md) — 10 décisions verrouillées).
+- **Fichiers créés** :
+  - [src/types/fiche.ts](../../src/types/fiche.ts) — types `FicheAdresse`, `FicheEntreprise`, `FichePersonne`, `SciInfo`, `Dirigeant`.
+  - [src/api/brh-fiches.ts](../../src/api/brh-fiches.ts) — composition côté client de queries Supabase simples (pas de RPC SQL pour éviter les bugs typage du 17/05) : `getFicheAdresse(dpeId)`, `getFicheEntreprise(siren)`, `getFichePersonneByName(fullName)`.
+  - [src/hooks/queries/useFiche.ts](../../src/hooks/queries/useFiche.ts) — 3 hooks tanstack (`useFicheAdresse`, `useFicheEntreprise`, `useFichePersonneByName`).
+  - [src/components/leads/fiche/FicheBreadcrumb.tsx](../../src/components/leads/fiche/FicheBreadcrumb.tsx) — fil d'Ariane partagé + bouton retour.
+  - [src/components/leads/fiche/FicheSection.tsx](../../src/components/leads/fiche/FicheSection.tsx) — section dépliable lazy (n'instancie le contenu qu'au premier déploiement).
+  - [src/components/leads/fiche/FicheEntityLink.tsx](../../src/components/leads/fiche/FicheEntityLink.tsx) — chip/row cliquable vers une autre fiche du graphe (variant `chip` ou `row`).
+  - [src/components/leads/fiche/FicheAdresseView.tsx](../../src/components/leads/fiche/FicheAdresseView.tsx) — DPE + propriétaire cliquable (SCI ou particulier) + voisinage cliquable + sections RGPD-aware (technique DPE, SCI résumé, succession, DVF, contacts).
+  - [src/components/leads/fiche/FicheEntrepriseView.tsx](../../src/components/leads/fiche/FicheEntrepriseView.tsx) — Identité Sirene + dirigeants cliquables (chips) + adresses détenues cliquables + alertes BODACC.
+  - [src/components/leads/fiche/FichePersonneView.tsx](../../src/components/leads/fiche/FichePersonneView.tsx) — Identité + rôles entreprises cliquables + patrimoine direct + historique BRH (employé only).
+  - [src/pages/leads/FicheAdressePage.tsx](../../src/pages/leads/FicheAdressePage.tsx), [FicheEntreprisePage.tsx](../../src/pages/leads/FicheEntreprisePage.tsx), [FichePersonnePage.tsx](../../src/pages/leads/FichePersonnePage.tsx) — wrappers route qui injectent le `profile` depuis App.tsx.
+- **Fichiers modifiés** :
+  - [src/App.tsx](../../src/App.tsx) — 9 nouvelles routes (3 entités × 3 profils : agence/employé/artisan) `/.../leads/{adresse,entreprise,personne}/:id`.
+  - [src/components/leads/UnifiedLeadsView.tsx](../../src/components/leads/UnifiedLeadsView.tsx) — la liste navigue désormais vers `/leads/adresse/:id` au lieu d'ouvrir le modal qui écrase. La modal reste pour la vue carte (popup overlay), conforme au principe « enrichir, jamais écraser » ([[feedback-brh-enrichir-jamais-ecraser]]).
+- **Pages wiki impactées** : log.md (cette entry). Pages à créer en Sprint 4 : `fiches-drill-down.md`, `lead-visibility-rgpd.md`, étendre `data-model.md` et `index.md`.
+- **Risque** : Low — nouvelles routes additives, modal préservée. Aucune migration SQL, queries Supabase déjà autorisées par RLS existantes.
+- **Tests** : `tsc --noEmit -p tsconfig.app.json` exit 0. Visual testing via Vercel deploy après push.
+- **Status** : ✅ DONE pour MVP (data Supabase). Entity-hub branchement = Sprint 3 (via tunnel cloudflared ou EF proxy).
+
+**Sprint 0 (matin) — récap métriques entity-hub post-relance** :
+- BRH personnes dans `core.person` : 12 912 → **18 086** (+5 174)
+- RDV liés à `core.event` : ~0 → **16 084** (+8 003 RDV)
+- 838 paires doublons détectées (0 mergées, seuil 0,9 trop strict → à relâcher en Sprint 3)
+- `match_deces_brh` toujours en cours (process PID 1024050, 12 220 BRH à matcher)
+
+---
+
 ## 2026-05-18 — Sprint 0 : cleanup émojis + segment fantôme + relance enrichissements OSINT
 
 - **Contexte** : Philippe a refusé la V2 leads du 17/05 (modal qui écrase, émojis 💀🔥💙⭐, segment 'premium' inexistant en BDD, URLs renovation-brh.fr polluantes). Sprint 0 pour décontaminer avant Sprint 1 (drill-down pages routes). En parallèle, 15 runs entity-hub bloqués en `running` depuis 58-85h, dont 3 critiques (`match_deces_brh`, `brh_v2_to_core`, `merge_brh_duplicates`) qui empêchent la finalisation du graph BRH.

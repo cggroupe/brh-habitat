@@ -163,6 +163,10 @@ const AgenceScoreVente = lazy(() => import('@/pages/agence/AgenceScoreVente'))
 const AgenceAbonnement = lazy(() => import('@/pages/agence/AgenceAbonnement'))
 const AgenceProfil = lazy(() => import('@/pages/agence/AgenceProfil'))
 // Phase 19 Sprint A — Foncier Pro
+// Phase 21 (2026-05-18) — Fiches drill-down graph navigable (adresse / entreprise / personne)
+const FicheAdressePage = lazy(() => import('@/pages/leads/FicheAdressePage'))
+const FicheEntreprisePage = lazy(() => import('@/pages/leads/FicheEntreprisePage'))
+const FichePersonnePage = lazy(() => import('@/pages/leads/FichePersonnePage'))
 const AgenceFoncierCarte = lazy(() => import('@/pages/agence/foncier/AgenceFoncierCarte'))
 const AgenceFoncierFavoris = lazy(() => import('@/pages/agence/foncier/AgenceFoncierFavoris'))
 // Phase 11.4 — Tableau prospects DPE F/G filtrable
@@ -304,6 +308,9 @@ export default function App() {
                 <Route path="/artisan/leads" element={<ArtisanLeadsV2 />} />
                 <Route path="/artisan/leads-legacy" element={<ArtisanLeads />} />
                 <Route path="/artisan/leads-v2" element={<ArtisanLeadsV2 />} />
+                <Route path="/artisan/leads/adresse/:dpeId" element={<FicheAdressePage profile="artisan" />} />
+                <Route path="/artisan/leads/entreprise/:siren" element={<FicheEntreprisePage profile="artisan" />} />
+                <Route path="/artisan/leads/personne/:nameOrId" element={<FichePersonnePage profile="artisan" />} />
                 <Route path="/artisan/reseau" element={<ArtisanReseau />} />
                 <Route path="/artisan/reseaux-sociaux" element={<ArtisanReseauxSociaux />} />
                 <Route path="/artisan/qr-code" element={<ArtisanQRCode />} />
@@ -348,6 +355,9 @@ export default function App() {
                 <Route path="/agence/leads" element={<AgenceLeadsV2 />} />
                 <Route path="/agence/leads-legacy" element={<AgenceLeads />} />
                 <Route path="/agence/leads-v2" element={<AgenceLeadsV2 />} />
+                <Route path="/agence/leads/adresse/:dpeId" element={<FicheAdressePage profile="agence" />} />
+                <Route path="/agence/leads/entreprise/:siren" element={<FicheEntreprisePage profile="agence" />} />
+                <Route path="/agence/leads/personne/:nameOrId" element={<FichePersonnePage profile="agence" />} />
                 <Route path="/agence/leaderboard" element={<AgenceLeaderboard />} />
                 <Route path="/agence/score-vente" element={<AgenceScoreVente />} />
                 <Route path="/agence/simulateur" element={<AgenceSimulateur />} />
@@ -392,6 +402,9 @@ export default function App() {
                 <Route path="/employe/leads" element={<EmployeLeadsV2 />} />
                 <Route path="/employe/leads-legacy" element={<EmployeLeads />} />
                 <Route path="/employe/leads-v2" element={<EmployeLeadsV2 />} />
+                <Route path="/employe/leads/adresse/:dpeId" element={<FicheAdressePage profile="employe" />} />
+                <Route path="/employe/leads/entreprise/:siren" element={<FicheEntreprisePage profile="employe" />} />
+                <Route path="/employe/leads/personne/:nameOrId" element={<FichePersonnePage profile="employe" />} />
               </Route>
             </Route>
 

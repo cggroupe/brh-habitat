@@ -1,0 +1,316 @@
+/**
+ * Vue fiche adresse — drill-down depuis la liste leads.
+ * Affiche DPE + propriétaire (cliquable) + voisinage (cliquable) + sections lazy.
+ * RGPD-aware via lead-visibility.ts.
+ */
+import { Home, FileText, Building2, Skull, Wallet, Phone, Users, Flame } from 'lucide-react'
+import FicheBreadcrumb from './FicheBreadcrumb'
+import FicheSection from './FicheSection'
+import FicheEntityLink from './FicheEntityLink'
+import { useFicheAdresse } from '@/hooks/queries/useFiche'
+import { canSee, displayName, type LeadProfile } from '@/lib/rgpd/lead-visibility'
+import type { Dirigeant } from '@/types/fiche'
+
+interface Props {
+  dpeId: number
+  profile: LeadProfile
+}
+
+export default function FicheAdresseView({ dpeId, profile }: Props) {
+  const { data, isLoading, error } = useFicheAdresse(dpeId)
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen flex-col bg-slate-50">
+        <div className="border-b border-slate-200 bg-white px-6 py-4">
+          <div className="h-5 w-64 animate-pulse rounded bg-slate-200" />
+        </div>
+        <div className="flex-1 p-6">
+          <div className="space-y-3">
+            <div className="h-24 animate-pulse rounded-lg bg-slate-200" />
+            <div className="h-32 animate-pulse rounded-lg bg-slate-200" />
+            <div className="h-12 animate-pulse rounded-lg bg-slate-200" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !data) {
+    return (
+      <div className="flex h-screen flex-col bg-slate-50">
+        <FicheBreadcrumb items={[{ label: 'Leads', to: profileBack(profile) }, { label: 'Adresse introuvable' }]} />
+        <div className="flex flex-1 items-center justify-center text-sm text-slate-600">
+          {error ? `Erreur : ${(error as Error).message}` : 'Cette adresse n’a pas été trouvée.'}
+        </div>
+      </div>
+    )
+  }
+
+  const { dpe, sci, voisinage } = data
+  const isPersonneMorale = !!dpe.owner_siren
+  const ownerLabel = displayName(profile, dpe.owner_name ?? null, isPersonneMorale)
+
+  const crumbs = [
+    { label: 'Leads', to: profileBack(profile) },
+    { label: dpe.adresse ?? `DPE #${dpe.id}` },
+  ]
+
+  return (
+    <div className="flex h-screen flex-col bg-slate-50">
+      <FicheBreadcrumb items={crumbs} />
+
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-4xl space-y-4 p-6">
+          {/* En-tête identité adresse */}
+          <header className="rounded-lg border border-slate-200 bg-white p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-slate-500">
+                  <Home className="h-3.5 w-3.5" />
+                  Adresse
+                </div>
+                <h1 className="mt-1 text-lg font-semibold text-slate-900">
+                  {dpe.adresse || `DPE #${dpe.id}`}
+                </h1>
+                <p className="text-sm text-slate-600">
+                  {dpe.code_postal} {dpe.commune}
+                  {dpe.departement ? ` · ${dpe.departement}` : ''}
+                </p>
+              </div>
+              {dpe.score_v2 != null && (
+                <div className="flex items-center gap-1.5 rounded-md border border-orange-200 bg-orange-50 px-3 py-1.5 text-sm font-semibold text-orange-800">
+                  <Flame className="h-4 w-4" />
+                  Score {dpe.score_v2}/100
+                </div>
+              )}
+            </div>
+          </header>
+
+          {/* Propriétaire — chip cliquable */}
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900">
+              <Users className="h-4 w-4" />
+              Propriétaire
+            </div>
+            {isPersonneMorale && dpe.owner_siren ? (
+              <FicheEntityLink
+                kind="entreprise"
+                id={dpe.owner_siren}
+                label={ownerLabel}
+                sublabel={`SIREN ${dpe.owner_siren} · personne morale`}
+                profile={profile}
+                variant="row"
+              />
+            ) : dpe.owner_name ? (
+              <FicheEntityLink
+                kind="personne"
+                id={encodeURIComponent(dpe.owner_name)}
+                label={ownerLabel}
+                sublabel="Propriétaire particulier"
+                profile={profile}
+                variant="row"
+              />
+            ) : (
+              <div className="text-sm text-slate-500">Propriétaire inconnu</div>
+            )}
+          </div>
+
+          {/* DPE — section toujours ouverte */}
+          {canSee(profile, 'dpe_basic') && (
+            <FicheSection title="DPE" icon={<FileText className="h-4 w-4" />} defaultOpen>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <Stat label="Classe DPE" value={dpe.etiquette_dpe} accent={['F', 'G'].includes(String(dpe.etiquette_dpe))} />
+                <Stat label="Surface" value={dpe.surface ? `${dpe.surface} m²` : null} />
+                <Stat label="Année" value={dpe.annee_construction} />
+                <Stat label="Type bâti" value={dpe.type_batiment} />
+              </div>
+
+              {canSee(profile, 'dpe_details_techniques') && (
+                <div className="mt-4 grid grid-cols-1 gap-2 rounded-md border border-slate-200 bg-slate-50 p-3 text-xs sm:grid-cols-2">
+                  <DetailRow label="Conso 5 usages" value={dpe.conso_m2_ep ? `${dpe.conso_m2_ep} kWh/m²·an` : null} />
+                  <DetailRow label="Ubat" value={dpe.ubat ? `${dpe.ubat} W/m²·K` : null} />
+                  <DetailRow label="Isolation murs" value={dpe.qualite_isolation_murs} />
+                  <DetailRow label="Menuiseries" value={dpe.qualite_isolation_menuiseries} />
+                  <DetailRow label="Plancher bas" value={dpe.qualite_isolation_plancher_bas} />
+                  <DetailRow label="Plancher haut" value={dpe.qualite_isolation_plancher_haut} />
+                  <DetailRow label="Ventilation" value={dpe.type_ventilation} />
+                  <DetailRow label="Chauffage" value={dpe.description_chauffage} />
+                </div>
+              )}
+            </FicheSection>
+          )}
+
+          {/* Société propriétaire (résumé local) — cliquer ouvre fiche entreprise */}
+          {sci && canSee(profile, 'sci_info') && (
+            <FicheSection
+              title="Société propriétaire"
+              icon={<Building2 className="h-4 w-4" />}
+              count={sci.dirigeants.length}
+              defaultOpen
+            >
+              <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+                <DetailRow label="Dénomination" value={sci.denomination} />
+                <DetailRow label="SIREN" value={sci.siren} />
+                <DetailRow label="Forme juridique" value={sci.forme_juridique} />
+                <DetailRow label="Statut" value={sci.is_active ? 'Active' : `Radiée${sci.date_radiation ? ' le ' + sci.date_radiation : ''}`} />
+              </div>
+              {canSee(profile, 'sci_dirigeants') && sci.dirigeants.length > 0 && (
+                <div className="mt-3 space-y-1.5">
+                  <div className="text-xs font-medium text-slate-500">Dirigeants</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {sci.dirigeants.map((d: Dirigeant, i: number) => {
+                      const name = [d.prenom, d.nom].filter(Boolean).join(' ').trim()
+                      if (!name) return null
+                      return (
+                        <FicheEntityLink
+                          key={`${name}-${i}`}
+                          kind="personne"
+                          id={encodeURIComponent(name)}
+                          label={name + (d.est_decede ? ' †' : '')}
+                          profile={profile}
+                          variant="chip"
+                        />
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+              <div className="mt-3">
+                <FicheEntityLink
+                  kind="entreprise"
+                  id={sci.siren}
+                  label={`Voir fiche complète de ${sci.denomination}`}
+                  profile={profile}
+                  variant="row"
+                />
+              </div>
+            </FicheSection>
+          )}
+
+          {/* Succession */}
+          {canSee(profile, 'sci_succession') &&
+            (sci?.has_deceased_dirigeant || dpe.succession_active || dpe.deces_date) && (
+              <FicheSection
+                title="Succession probable"
+                icon={<Skull className="h-4 w-4 text-red-600" />}
+                defaultOpen
+              >
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <DetailRow label="Décès" value={dpe.deces_date} />
+                  <DetailRow label="Score succession" value={dpe.score_succession ?? sci?.succession_probable_score} />
+                  <DetailRow
+                    label="Dirigeants décédés"
+                    value={sci ? sci.dirigeants.filter((d) => d.est_decede).length : null}
+                  />
+                </div>
+              </FicheSection>
+            )}
+
+          {/* DVF mutations */}
+          {canSee(profile, 'dvf_mutations') && (dpe.dvf_prix != null || dpe.dvf_date) && (
+            <FicheSection title="Mutations DVF" icon={<Wallet className="h-4 w-4" />} defaultOpen>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <DetailRow label="Dernière vente" value={dpe.dvf_date} />
+                <DetailRow label="Prix" value={dpe.dvf_prix ? `${dpe.dvf_prix.toLocaleString('fr-FR')} €` : null} />
+                <DetailRow
+                  label="Prix /m²"
+                  value={dpe.dvf_prix_m2 ? `${dpe.dvf_prix_m2.toLocaleString('fr-FR')} €/m²` : null}
+                />
+              </div>
+            </FicheSection>
+          )}
+
+          {/* Contacts particulier — BRH interne uniquement */}
+          {(canSee(profile, 'particulier_phone') === true || canSee(profile, 'particulier_email') === true) &&
+            (dpe.telephone || dpe.email) && (
+              <FicheSection title="Contacts (BRH interne)" icon={<Phone className="h-4 w-4" />} defaultOpen>
+                <div className="space-y-1.5 text-sm">
+                  {dpe.telephone && (
+                    <DetailRow
+                      label="Téléphone"
+                      value={
+                        <a href={`tel:${dpe.telephone}`} className="font-mono text-emerald-700 hover:underline">
+                          {dpe.telephone}
+                        </a>
+                      }
+                    />
+                  )}
+                  {dpe.email && (
+                    <DetailRow
+                      label="Email"
+                      value={
+                        <a href={`mailto:${dpe.email}`} className="text-sky-700 hover:underline">
+                          {dpe.email}
+                        </a>
+                      }
+                    />
+                  )}
+                </div>
+              </FicheSection>
+            )}
+
+          {/* Voisinage (lazy) */}
+          {voisinage.length > 0 && (
+            <FicheSection
+              title="Voisinage proche (même code postal)"
+              icon={<Home className="h-4 w-4" />}
+              count={voisinage.length}
+            >
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {voisinage.map((v) => (
+                  <FicheEntityLink
+                    key={v.id}
+                    kind="adresse"
+                    id={v.id}
+                    label={v.adresse ?? `DPE #${v.id}`}
+                    sublabel={`Classe ${v.etiquette_dpe ?? '?'} · ${v.surface_habitable ?? '?'} m²${
+                      v.score_v2 != null ? ` · score ${v.score_v2}` : ''
+                    }`}
+                    profile={profile}
+                    variant="row"
+                  />
+                ))}
+              </div>
+            </FicheSection>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function profileBack(profile: LeadProfile): string {
+  switch (profile) {
+    case 'employe':
+      return '/employe/leads'
+    case 'artisan':
+      return '/artisan/leads'
+    case 'notaire':
+      return '/notaire/leads'
+    case 'agence':
+    default:
+      return '/agence/leads'
+  }
+}
+
+function Stat({ label, value, accent }: { label: string; value: React.ReactNode; accent?: boolean }) {
+  return (
+    <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+      <div className="text-[10px] uppercase tracking-wide text-slate-500">{label}</div>
+      <div className={`mt-0.5 text-sm font-semibold ${accent ? 'text-red-700' : 'text-slate-900'}`}>
+        {value ?? '—'}
+      </div>
+    </div>
+  )
+}
+
+function DetailRow({ label, value }: { label: string; value: React.ReactNode | string | number | null | undefined }) {
+  if (value == null || value === '') return null
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <span className="text-xs text-slate-500">{label}</span>
+      <span className="text-sm text-slate-900">{value}</span>
+    </div>
+  )
+}
