@@ -3,7 +3,7 @@
  * Affiche DPE + propriétaire (cliquable) + voisinage (cliquable) + sections lazy.
  * RGPD-aware via lead-visibility.ts.
  */
-import { Home, FileText, Building2, Skull, Wallet, Phone, Users, Flame } from 'lucide-react'
+import { Home, FileText, Building2, Skull, Wallet, Phone, Users, Flame, TrendingUp, Hammer } from 'lucide-react'
 import FicheBreadcrumb from './FicheBreadcrumb'
 import FicheSection from './FicheSection'
 import FicheEntityLink from './FicheEntityLink'
@@ -240,6 +240,37 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
             </FicheSection>
           )}
 
+          {/* Signaux d'intention (entity-hub Sprint 13b) */}
+          {canSee(profile, 'score_intention_travaux') &&
+            (dpe.intent_score_travaux != null || dpe.intent_score_vente != null) && (
+              <FicheSection
+                title="Signaux d'intention"
+                icon={<TrendingUp className="h-4 w-4 text-orange-500" />}
+                defaultOpen
+              >
+                <div className="space-y-3">
+                  {dpe.intent_score_travaux != null && (
+                    <IntentBar
+                      label="Travaux / rénovation"
+                      icon={<Hammer className="h-3.5 w-3.5" />}
+                      score={dpe.intent_score_travaux}
+                      color="orange"
+                      breakdown={dpe.intent_breakdown_travaux as Record<string, unknown> | null}
+                    />
+                  )}
+                  {dpe.intent_score_vente != null && (
+                    <IntentBar
+                      label="Intention de vente"
+                      icon={<Wallet className="h-3.5 w-3.5" />}
+                      score={dpe.intent_score_vente}
+                      color="emerald"
+                      breakdown={dpe.intent_breakdown_vente as Record<string, unknown> | null}
+                    />
+                  )}
+                </div>
+              </FicheSection>
+            )}
+
           {/* Succession */}
           {canSee(profile, 'sci_succession') &&
             (sci?.has_deceased_dirigeant || dpe.succession_active || dpe.deces_date) && (
@@ -363,6 +394,46 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode | s
     <div className="flex items-baseline justify-between gap-3">
       <span className="text-xs text-slate-500">{label}</span>
       <span className="text-sm text-slate-900">{value}</span>
+    </div>
+  )
+}
+
+function IntentBar({
+  label,
+  icon,
+  score,
+  color,
+  breakdown,
+}: {
+  label: string
+  icon: React.ReactNode
+  score: number
+  color: 'orange' | 'emerald'
+  breakdown?: Record<string, unknown> | null
+}) {
+  const pct = Math.max(0, Math.min(100, score))
+  const bg = color === 'orange' ? 'bg-orange-500' : 'bg-emerald-500'
+  const txt = color === 'orange' ? 'text-orange-700' : 'text-emerald-700'
+  const detail =
+    breakdown && typeof breakdown === 'object'
+      ? Object.entries(breakdown)
+          .filter(([k]) => ['n_active', 'n_recent', 'n_permits', 'signal', 'last_autorisation'].includes(k))
+          .map(([k, v]) => `${k}: ${typeof v === 'string' || typeof v === 'number' ? v : JSON.stringify(v)}`)
+          .join(' · ')
+      : null
+  return (
+    <div>
+      <div className="mb-1 flex items-center justify-between text-xs">
+        <span className={`flex items-center gap-1.5 font-medium ${txt}`}>
+          {icon}
+          {label}
+        </span>
+        <span className="font-bold text-slate-900">{score}/100</span>
+      </div>
+      <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+        <div className={`h-full ${bg} transition-all`} style={{ width: `${pct}%` }} />
+      </div>
+      {detail && <div className="mt-1 text-[10px] text-slate-500">{detail}</div>}
     </div>
   )
 }
