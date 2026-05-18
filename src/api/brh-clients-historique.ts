@@ -30,6 +30,17 @@ export interface ClientBrhHit {
   osint_linkedin: string | null
   osint_facebook: string | null
   total_count: number
+  psy_profile?: {
+    personality_traits?: string[]
+    digital_footprint?: 'faible' | 'moyen' | 'élevé'
+    communication_style?: 'formel' | 'direct' | 'chaleureux' | 'technique'
+    best_contact_channel?: string
+    renovation_motivators?: string[]
+    renovation_barriers?: string[]
+    estimated_segment?: string
+    approach_advice?: string
+    confidence?: 'low' | 'medium' | 'high'
+  } | null
 }
 
 export interface ClientsBrhFilters {

@@ -39,6 +39,7 @@ RETURNS TABLE (
   link_confidence numeric,
   osint_linkedin text,
   osint_facebook text,
+  psy_profile jsonb,
   total_count bigint
 )
 LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = ''

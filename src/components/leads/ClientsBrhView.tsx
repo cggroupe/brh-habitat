@@ -287,6 +287,54 @@ function ContactRow({ c, profileBase }: { c: ReturnType<typeof useClientsBrh>['d
               )}
             </div>
           )}
+
+          {c.psy_profile && (
+            <div className="mt-2 rounded-md border border-fuchsia-200 bg-fuchsia-50 p-2">
+              <div className="mb-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-fuchsia-900">
+                <span>Profil psycho-commercial (IA)</span>
+                {c.psy_profile.confidence && (
+                  <span className="rounded-full bg-white px-1.5 py-0.5 text-[9px]">
+                    confiance : {c.psy_profile.confidence}
+                  </span>
+                )}
+              </div>
+              {c.psy_profile.personality_traits?.length ? (
+                <div className="mb-1 flex flex-wrap gap-1">
+                  {c.psy_profile.personality_traits.map((t, i) => (
+                    <span key={i} className="rounded-full border border-fuchsia-300 bg-white px-1.5 py-0.5 text-[10px] text-fuchsia-800">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              <div className="grid grid-cols-1 gap-x-3 gap-y-0.5 text-[11px] text-slate-700 sm:grid-cols-2">
+                {c.psy_profile.communication_style && (
+                  <span><b>Style</b> : {c.psy_profile.communication_style}</span>
+                )}
+                {c.psy_profile.best_contact_channel && (
+                  <span><b>Canal</b> : {c.psy_profile.best_contact_channel}</span>
+                )}
+                {c.psy_profile.estimated_segment && (
+                  <span className="sm:col-span-2"><b>Segment</b> : {c.psy_profile.estimated_segment}</span>
+                )}
+                {c.psy_profile.renovation_motivators?.length ? (
+                  <span className="sm:col-span-2">
+                    <b>Motivateurs</b> : {c.psy_profile.renovation_motivators.join(', ')}
+                  </span>
+                ) : null}
+                {c.psy_profile.renovation_barriers?.length ? (
+                  <span className="sm:col-span-2">
+                    <b>Barrières</b> : {c.psy_profile.renovation_barriers.join(', ')}
+                  </span>
+                ) : null}
+              </div>
+              {c.psy_profile.approach_advice && (
+                <div className="mt-1.5 rounded bg-white p-1.5 text-[11px] italic text-slate-700">
+                  💡 {c.psy_profile.approach_advice}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex shrink-0 flex-col items-end gap-1">
