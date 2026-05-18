@@ -11,7 +11,8 @@
  * Cf. /src/lib/rgpd/lead-visibility.ts pour la matrice RGPD.
  */
 import { lazy, Suspense, useMemo, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { Building2, User as UserIcon } from 'lucide-react'
 import {
   Search, Filter, List, Map as MapIcon, ChevronRight, Loader2,
   Flame, Phone, Mail,
@@ -68,6 +69,7 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
   const [filterFG, setFilterFG] = useState(true) // par défaut F/G uniquement (passoires)
   const [filterFioul, setFilterFioul] = useState(false)
   const [filterSCI, setFilterSCI] = useState(false)
+  const [filterParticulier, setFilterParticulier] = useState(false)
   const [filterSuccession, setFilterSuccession] = useState(false)
   const [page, setPage] = useState(0)
   const [selectedLead, setSelectedLead] = useState<LeadRow | null>(null)
@@ -86,6 +88,7 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
     scoreV2Min: scoreMin || undefined,
     filterFioul: filterFioul,
     filterAvecSci: filterSCI,
+    filterParticulier: filterParticulier,
     filterSuccession: filterSuccession,
     search: search || undefined,
     limit: effectiveLimit,
@@ -248,10 +251,27 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
               <input
                 type="checkbox"
                 checked={filterSCI}
-                onChange={(e) => setFilterSCI(e.target.checked)}
+                onChange={(e) => {
+                  setFilterSCI(e.target.checked)
+                  if (e.target.checked) setFilterParticulier(false)
+                  setPage(0)
+                }}
                 className="rounded"
               />
               <span>Détenu par SCI</span>
+            </label>
+            <label className="flex items-center gap-2 text-slate-700">
+              <input
+                type="checkbox"
+                checked={filterParticulier}
+                onChange={(e) => {
+                  setFilterParticulier(e.target.checked)
+                  if (e.target.checked) setFilterSCI(false)
+                  setPage(0)
+                }}
+                className="rounded"
+              />
+              <span>Détenu par particulier</span>
             </label>
             {canSee(profile, 'sci_succession') && (
               <label className="flex items-center gap-2 text-slate-700">
@@ -406,9 +426,17 @@ function LeadCard({
   const showEmail = canSee(profile, 'particulier_email') === true
 
   return (
-    <button
+    <div
       onClick={onClick}
-      className="group flex w-full items-start gap-3 rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:border-slate-400 hover:shadow-sm"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onClick()
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      className="group flex w-full cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:border-slate-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
     >
       {/* DPE badge */}
       <div className="flex w-10 flex-col items-center">
@@ -428,11 +456,13 @@ function LeadCard({
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2">
           <span className="truncate text-sm font-semibold text-slate-900">
-            {lead.adresse || 'Adresse inconnue'}
+            {lead.adresse_ban || lead.adresse || 'Adresse inconnue'}
           </span>
-          <span className="text-xs text-slate-500">
-            {lead.code_postal} {lead.commune}
-          </span>
+          {!lead.adresse_ban && (
+            <span className="text-xs text-slate-500">
+              {lead.code_postal} {lead.commune}
+            </span>
+          )}
         </div>
         <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-600">
           {lead.surface && <span>{lead.surface}m²</span>}
@@ -444,6 +474,27 @@ function LeadCard({
               {segCfg.l}
             </span>
           )}
+          {lead.owner_siren ? (
+            <Link
+              to={`${profileBasePath(profile)}/entreprise/${lead.owner_siren}`}
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1 rounded-full border border-violet-300 bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-800 hover:bg-violet-100"
+              title={`Voir la fiche entreprise ${lead.owner_name ?? lead.owner_siren}`}
+            >
+              <Building2 className="h-3 w-3" />
+              {lead.owner_name ?? lead.owner_siren}
+            </Link>
+          ) : lead.owner_name ? (
+            <Link
+              to={`${profileBasePath(profile)}/personne/${encodeURIComponent(lead.owner_name)}`}
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-800 hover:bg-emerald-100"
+              title="Voir la fiche personne"
+            >
+              <UserIcon className="h-3 w-3" />
+              {lead.owner_name}
+            </Link>
+          ) : null}
         </div>
       </div>
 
@@ -469,6 +520,6 @@ function LeadCard({
         )}
         <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-slate-700" />
       </div>
-    </button>
+    </div>
   )
 }

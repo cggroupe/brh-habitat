@@ -11,6 +11,9 @@
 import type { FoncierProspectRow } from '@/api/foncier-prospects-table'
 
 export interface LeadRow extends FoncierProspectRow {
+  // Adresse BAN-normalisée (numéro + rue + CP + commune) — 99,97 % des leads
+  adresse_ban?: string | null
+
   // Coordonnées (pour la carte) — vient de brh_dpe_prospects.lat/lng
   latitude?: number | null
   longitude?: number | null

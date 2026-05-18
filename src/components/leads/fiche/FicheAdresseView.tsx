@@ -54,7 +54,7 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
 
   const crumbs = [
     { label: 'Leads', to: profileBack(profile) },
-    { label: dpe.adresse ?? `DPE #${dpe.id}` },
+    { label: dpe.adresse_ban ?? dpe.adresse ?? `DPE #${dpe.id}` },
   ]
 
   return (
@@ -72,12 +72,14 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
                   Adresse
                 </div>
                 <h1 className="mt-1 text-lg font-semibold text-slate-900">
-                  {dpe.adresse || `DPE #${dpe.id}`}
+                  {dpe.adresse_ban || dpe.adresse || `DPE #${dpe.id}`}
                 </h1>
-                <p className="text-sm text-slate-600">
-                  {dpe.code_postal} {dpe.commune}
-                  {dpe.departement ? ` · ${dpe.departement}` : ''}
-                </p>
+                {!dpe.adresse_ban && (
+                  <p className="text-sm text-slate-600">
+                    {dpe.code_postal} {dpe.commune}
+                    {dpe.departement ? ` · ${dpe.departement}` : ''}
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <FavoriButton

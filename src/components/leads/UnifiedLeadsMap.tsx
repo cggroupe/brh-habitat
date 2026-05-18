@@ -32,11 +32,21 @@ const DEFAULT_ZOOM = 8
 function MapInvalidator() {
   const map = useMap()
   useEffect(() => {
-    const t1 = setTimeout(() => map.invalidateSize(), 0)
-    const t2 = setTimeout(() => map.invalidateSize(), 200)
+    // Invalidate plusieurs fois pendant 1.5s : couvre les cas où le parent
+    // change de hauteur après le mount (Suspense, lazy layout, EmployeShell...).
+    const timeouts = [0, 50, 150, 400, 800, 1500].map((delay) =>
+      setTimeout(() => map.invalidateSize(), delay),
+    )
+    // ResizeObserver sur le container map : redimensionne quand le parent change.
+    const container = map.getContainer()
+    let ro: ResizeObserver | null = null
+    if (typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(() => map.invalidateSize())
+      ro.observe(container)
+    }
     return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
+      timeouts.forEach(clearTimeout)
+      ro?.disconnect()
     }
   }, [map])
   return null
@@ -142,7 +152,7 @@ export default function UnifiedLeadsMap({ rows, profile, onSelect }: Props) {
             >
               <Tooltip direction="top" offset={[0, -16]} opacity={0.95}>
                 <div className="text-xs">
-                  <div className="font-semibold">{row.adresse}</div>
+                  <div className="font-semibold">{row.adresse_ban || row.adresse}</div>
                   <div>
                     DPE <b>{row.etiquette_dpe ?? '?'}</b>
                     {row.score_v2 != null && <> · score {row.score_v2}</>}
@@ -151,10 +161,12 @@ export default function UnifiedLeadsMap({ rows, profile, onSelect }: Props) {
               </Tooltip>
               <Popup>
                 <div className="text-xs">
-                  <div className="font-semibold">{row.adresse}</div>
-                  <div className="text-slate-600">
-                    {row.code_postal} {row.commune}
-                  </div>
+                  <div className="font-semibold">{row.adresse_ban || row.adresse}</div>
+                  {!row.adresse_ban && (
+                    <div className="text-slate-600">
+                      {row.code_postal} {row.commune}
+                    </div>
+                  )}
                   <div className="mt-1">
                     DPE <span className="font-bold">{row.etiquette_dpe ?? '?'}</span>
                     {row.surface ? ` · ${row.surface}m²` : ''}

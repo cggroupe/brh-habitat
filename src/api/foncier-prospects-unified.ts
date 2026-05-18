@@ -17,6 +17,7 @@ export interface FoncierUnifiedFilters {
   segmentV2?: ScoreV2Segment
   filterFioul?: boolean
   filterAvecSci?: boolean
+  filterParticulier?: boolean
   filterSuccession?: boolean
   search?: string
   limit?: number
@@ -35,6 +36,7 @@ export const foncierProspectsUnifiedApi = {
       p_search: filters.search ?? null,
       p_limit: Math.min(filters.limit ?? 50, 200),
       p_offset: Math.max(0, filters.offset ?? 0),
+      p_filter_particulier: filters.filterParticulier ?? false,
     })
     if (error) throw error
     return (data ?? []) as LeadRow[]
