@@ -47,12 +47,19 @@ export const brhFichesApi = {
     if (e1) throw e1
     if (!dpe) return null
 
-    // Récupère les PII enrichies si dispo (Sprint 10)
-    const { data: pii } = await supabase
-      .from('brh_lead_pii_enriched')
-      .select('full_name, first_name, last_name, telephone, email, ca_total_eur, premiere_facture, derniere_facture, source')
-      .eq('dpe_id', dpeId)
-      .maybeSingle()
+    // Récupère les PII enrichies si dispo (Sprint 10) + signaux intention (Sprint 13b)
+    const [{ data: pii }, { data: intent }] = await Promise.all([
+      supabase
+        .from('brh_lead_pii_enriched')
+        .select('full_name, first_name, last_name, telephone, email, ca_total_eur, premiere_facture, derniere_facture, source')
+        .eq('dpe_id', dpeId)
+        .maybeSingle(),
+      supabase
+        .from('brh_intention_signals')
+        .select('score_travaux, score_vente, score_succession, breakdown_travaux, breakdown_vente, breakdown_succession, match_confidence')
+        .eq('dpe_id', dpeId)
+        .maybeSingle(),
+    ])
     if (pii) {
       Object.assign(dpe, {
         pii_full_name: pii.full_name,
@@ -64,6 +71,17 @@ export const brhFichesApi = {
         pii_premiere_facture: pii.premiere_facture,
         pii_derniere_facture: pii.derniere_facture,
         pii_source: pii.source,
+      })
+    }
+    if (intent) {
+      Object.assign(dpe, {
+        intent_score_travaux: intent.score_travaux,
+        intent_score_vente: intent.score_vente,
+        intent_score_succession: intent.score_succession,
+        intent_breakdown_travaux: intent.breakdown_travaux,
+        intent_breakdown_vente: intent.breakdown_vente,
+        intent_breakdown_succession: intent.breakdown_succession,
+        intent_confidence: intent.match_confidence,
       })
     }
 

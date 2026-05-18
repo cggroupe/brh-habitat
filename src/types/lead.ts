@@ -61,4 +61,14 @@ export interface LeadRow extends FoncierProspectRow {
   pii_email?: string | null
   pii_ca_total_eur?: number | null
   pii_source?: string | null
+
+  // Signaux d'intention (Sprint 13b) — depuis brh_intention_signals, répliqués
+  // de entity-hub signals.intention_*. Scores 0-100.
+  intent_score_travaux?: number | null
+  intent_score_vente?: number | null
+  intent_score_succession?: number | null
+  intent_breakdown_travaux?: Record<string, unknown> | null
+  intent_breakdown_vente?: Record<string, unknown> | null
+  intent_breakdown_succession?: Record<string, unknown> | null
+  intent_confidence?: number | null
 }
