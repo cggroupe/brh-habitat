@@ -5,6 +5,21 @@
 
 ---
 
+## 2026-05-18 (urgence 2) — Fix perf RPC `brh_foncier_prospects_unified` (SECURITY DEFINER)
+
+- **Bug** : après fix smallint→integer, la RPC retournait 0 résultats côté UI car `statement_timeout` (8s pour `authenticated`) cancellait la query. Mesure : 3,4s en superuser, **39s en authenticated** (5× plus lent à cause de RLS appliqué row-by-row sur les 59 306 rows × LEFT JOIN ext_iris/ext_commune).
+- **Cause** : la policy `dpe_prospects_select_agence` USING `brh_user_has_agence_access()` était évaluée pour chaque candidate row. Fonction `brh_user_has_agence_access()` = 2 EXISTS sur 2 tables, multipliés par 59k rows.
+- **Fix** : passer le RPC en `SECURITY DEFINER` + check d'accès UNE FOIS en début de fonction (PLpgSQL) :
+  - Accès autorisé si `brh_user_has_agence_access()` OU `profile.role IN ('admin','pro','employe')`
+  - Sinon `RAISE EXCEPTION` ERRCODE `42501` (insufficient_privilege)
+  - Une fois le check passé, la query principale s'exécute SANS RLS overhead (bypass car SECURITY DEFINER)
+- **Migration** : [`20260518160000_brh_foncier_prospects_unified_secdef.sql`](../../supabase/migrations/20260518160000_brh_foncier_prospects_unified_secdef.sql) — DROP + CREATE PLpgSQL. Cast `f.energie_chauffage::text` ajouté (PLpgSQL plus strict que SQL sur les varchar→text).
+- **Mesure post-fix** : 7,5s via PostgREST authenticated (vs 39s avant). Encore sur le fil du timeout 8s, mais ça passe. À optimiser plus tard avec un index composite sur `(score_v2_segment, score_v2 DESC)` ou un cache matérialisé.
+- **Test E2E** : `POST /rest/v1/rpc/brh_foncier_prospects_unified` avec JWT admin et `p_segment_v2='standard'` retourne 5 lignes + `total_count=35113` en 7,5s. ✅
+- **Status** : ✅ DONE prod + repo. **Hard reload** côté Philippe nécessaire (bundle JS inchangé, juste la fonction SQL).
+
+---
+
 ## 2026-05-18 (urgence) — Fix critique RPC `brh_foncier_prospects_unified` (smallint → integer)
 
 - **Bug** : le hook front envoie `p_score_v2_min` typé `integer` (int4), mais le RPC créé par la migration `20260517100000` typait ce param en `smallint` (int2). Postgres ne fait pas de conversion implicite int4→int2 pour le matching de fonction overloadable → erreur `function does not exist` côté backend, le hook React Query retourne `data=undefined` mais reste `isFetching=true`. Résultat : page `/agence/leads` affichait **"0 résultats" + spinner infini au centre** (screenshot Philippe 18/05 14h).
