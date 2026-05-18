@@ -5,6 +5,21 @@
 
 ---
 
+## 2026-05-18 (urgence) — Fix critique RPC `brh_foncier_prospects_unified` (smallint → integer)
+
+- **Bug** : le hook front envoie `p_score_v2_min` typé `integer` (int4), mais le RPC créé par la migration `20260517100000` typait ce param en `smallint` (int2). Postgres ne fait pas de conversion implicite int4→int2 pour le matching de fonction overloadable → erreur `function does not exist` côté backend, le hook React Query retourne `data=undefined` mais reste `isFetching=true`. Résultat : page `/agence/leads` affichait **"0 résultats" + spinner infini au centre** (screenshot Philippe 18/05 14h).
+- **Test BDD direct** : `SELECT brh_foncier_prospects_unified(NULL::text, 0::smallint, …)` → 50 lignes OK. Avec `0::integer` → `ERROR: function does not exist`.
+- **Migrations** :
+  - [`20260517100000_brh_foncier_prospects_unified.sql`](../../supabase/migrations/20260517100000_brh_foncier_prospects_unified.sql) — fixée à la racine (`p_score_v2_min integer DEFAULT 0`) pour cohérence repo.
+  - [`20260518150000_brh_foncier_prospects_unified_score_int.sql`](../../supabase/migrations/20260518150000_brh_foncier_prospects_unified_score_int.sql) — DROP + CREATE en prod avec nouvelle signature.
+- **Appliquée prod** : `psql -f …20260518150000…` → `DROP FUNCTION / CREATE FUNCTION / GRANT / COMMENT` OK.
+- **Test post-fix** : `brh_foncier_prospects_unified(NULL::text, 0::integer, 'standard', false, false, false, NULL, 3, 0)` retourne 3 lignes avec `total_count = 35 113`. ✅
+- **Risque** : None — DROP de l'ancienne signature avant CREATE de la nouvelle. Pas de downtime perceptible (la V2 ne marchait déjà pas).
+- **Status** : ✅ DONE prod + repo.
+- **Leçon** : Postgres ne fait PAS de conversion implicite int4→int2 pour le matching de fonction overloadable. **Toujours typer les params numériques en `integer` côté RPC pour matcher le comportement Supabase JS** ([feedback_postgres_smallint_jsint.md](../../.claude/memory/feedback_postgres_smallint_jsint.md) à créer).
+
+---
+
 ## 2026-05-18 (suite 3) — Sprint 3 + Sprint 4 : enrichissement OSINT SCI + documentation wiki
 
 ### Sprint 3 — SCI fill-gaps en cours

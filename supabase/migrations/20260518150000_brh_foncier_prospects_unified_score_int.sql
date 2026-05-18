@@ -1,16 +1,17 @@
--- 2026-05-17 — Phase UX Refonte : RPC `brh_foncier_prospects_unified` (v2)
+-- 2026-05-18 — Fix critique : signature RPC `brh_foncier_prospects_unified`
 --
--- Étend le RPC `brh_foncier_prospects_table` avec :
---   - Coordonnées lat/lng (pour la vue carte UnifiedLeadsMap)
---   - Détails techniques DPE (ubat, qualite_isolation_*, type_ventilation, descriptions)
---   - Propriétaire personne morale (owner_siren, owner_name, owner_type)
---   - DVF historique (dvf_prix, dvf_date)
---   - Filtres avancés : fioul, avec SCI, succession (basé sur dpe_saut_s1 = signal vente proche)
+-- Bug détecté en prod : p_score_v2_min était typé `smallint` (int2) alors que
+-- le client Supabase JS envoie un `integer` (int4) par défaut. Postgres ne
+-- fait pas la conversion implicite entre int4 et int2 pour les arguments de
+-- fonction overloadable → erreur "function does not exist", loader infini
+-- côté UI (cf screenshot Philippe 18/05 14h00).
 --
--- L'ancien RPC `brh_foncier_prospects_table` reste intact (utilisé par /agence/foncier/prospects).
--- Le nouveau RPC est utilisé uniquement par les routes /leads-v2 (UnifiedLeadsView).
---
--- SECURITY INVOKER : passe par RLS de l'utilisateur (pas de bypass).
+-- Fix : DROP + CREATE avec p_score_v2_min en integer. Le body est strictement
+-- identique à la migration 20260517100000 (seul le typage du 2e param change).
+
+DROP FUNCTION IF EXISTS brh_foncier_prospects_unified(
+  text, smallint, text, boolean, boolean, boolean, text, integer, integer
+);
 
 CREATE OR REPLACE FUNCTION brh_foncier_prospects_unified(
   p_dept text DEFAULT NULL,
@@ -24,7 +25,6 @@ CREATE OR REPLACE FUNCTION brh_foncier_prospects_unified(
   p_offset int DEFAULT 0
 )
 RETURNS TABLE (
-  -- Colonnes du RPC original
   id integer, adresse text, commune varchar, code_postal varchar, departement varchar,
   surface double precision, etiquette_dpe char, annee_construction integer,
   conso_m2_ep double precision, type_batiment varchar,
@@ -36,7 +36,6 @@ RETURNS TABLE (
   tlv_tendue boolean, tlv_zonage text,
   audits_ademe_count integer,
   dvf_mutation_24m boolean, dvf_prix_m2 integer,
-  -- NOUVELLES colonnes pour UnifiedLeadsView/Map/Modal
   latitude double precision,
   longitude double precision,
   energie_chauffage text,
@@ -66,11 +65,8 @@ AS $$
       AND (p_dept IS NULL OR p.departement = p_dept)
       AND (p_score_v2_min = 0 OR p.score_v2 >= p_score_v2_min)
       AND (p_segment_v2 IS NULL OR p.score_v2_segment = p_segment_v2)
-      -- Filtres avancés UX refonte
       AND (NOT p_filter_fioul OR p.energie_chauffage ILIKE '%fioul%')
       AND (NOT p_filter_avec_sci OR p.owner_siren IS NOT NULL)
-      -- dpe_saut_s1 est un JSONB descriptif (label/gestes/gain_pct/cep_projete)
-      -- IS NOT NULL = un saut DPE significatif est calculable → signal renovation forte
       AND (NOT p_filter_succession OR p.dpe_saut_s1 IS NOT NULL)
       AND (p_search IS NULL
            OR p.adresse ILIKE '%'||p_search||'%'
@@ -91,7 +87,6 @@ AS $$
     f.tlv_tendue, f.tlv_zonage,
     f.audits_ademe_count,
     f.dvf_mutation_24m, f.dvf_prix_m2,
-    -- Nouvelles colonnes
     f.latitude, f.longitude,
     f.energie_chauffage,
     f.owner_siren, f.owner_name, f.owner_type,
@@ -108,5 +103,10 @@ AS $$
   OFFSET GREATEST(0, p_offset);
 $$;
 
-GRANT EXECUTE ON FUNCTION brh_foncier_prospects_unified TO authenticated;
-COMMENT ON FUNCTION brh_foncier_prospects_unified IS '2026-05-17 — RPC v2 : tableau prospects DPE unifié avec coords + détails techniques + filtres fioul/SCI/succession. Utilisé par /leads-v2 (UnifiedLeadsView).';
+GRANT EXECUTE ON FUNCTION brh_foncier_prospects_unified(
+  text, integer, text, boolean, boolean, boolean, text, integer, integer
+) TO authenticated;
+
+COMMENT ON FUNCTION brh_foncier_prospects_unified(
+  text, integer, text, boolean, boolean, boolean, text, integer, integer
+) IS '2026-05-18 — Fix typage p_score_v2_min int4 (cf migration 20260517 bug smallint).';
