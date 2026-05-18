@@ -68,6 +68,7 @@ const ProfilPage = lazy(() => import('@/pages/dashboard/ProfilPage'))
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'))
 const EmployeDashboard = lazy(() => import('@/pages/employe/EmployeDashboard'))
 const EmployeMails = lazy(() => import('@/pages/employe/EmployeMails'))
+const EmployeClientsBrh = lazy(() => import('@/pages/employe/EmployeClientsBrh'))
 const EmployeCalendrier = lazy(() => import('@/pages/employe/EmployeCalendrier'))
 const EmployeSocial = lazy(() => import('@/pages/employe/EmployeSocial'))
 const EmployeLeads = lazy(() => import('@/pages/employe/EmployeLeads'))
@@ -413,6 +414,7 @@ export default function App() {
                 <Route path="/employe/leads/personne/:nameOrId" element={<FichePersonnePage profile="employe" />} />
                 <Route path="/employe/recherche" element={<RecherchePage profile="employe" />} />
                 <Route path="/employe/favoris" element={<FavorisPage profile="employe" />} />
+                <Route path="/employe/clients-brh" element={<EmployeClientsBrh />} />
               </Route>
             </Route>
 
