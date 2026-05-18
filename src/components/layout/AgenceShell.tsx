@@ -26,9 +26,8 @@ import {
   Users,
   QrCode,
   MessageCircle,
-  Map as MapIcon,
-  Star,
-  AlertTriangle,
+  // Foncier-only icons (2026-05-18 commentés en attendant réactivation)
+  // Map as MapIcon, Star, AlertTriangle,
   Briefcase,
   Globe,
   ChevronDown,
@@ -71,19 +70,22 @@ const TOP_LEVEL: NavLeaf[] = [
 ]
 
 const GROUPS: NavGroup[] = [
-  {
-    id: 'foncier',
-    label: 'Foncier',
-    icon: MapIcon,
-    matchPaths: ['/agence/foncier'],
-    items: [
-      { to: '/agence/foncier/carte', label: 'Carte cadastre', icon: MapIcon },
-      { to: '/agence/foncier/prospects', label: 'Prospects DPE', icon: ClipboardList },
-      { to: '/agence/foncier/favoris', label: 'Favoris', icon: Star },
-      { to: '/agence/foncier/sci', label: 'SCI et personnes morales', icon: Building2 },
-      { to: '/agence/foncier/tertiaire', label: 'Tertiaire et permis', icon: AlertTriangle },
-    ],
-  },
+  // 2026-05-18 — Groupe Foncier masqué : filtres fusionnés dans `/agence/leads`
+  // (vue unifiée). Routes `/agence/foncier/*` toujours accessibles via URL directe
+  // (legacy non supprimé). Décision retour Philippe 18/05 fin de journée.
+  // {
+  //   id: 'foncier',
+  //   label: 'Foncier',
+  //   icon: MapIcon,
+  //   matchPaths: ['/agence/foncier'],
+  //   items: [
+  //     { to: '/agence/foncier/carte', label: 'Carte cadastre', icon: MapIcon },
+  //     { to: '/agence/foncier/prospects', label: 'Prospects DPE', icon: ClipboardList },
+  //     { to: '/agence/foncier/favoris', label: 'Favoris', icon: Star },
+  //     { to: '/agence/foncier/sci', label: 'SCI et personnes morales', icon: Building2 },
+  //     { to: '/agence/foncier/tertiaire', label: 'Tertiaire et permis', icon: AlertTriangle },
+  //   ],
+  // },
   {
     id: 'reseau',
     label: 'Réseau pro',

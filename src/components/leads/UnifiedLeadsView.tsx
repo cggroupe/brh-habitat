@@ -67,10 +67,13 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
   const [segment, setSegment] = useState<ScoreV2Segment | ''>('')
   const [scoreMin, setScoreMin] = useState<number>(0)
   const [filterFG, setFilterFG] = useState(true) // par défaut F/G uniquement (passoires)
+  const [etiquetteFilter, setEtiquetteFilter] = useState<string>('') // classe DPE précise (A-G) si non vide
   const [filterFioul, setFilterFioul] = useState(false)
   const [filterSCI, setFilterSCI] = useState(false)
   const [filterParticulier, setFilterParticulier] = useState(false)
   const [filterSuccession, setFilterSuccession] = useState(false)
+  const [typeBatiment, setTypeBatiment] = useState<string>('') // 'maison' | 'appartement' | 'immeuble' | ''
+  const [filterMutationDvfRecente, setFilterMutationDvfRecente] = useState(false) // dvf_mutation_24m
   const [page, setPage] = useState(0)
   const [selectedLead, setSelectedLead] = useState<LeadRow | null>(null)
   const navigate = useNavigate()
@@ -99,13 +102,16 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
   const rows: LeadRow[] = data ?? []
   const total = rows[0]?.total_count ?? 0
 
-  // Filtre F/G appliqué côté client (les autres filtres sont passés au RPC)
+  // Filtres affineurs appliqués côté client (les filtres "lourds" passent au RPC)
   const filteredRows = useMemo(() => {
     return rows.filter((r) => {
       if (filterFG && !['F', 'G'].includes(String(r.etiquette_dpe))) return false
+      if (etiquetteFilter && String(r.etiquette_dpe) !== etiquetteFilter) return false
+      if (typeBatiment && String(r.type_batiment ?? '').toLowerCase() !== typeBatiment) return false
+      if (filterMutationDvfRecente && !r.dvf_mutation_24m) return false
       return true
     })
-  }, [rows, filterFG])
+  }, [rows, filterFG, etiquetteFilter, typeBatiment, filterMutationDvfRecente])
 
 
   return (
@@ -284,6 +290,61 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
                 <span>Succession en cours</span>
               </label>
             )}
+            <label className="flex items-center gap-2 text-slate-700">
+              <input
+                type="checkbox"
+                checked={filterMutationDvfRecente}
+                onChange={(e) => {
+                  setFilterMutationDvfRecente(e.target.checked)
+                  setPage(0)
+                }}
+                className="rounded"
+              />
+              <span>Mutation DVF &lt; 24 mois</span>
+            </label>
+          </div>
+
+          {/* Filtres avancés (foncier fusionné dans la vue unifiée 18/05) */}
+          <div className="mt-4 space-y-2 text-sm">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-600">Classe DPE précise</label>
+              <select
+                value={etiquetteFilter}
+                onChange={(e) => {
+                  setEtiquetteFilter(e.target.value)
+                  if (e.target.value && ['A', 'B', 'C', 'D', 'E'].includes(e.target.value)) {
+                    setFilterFG(false)
+                  }
+                  setPage(0)
+                }}
+                className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs"
+              >
+                <option value="">Toutes classes</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+                <option value="E">E</option>
+                <option value="F">F (passoire)</option>
+                <option value="G">G (passoire)</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-slate-600">Type de bâtiment</label>
+              <select
+                value={typeBatiment}
+                onChange={(e) => {
+                  setTypeBatiment(e.target.value)
+                  setPage(0)
+                }}
+                className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs"
+              >
+                <option value="">Tous types</option>
+                <option value="maison">Maison</option>
+                <option value="appartement">Appartement</option>
+                <option value="immeuble">Immeuble / tertiaire</option>
+              </select>
+            </div>
           </div>
 
           {/* Profile badge */}

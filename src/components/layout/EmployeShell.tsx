@@ -9,10 +9,9 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
   Map as MapIcon,
-  Building2,
+  // Building2 — foncier-only (commenté 2026-05-18)
   ClipboardList,
-  Star,
-  AlertTriangle,
+  // Star, AlertTriangle — foncier-only (commenté 2026-05-18)
   Sparkles,
   Target,
   Globe,
@@ -56,18 +55,20 @@ const TOP_NAV: NavLeaf[] = [
 ]
 
 const GROUPS: NavGroup[] = [
-  {
-    id: 'foncier',
-    label: 'Foncier',
-    icon: MapIcon,
-    children: [
-      { to: '/employe/foncier/carte', label: 'Carte cadastre', icon: MapIcon },
-      { to: '/employe/foncier/prospects', label: 'Prospects DPE F/G', icon: ClipboardList },
-      { to: '/employe/foncier/favoris', label: 'Favoris', icon: Star },
-      { to: '/employe/foncier/sci', label: 'SCI / personnes morales', icon: Building2 },
-      { to: '/employe/foncier/tertiaire', label: 'Tertiaire & permis', icon: AlertTriangle },
-    ],
-  },
+  // 2026-05-18 — Groupe Foncier masqué : filtres fusionnés dans `/employe/leads`.
+  // Routes `/employe/foncier/*` toujours accessibles par URL directe (legacy non supprimé).
+  // {
+  //   id: 'foncier',
+  //   label: 'Foncier',
+  //   icon: MapIcon,
+  //   children: [
+  //     { to: '/employe/foncier/carte', label: 'Carte cadastre', icon: MapIcon },
+  //     { to: '/employe/foncier/prospects', label: 'Prospects DPE F/G', icon: ClipboardList },
+  //     { to: '/employe/foncier/favoris', label: 'Favoris', icon: Star },
+  //     { to: '/employe/foncier/sci', label: 'SCI / personnes morales', icon: Building2 },
+  //     { to: '/employe/foncier/tertiaire', label: 'Tertiaire & permis', icon: AlertTriangle },
+  //   ],
+  // },
   {
     id: 'prospection',
     label: 'Prospection',
