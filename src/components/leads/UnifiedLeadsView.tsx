@@ -301,7 +301,7 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
                 </div>
               }
             >
-              <UnifiedLeadsMap rows={filteredRows} profile={profile} onSelect={setSelectedLead} />
+              <UnifiedLeadsMap rows={filteredRows} profile={profile} onSelect={openFicheAdresse} />
             </Suspense>
           )}
         </main>
