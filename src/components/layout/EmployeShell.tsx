@@ -81,12 +81,15 @@ const GROUPS: NavGroup[] = [
     ],
   },
   {
+    // 2026-05-18 — Liens alignés sur la vraie UX réseau pro (Phase 18 v2 ReseauHub).
+    // Plus de "Fil d'actualité" qui renvoyait à un autre dashboard cassé.
     id: 'reseau',
     label: 'Réseau pro',
     icon: Globe,
     children: [
-      { to: '/reseau', label: 'Fil d\'actualité', icon: Globe, end: true },
-      { to: '/reseau/chantiers', label: 'Chantiers', icon: ClipboardList },
+      { to: '/reseau', label: 'Publier', icon: Globe, end: true },
+      { to: '/reseau/chantiers', label: 'Chantiers publiés', icon: ClipboardList },
+      { to: '/reseau/disponibilites', label: 'Pros disponibles', icon: Calendar },
       { to: '/reseau/connexions', label: 'Mes connexions', icon: Share2 },
       { to: '/reseau/messages', label: 'Messages réseau', icon: MessageSquare },
     ],
