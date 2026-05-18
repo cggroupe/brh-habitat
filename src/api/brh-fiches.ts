@@ -47,6 +47,26 @@ export const brhFichesApi = {
     if (e1) throw e1
     if (!dpe) return null
 
+    // Récupère les PII enrichies si dispo (Sprint 10)
+    const { data: pii } = await supabase
+      .from('brh_lead_pii_enriched')
+      .select('full_name, first_name, last_name, telephone, email, ca_total_eur, premiere_facture, derniere_facture, source')
+      .eq('dpe_id', dpeId)
+      .maybeSingle()
+    if (pii) {
+      Object.assign(dpe, {
+        pii_full_name: pii.full_name,
+        pii_first_name: pii.first_name,
+        pii_last_name: pii.last_name,
+        pii_telephone: pii.telephone,
+        pii_email: pii.email,
+        pii_ca_total_eur: pii.ca_total_eur,
+        pii_premiere_facture: pii.premiere_facture,
+        pii_derniere_facture: pii.derniere_facture,
+        pii_source: pii.source,
+      })
+    }
+
     let sci: SciInfo | null = null
     if (dpe.owner_siren) {
       const { data: sciRow, error: e2 } = await supabase

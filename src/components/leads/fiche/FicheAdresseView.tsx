@@ -113,6 +113,47 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
                 profile={profile}
                 variant="row"
               />
+            ) : dpe.pii_full_name ? (
+              <div className="space-y-2">
+                <FicheEntityLink
+                  kind="personne"
+                  id={encodeURIComponent(dpe.pii_full_name)}
+                  label={dpe.pii_full_name}
+                  sublabel={
+                    dpe.pii_source === 'brh_clients_v2'
+                      ? 'Client BRH enrichi · CA + facturation'
+                      : 'Client BRH (contact connu)'
+                  }
+                  profile={profile}
+                  variant="row"
+                />
+                {canSee(profile, 'particulier_phone') === true && dpe.pii_telephone && (
+                  <a
+                    href={`tel:${dpe.pii_telephone}`}
+                    className="block rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs"
+                  >
+                    <span className="text-slate-500">Téléphone : </span>
+                    <span className="font-mono font-semibold text-emerald-800">{dpe.pii_telephone}</span>
+                  </a>
+                )}
+                {canSee(profile, 'particulier_email') === true && dpe.pii_email && (
+                  <a
+                    href={`mailto:${dpe.pii_email}`}
+                    className="block rounded-md border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs"
+                  >
+                    <span className="text-slate-500">Email : </span>
+                    <span className="font-semibold text-sky-800">{dpe.pii_email}</span>
+                  </a>
+                )}
+                {profile === 'employe' && dpe.pii_ca_total_eur != null && (
+                  <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs">
+                    <span className="text-slate-500">CA cumulé BRH : </span>
+                    <span className="font-semibold text-amber-800">
+                      {dpe.pii_ca_total_eur.toLocaleString('fr-FR')} €
+                    </span>
+                  </div>
+                )}
+              </div>
             ) : dpe.owner_name ? (
               <FicheEntityLink
                 kind="personne"
