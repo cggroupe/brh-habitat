@@ -12,12 +12,12 @@ import { socialPublicationsApi, type SocialPlatform, type SocialPostTemplate } f
 import { useMyEmployee } from '@/hooks/queries/brh-employees'
 import { EMPLOYEES_KEY } from '@/hooks/queries/brh-employees'
 
-const PLATFORMS: { key: SocialPlatform; label: string; emoji: string; color: string }[] = [
-  { key: 'linkedin', label: 'LinkedIn', emoji: '💼', color: '#0A66C2' },
-  { key: 'tiktok', label: 'TikTok', emoji: '🎵', color: '#000000' },
-  { key: 'instagram', label: 'Instagram', emoji: '📷', color: '#E1306C' },
-  { key: 'facebook', label: 'Facebook', emoji: '👥', color: '#1877F2' },
-  { key: 'twitter', label: 'X', emoji: '𝕏', color: '#000000' },
+const PLATFORMS: { key: SocialPlatform; label: string; initials: string; color: string }[] = [
+  { key: 'linkedin', label: 'LinkedIn', initials: 'IN', color: '#0A66C2' },
+  { key: 'tiktok', label: 'TikTok', initials: 'TT', color: '#000000' },
+  { key: 'instagram', label: 'Instagram', initials: 'IG', color: '#E1306C' },
+  { key: 'facebook', label: 'Facebook', initials: 'FB', color: '#1877F2' },
+  { key: 'twitter', label: 'X', initials: 'X', color: '#000000' },
 ]
 
 export default function EmployeSocial() {
@@ -47,7 +47,8 @@ export default function EmployeSocial() {
   const submitMutation = useMutation({
     mutationFn: () => {
       if (!employee) throw new Error('Employé non chargé')
-      if (!content.trim()) throw new Error('Contenu requis')
+      if (!url.trim()) throw new Error('URL requise')
+      if (!/^https?:\/\//i.test(url.trim())) throw new Error('URL invalide (commencer par http(s)://)')
       return socialPublicationsApi.create({
         employee_id: employee.id,
         platform,
@@ -147,38 +148,43 @@ export default function EmployeSocial() {
                 }`}
                 style={platform === p.key ? { color: p.color } : {}}
               >
-                <span className="text-lg">{p.emoji}</span>
+                <span
+                  className="inline-flex h-5 w-5 items-center justify-center rounded text-[10px] font-bold text-white"
+                  style={{ backgroundColor: p.color }}
+                >
+                  {p.initials}
+                </span>
                 {p.label}
               </button>
             ))}
           </div>
 
           <label className="block text-xs font-bold uppercase tracking-widest text-text-muted mb-2">
-            Contenu publié *
-          </label>
-          <textarea
-            rows={8}
-            placeholder="Collez le contenu de votre publication ici…"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 mb-3 font-mono"
-          />
-
-          <label className="block text-xs font-bold uppercase tracking-widest text-text-muted mb-2">
-            URL de la publication (optionnel)
+            URL de la publication *
           </label>
           <input
             type="url"
             placeholder="https://www.linkedin.com/posts/…"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 mb-4"
+            className="w-full px-3 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 mb-3"
+          />
+
+          <label className="block text-xs font-bold uppercase tracking-widest text-text-muted mb-2">
+            Contenu (optionnel — pour mémoire ou template inspiration)
+          </label>
+          <textarea
+            rows={5}
+            placeholder="Collez le contenu de votre publication ici (facultatif)…"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="w-full px-3 py-2.5 rounded-lg border border-border bg-white text-sm focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 mb-4 font-mono"
           />
 
           <button
             type="button"
             onClick={() => submitMutation.mutate()}
-            disabled={!content.trim() || submitMutation.isPending}
+            disabled={!url.trim() || submitMutation.isPending}
             className="w-full px-6 py-3 rounded-lg text-white font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: '#00600a' }}
           >
@@ -252,7 +258,7 @@ export default function EmployeSocial() {
                     className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-white"
                     style={{ backgroundColor: platMeta?.color ?? '#71717a' }}
                   >
-                    <span className="text-lg">{platMeta?.emoji ?? '📢'}</span>
+                    <span className="text-[11px] font-bold">{platMeta?.initials ?? '?'}</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] text-text leading-snug line-clamp-2">{pub.content_text}</p>

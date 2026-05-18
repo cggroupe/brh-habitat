@@ -8,7 +8,7 @@ import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
-  Map as MapIcon,
+  // Map as MapIcon — foncier-only + carte prospects (commenté 2026-05-18)
   // Building2 — foncier-only (commenté 2026-05-18)
   ClipboardList,
   // Star, AlertTriangle — foncier-only (commenté 2026-05-18)
@@ -75,7 +75,8 @@ const GROUPS: NavGroup[] = [
     icon: Target,
     children: [
       { to: '/employe/prospection/bretagne', label: 'Top Bretagne F/G', icon: TrendingUp },
-      { to: '/employe/prospection/carte', label: 'Carte prospects', icon: MapIcon },
+      // 2026-05-18 — "Carte prospects" supprimée (doublon de /employe/leads vue carte)
+      // { to: '/employe/prospection/carte', label: 'Carte prospects', icon: MapIcon },
       { to: '/employe/simulateur', label: 'Simulateur énergétique', icon: Sparkles },
     ],
   },

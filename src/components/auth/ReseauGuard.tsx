@@ -20,7 +20,12 @@ export default function ReseauGuard() {
     queryKey: ['my-reseau-access', user?.id ?? 'anon'] as const,
     queryFn: async () => {
       if (!user?.id) return null
-      const [{ data: contract }, { data: company }] = await Promise.all([
+      const [{ data: profile }, { data: contract }, { data: company }] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle(),
         supabase
           .from('brh_partner_contracts')
           .select('id, partner_type, status')
@@ -35,7 +40,11 @@ export default function ReseauGuard() {
           .eq('owner_id', user.id)
           .maybeSingle(),
       ])
-      // Renvoie le contract en priorité (pour traçabilité partner_type), sinon company.
+      // BRH internes (admin / pro / employe) ont accès au réseau pro.
+      if (profile?.role && ['admin', 'pro', 'employe'].includes(profile.role)) {
+        return { id: 'brh-internal', partner_type: 'brh_internal', status: 'active' }
+      }
+      // Sinon : contract en priorité (pour traçabilité partner_type), sinon company.
       return contract ?? (company ? { id: company.id, partner_type: 'pro_company', status: 'active' } : null)
     },
     enabled: !!user?.id,
