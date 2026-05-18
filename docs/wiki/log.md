@@ -5,6 +5,27 @@
 
 ---
 
+## 2026-05-18 (suite 3) — Sprint 3 + Sprint 4 : enrichissement OSINT SCI + documentation wiki
+
+### Sprint 3 — SCI fill-gaps en cours
+
+- **Contexte** : sur 10 179 SIREN BRH référencés dans `brh_dpe_prospects.owner_siren`, seulement 1 555 (15 %) étaient enrichis dans `brh_sci_companies`. **8 624 SIREN manquaient** → fiches entreprise vides pour 80 % des SCI propriétaires.
+- **Script créé** : [`/opt/stack/scripts/brh-sci-fill-gaps.py`](file:///opt/stack/scripts/brh-sci-fill-gaps.py) + wrapper auth bash [`brh-sci-fill-gaps.sh`](file:///opt/stack/scripts/brh-sci-fill-gaps.sh) — asyncio + semaphore 7 + appels POST EF `sci-search` (qui cache TTL 30j dans `brh_sci_companies`).
+- **Lancement** : 2026-05-18 10:00 UTC. Rate observé ~27 req/s. ~55 % d'erreurs côté API gouv (rate limit ou timeouts intermittents). Re-run automatique des fails à prévoir Sprint 3.1.
+- **Status** : 🟡 EN COURS (5200/8624 ≈ 60 % à ~12 minutes du début, ok=2374, none=5).
+
+### Sprint 4 — Documentation wiki Karpathy
+
+- **Pages créées** :
+  - [`fiches-drill-down.md`](fiches-drill-down.md) — architecture cible graphe navigable, anti-patterns, roadmap Sprint 1-6.
+  - [`lead-visibility-rgpd.md`](lead-visibility-rgpd.md) — matrice `canSee()` détaillée par profil × champ, helpers `displayName`/`anonymizeName`.
+- **Pages mises à jour** :
+  - [`index.md`](index.md) — entrée Phase 21 dans la Partie 2.
+  - [`data-model.md`](data-model.md) — section RPC `brh_foncier_prospects_unified` + section composition côté client (Phase 21).
+- **Status** : ✅ DONE pour cette session. Sprint 5 (futur) : page `recherche-multi.md`, pages `signaux-intention.md`.
+
+---
+
 ## 2026-05-18 (suite 2) — Sprint 2 : page recherche multi-entités `/recherche`
 
 - **Contexte** : besoin d'un entry point unique pour pivoter dans le graph. Implémentation en page route dédiée selon décision 18/05 (cf [[brh-graph-navigable-decisions]]).

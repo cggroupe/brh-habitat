@@ -183,6 +183,23 @@ Default : `ARRAY['contact@contact-brh.fr']`.
 | `get_recruit_stats()` | Stats recrutement mensuel |
 | `get_team_stats()` | Stats équipe (gated `teamStats`) |
 
+### RPC Foncier Pro V2 (Phase 19 + Phase 21)
+
+| Fonction | Migration | Usage |
+|----------|-----------|-------|
+| `brh_foncier_prospects_unified(p_dept, p_score_v2_min, p_segment_v2, p_filter_fioul, p_filter_avec_sci, p_filter_succession, p_search, p_limit, p_offset)` | `20260517100000_brh_foncier_prospects_unified.sql` | Liste unifiée pour `/agence/leads` V2 — retourne 30 colonnes (DPE + coords + détails techniques + propriétaire SIREN). 2 bugs typage corrigés à l'application prod (cf log.md 17/05). Filtre succession utilise `dpe_saut_s1 IS NOT NULL` (à ré-évaluer en V2.1 vers `brh_sci_companies.has_deceased_dirigeant = TRUE`). |
+
+### Composition côté client (Phase 21 — pas de RPC SQL)
+
+Décision 18/05 ([brh_graph_navigable_decisions](../../.claude/memory/brh_graph_navigable_decisions.md)) : pour les fiches drill-down, on évite le pattern RPC unique côté Postgres au profit de la composition côté client (queries Supabase parallèles). Plus debuggable, plus modulable, évite les bugs typage SQL.
+
+| Fonction TS | Fichier | Queries Supabase |
+|---|---|---|
+| `getFicheAdresse(dpeId)` | [src/api/brh-fiches.ts](../../src/api/brh-fiches.ts) | 3 : `brh_dpe_prospects` by id, `brh_sci_companies` by SIREN, voisinage `brh_dpe_prospects` by `code_postal` |
+| `getFicheEntreprise(siren)` | [src/api/brh-fiches.ts](../../src/api/brh-fiches.ts) | 3 : `brh_sci_companies` by SIREN, `brh_dpe_prospects` by `owner_siren`, `brh_bodacc_alerts` by SIREN |
+| `getFichePersonneByName(name)` | [src/api/brh-fiches.ts](../../src/api/brh-fiches.ts) | 1 : `brh_sci_companies` ILIKE sur JSONB dirigeants (MVP) |
+| `brhRechercheApi.multi(q)` | [src/api/brh-recherche.ts](../../src/api/brh-recherche.ts) | 3 : `brh_dpe_prospects` (adresse/owner_name), `brh_sci_companies` (denomination), `brh_sci_companies` JSONB dirigeants |
+
 ### Utilitaires (1)
 
 | Fonction | Usage |
