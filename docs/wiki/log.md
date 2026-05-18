@@ -5,6 +5,22 @@
 
 ---
 
+## 2026-05-18 (suite 2) — Sprint 2 : page recherche multi-entités `/recherche`
+
+- **Contexte** : besoin d'un entry point unique pour pivoter dans le graph. Implémentation en page route dédiée selon décision 18/05 (cf [[brh-graph-navigable-decisions]]).
+- **Fichiers créés** :
+  - [src/api/brh-recherche.ts](../../src/api/brh-recherche.ts) — `multi(q)` retourne `{ adresses, entreprises, dirigeants }`. 3 queries Supabase parallèles : `brh_dpe_prospects` (adresse/commune/owner_name + SIREN/CP exacts), `brh_sci_companies` (denomination + SIREN), `brh_sci_companies` JSONB dirigeants pour matcher noms.
+  - [src/hooks/queries/useRecherche.ts](../../src/hooks/queries/useRecherche.ts) — hook tanstack avec staleTime 30s.
+  - [src/components/leads/RechercheView.tsx](../../src/components/leads/RechercheView.tsx) — UI 3 colonnes (adresses, entreprises, dirigeants), input avec autofocus + useDeferredValue, états vide/no-result/loading.
+  - [src/pages/leads/RecherchePage.tsx](../../src/pages/leads/RecherchePage.tsx) — wrapper qui lit `?q=` depuis l'URL.
+- **Fichiers modifiés** :
+  - [src/App.tsx](../../src/App.tsx) — 3 routes `/agence/recherche`, `/employe/recherche`, `/artisan/recherche`.
+  - [src/components/layout/AgenceShell.tsx](../../src/components/layout/AgenceShell.tsx), [EmployeShell.tsx](../../src/components/layout/EmployeShell.tsx), [ArtisanShell.tsx](../../src/components/layout/ArtisanShell.tsx) — ajout de l'entrée sidebar "Recherche" à côté de "Mes leads".
+- **Tests** : `tsc --noEmit -p tsconfig.app.json` exit 0.
+- **Status** : ✅ DONE pour MVP local. Entity-hub `/entity/search` à brancher en Sprint 3 pour étendre la recherche au référentiel global (4,2M personnes, 8M companies hors périmètre BRH).
+
+---
+
 ## 2026-05-18 (suite) — Sprint 1 : graph navigable, pages routes drill-down adresse/entreprise/personne
 
 - **Contexte** : feedback Philippe 18/05 « tout doit être relié, la moindre information doit être reliée ». Refonte de l'UX leads pour passer du modal slide-in V2 (qui écrase) à des pages routes drill-down avec deep-link et breadcrumb. Architecture cible : graph navigable bidirectionnel 1 hop direct + sections dépliables lazy (cf [`brh_graph_navigable_decisions.md`](../../.. /memory/brh_graph_navigable_decisions.md) — 10 décisions verrouillées).

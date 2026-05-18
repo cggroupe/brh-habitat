@@ -27,6 +27,7 @@ import {
   QrCode,
   Award,
   HardHat,
+  Search,
   LogOut,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
@@ -48,6 +49,7 @@ const ARTISAN_NAV: NavItemDef[] = [
   { to: '/artisan/simulateur', label: 'Simulateur énergétique', icon: Sparkles },
   { to: '/artisan/chiffrage', label: 'Chiffrage travaux', icon: Calculator },
   { to: '/artisan/leads', label: 'Leads & porte-à-porte', icon: MapPinned },
+  { to: '/artisan/recherche', label: 'Recherche', icon: Search },
   { to: '/artisan/reseau', label: 'Mon réseau', icon: Network },
   { to: '/artisan/reseaux-sociaux', label: 'Réseaux sociaux', icon: Share2 },
   { to: '/artisan/qr-code', label: 'QR Code', icon: QrCode },

@@ -22,6 +22,7 @@ import {
   TrendingUp,
   Share2,
   Award,
+  Search,
   LogOut,
   ChevronDown,
   ChevronRight,
@@ -49,6 +50,7 @@ interface NavGroup {
 const TOP_NAV: NavLeaf[] = [
   { to: '/employe', label: 'Cockpit', icon: LayoutDashboard, end: true },
   { to: '/employe/leads', label: 'Mes leads', icon: TrendingUp },
+  { to: '/employe/recherche', label: 'Recherche', icon: Search },
 ]
 
 const GROUPS: NavGroup[] = [

@@ -65,6 +65,7 @@ const TOP_LEVEL: NavLeaf[] = [
   { to: '/agence/simulateur', label: 'Simulateur énergétique', icon: Sparkles },
   { to: '/agence/score-vente', label: 'Score Vente', icon: Flame },
   { to: '/agence/leads', label: 'Mes leads', icon: ClipboardList },
+  { to: '/agence/recherche', label: 'Recherche', icon: Search },
   { to: '/agence/leaderboard', label: 'Classement Bretagne', icon: Trophy },
 ]
 
