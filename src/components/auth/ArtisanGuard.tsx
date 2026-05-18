@@ -20,13 +20,20 @@ export default function ArtisanGuard() {
     queryKey: ['my-artisan-profile', user?.id ?? 'anon'] as const,
     queryFn: async () => {
       if (!user?.id) return null
-      const { data, error } = await supabase
-        .from('brh_artisans_rge')
-        .select('id, nom_entreprise')
-        .eq('profile_id', user.id)
-        .maybeSingle()
-      if (error) throw error
-      return data
+      const [{ data: profile }, { data: artisan }] = await Promise.all([
+        supabase.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+        supabase
+          .from('brh_artisans_rge')
+          .select('id, nom_entreprise')
+          .eq('profile_id', user.id)
+          .maybeSingle(),
+      ])
+      // 2026-05-18 — BRH internes (admin/pro/employe) ont accès au portail artisan
+      // pour supervision (retour Philippe : liens cassés depuis cockpit employé).
+      if (profile?.role && ['admin', 'pro', 'employe'].includes(profile.role)) {
+        return { id: 'brh-internal', nom_entreprise: 'BRH (supervision)' }
+      }
+      return artisan
     },
     enabled: !!user?.id,
     staleTime: 5 * 60_000,
