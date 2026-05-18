@@ -5,6 +5,37 @@
 
 ---
 
+## 2026-05-18 — Sprint 0 : cleanup émojis + segment fantôme + relance enrichissements OSINT
+
+- **Contexte** : Philippe a refusé la V2 leads du 17/05 (modal qui écrase, émojis 💀🔥💙⭐, segment 'premium' inexistant en BDD, URLs renovation-brh.fr polluantes). Sprint 0 pour décontaminer avant Sprint 1 (drill-down pages routes). En parallèle, 15 runs entity-hub bloqués en `running` depuis 58-85h, dont 3 critiques (`match_deces_brh`, `brh_v2_to_core`, `merge_brh_duplicates`) qui empêchent la finalisation du graph BRH.
+- **Fichiers modifiés** :
+  - [src/components/leads/UnifiedLeadsView.tsx](../../src/components/leads/UnifiedLeadsView.tsx) — SEGMENTS : retiré émojis 🔥💙⭐, remplacé par puce colorée `dot: 'bg-X-500'`. Segment fantôme `'premium'` (n'existe pas en BDD) supprimé, segment réel `'cold'` ajouté (21 893 leads précédemment invisibles dans l'UI). Retiré 💀 dans le filtre "Succession en cours".
+  - [src/components/leads/UnifiedLeadsMap.tsx](../../src/components/leads/UnifiedLeadsMap.tsx) — retiré 🔥 du commentaire `preferCanvas`.
+  - [docs/wiki/audit-ux-2026-05-12.md](audit-ux-2026-05-12.md) — corrigé `app.renovation-brh.fr` → `brh-habitat.vercel.app` (URL d'app réelle).
+- **Entity-hub (bases hors repo)** :
+  - 15 runs stuck marqués `status='error'` dans `staging.source_runs` (ids 24, 54-56, 60, 65, 67, 71, 83-84, 103-104, 107-109).
+  - Background `sci_post_enrich.sh` PID 450903 (23h CPU 0%) tué.
+  - **Relances lancées** : `er.match_deces_brh` (en cours, 12 220 BRH à matcher), `er.brh_v2_to_core --source clients_v2` (✅ +978 personnes promues), `er.brh_v2_to_core --source prospects` (✅ +3 471 personnes promues), `er.merge_brh_duplicates --min-score 0.9` (en cours), `er.brh_rdv_to_events` (en cours), `er.brh_clients_to_core` (en cours).
+- **Pages wiki impactées** : audit-ux-2026-05-12.md (URL fix), log.md (cette entry).
+- **Risque** : Low (cleanup cosmétique + relances batch idempotentes).
+- **Tests** : `tsc --noEmit -p tsconfig.app.json` exit 0. Visual diff à faire après push Vercel.
+- **Status** : 🟡 PARTIEL — code cleanup ✅ done, enrichissements OSINT en cours d'exécution background. Sprint 1 (drill-down pages routes + fiche personne entity-hub) à démarrer après confirmation Philippe.
+
+**Sources OSINT déjà confirmées en BDD (inventaire 14-18 mai)** :
+- 9 275 dirigeants Sirene Bretagne enrichis (cumul 16+18/05)
+- 4 934 cross-links bâtiment RNB ↔ IRIS Filosofi
+- 12 509 personnes scorées intention travaux v2
+- 678 personnes scorées intention succession
+- 199 274 entreprises scorées intention vente/embauche
+- 7 471 personnes BRH matchées décédées (sur 12 912 dédupliquées)
+- 7 382 personnes + 33 382 entreprises avec contact OSINT (téléphones, emails, LinkedIn, FB, IG, TikTok)
+- 995 clients_v2 enrichis CRM (CA total + facturation + enfants — 5,7M€ CA cumulé)
+- 59 305 DPE ADEME dans `core.document`
+
+**Décisions verrouillées 18/05** (architecture cible graph navigable) : pivot canonique entity-hub `core.person`, recherche dédiée `/agence/recherche`, drill-down 1 hop lazy via routes `/agence/leads/{adresse,entreprise,personne}/:id`, matrice RGPD 4 profils (employé BRH all-access, agence pro-only, artisan chantier-only, notaire succession-only), fiche client style CRM pour 4 profils pros (pas particuliers end-users), DPE technique = employés only, RDV timeline historique, lecture seule sauf BRH.
+
+---
+
 ## 2026-05-17 (soir) — Migration RPC appliquée prod + badge dynamique sidebar leads
 
 - **Contexte** : Préparer la démo Philippe pour demain. Migration locale `brh_foncier_prospects_unified.sql` n'avait jamais été pushée sur Supabase prod (project `lygmmvxnmvlgynmrcpny`) — sans elle, la nouvelle route `/agence/leads` (V2 unifiée) plantait avec `function does not exist`. En parallèle, fix UX visible pour l'audit `audit-ux-2026-05-08.md` (catégorie I3 "Pas d'inbox visible").

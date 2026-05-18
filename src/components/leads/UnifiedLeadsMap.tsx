@@ -61,7 +61,7 @@ export default function UnifiedLeadsMap({ rows, profile, onSelect }: Props) {
         center={DEFAULT_CENTER}
         zoom={DEFAULT_ZOOM}
         className="h-full w-full"
-        preferCanvas={true} // 🔥 anti-bug : canvas plus performant que SVG
+        preferCanvas={true} // anti-bug : canvas plus performant que SVG
         scrollWheelZoom
       >
         <MapInvalidator />

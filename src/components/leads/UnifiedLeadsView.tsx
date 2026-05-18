@@ -38,12 +38,12 @@ const DEPTS = [
   { v: '56', l: '56 — Morbihan' },
 ] as const
 
-const SEGMENTS: Array<{ v: ScoreV2Segment | ''; l: string; cls: string; emoji: string }> = [
-  { v: '', l: 'Tous segments', cls: 'border-slate-300 text-slate-700', emoji: '' },
-  { v: 'ultra_chaud', l: 'Ultra-chaud', cls: 'border-red-300 text-red-800 bg-red-50', emoji: '🔥' },
-  { v: 'mpr_bleu_prio', l: 'MPR Bleu prio', cls: 'border-sky-300 text-sky-800 bg-sky-50', emoji: '💙' },
-  { v: 'premium', l: 'Premium', cls: 'border-violet-300 text-violet-800 bg-violet-50', emoji: '⭐' },
-  { v: 'standard', l: 'Standard', cls: 'border-amber-300 text-amber-800 bg-amber-50', emoji: '' },
+const SEGMENTS: Array<{ v: ScoreV2Segment | ''; l: string; cls: string; dot: string }> = [
+  { v: '', l: 'Tous segments', cls: 'border-slate-300 text-slate-700', dot: 'bg-slate-400' },
+  { v: 'ultra_chaud', l: 'Ultra-chaud', cls: 'border-red-300 text-red-800 bg-red-50', dot: 'bg-red-600' },
+  { v: 'mpr_bleu_prio', l: 'MPR Bleu prio', cls: 'border-sky-300 text-sky-800 bg-sky-50', dot: 'bg-sky-600' },
+  { v: 'standard', l: 'Standard', cls: 'border-amber-300 text-amber-800 bg-amber-50', dot: 'bg-amber-500' },
+  { v: 'cold', l: 'Froid', cls: 'border-slate-300 text-slate-700 bg-slate-50', dot: 'bg-slate-500' },
 ]
 
 const PAGE_SIZE = 50
@@ -177,7 +177,10 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
                     segment === s.v ? s.cls + ' border-2' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                   }`}
                 >
-                  {s.emoji} {s.l}
+                  <span className="inline-flex items-center gap-2">
+                    <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
+                    {s.l}
+                  </span>
                 </button>
               ))}
             </div>
@@ -239,7 +242,7 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
                   onChange={(e) => setFilterSuccession(e.target.checked)}
                   className="rounded"
                 />
-                <span>💀 Succession en cours</span>
+                <span>Succession en cours</span>
               </label>
             )}
           </div>
@@ -417,8 +420,9 @@ function LeadCard({
           {lead.annee_construction && <span>·{lead.annee_construction}</span>}
           {lead.type_batiment && <span>·{lead.type_batiment}</span>}
           {segCfg && segCfg.v && (
-            <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${segCfg.cls}`}>
-              {segCfg.emoji} {segCfg.l}
+            <span className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-medium ${segCfg.cls}`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${segCfg.dot}`} />
+              {segCfg.l}
             </span>
           )}
         </div>
