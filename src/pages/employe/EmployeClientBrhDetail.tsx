@@ -426,15 +426,6 @@ export default function EmployeClientBrhDetail() {
             </section>
           )}
 
-          {/* Note de pied — qualité données */}
-          <section className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
-            <p className="font-semibold">À propos de la qualité des données affichées</p>
-            <ul className="mt-1 list-disc space-y-0.5 pl-5">
-              <li>Les résultats Apify Google peuvent inclure des <b>homonymes</b> (Pierre Dupont à Brest ≠ celui de Lyon). Vérifier avant tout appel.</li>
-              <li>Les matches Maigret (comptes sur 3000+ sites) ont été <b>purgés le 19/05/2026</b> car massivement faux positifs sur cible senior.</li>
-              <li>Les liens SCI « dirige » ont été <b>retirés le 19/05/2026</b> en l'absence de match date de naissance — réactivation Sprint F.</li>
-            </ul>
-          </section>
         </div>
       </div>
     </div>

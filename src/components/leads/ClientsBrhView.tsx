@@ -232,9 +232,6 @@ function ContactRow({ c, profileBase }: { c: ReturnType<typeof useClientsBrh>['d
   const Icon = c.is_pro || c.societe ? Building2 : User
   const tierKey = (c.enrichment_tier ?? 'none') as keyof typeof TIER_BADGE
   const tierBadge = TIER_BADGE[tierKey]
-  const apify = c.osint_other?.apify_google
-  // Maigret retiré le 19/05/2026 (faux positifs systémiques sur seniors)
-  const holehe = c.osint_other?.holehe
   const detailHref = profileBase === '/employe' ? `/employe/clients-brh/${c.id}` : null
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3 transition hover:border-slate-300">
@@ -319,73 +316,11 @@ function ContactRow({ c, profileBase }: { c: ReturnType<typeof useClientsBrh>['d
             )}
           </div>
 
-          {(c.osint_linkedin || c.osint_facebook || c.enfants || apify || holehe) && (
+          {(c.enfants || detailHref) && (
             <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
-              {c.osint_linkedin && (
-                <a
-                  href={c.osint_linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded border border-sky-200 bg-sky-50 px-1.5 py-0.5 text-sky-800 hover:bg-sky-100"
-                >
-                  LinkedIn
-                </a>
-              )}
-              {c.osint_facebook && (
-                <a
-                  href={c.osint_facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-blue-800 hover:bg-blue-100"
-                >
-                  Facebook
-                </a>
-              )}
               {c.enfants && (
                 <span className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5">
                   Famille : {c.enfants}
-                </span>
-              )}
-              {apify?.pagesjaunes && (
-                <a
-                  href={apify.pagesjaunes}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded border border-yellow-200 bg-yellow-50 px-1.5 py-0.5 text-yellow-800 hover:bg-yellow-100"
-                >
-                  PagesJaunes
-                </a>
-              )}
-              {apify?.immo_intentions && apify.immo_intentions.length > 0 && (
-                <span
-                  className="rounded border border-rose-300 bg-rose-50 px-1.5 py-0.5 font-medium text-rose-800"
-                  title={apify.immo_intentions.map((h) => h.title).join(' | ')}
-                >
-                  Intention immo · {apify.immo_intentions.length}
-                </span>
-              )}
-              {apify?.societes && apify.societes.length > 0 && (
-                <span
-                  className="rounded border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 text-indigo-800"
-                  title={apify.societes.map((h) => h.title).join(' | ')}
-                >
-                  Sociétés · {apify.societes.length}
-                </span>
-              )}
-              {holehe?.used_on && holehe.used_on.length > 0 && (
-                <span
-                  className="rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-emerald-800"
-                  title={`Email actif sur : ${holehe.used_on.join(', ')}`}
-                >
-                  Email actif · {holehe.used_on.length}
-                </span>
-              )}
-              {apify && (
-                <span
-                  className="rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-amber-800"
-                  title="Résultats Google peuvent inclure des homonymes — voir fiche détaillée pour vérifier"
-                >
-                  Apify · homonymie possible
                 </span>
               )}
               {detailHref && (
@@ -396,23 +331,6 @@ function ContactRow({ c, profileBase }: { c: ReturnType<typeof useClientsBrh>['d
                   Voir fiche →
                 </Link>
               )}
-            </div>
-          )}
-
-          {apify?.immo_intentions && apify.immo_intentions.length > 0 && (
-            <div className="mt-1.5 rounded-md border border-rose-200 bg-rose-50/60 p-1.5">
-              <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-rose-900">
-                Annonces immobilières détectées
-              </div>
-              <ul className="space-y-0.5 text-[11px] text-slate-700">
-                {apify.immo_intentions.slice(0, 3).map((h, i) => (
-                  <li key={i} className="truncate">
-                    <a href={h.url} target="_blank" rel="noopener noreferrer" className="text-rose-800 hover:underline">
-                      {h.title || h.url}
-                    </a>
-                  </li>
-                ))}
-              </ul>
             </div>
           )}
 

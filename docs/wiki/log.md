@@ -5,6 +5,39 @@
 
 ---
 
+## 2026-05-19 (8) — Purge OSINT TOTALE + psy BRH-only (zéro hallucination)
+
+- **Contexte** : Philippe demande purge totale (les filtres partiels laissent passer trop d'homonymes — ex Cadour Arnaud où LinkedIn passait le filtre prénom mais était quand même un homonyme), refonte des psy avec **zéro OSINT** (uniquement données BRH internes).
+- **Actions Supabase (archivées dans `brh_osint_full_purge_archive`, 6010 lignes)** :
+  - `osint_linkedin = NULL` × 48
+  - `osint_facebook = NULL` × 168
+  - `osint_other = '{}'::jsonb` × 1869 (Apify) + tous holehe restants
+  - `osint_sherlock = NULL` × (déjà 0 après purge précédente)
+  - `psy_profile = NULL` × 1355
+  - Recompute tiers : **0 gold / 0 silver / 2218 bronze / 14389 none** (uniquement signaux BRH internes)
+- **Nouveau script `brh-psy-profile-brh-only.py`** :
+  - Prompt anti-hallucination strict (interdit d'inventer métier/société/réseaux sociaux)
+  - Utilise UNIQUEMENT : nom, prénom, ville, CP, statut, catégorie, société (si présent dans BRH), CA, RDV, enfants, dates factures, linked_dpe_id
+  - Schema simplifié (retrait digital_footprint, retrait personality_traits non vérifiables)
+  - Confidence clampée à `medium` max
+  - Skip si moins de 2 signaux BRH
+  - 2 292 contacts éligibles, lancement en background PID 1942233
+  - Test 5 contacts validé : "propriétaire senior" déduit de DPE F/G + CA, motivateurs ancrés (réduction factures, valorisation littorale, fidélité BRH), pas d'invention
+- **UI cleanup** :
+  - `EmployeClientBrhDetail.tsx` : bandeau "Qualité des données" supprimé (data maintenant propre)
+  - `ClientsBrhView.tsx` : suppression chips Apify/PagesJaunes/Intention immo/Sociétés/Email actif/LinkedIn/Facebook (tous purgés), suppression bloc "Annonces immobilières détectées", suppression variables apify/holehe destructurées inutilisées
+- **Fichiers** :
+  - `scripts/brh-psy-profile-brh-only.py` (nouveau, /opt/stack/scripts/)
+  - `src/pages/employe/EmployeClientBrhDetail.tsx` (suppression section qualité)
+  - `src/components/leads/ClientsBrhView.tsx` (cleanup chips OSINT obsolètes)
+  - `docs/wiki/log.md` (cette entrée)
+- **Risque** : Low — archives complètes, génération psy en cours, UI cleanup ne casse rien
+- **Status** : ✅ DONE purge + UI · 🟡 RUNNING génération psy 2292 (ETA ~3h, coût ~$11.50)
+
+**Garde-fou psy v2** : si Philippe reporte encore des hallucinations sur les nouveaux profils, c'est qu'il faut soit (a) abandonner Claude pour le profilage particuliers seniors, soit (b) restreindre encore plus aux profils "Client BRH actif" avec historique factures.
+
+---
+
 ## 2026-05-19 (7) — Dépollution massive : noms cassés + Apify homonymes + psy hallucinés
 
 - **Contexte** : Philippe rapporte des hallucinations massives sur la fiche `Cadour Arnaud` (LinkedIn homonyme, Facebook Sophie Cadour, Mention société Jean-Guillaume Cadour, profil psy "entrepreneur indépendant" alors qu'il n'a pas d'entreprise). Diagnostic : cascade de bugs root-cause.
