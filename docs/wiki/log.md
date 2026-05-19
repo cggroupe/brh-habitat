@@ -5,6 +5,35 @@
 
 ---
 
+## 2026-05-19 (15) — Audit complet SCI/entreprises + colonnes OSINT entreprise
+
+- **Contexte** : Philippe demande audit miroir des SCI/personnes morales (qualité, dirigeants, DPE liés, permis, OSINT entreprise, faux positifs).
+- **Audit livré** :
+  - **36 491 SCI** uniques (SIREN). 97 % avec dirigeants, 1.4 % avec décès, 99.4 % actives.
+  - 100 % avec dénomination + forme juridique + date_creation + adresse
+  - ⚠️ 100 % sans capital_social (champ pas peuplé à l'import)
+  - ⚠️ 22 % sans activité libellée
+  - **SCI ↔ DPE** : 32 825 DPE avec owner_siren (55 %), 24 256 matchent une SCI complète, 8 569 owners orphelins (SIREN dans DPE mais SCI absente)
+  - **BODACC** : 3 653 alertes / 3 334 SIREN, MAIS seulement 17 (0.5 %) matchent une SCI (la majorité sont des entreprises non-SCI : commerces, sociétés diverses)
+  - **Décès dirigeants** : 591 matches confirmés (`match_found=TRUE`) / 17 521 SIREN avec dirigeant décédé en base
+  - **87 278 dirigeants** totaux dans toutes les SCI · **202** ont un match nom+prénom avec un contact BRH MAIS **sans date_naissance BRH on ne peut pas confirmer** → règle `dirige` reste désactivée (zéro faux positif tolérance)
+- **Lacunes identifiées** :
+  - 🔴 `brh_permis_construire` : 0 rows (Sitadel jamais importé — schema `intentions` entity-hub non créé)
+  - 🔴 Aucune colonne OSINT entreprise (pas de site web / email / LinkedIn / téléphone pro sur SCI)
+- **Migration `20260519230000_sci_companies_osint.sql`** :
+  - Ajout 5 colonnes OSINT entreprise : `osint_website`, `osint_email`, `osint_phone_pro`, `osint_linkedin`, `osint_other jsonb`, `osint_updated_at`, `osint_updated_by`
+  - Ajout 5 colonnes édition employé terrain (analogue à brh_personnes_historique) : `employee_notes`, `interet_brh`, `contact_disponibilite`, `derniere_visite_terrain`, `employee_updated_*`
+  - Constraint `brh_employee_edit_log.entity_type` étendue : `'personne_brh'`, `'adresse_dpe'`, **`'sci'`**, **`'permis'`**
+  - RPC `brh_sci_update_employee(siren, patch)` SECURITY DEFINER avec whitelist stricte des champs OSINT + suivi commercial
+- **À faire (Sprint suivant)** :
+  - Créer schema `intentions` dans entity-hub PG 5434 + lancer Sitadel ingest Bretagne pour remplir `brh_permis_construire`
+  - Refondre `FicheEntrepriseView` UI pour exposer les nouveaux champs OSINT (site web, LinkedIn, email pro, téléphone, suivi commercial éditable inline)
+  - Page d'OSINT entreprise dans le portail employé : sur Sirene API ou Pappers (payant) pour combler les 24 256 SCI propriétaires de DPE BRH
+- **Risque** : Low — migration additive, RPC stricte, pas de re-import lourd
+- **Status** : 🟡 PARTIEL — backend prêt, UI à câbler Sprint suivant
+
+---
+
 ## 2026-05-19 (14) — Import client PPO_44 → 2 498 clients enrichis
 
 - **Contexte** : Philippe dépose `FICHIER_CLIENT_PPO_44.xlsx` (3 763 lignes, 412 KB) via le nouveau serveur upload BRH (http://147.93.52.70:8916/). Fichier opérateur PPO sur Loire-Atlantique + Maine-et-Loire + Ille-et-Vilaine (1 ligne = 1 chantier, donc beaucoup de "doublons" qui sont en fait des chantiers multiples par client).
