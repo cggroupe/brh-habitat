@@ -71,21 +71,27 @@ export default function EmployeClientBrhDetail() {
   const psy = id360.psy_profile as Record<string, unknown> | null
 
   return (
-    <div className="flex h-screen flex-col bg-slate-50">
-      {/* Header sticky */}
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white px-6 py-3 shadow-sm">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
-          <Link
-            to="/employe/clients-brh"
-            className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Clients BRH
-          </Link>
+    <div className="flex h-screen flex-col bg-stone-50">
+      {/* Header sticky — refonte v3 (maquette Stitch BRHCRM) */}
+      <header className="sticky top-0 z-10 border-b border-stone-200 bg-white px-6 py-3 shadow-sm">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <Link
+              to="/employe/clients-brh"
+              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm text-stone-600 hover:bg-stone-100 hover:text-stone-900"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Mes leads
+            </Link>
+            <span className="text-stone-300">›</span>
+            <span className="truncate text-sm font-medium text-stone-800">
+              {id360.full_name || id360.societe || 'Contact'}
+            </span>
+          </div>
           <div className="flex items-center gap-2">
             <span
-              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${tierBadge.cls}`}
-              title={`Score ${id360.enrichment_score ?? 0} / 15`}
+              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${tierBadge.cls}`}
+              title={`Score enrichissement ${id360.enrichment_score ?? 0} / 15`}
             >
               <tierBadge.Icon className="h-3 w-3" />
               {tierBadge.label}
@@ -95,8 +101,8 @@ export default function EmployeClientBrhDetail() {
             </span>
             {id360.statut && (
               <span
-                className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                  id360.statut === 'Client' ? 'bg-emerald-100 text-emerald-800' : 'bg-sky-100 text-sky-800'
+                className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+                  id360.statut === 'Client' ? 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200' : 'bg-stone-100 text-stone-800 ring-1 ring-stone-200'
                 }`}
               >
                 {id360.statut}

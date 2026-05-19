@@ -62,7 +62,27 @@
       "height": 4370,
       "title": "Fiche Client Expert - Famille Lefebvre (v3)",
       "generatedAt": "2026-05-19",
-      "description": "Vraie charte BRH du projet Stitch officiel (#00600a, INTER). Fiche client complète éditable : contact, DPE avec table postes techniques + entreprises + dates, historique travaux, marqueur 'déjà vu par employé', profil psy, liens patrimoniaux, actions rapides."
+      "description": "Vraie charte BRH du projet Stitch officiel (#00600a, INTER). Fiche client complète éditable."
+    },
+    "fiche-adresse-dpe-v2": {
+      "projectId": "12759214816897017502",
+      "id": "1cebbf5f2c0341239f56bc8b31ac13f5",
+      "sourceScreen": "projects/12759214816897017502/screens/1cebbf5f2c0341239f56bc8b31ac13f5",
+      "width": 2560,
+      "height": 2364,
+      "title": "Fiche Adresse DPE - 45 rue des Brebis (v2 FR)",
+      "generatedAt": "2026-05-19",
+      "description": "Maquette adresse DPE 100% FR cohérente avec fiche-client-complete (charte BRHCRM native). Table postes techniques + scoring + déjà visité + actions rapides."
+    },
+    "liste-leads-v2": {
+      "projectId": "12759214816897017502",
+      "id": "2df024faae1045ca83dd6b4bbd0427a3",
+      "sourceScreen": "projects/12759214816897017502/screens/2df024faae1045ca83dd6b4bbd0427a3",
+      "width": 2560,
+      "height": 2048,
+      "title": "Mes Leads - BRH Habitat (v2 FR)",
+      "generatedAt": "2026-05-19",
+      "description": "Liste leads CRM 100% FR dense Pipedrive-like. Chips Tier Or/Argent/Bronze. Drawer filtres avancés. Stats inline."
     }
   }
 }

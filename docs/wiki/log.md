@@ -5,6 +5,39 @@
 
 ---
 
+## 2026-05-19 (12) — Bombarde : header fiche refondu + 2 maquettes Stitch v2 + colonne "Vu par X" sur liste
+
+- **Contexte** : Philippe valide la composition v3 + demande d'enchaîner sans demander ("bombarde"). 4 sprints livrés en parallèle.
+- **Sprint A — Header `EmployeClientBrhDetail` refondu** (style maquette v3) :
+  - Breadcrumb FR "Mes leads › <nom contact>" + bouton hover stone
+  - Container max-w-6xl, bg-stone-50 (était slate-50)
+  - Badge tier + statut avec ring-emerald-200 (vert BRH cohérent)
+- **Sprint B — 2 maquettes Stitch v2 dans le bon projet (12759214816897017502 BRHCRM Direction Commerciale)** :
+  - `fiche-adresse-dpe-v2` (screen 1cebbf5f, 2560x2364) — 100% FR, table ÉLÉMENT/ÉTAT/ENTREPRISE/DATE pour postes techniques, scoring opportunité BRH (3 jauges), déjà visité par + note collègue
+  - `liste-leads-v2` (screen 2df024fa, 2560x2048) — 100% FR Pipedrive-like, chips Tier Or/Argent/Bronze, 4 stats inline, drawer "Filtres avancés"
+  - Designs sauvegardés `.stitch/designs/` + metadata.json
+- **Sprint C — Liste leads enrichie colonne "Vu par X collègues"** :
+  - Migration `20260519210000_rpc_visits_recent_by_personne.sql` : RPC `brh_visits_recent_bulk(uuid[])` SECURITY DEFINER qui retourne en bulk les 3 derniers visiteurs + total par personne (évite N+1 sur la liste)
+  - Hook `useVisitsBulk(ids)` (React Query, staleTime 30s, group par personne)
+  - Composant `VisitorsStack` (avatars empilés initiales emerald + ring blanc, tooltip détaillé liste)
+  - Intégration `ClientsBrhView` : chip "Vu par X collègues" avec stack avatars sur chaque ligne qui a des visites, palette stone-200/emerald-50
+- **Sprint E** : build OK, commit + push
+- **Fichiers** :
+  - `supabase/migrations/20260519210000_rpc_visits_recent_by_personne.sql`
+  - `src/hooks/queries/useVisitsBulk.ts` (créé)
+  - `src/components/leads/VisitorsStack.tsx` (créé)
+  - `src/components/leads/ClientsBrhView.tsx` (header + chip "Vu par X")
+  - `src/pages/employe/EmployeClientBrhDetail.tsx` (header refondu maquette v3 FR strict)
+  - `.stitch/designs/{fiche-adresse-dpe-v2,liste-leads-v2}.{html,png}` (créés)
+  - `.stitch/prompts/{fiche-adresse-dpe-v2,liste-leads-v2}.md` (créés)
+  - `.stitch/designs/index.html` (preview avec v2)
+  - `.stitch/metadata.json` (3 screens v2/v3 enregistrés)
+- **Tests** : `npm run build` OK
+- **Risque** : Low — additif strict (chip visites + colonne header), RPC SECURITY DEFINER, palette cohérente
+- **Status** : ✅ DONE pour Sprints A+B+C+E. Sprint D (refonte FicheAdresseView React avec postes techniques) prochaine itération.
+
+---
+
 ## 2026-05-19 (11) — Fiche client : marqueur "Vu" multi-employés + travaux par poste
 
 - **Contexte** : Philippe a validé la composition de la maquette Stitch v3 (`fiche-client-complete`, projet BRHCRM Direction Commerciale 12759214816897017502, screen 5ac730af). Demande : intégrer les 2 sections clés dans le code React BRH Habitat — **labels FR strict**, additif (ne casse pas l'existant), garder la sidebar `EmployeShell`.

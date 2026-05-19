@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mes leads - BRH Habitat</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#f8faf8",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "outline-variant": "#bfcab8",
+                        "tertiary": "#95255b",
+                        "surface-container": "#eceeec",
+                        "on-background": "#191c1b",
+                        "surface-tint": "#056e10",
+                        "primary-fixed-dim": "#7edc71",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#dae2fd",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#2e3130",
+                        "surface": "#f8faf8",
+                        "inverse-on-surface": "#eff1ef",
+                        "surface-variant": "#e1e3e1",
+                        "on-surface-variant": "#404a3c",
+                        "on-secondary-fixed": "#131b2e",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#ffe6ec",
+                        "on-primary-container": "#b2ffa3",
+                        "surface-container-highest": "#e1e3e1",
+                        "primary": "#00600a",
+                        "primary-fixed": "#9af98a",
+                        "background": "#f8faf8",
+                        "tertiary-container": "#b43f74",
+                        "tertiary-fixed-dim": "#ffb0cc",
+                        "on-tertiary-fixed-variant": "#85184f",
+                        "on-surface": "#191c1b",
+                        "surface-container-high": "#e6e9e7",
+                        "on-secondary-container": "#5c647a",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#dae2fd",
+                        "outline": "#707a6a",
+                        "on-tertiary-fixed": "#3e0020",
+                        "on-primary-fixed-variant": "#005308",
+                        "surface-container-low": "#f2f4f2",
+                        "secondary": "#565e74",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#ffd9e4",
+                        "primary-container": "#1c7b1d",
+                        "on-primary-fixed": "#002201",
+                        "surface-dim": "#d8dad9",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "inverse-primary": "#7edc71",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "display": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        /* Custom Scrollbar for high density */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d8dad9; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #bfcab8; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface flex flex-col h-screen overflow-hidden text-[13px]">
+<!-- TopNavBar (Shared Component) -->
+<header class="sticky top-0 z-50 flex justify-between items-center w-full px-6 py-3 bg-surface border-b border-surface-variant flex-shrink-0">
+<div class="flex items-center gap-8">
+<div class="text-xl font-headline font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined">foundation</span>
+                BRH Habitat
+            </div>
+<nav class="hidden md:flex gap-6">
+<a class="text-primary font-bold border-b-2 border-primary pb-1" href="#">Leads</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Projects</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Analytics</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Archive</a>
+</nav>
+</div>
+<!-- Embedded Search from Shared Component (on_left configuration) -->
+<div class="flex-1 max-w-md mx-6 hidden lg:block relative text-on-surface-variant">
+<span class="material-symbols-outlined absolute left-3 top-1.5 text-lg">search</span>
+<input class="w-full pl-10 pr-4 py-1.5 bg-surface-container-low border-none rounded-md focus:ring-1 focus:ring-primary focus:outline-none text-[13px]" placeholder="Rechercher nom, société, ville..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span></button>
+<button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined text-[20px]">settings</span></button>
+<button class="px-3 py-1.5 border border-outline-variant text-on-surface-variant rounded-md hover:bg-surface-container-low transition-colors font-medium">Export</button>
+<button class="px-3 py-1.5 bg-primary text-on-primary rounded-md hover:bg-primary-container transition-colors font-medium shadow-sm">New Lead</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high border border-surface-variant overflow-hidden">
+<img alt="User profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCM8nFI4kk0WvnbsEWI8O4Vz4nkOgwrDmqaOj7HeoNoZDwtcpGsHk9NbsKUqSxpAkOxySFocnuRs5QrItmjjo6Ht2kiOJqk40FRvpRUHde51cgQ0V6xdW0Sgasl--HMn0z6yuU9X9xPjTqaSWV-MWnkd8afPoPYkaJ153ugCZXJ4SoG3gSHZvKdYDRMKahAEIb1Ktzcoik5VecFPmBABVSDpNgTeVXCqgR1GbMOUjCrsmWP2k_7KxYTfwNdVy5lfMR7N_kQEHpU-3Ni"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 bg-surface">
+<!-- Page Header -->
+<div class="px-6 pt-5 pb-4 bg-surface z-40 flex-shrink-0">
+<div class="flex justify-between items-end mb-4">
+<div>
+<h1 class="text-2xl font-bold text-on-surface mb-1 font-headline">Mes leads</h1>
+<p class="text-on-surface-variant text-[13px]">16 607 contacts BRH · 5 524 enrichis · 133 dans le tier Or</p>
+</div>
+<div class="flex gap-2">
+<div class="flex bg-surface-container-low p-0.5 rounded-md border border-outline-variant mr-2">
+<button class="px-3 py-1 bg-surface shadow-sm rounded text-primary font-medium text-[12px]">Liste</button>
+<button class="px-3 py-1 text-on-surface-variant hover:text-on-surface font-medium text-[12px]">Carte</button>
+</div>
+<button class="px-3 py-1.5 border border-outline-variant text-on-surface-variant rounded-md hover:bg-surface-container-low transition-colors font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">download</span> Exporter CSV
+                        </button>
+<button class="px-3 py-1.5 bg-primary text-on-primary rounded-md hover:bg-primary-container transition-colors font-medium flex items-center gap-1.5 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">add</span> Nouveau lead
+                        </button>
+</div>
+</div>
+<!-- Filter Bar -->
+<div class="flex flex-wrap items-center gap-2 mb-4">
+<select class="bg-surface border border-outline-variant text-on-surface rounded-md py-1.5 pl-3 pr-8 text-[12px] focus:ring-1 focus:ring-primary focus:border-primary">
+<option>Tous départements</option>
+<option>22 - Côtes-d'Armor</option>
+<option>29 - Finistère</option>
+<option>35 - Ille-et-Vilaine</option>
+<option>56 - Morbihan</option>
+</select>
+<div class="w-px h-5 bg-surface-variant mx-1"></div>
+<!-- Filter Chips -->
+<button class="px-2.5 py-1 rounded-full border border-outline-variant text-on-surface-variant text-[12px] hover:bg-surface-container-low transition-colors bg-surface-bright">Avec téléphone</button>
+<button class="px-2.5 py-1 rounded-full border border-primary text-primary bg-primary-fixed-dim/20 text-[12px] font-medium">Avec email</button>
+<button class="px-2.5 py-1 rounded-full border border-outline-variant text-on-surface-variant text-[12px] hover:bg-surface-container-low transition-colors bg-surface-bright">Avec chiffre d'affaires</button>
+<button class="px-2.5 py-1 rounded-full border border-primary text-primary bg-primary-fixed-dim/20 text-[12px] font-medium">Avec RDV</button>
+<button class="px-2.5 py-1 rounded-full border border-outline-variant text-on-surface-variant text-[12px] hover:bg-surface-container-low transition-colors bg-surface-bright">DPE F ou G</button>
+<div class="w-px h-5 bg-surface-variant mx-1"></div>
+<!-- Advanced Filters Toggle -->
+<button class="px-3 py-1 border border-outline-variant text-on-surface-variant rounded-md hover:bg-surface-container-low transition-colors font-medium flex items-center gap-1 text-[12px] ml-auto">
+<span class="material-symbols-outlined text-[16px]">tune</span> Filtres avancés
+                    </button>
+</div>
+<!-- Tier & Interest Row -->
+<div class="flex flex-wrap items-center gap-4 text-[12px]">
+<div class="flex items-center gap-2">
+<span class="text-on-surface-variant font-medium">Tier:</span>
+<div class="flex gap-1.5">
+<span class="px-2 py-0.5 rounded bg-surface-container-highest text-on-surface cursor-pointer">Tous</span>
+<span class="px-2 py-0.5 rounded bg-[#fef3c7] text-[#92400e] border border-[#fcd34d] font-medium cursor-pointer">Or (133)</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-low text-on-surface-variant border border-outline-variant cursor-pointer hover:bg-surface-container-high">Argent (1 543)</span>
+<span class="px-2 py-0.5 rounded bg-[#ffedd5] text-[#9a3412] border border-[#fdba74] cursor-pointer hover:bg-[#ffedd5]/80">Bronze (3 848)</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-low text-on-surface-variant border border-outline-variant cursor-pointer hover:bg-surface-container-high">À enrichir (11 083)</span>
+</div>
+</div>
+<div class="w-px h-4 bg-surface-variant"></div>
+<div class="flex items-center gap-2">
+<span class="text-on-surface-variant font-medium">Intérêt:</span>
+<div class="flex gap-1.5">
+<span class="flex items-center gap-1 px-2 py-0.5 rounded-full border border-[#fca5a5] bg-[#fee2e2] text-[#991b1b] cursor-pointer"><span class="w-1.5 h-1.5 rounded-full bg-[#ef4444]"></span> Chaud</span>
+<span class="flex items-center gap-1 px-2 py-0.5 rounded-full border border-[#fcd34d] bg-[#fef3c7] text-[#92400e] cursor-pointer hover:bg-[#fef3c7]/80"><span class="w-1.5 h-1.5 rounded-full bg-[#f59e0b]"></span> Tiède</span>
+<span class="flex items-center gap-1 px-2 py-0.5 rounded-full border border-outline-variant bg-surface-container text-on-surface-variant cursor-pointer hover:bg-surface-container-high"><span class="w-1.5 h-1.5 rounded-full bg-outline"></span> Froid</span>
+<span class="flex items-center gap-1 px-2 py-0.5 rounded-full border border-primary-fixed bg-primary-fixed-dim/20 text-primary cursor-pointer hover:bg-primary-fixed-dim/30"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span> À recontacter</span>
+</div>
+</div>
+</div>
+<!-- Inline Stats -->
+<div class="grid grid-cols-4 gap-4 mt-5">
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-3 shadow-sm">
+<div class="text-on-surface-variant text-[11px] uppercase tracking-wider mb-1 font-medium">Total filtré</div>
+<div class="text-lg font-bold font-headline text-on-surface">1 543</div>
+</div>
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-3 shadow-sm flex justify-between items-center">
+<div>
+<div class="text-on-surface-variant text-[11px] uppercase tracking-wider mb-1 font-medium">Chauds</div>
+<div class="text-lg font-bold font-headline text-on-surface">42</div>
+</div>
+<div class="w-8 h-8 rounded-full bg-[#fee2e2] flex items-center justify-center text-[#ef4444]">
+<span class="material-symbols-outlined text-[18px]">local_fire_department</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-surface-variant rounded-lg p-3 shadow-sm flex justify-between items-center">
+<div>
+<div class="text-on-surface-variant text-[11px] uppercase tracking-wider mb-1 font-medium">Avec RDV</div>
+<div class="text-lg font-bold font-headline text-on-surface">18</div>
+</div>
+<div class="w-8 h-8 rounded-full bg-primary-fixed-dim/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+</div>
+</div>
+<div class="bg-[#fef3c7] border border-[#fcd34d] rounded-lg p-3 shadow-sm flex justify-between items-center">
+<div>
+<div class="text-[#92400e] text-[11px] uppercase tracking-wider mb-1 font-medium">Sans contact &gt; 30j</div>
+<div class="text-lg font-bold font-headline text-[#92400e]">89</div>
+</div>
+<div class="w-8 h-8 rounded-full bg-[#fde68a] flex items-center justify-center text-[#d97706]">
+<span class="material-symbols-outlined text-[18px]">warning</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Data Table Container -->
+<div class="flex-1 overflow-auto px-6 pb-6">
+<div class="bg-surface-container-lowest rounded-xl border border-surface-variant shadow-sm overflow-hidden flex flex-col h-full min-h-[400px]">
+<div class="overflow-x-auto flex-1">
+<table class="w-full text-left border-collapse whitespace-nowrap">
+<thead class="bg-surface-container-low text-on-surface-variant text-[12px] font-semibold uppercase tracking-wider sticky top-0 z-10">
+<tr>
+<th class="py-2.5 px-4 w-10 border-b border-surface-variant"><input class="rounded border-outline-variant text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/></th>
+<th class="py-2.5 px-3 border-b border-surface-variant">Tier</th>
+<th class="py-2.5 px-3 border-b border-surface-variant w-1/4">Contact</th>
+<th class="py-2.5 px-3 border-b border-surface-variant">Ville (CP)</th>
+<th class="py-2.5 px-3 border-b border-surface-variant text-center">DPE</th>
+<th class="py-2.5 px-3 border-b border-surface-variant text-right">Surface</th>
+<th class="py-2.5 px-3 border-b border-surface-variant text-center">Contacts</th>
+<th class="py-2.5 px-3 border-b border-surface-variant text-right">CA Cumulé</th>
+<th class="py-2.5 px-3 border-b border-surface-variant">Dernier RDV</th>
+<th class="py-2.5 px-3 border-b border-surface-variant text-center">Intérêt</th>
+<th class="py-2.5 px-4 border-b border-surface-variant text-right">Action</th>
+</tr>
+</thead>
+<tbody class="text-[13px] divide-y divide-surface-variant">
+<!-- Row 1 - Selected -->
+<tr class="bg-primary-fixed-dim/10 hover:bg-primary-fixed-dim/20 transition-colors relative">
+<td class="absolute left-0 top-0 bottom-0 w-[3px] bg-primary"></td>
+<td class="py-2 px-4"><input checked="" class="rounded border-outline-variant text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/></td>
+<td class="py-2 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] bg-[#fef3c7] text-[#92400e] border border-[#fcd34d] font-bold">OR</span></td>
+<td class="py-2 px-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-high border border-surface-variant flex items-center justify-center text-on-surface-variant font-medium flex-shrink-0 text-xs">JMD</div>
+<div>
+<div class="font-medium text-on-surface text-sm">Jean-Marc Dupont</div>
+<div class="text-on-surface-variant text-[11px]">SCI Les Goélands</div>
+</div>
+</div>
+</td>
+<td class="py-2 px-3 text-on-surface-variant">Brest (29200)</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center justify-center w-6 h-6 rounded-sm bg-[#ea580c] text-white font-bold text-[11px] shadow-sm">F</span>
+</td>
+<td class="py-2 px-3 text-right font-medium">345 m²</td>
+<td class="py-2 px-3 text-center">
+<div class="flex gap-1.5 justify-center">
+<span class="material-symbols-outlined text-[16px] text-primary cursor-pointer hover:bg-primary/10 rounded-full p-0.5">call</span>
+<span class="material-symbols-outlined text-[16px] text-primary cursor-pointer hover:bg-primary/10 rounded-full p-0.5">mail</span>
+</div>
+</td>
+<td class="py-2 px-3 text-right font-medium">45 200 €</td>
+<td class="py-2 px-3 text-on-surface-variant text-[12px]">12 oct. 2024</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-[#fca5a5] bg-[#fee2e2] text-[#991b1b] text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-[#ef4444]"></span> Chaud</span>
+</td>
+<td class="py-2 px-4 text-right">
+<button class="px-2.5 py-1 border border-outline-variant text-on-surface-variant rounded hover:bg-surface-container hover:text-on-surface transition-colors text-[11px] font-medium">Voir →</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2 px-4"><input class="rounded border-outline-variant text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/></td>
+<td class="py-2 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] bg-surface-container-high text-on-surface border border-outline-variant font-bold">ARG</span></td>
+<td class="py-2 px-3">
+<div class="flex items-center gap-3">
+<img alt="Profile" class="w-8 h-8 rounded border border-surface-variant object-cover flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_XLatG6oxhY5QaeUy9LFa34qZNknHProjHyTOiuEZusSvKw5UJLLf2KRIWxZ9nHRIqC0rTMPrRWvxedyubInHCVndiWt2dnKLCmZWx_9trVcExFywCNDecorb37rsz7HlU5mOvT_aIDvHTOiclZcwUoJqvVoYG_jrO_86PfSMRmUIxh2S5RC7TSEvmRr_Ab5bu2EOk3WMGx3IDE_XfDQkmteyR4NJigrLf0GbEDgo37fZIS3mCp9fS3WieBeiufD796N1XkWO6RQK"/>
+<div>
+<div class="font-medium text-on-surface text-sm">Sophie Martin</div>
+<div class="text-on-surface-variant text-[11px]">Particulier</div>
+</div>
+</div>
+</td>
+<td class="py-2 px-3 text-on-surface-variant">Rennes (35000)</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center justify-center w-6 h-6 rounded-sm bg-[#dc2626] text-white font-bold text-[11px] shadow-sm">G</span>
+</td>
+<td class="py-2 px-3 text-right font-medium">112 m²</td>
+<td class="py-2 px-3 text-center">
+<div class="flex gap-1.5 justify-center">
+<span class="material-symbols-outlined text-[16px] text-primary cursor-pointer hover:bg-primary/10 rounded-full p-0.5">call</span>
+<span class="material-symbols-outlined text-[16px] text-outline-variant opacity-50 cursor-not-allowed rounded-full p-0.5">mail</span>
+</div>
+</td>
+<td class="py-2 px-3 text-right font-medium">0 €</td>
+<td class="py-2 px-3 text-on-surface-variant text-[12px]"><span class="text-outline-variant">—</span></td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-primary-fixed bg-primary-fixed-dim/20 text-primary text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Recontacter</span>
+</td>
+<td class="py-2 px-4 text-right">
+<button class="px-2.5 py-1 border border-outline-variant text-on-surface-variant rounded hover:bg-surface-container hover:text-on-surface transition-colors text-[11px] font-medium">Voir →</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2 px-4"><input class="rounded border-outline-variant text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/></td>
+<td class="py-2 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] bg-[#ffedd5] text-[#9a3412] border border-[#fdba74] font-bold">BRZ</span></td>
+<td class="py-2 px-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-high border border-surface-variant flex items-center justify-center text-on-surface-variant font-medium flex-shrink-0 text-xs">AB</div>
+<div>
+<div class="font-medium text-on-surface text-sm">Alain Bernard</div>
+<div class="text-on-surface-variant text-[11px]">Copropriété Le Phare</div>
+</div>
+</div>
+</td>
+<td class="py-2 px-3 text-on-surface-variant">Lorient (56100)</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center justify-center w-6 h-6 rounded-sm bg-[#eab308] text-white font-bold text-[11px] shadow-sm">D</span>
+</td>
+<td class="py-2 px-3 text-right font-medium">850 m²</td>
+<td class="py-2 px-3 text-center">
+<div class="flex gap-1.5 justify-center">
+<span class="material-symbols-outlined text-[16px] text-outline-variant opacity-50 cursor-not-allowed rounded-full p-0.5">call</span>
+<span class="material-symbols-outlined text-[16px] text-primary cursor-pointer hover:bg-primary/10 rounded-full p-0.5">mail</span>
+</div>
+</td>
+<td class="py-2 px-3 text-right font-medium">12 450 €</td>
+<td class="py-2 px-3 text-on-surface-variant text-[12px]">05 sept. 2024</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-outline-variant bg-surface-container text-on-surface-variant text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-outline"></span> Froid</span>
+</td>
+<td class="py-2 px-4 text-right">
+<button class="px-2.5 py-1 border border-outline-variant text-on-surface-variant rounded hover:bg-surface-container hover:text-on-surface transition-colors text-[11px] font-medium">Voir →</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors bg-[#fef2f2]/30">
+<td class="py-2 px-4"><input class="rounded border-outline-variant text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/></td>
+<td class="py-2 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] text-outline-variant border border-outline-variant/50 font-bold">—</span></td>
+<td class="py-2 px-3">
+<div class="flex items-center gap-3">
+<img alt="Profile" class="w-8 h-8 rounded border border-surface-variant object-cover flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjf_0yKcJ0qflVg6KYRbU7Ok-R20KMaXhYV5rgri19HXXoDdqNu0l1HtlYlu01jP4kPa2n5YPdxES6gWVSE-vnnfH4GMDoZKfuw83U_F_OZtDosEErtKoMHk8SO6eqlF1kgUC4DXIWC3pVYun1sMNH-BlLKgk0H_zvOBQDr1s1qbtC41eMvVr1t6O9HoRBWVQ2jEfpjL9J_eZ4IH5R43q1gvEbmozgGS-Q1cWHRRNfFB5WF4mnrBL10il6OM7-u963NOd1kkGWfVu9"/>
+<div>
+<div class="font-medium text-on-surface text-sm">Marie Lefèvre</div>
+<div class="text-on-surface-variant text-[11px]">Particulier</div>
+</div>
+</div>
+</td>
+<td class="py-2 px-3 text-on-surface-variant">Saint-Malo (35400)</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center justify-center w-6 h-6 rounded-sm bg-[#65a30d] text-white font-bold text-[11px] shadow-sm">C</span>
+</td>
+<td class="py-2 px-3 text-right font-medium">85 m²</td>
+<td class="py-2 px-3 text-center">
+<div class="flex gap-1.5 justify-center">
+<span class="material-symbols-outlined text-[16px] text-primary cursor-pointer hover:bg-primary/10 rounded-full p-0.5">call</span>
+<span class="material-symbols-outlined text-[16px] text-primary cursor-pointer hover:bg-primary/10 rounded-full p-0.5">mail</span>
+</div>
+</td>
+<td class="py-2 px-3 text-right font-medium">0 €</td>
+<td class="py-2 px-3 text-[#b91c1c] text-[12px] font-medium flex items-center gap-1 justify-end"><span class="material-symbols-outlined text-[14px]">event_busy</span> Annulé</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-surface-variant bg-surface-container-high text-on-surface-variant text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span> Refus</span>
+</td>
+<td class="py-2 px-4 text-right">
+<button class="px-2.5 py-1 border border-outline-variant text-on-surface-variant rounded hover:bg-surface-container hover:text-on-surface transition-colors text-[11px] font-medium">Voir →</button>
+</td>
+</tr>
+<!-- Filler rows to simulate density -->
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2 px-4"><input class="rounded border-outline-variant text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/></td>
+<td class="py-2 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] bg-[#fef3c7] text-[#92400e] border border-[#fcd34d] font-bold">OR</span></td>
+<td class="py-2 px-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-high border border-surface-variant flex items-center justify-center text-on-surface-variant font-medium flex-shrink-0 text-xs">CD</div>
+<div>
+<div class="font-medium text-on-surface text-sm">Cabinet Dubois</div>
+<div class="text-on-surface-variant text-[11px]">Syndic</div>
+</div>
+</div>
+</td>
+<td class="py-2 px-3 text-on-surface-variant">Vannes (56000)</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center justify-center w-6 h-6 rounded-sm bg-[#ea580c] text-white font-bold text-[11px] shadow-sm">F</span>
+</td>
+<td class="py-2 px-3 text-right font-medium">1 200 m²</td>
+<td class="py-2 px-3 text-center">
+<div class="flex gap-1.5 justify-center">
+<span class="material-symbols-outlined text-[16px] text-primary cursor-pointer hover:bg-primary/10 rounded-full p-0.5">call</span>
+<span class="material-symbols-outlined text-[16px] text-primary cursor-pointer hover:bg-primary/10 rounded-full p-0.5">mail</span>
+</div>
+</td>
+<td class="py-2 px-3 text-right font-medium">128 000 €</td>
+<td class="py-2 px-3 text-on-surface-variant text-[12px]">Hier</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-[#fcd34d] bg-[#fef3c7] text-[#92400e] text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-[#f59e0b]"></span> Tiède</span>
+</td>
+<td class="py-2 px-4 text-right">
+<button class="px-2.5 py-1 border border-outline-variant text-on-surface-variant rounded hover:bg-surface-container hover:text-on-surface transition-colors text-[11px] font-medium">Voir →</button>
+</td>
+</tr>
+<!-- Row 6 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2 px-4"><input class="rounded border-outline-variant text-primary focus:ring-primary h-3.5 w-3.5" type="checkbox"/></td>
+<td class="py-2 px-3"><span class="px-1.5 py-0.5 rounded text-[10px] text-outline-variant border border-outline-variant/50 font-bold">—</span></td>
+<td class="py-2 px-3">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-high border border-surface-variant flex items-center justify-center text-on-surface-variant font-medium flex-shrink-0 text-xs">TR</div>
+<div>
+<div class="font-medium text-on-surface text-sm">Thomas Renault</div>
+<div class="text-on-surface-variant text-[11px]">Particulier</div>
+</div>
+</div>
+</td>
+<td class="py-2 px-3 text-on-surface-variant">Quimper (29000)</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center justify-center w-6 h-6 rounded-sm bg-surface-variant text-on-surface-variant font-bold text-[11px] shadow-sm">?</span>
+</td>
+<td class="py-2 px-3 text-right font-medium text-outline-variant">—</td>
+<td class="py-2 px-3 text-center">
+<div class="flex gap-1.5 justify-center">
+<span class="material-symbols-outlined text-[16px] text-primary cursor-pointer hover:bg-primary/10 rounded-full p-0.5">call</span>
+<span class="material-symbols-outlined text-[16px] text-outline-variant opacity-50 cursor-not-allowed rounded-full p-0.5">mail</span>
+</div>
+</td>
+<td class="py-2 px-3 text-right font-medium">0 €</td>
+<td class="py-2 px-3 text-on-surface-variant text-[12px] text-outline-variant">—</td>
+<td class="py-2 px-3 text-center">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-outline-variant bg-surface-container text-on-surface-variant text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-outline"></span> Nouveau</span>
+</td>
+<td class="py-2 px-4 text-right">
+<button class="px-2.5 py-1 border border-outline-variant text-on-surface-variant rounded hover:bg-surface-container hover:text-on-surface transition-colors text-[11px] font-medium">Voir →</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="border-t border-surface-variant px-4 py-3 bg-surface-container-low flex items-center justify-between mt-auto">
+<div class="text-[12px] text-on-surface-variant">
+                            Page 1 sur 31 <span class="mx-1">·</span> 1 543 résultats
+                        </div>
+<div class="flex gap-2">
+<button class="px-3 py-1 border border-outline-variant text-outline-variant rounded bg-surface opacity-50 cursor-not-allowed text-[12px] font-medium">Précédente</button>
+<button class="px-3 py-1 border border-outline-variant text-on-surface-variant rounded bg-surface hover:bg-surface-container-low transition-colors text-[12px] font-medium shadow-sm">Suivante</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Right Drawer (Filtres Avancés) - Integrated as a side panel for high density feel -->
+<aside class="w-[300px] border-l border-surface-variant bg-surface-container-lowest flex flex-col h-full flex-shrink-0 z-30 shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)]">
+<div class="p-4 border-b border-surface-variant flex justify-between items-center bg-surface sticky top-0">
+<h2 class="font-headline font-bold text-on-surface text-base flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">filter_list</span> Filtres avancés
+                </h2>
+<button class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[20px]">close</span></button>
+</div>
+<div class="flex-1 overflow-y-auto p-5 space-y-6">
+<!-- Sliders Section -->
+<div class="space-y-4">
+<div>
+<div class="flex justify-between mb-1">
+<label class="text-[12px] font-medium text-on-surface">Score enrichissement</label>
+<span class="text-[12px] text-on-surface-variant">0 - 15</span>
+</div>
+<input class="w-full h-1 bg-surface-variant rounded-lg appearance-none cursor-pointer accent-primary" max="15" min="0" type="range" value="5"/>
+</div>
+<div>
+<div class="flex justify-between mb-1">
+<label class="text-[12px] font-medium text-on-surface">Année construction</label>
+<span class="text-[12px] text-on-surface-variant">1940 - 2000</span>
+</div>
+<input class="w-full h-1 bg-surface-variant rounded-lg appearance-none cursor-pointer accent-primary" max="2024" min="1900" type="range" value="1970"/>
+</div>
+<div>
+<div class="flex justify-between mb-1">
+<label class="text-[12px] font-medium text-on-surface">Surface (m²)</label>
+<span class="text-[12px] text-on-surface-variant">&gt; 100 m²</span>
+</div>
+<input class="w-full h-1 bg-surface-variant rounded-lg appearance-none cursor-pointer accent-primary" max="500" min="0" type="range" value="100"/>
+</div>
+</div>
+<div class="w-full h-px bg-surface-variant"></div>
+<!-- Toggles Section -->
+<div class="space-y-3">
+<label class="flex items-center justify-between cursor-pointer group">
+<span class="text-[13px] text-on-surface font-medium group-hover:text-primary transition-colors">Succession potentielle</span>
+<div class="relative inline-block w-8 h-4 rounded-full bg-surface-variant border border-outline-variant">
+<div class="absolute w-3 h-3 rounded-full bg-surface shadow left-0.5 top-0.5 transition-transform translate-x-4 bg-primary"></div>
+</div>
+</label>
+<label class="flex items-center justify-between cursor-pointer group">
+<span class="text-[13px] text-on-surface font-medium group-hover:text-primary transition-colors">Mutations DVF (12 mois)</span>
+<div class="relative inline-block w-8 h-4 rounded-full bg-surface-variant border border-outline-variant">
+<div class="absolute w-3 h-3 rounded-full bg-surface shadow left-0.5 top-0.5 transition-transform"></div>
+</div>
+</label>
+</div>
+<div class="w-full h-px bg-surface-variant"></div>
+<!-- Checkboxes Section (MaPrimeRénov) -->
+<div>
+<label class="text-[12px] font-bold text-on-surface uppercase tracking-wider mb-3 block">MaPrimeRénov'</label>
+<div class="space-y-2">
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="rounded border-outline-variant text-[#2563eb] focus:ring-[#2563eb] h-3.5 w-3.5" type="checkbox"/>
+<span class="text-[13px] text-on-surface flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#3b82f6]"></span> Bleu (Très modestes)</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="rounded border-outline-variant text-[#eab308] focus:ring-[#eab308] h-3.5 w-3.5" type="checkbox"/>
+<span class="text-[13px] text-on-surface flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#f59e0b]"></span> Jaune (Modestes)</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="rounded border-outline-variant text-[#9333ea] focus:ring-[#9333ea] h-3.5 w-3.5" type="checkbox"/>
+<span class="text-[13px] text-on-surface flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#a855f7]"></span> Violet (Intermédiaires)</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="rounded border-outline-variant text-[#ec4899] focus:ring-[#ec4899] h-3.5 w-3.5" type="checkbox"/>
+<span class="text-[13px] text-on-surface flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#f43f5e]"></span> Rose (Supérieurs)</span>
+</label>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-surface-variant bg-surface flex gap-3 mt-auto sticky bottom-0">
+<button class="flex-1 px-4 py-2 border border-outline-variant text-on-surface-variant rounded-md hover:bg-surface-container-low transition-colors font-medium text-[13px]">Réinitialiser</button>
+<button class="flex-1 px-4 py-2 bg-primary text-on-primary rounded-md hover:bg-primary-container transition-colors font-medium text-[13px] shadow-sm">Appliquer</button>
+</div>
+</aside>
+</div>
+</body></html>

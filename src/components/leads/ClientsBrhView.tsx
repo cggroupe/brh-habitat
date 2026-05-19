@@ -15,7 +15,9 @@ import {
   Sparkles, Sigma, Crown, Award,
 } from 'lucide-react'
 import { useClientsBrh } from '@/hooks/queries/useClientsBrh'
+import { useVisitsBulk } from '@/hooks/queries/useVisitsBulk'
 import { PersonneGraphPanel } from './PersonneGraphPanel'
+import { VisitorsStack } from './VisitorsStack'
 import type { LeadProfile } from '@/lib/rgpd/lead-visibility'
 
 interface Props {
@@ -64,6 +66,10 @@ export default function ClientsBrhView({ profile }: Props) {
   const rows = data ?? []
   const total = rows[0]?.total_count ?? 0
   const totalPages = Math.max(1, Math.ceil(Number(total) / PAGE_SIZE))
+
+  // Bulk visits pour la colonne "Vu par X"
+  const personneIds = useMemo(() => rows.map((r) => r.id), [rows])
+  const { data: visitsByPersonne } = useVisitsBulk(personneIds)
 
   const profileBase = useMemo(() => {
     switch (profile) {
@@ -186,7 +192,7 @@ export default function ClientsBrhView({ profile }: Props) {
             </div>
           ) : (
             rows.map((c) => (
-              <ContactRow key={c.id} c={c} profileBase={profileBase} />
+              <ContactRow key={c.id} c={c} profileBase={profileBase} visits={visitsByPersonne?.get(c.id)} />
             ))
           )}
         </div>
@@ -228,7 +234,11 @@ const TIER_BADGE: Record<string, { cls: string; Icon: typeof Crown; label: strin
   none: { cls: 'border-dashed border-slate-300 bg-white text-slate-400', Icon: Sigma, label: 'À enrichir' },
 }
 
-function ContactRow({ c, profileBase }: { c: ReturnType<typeof useClientsBrh>['data'] extends Array<infer T> | undefined ? T : never; profileBase: string }) {
+function ContactRow({ c, profileBase, visits }: {
+  c: ReturnType<typeof useClientsBrh>['data'] extends Array<infer T> | undefined ? T : never;
+  profileBase: string;
+  visits?: ReturnType<typeof useVisitsBulk>['data'] extends Map<string, infer V> | undefined ? V : never;
+}) {
   const Icon = c.is_pro || c.societe ? Building2 : User
   const tierKey = (c.enrichment_tier ?? 'none') as keyof typeof TIER_BADGE
   const tierBadge = TIER_BADGE[tierKey]
@@ -316,17 +326,24 @@ function ContactRow({ c, profileBase }: { c: ReturnType<typeof useClientsBrh>['d
             )}
           </div>
 
-          {(c.enfants || detailHref) && (
+          {(c.enfants || detailHref || (visits && visits.total > 0)) && (
             <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
               {c.enfants && (
-                <span className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5">
+                <span className="rounded border border-stone-200 bg-stone-50 px-1.5 py-0.5">
                   Famille : {c.enfants}
+                </span>
+              )}
+              {visits && visits.total > 0 && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-900">
+                  <span>Vu par</span>
+                  <VisitorsStack visits={visits} size="sm" />
+                  {visits.total === 1 ? '1 collègue' : `${visits.total} collègues`}
                 </span>
               )}
               {detailHref && (
                 <Link
                   to={detailHref}
-                  className="ml-auto rounded border border-slate-300 bg-white px-2 py-0.5 font-medium text-slate-700 hover:bg-slate-50"
+                  className="ml-auto rounded border border-stone-300 bg-white px-2 py-0.5 font-medium text-stone-700 hover:bg-stone-50"
                 >
                   Voir fiche →
                 </Link>
