@@ -5,6 +5,41 @@
 
 ---
 
+## 2026-05-19 (6) — PURGE faux positifs OSINT + page fiche détaillée
+
+- **Contexte** : Philippe rapporte que beaucoup de comptes affichés (GitHub/SoundCloud/Telegram/WordPress) sont **faux** pour des clients BRH de 80+ ans. Diagnostic confirmé :
+  - Maigret retourne 200 OK sur la majorité des sites mêmes filtrés (Calendly 247, Pixwox 156, TikTok 140, GitHub Gist 114, Wordpress.org 96, Telegram 89, Bluesky 103, SoundCloud 105) → bruit pur pour cible senior français
+  - SCI dirige : 219 liens dont **0 contact pro** → tous des homonymes nom+prénom
+  - Apify Google : homonymes possibles (Pierre Dupont à Brest ≠ Pierre Dupont à Lyon)
+  - UX : tooltips inaccessibles, impossible de voir la fiche complète
+- **Actions Supabase (data fix)** :
+  - Archive `brh_osint_maigret_archive` (329 contacts) puis **purge totale** `osint_other.maigret` sur 329 lignes
+  - Archive `brh_entity_links_archive` puis **suppression des 219 liens SCI dirige** (zéro match contact pro)
+  - Recompute tiers (trigger BEFORE UPDATE): redistribution **gold 195→182, silver 3130→3557, bronze 2199→1649, none 11083→11219**
+- **UI corrections** :
+  - `ClientsBrhView` : retrait du chip "Maigret · N sites", ajout chip "Apify · homonymie possible" (avertissement), bouton "Voir fiche →" cliquable
+  - Nouvelle page **`EmployeClientBrhDetail`** (route `/employe/clients-brh/:id`) : fiche détaillée plein écran avec TOUTES les informations visibles directement (plus de tooltip caché)
+    - Header sticky avec badge tier + score + statut
+    - Section identité avec contacts cliquables (tel, email), adresse, CA, RDV, DPE F/G lien
+    - Section profil psy IA complet (traits, segment, motivateurs, barrières, conseil commercial)
+    - Section OSINT Apify Google avec **bandeau jaune "Homonymie possible — vérifier avant action"**, liens cliquables LinkedIn/FB/Insta/Twitter/PagesJaunes, blocs séparés "Annonces immo détectées" et "Mentions sociétés", expandable `<details>` pour TOUS les résultats Google
+    - Section "Email actif sur" : liste complète des services Holehe (chip par service)
+    - Section graphe foncier 360° (adresses DPE liées, mutations DVF, succession SCI décès, BODACC)
+    - Section finale "Qualité des données" avec rappel sur homonymie Apify, purge Maigret, purge SCI dirige
+- **Route** : `App.tsx` lazy import + route `/employe/clients-brh/:id`
+- **Fichiers** :
+  - `src/pages/employe/EmployeClientBrhDetail.tsx` (créé, ~330 lignes)
+  - `src/App.tsx` (lazy import + route)
+  - `src/components/leads/ClientsBrhView.tsx` (retrait Maigret, ajout avertissement Apify, bouton "Voir fiche")
+  - `docs/wiki/log.md` (cette entrée)
+- **Tests** : `npm run build` OK
+- **Risque** : Low — purges archivées (réversibles via tables _archive), UI additions, route /employe/* déjà guardée par EmployeShell
+- **Status** : ✅ DONE
+
+**Note** : pour Apify Google, j'ai gardé les données (utiles malgré l'homonymie) mais avec avertissement clair. Sprint F (futur) : ajouter un système "marquer faux positif" pour permettre aux commerciaux de nettoyer manuellement.
+
+---
+
 ## 2026-05-19 (5) — Sprint C : RPC entity_neighbors générique + EntityLinksPanel sur fiches
 
 - **Contexte** : suite Sprint A+B (graphe + fiche personne 360°). Standardiser pour que **toutes** les fiches (Adresse, SCI) profitent du graphe avec un composant commun.

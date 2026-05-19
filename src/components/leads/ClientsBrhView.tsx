@@ -233,19 +233,26 @@ function ContactRow({ c, profileBase }: { c: ReturnType<typeof useClientsBrh>['d
   const tierKey = (c.enrichment_tier ?? 'none') as keyof typeof TIER_BADGE
   const tierBadge = TIER_BADGE[tierKey]
   const apify = c.osint_other?.apify_google
-  const maigret = c.osint_other?.maigret
+  // Maigret retiré le 19/05/2026 (faux positifs systémiques sur seniors)
   const holehe = c.osint_other?.holehe
+  const detailHref = profileBase === '/employe' ? `/employe/clients-brh/${c.id}` : null
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3">
+    <div className="rounded-lg border border-slate-200 bg-white p-3 transition hover:border-slate-300">
       <div className="flex items-start gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-600">
           <Icon className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2">
-            <span className="truncate text-sm font-semibold text-slate-900">
-              {c.full_name || c.societe || c.fingerprint_hash.slice(0, 8)}
-            </span>
+            {detailHref ? (
+              <Link to={detailHref} className="truncate text-sm font-semibold text-slate-900 hover:text-slate-600 hover:underline">
+                {c.full_name || c.societe || c.fingerprint_hash.slice(0, 8)}
+              </Link>
+            ) : (
+              <span className="truncate text-sm font-semibold text-slate-900">
+                {c.full_name || c.societe || c.fingerprint_hash.slice(0, 8)}
+              </span>
+            )}
             {c.societe && c.full_name && (
               <span className="truncate text-xs text-slate-500">{c.societe}</span>
             )}
@@ -312,7 +319,7 @@ function ContactRow({ c, profileBase }: { c: ReturnType<typeof useClientsBrh>['d
             )}
           </div>
 
-          {(c.osint_linkedin || c.osint_facebook || c.enfants || apify || maigret || holehe) && (
+          {(c.osint_linkedin || c.osint_facebook || c.enfants || apify || holehe) && (
             <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
               {c.osint_linkedin && (
                 <a
@@ -373,13 +380,21 @@ function ContactRow({ c, profileBase }: { c: ReturnType<typeof useClientsBrh>['d
                   Email actif · {holehe.used_on.length}
                 </span>
               )}
-              {maigret && maigret.n_hits != null && maigret.n_hits > 0 && (
+              {apify && (
                 <span
-                  className="rounded border border-purple-200 bg-purple-50 px-1.5 py-0.5 text-purple-800"
-                  title={(maigret.hits ?? []).map((h) => h.site).join(', ')}
+                  className="rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-amber-800"
+                  title="Résultats Google peuvent inclure des homonymes — voir fiche détaillée pour vérifier"
                 >
-                  Maigret · {maigret.n_hits} sites
+                  Apify · homonymie possible
                 </span>
+              )}
+              {detailHref && (
+                <Link
+                  to={detailHref}
+                  className="ml-auto rounded border border-slate-300 bg-white px-2 py-0.5 font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Voir fiche →
+                </Link>
               )}
             </div>
           )}
