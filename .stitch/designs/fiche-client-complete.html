@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Precision ERP - Fiche Client</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-surface-variant": "#404a3c",
+                        "secondary": "#565e74",
+                        "surface-container": "#eceeec",
+                        "inverse-surface": "#2e3130",
+                        "inverse-primary": "#7edc71",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#e6e9e7",
+                        "primary-fixed-dim": "#7edc71",
+                        "outline-variant": "#bfcab8",
+                        "on-tertiary-container": "#ffe6ec",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#131b2e",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "tertiary-container": "#b43f74",
+                        "surface-bright": "#f8faf8",
+                        "tertiary": "#95255b",
+                        "on-primary-container": "#b2ffa3",
+                        "surface": "#f8faf8",
+                        "on-background": "#191c1b",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#e1e3e1",
+                        "secondary-container": "#dae2fd",
+                        "background": "#f8faf8",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#005308",
+                        "on-error-container": "#93000a",
+                        "on-secondary": "#ffffff",
+                        "surface-container-low": "#f2f4f2",
+                        "outline": "#707a6a",
+                        "on-error": "#ffffff",
+                        "surface-container-highest": "#e1e3e1",
+                        "surface-tint": "#056e10",
+                        "inverse-on-surface": "#eff1ef",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "secondary-fixed": "#dae2fd",
+                        "primary": "#00600a",
+                        "on-tertiary-fixed-variant": "#85184f",
+                        "on-surface": "#191c1b",
+                        "on-primary-fixed": "#002201",
+                        "surface-dim": "#d8dad9",
+                        "on-tertiary-fixed": "#3e0020",
+                        "tertiary-fixed": "#ffd9e4",
+                        "on-secondary-container": "#5c647a",
+                        "primary-container": "#1c7b1d",
+                        "tertiary-fixed-dim": "#ffb0cc",
+                        "primary-fixed": "#9af98a"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter", "sans-serif"],
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Base styles derived from Design System */
+        body { font-family: 'Inter', sans-serif; background-color: #f8faf8; color: #191c1b; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-fill { font-variation-settings: 'FILL' 1; }
+        
+        /* Ghost Border for high-density areas */
+        .ghost-border { border: 1px solid rgba(191, 202, 184, 0.2); }
+        
+        /* Glassmorphism */
+        .glass-panel {
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        /* Input Focus Glow */
+        .input-erp:focus {
+            outline: none;
+            box-shadow: 0 0 0 1px rgba(0, 96, 10, 0.2), 0 0 10px rgba(154, 249, 138, 0.15);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e1e3e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #bfcab8; }
+    </style>
+</head>
+<body class="flex bg-surface font-body text-body-md antialiased overflow-x-hidden selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- SideNavBar (Shared Component) -->
+<nav class="bg-on-secondary-fixed dark:bg-inverse-surface text-primary-fixed dark:text-primary-fixed-dim font-body text-body-md h-screen w-64 fixed left-0 top-0 shadow-xl flex flex-col py-8 z-50 hidden md:flex">
+<!-- Header -->
+<div class="px-6 mb-10 flex items-center gap-4">
+<img alt="Agent Avatar" class="w-12 h-12 rounded-full object-cover border-2 border-primary-fixed/20" data-alt="A professional headshot of a male field sales agent in his late 30s. He is wearing a crisp white shirt and a dark tailored blazer, looking directly at the camera with a confident, approachable smile. The lighting is soft and high-key, illuminating his features against a subtly textured, minimalist grey background. The image exudes a high-end corporate aesthetic, aligning with the Precision ERP brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc29GGxlFAr3hoOCg-GCAJt3D5TBJzbZZSqsobGCfh6g8i-5tiZh3Mu3oBAnmjE5rWp_tAm9RXDfRgteCNBZvfVxc0_yeKEbDxZmQf409rsFRA2F0pcZnsU0ABj3dlelZD04z04R1xGXngdcHqSahL0XG_RlyxEjyOyanI15w5PYNd9EFpUIasghA9Qc5I57i17kqTLddrKJcu2XotWfPMl013SxKJP4PuPQl2RSsS-Ctt5ki4y8rIkwPcf8sTxD1hDJE9rLEMj15l"/>
+<div>
+<h2 class="font-headline font-bold text-surface-bright text-title-md">Agent Terminal</h2>
+<p class="text-on-secondary-fixed-variant text-label-sm">North Sector</p>
+</div>
+</div>
+<!-- Main Nav -->
+<div class="flex-1 space-y-1">
+<a class="cursor-pointer flex items-center gap-3 py-3 text-on-secondary-fixed-variant hover:text-surface-variant hover:bg-primary-container/10 transition-all duration-200 pl-5" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="cursor-pointer flex items-center gap-3 py-3 text-on-secondary-fixed-variant hover:text-surface-variant hover:bg-primary-container/10 transition-all duration-200 pl-5" href="#">
+<span class="material-symbols-outlined">architecture</span>
+<span>Active Sites</span>
+</a>
+<a class="cursor-pointer flex items-center gap-3 py-3 text-on-secondary-fixed-variant hover:text-surface-variant hover:bg-primary-container/10 transition-all duration-200 pl-5" href="#">
+<span class="material-symbols-outlined">engineering</span>
+<span>Resource Planner</span>
+</a>
+<!-- Active State -->
+<a class="cursor-pointer flex items-center gap-3 py-3 text-surface-bright font-bold border-l-[3px] border-primary-fixed pl-4 bg-white/5 transition-all duration-200" href="#">
+<span class="material-symbols-outlined icon-fill text-primary-fixed">menu_book</span>
+<span>Client Ledger</span>
+</a>
+<a class="cursor-pointer flex items-center gap-3 py-3 text-on-secondary-fixed-variant hover:text-surface-variant hover:bg-primary-container/10 transition-all duration-200 pl-5" href="#">
+<span class="material-symbols-outlined">psychology</span>
+<span>AI Insights</span>
+</a>
+</div>
+<!-- Footer Nav -->
+<div class="px-5 mt-auto space-y-4">
+<button class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                New Site Audit
+            </button>
+<div class="pt-6 border-t border-white/5 space-y-1">
+<a class="cursor-pointer flex items-center gap-3 py-2 text-on-secondary-fixed-variant hover:text-surface-variant transition-all duration-200 pl-1 text-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">help</span> Support
+                </a>
+<a class="cursor-pointer flex items-center gap-3 py-2 text-on-secondary-fixed-variant hover:text-surface-variant transition-all duration-200 pl-1 text-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">history</span> Archive
+                </a>
+</div>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<main class="flex-1 md:ml-64 min-h-screen flex flex-col bg-surface relative">
+<!-- TopAppBar (Shared Component) -->
+<header class="sticky top-0 z-50 flex justify-between items-center w-full px-6 h-16 bg-surface dark:bg-background bg-surface-container-low dark:bg-surface-container-high shadow-[0_12px_40px_rgba(15,23,42,0.06)]">
+<div class="flex items-center gap-8">
+<div class="font-headline font-bold text-title-md text-primary dark:text-inverse-primary tracking-tight">Precision ERP</div>
+<nav class="hidden md:flex gap-6 h-full">
+<a class="flex items-center h-full text-primary dark:text-inverse-primary font-bold border-b-2 border-primary active:scale-[0.98] duration-150" href="#">Client File</a>
+<a class="flex items-center h-full text-on-surface-variant dark:text-outline hover:bg-surface-container-highest dark:hover:bg-on-surface-variant transition-colors px-3 rounded-t-md active:scale-[0.98] duration-150" href="#">DPE Audit</a>
+<a class="flex items-center h-full text-on-surface-variant dark:text-outline hover:bg-surface-container-highest dark:hover:bg-on-surface-variant transition-colors px-3 rounded-t-md active:scale-[0.98] duration-150" href="#">Work History</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative bg-surface-container-low dark:bg-surface-container-high rounded-full px-4 py-2 flex items-center gap-2 ghost-border">
+<span class="material-symbols-outlined text-outline text-sm">search</span>
+<input class="bg-transparent border-none outline-none text-sm w-48 text-on-surface placeholder:text-outline focus:ring-0" placeholder="Search entity..." type="text"/>
+</div>
+<div class="flex gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-highest rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-highest rounded-full transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="h-8 w-px bg-outline-variant/30 mx-2"></div>
+<button class="text-label-md font-semibold text-primary hover:bg-primary-container/10 px-4 py-2 rounded-md transition-colors">Export PDF</button>
+<button class="bg-primary text-on-primary font-semibold text-label-md px-5 py-2 rounded-md shadow-sm hover:shadow-md transition-all active:scale-[0.98]">Save Changes</button>
+</div>
+</header>
+<!-- Contextual Sticky Header (The "Ledger" Anchor) -->
+<div class="sticky top-16 z-40 glass-panel border-b border-outline-variant/20 px-8 py-5 flex flex-col md:flex-row md:items-end justify-between gap-4 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+<div>
+<nav class="flex items-center gap-2 text-label-sm text-outline font-medium mb-2">
+<a class="hover:text-primary transition-colors flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                        Mes leads
+                    </a>
+<span>·</span>
+<span>Liste des clients</span>
+</nav>
+<div class="flex items-center gap-4">
+<h1 class="font-headline font-bold text-display-sm text-on-surface tracking-tight">Famille Lefebvre</h1>
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] icon-fill text-[#d4af37]">star</span> <!-- Exceptionally using inline color for standard gold tier representation, though system prefers standard tokens -->
+                        Gold Tier
+                    </span>
+</div>
+</div>
+<div class="flex gap-3">
+<!-- Active State Example for "Marquer comme vu" -->
+<div class="flex items-center gap-2 bg-surface-container-low border border-primary/20 pl-2 pr-4 py-1.5 rounded-lg">
+<div class="flex -space-x-2">
+<img alt="" class="w-6 h-6 rounded-full border-2 border-surface" data-alt="Small avatar of field agent Marc D." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgIdaieyNmLWR6m0KeCjtE0__1kF7svMMJuNnmQcb1RpTZBkBDTPF_FFGtHczvldBZ7i16EE4eIAf3fxf0GO5b3nbMe8F9Bm3FigghwLEb4TWuFXfqjlwj-5yj_6s_UtdfSnsMlRNZ4g4TKTKWBmE7THl2si1BIkL59S2E_qCCUcGkzei742m9awV8mXgRqh1uDRpbqNUiBbUtL3XARLjGB_lJHEeNI0K6Y_Q5I74wq2lIlXXrledXs7IMywgUuqpQkh-q7IZnIp2p"/>
+</div>
+<span class="text-label-sm font-semibold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+                        Vu par Marc D.
+                    </span>
+</div>
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary font-semibold text-label-md px-6 py-2.5 rounded-lg shadow-sm hover:shadow-md transition-all active:scale-[0.98] flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">save</span>
+                    Sauvegarder
+                </button>
+</div>
+</div>
+<!-- Canvas Area -->
+<div class="p-8 max-w-[1600px] mx-auto w-full flex-1">
+<!-- Context Banner -->
+<div class="mb-8 flex items-center gap-4 bg-surface-container-highest/50 px-5 py-3 rounded-xl border border-surface-variant">
+<span class="text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">👥 Déjà visité par</span>
+<div class="flex -space-x-3">
+<img alt="Marc" class="w-8 h-8 rounded-full border-2 border-surface object-cover" data-alt="Avatar of agent Marc Durand" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbFdcMg8O_fT5kymY44jnbVgi5bmTa9CVsCiIGx4RZSaSQBwjmNMs2Sq4has8VJrlNP6U4NVYihMIn_wpbrVbBcB7XfAXmYPxFGevgN2Pozc9J9ctKUgTndZ05faialkj4A5mvpqib2HsXwzvF3w6eLB1ix7_vUZM44ZfXlZ6qMZlRfe8P_pTwWckJwsiZL57rtWOt1le685z4yvSlGhnaCg_fp1dZjpottXPCXw9o_uwSPYdNCEW3goJQUTSI5HRv0aVe1MtpP3_u"/>
+<img alt="Sophie" class="w-8 h-8 rounded-full border-2 border-surface object-cover" data-alt="Avatar of agent Sophie L., a professional woman in her 30s with dark hair." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCisSUpjMWmk3rdOl1ZJ2oPH02WvIDdpd6xPPIYaGjQJ1mCbXdm8rWXk2ja0af_uvcFeUXSUZYarwiHF8Bv-nJbpAHj6tEbGpemgrN4P257I2bW92eKWcW4vZTXn-YU5Ky6J7q7_LamRV_ksz3KgVw9Ow6rQV2MwXrnSJarv_SSiZonMvj9pEA8E2heS1H8rjP12BvoUxfkl6v2_gHCYSCAiBjwiktyk6_ZTc66LnsdW4sQGmtlFLpeX3XRP7HllqZEo0KdFYokq6pb"/>
+</div>
+<div class="text-sm text-on-surface-variant">
+                    Dernière visite le <strong class="text-on-surface">12 Octobre</strong> par Marc Durand. <span class="italic text-outline">"Accès chantier difficile par l'arrière."</span>
+</div>
+</div>
+<!-- Main Layout Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+<!-- Left Column (60%) -->
+<div class="col-span-1 lg:col-span-7 space-y-10">
+<!-- Carte 1: Identité & Contact -->
+<section class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_4px_20px_rgba(15,23,42,0.03)]">
+<div class="flex items-start justify-between mb-8">
+<h3 class="font-headline font-bold text-title-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">contact_page</span>
+                                Identité &amp; Contact
+                            </h3>
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-title-lg font-bold text-outline overflow-hidden border-2 border-surface-container-low">
+<!-- Placeholder or Monogram -->
+<span class="material-symbols-outlined text-[32px]">house</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+<!-- Fields -->
+<div class="space-y-1.5">
+<label class="text-label-sm font-semibold text-outline">Prénom</label>
+<input class="input-erp w-full bg-surface-container-low border-none rounded-md px-4 py-2.5 text-body-md text-on-surface transition-all" type="text" value="Jean-Baptiste"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-label-sm font-semibold text-outline">Nom</label>
+<input class="input-erp w-full bg-surface-container-low border-none rounded-md px-4 py-2.5 text-body-md text-on-surface transition-all font-bold" type="text" value="Lefebvre"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-label-sm font-semibold text-outline">Téléphone</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary text-[20px]">call</span>
+<input class="input-erp w-full bg-surface-container-low border-none rounded-md pl-10 pr-4 py-2.5 text-body-md text-on-surface transition-all" type="tel" value="06 12 34 56 78"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="text-label-sm font-semibold text-outline">Email</label>
+<input class="input-erp w-full bg-surface-container-low border-none rounded-md px-4 py-2.5 text-body-md text-on-surface transition-all" type="email" value="jb.lefebvre@domaine.fr"/>
+</div>
+<div class="space-y-1.5 md:col-span-2">
+<label class="text-label-sm font-semibold text-outline">Adresse</label>
+<input class="input-erp w-full bg-surface-container-low border-none rounded-md px-4 py-2.5 text-body-md text-on-surface transition-all" type="text" value="14 Avenue des Mimosas"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-label-sm font-semibold text-outline">Code Postal</label>
+<input class="input-erp w-full bg-surface-container-low border-none rounded-md px-4 py-2.5 text-body-md text-on-surface transition-all" type="text" value="69006"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-label-sm font-semibold text-outline">Ville</label>
+<input class="input-erp w-full bg-surface-container-low border-none rounded-md px-4 py-2.5 text-body-md text-on-surface transition-all" type="text" value="Lyon"/>
+</div>
+<div class="md:col-span-2 mt-2 pt-6 border-t border-surface-variant flex gap-4">
+<div class="flex-1 space-y-1.5">
+<label class="text-label-sm font-semibold text-outline">Composition Familiale</label>
+<select class="input-erp w-full bg-surface-container-low border-none rounded-md px-4 py-2.5 text-body-md text-on-surface transition-all appearance-none cursor-pointer">
+<option>Couple + 2 enfants</option>
+<option>Célibataire</option>
+<option>Retraités</option>
+</select>
+</div>
+<div class="flex-1 space-y-1.5">
+<label class="text-label-sm font-semibold text-outline">Statut</label>
+<select class="input-erp w-full bg-surface-container-low border-none rounded-md px-4 py-2.5 text-body-md text-on-surface transition-all appearance-none cursor-pointer font-semibold text-primary">
+<option>Client Actif</option>
+<option>Prospect Froid</option>
+</select>
+</div>
+</div>
+</div>
+</section>
+<!-- Carte 2: DPE & Performance -->
+<section class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_4px_20px_rgba(15,23,42,0.03)] relative overflow-hidden">
+<!-- Decorative bg -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-error-container rounded-bl-[100px] opacity-20 pointer-events-none -mr-10 -mt-10"></div>
+<div class="flex items-start justify-between mb-8 relative z-10">
+<div>
+<h3 class="font-headline font-bold text-title-md text-on-surface flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-primary">energy_savings_leaf</span>
+                                    DPE &amp; Performance Énergétique
+                                </h3>
+<p class="text-sm text-outline">Audit initial réalisé le 14/09/2023</p>
+</div>
+<div class="w-16 h-16 rounded-2xl bg-error text-on-error flex items-center justify-center font-headline font-bold text-[36px] shadow-lg shadow-error/30">
+                                F
+                            </div>
+</div>
+<!-- Technical Grid -->
+<div class="bg-surface-container-low rounded-xl p-2 mb-6">
+<!-- Table Header -->
+<div class="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-4 px-4 py-3 text-label-sm font-bold text-outline uppercase tracking-wider border-b border-surface-variant/50">
+<div class="w-8"></div>
+<div>Poste Technique</div>
+<div>État / Recommandation</div>
+<div>Dernier Intervenant</div>
+<div>Année</div>
+</div>
+<!-- Rows -->
+<div class="space-y-1 mt-1">
+<!-- Row 1 -->
+<div class="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-4 items-center px-4 py-2 hover:bg-surface-container-highest rounded-lg transition-colors group">
+<span class="material-symbols-outlined text-outline group-hover:text-primary">wall_art</span>
+<div class="font-semibold text-on-surface">Murs extérieurs</div>
+<select class="bg-transparent border-none p-0 text-body-md focus:ring-0 text-error font-medium cursor-pointer">
+<option>Passoire (Urgent)</option>
+<option>Correct</option>
+</select>
+<input class="bg-transparent border-none p-0 text-body-md text-outline focus:ring-0" type="text" value="Inconnu"/>
+<div class="text-sm text-outline">1980</div>
+</div>
+<!-- Row 2 -->
+<div class="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-4 items-center px-4 py-2 hover:bg-surface-container-highest rounded-lg transition-colors group">
+<span class="material-symbols-outlined text-outline group-hover:text-primary">roofing</span>
+<div class="font-semibold text-on-surface">Toiture</div>
+<select class="bg-transparent border-none p-0 text-body-md focus:ring-0 text-on-surface-variant cursor-pointer">
+<option>Isolé (20cm)</option>
+<option>À refaire</option>
+</select>
+<input class="bg-transparent border-none p-0 text-body-md text-outline focus:ring-0" type="text" value="Couverture Pro"/>
+<div class="text-sm text-outline">2010</div>
+</div>
+<!-- Row 3 -->
+<div class="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-4 items-center px-4 py-2 hover:bg-surface-container-highest rounded-lg transition-colors group">
+<span class="material-symbols-outlined text-outline group-hover:text-primary">window</span>
+<div class="font-semibold text-on-surface">Fenêtres</div>
+<select class="bg-transparent border-none p-0 text-body-md focus:ring-0 text-error font-medium cursor-pointer">
+<option>Simple Vitrage</option>
+<option>Double Vitrage</option>
+</select>
+<input class="bg-transparent border-none p-0 text-body-md text-outline focus:ring-0" type="text" value="Menuiserie Dubois"/>
+<div class="text-sm text-outline">1995</div>
+</div>
+<!-- Row 4 -->
+<div class="grid grid-cols-[auto_1fr_1fr_1fr_auto] gap-4 items-center px-4 py-2 hover:bg-surface-container-highest rounded-lg transition-colors group">
+<span class="material-symbols-outlined text-outline group-hover:text-primary">mode_heat</span>
+<div class="font-semibold text-on-surface">Chauffage</div>
+<select class="bg-transparent border-none p-0 text-body-md focus:ring-0 text-[#b26a00] font-medium cursor-pointer">
+<option>Fioul (Ancien)</option>
+<option>PAC Air/Eau</option>
+</select>
+<input class="bg-transparent border-none p-0 text-body-md text-outline focus:ring-0" type="text" value="Chauffage Service"/>
+<div class="text-sm text-outline">2005</div>
+</div>
+</div>
+</div>
+<!-- Gains -->
+<div class="bg-primary/5 border border-primary/20 rounded-xl p-5 flex items-center justify-between">
+<div class="flex items-center gap-3 text-primary-container">
+<span class="material-symbols-outlined text-[28px] icon-fill">trending_up</span>
+<div>
+<div class="font-bold text-label-md">Gains Potentiels (PAC + ITE)</div>
+<div class="text-sm text-on-surface-variant opacity-80">Passage estimé en classe C</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-headline font-bold text-[24px] text-primary">-45%</div>
+<div class="text-xs font-semibold uppercase tracking-wider text-primary/70">Facture Annuelle</div>
+</div>
+</div>
+</section>
+<!-- Carte 3: Historique -->
+<section class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_4px_20px_rgba(15,23,42,0.03)]">
+<h3 class="font-headline font-bold text-title-md text-on-surface flex items-center gap-2 mb-8">
+<span class="material-symbols-outlined text-primary">history</span>
+                            Historique des travaux connus
+                        </h3>
+<div class="relative pl-6 border-l-2 border-surface-variant space-y-8">
+<!-- Item 1 -->
+<div class="relative">
+<div class="absolute -left-[35px] top-1 w-4 h-4 rounded-full bg-primary ring-4 ring-surface-container-lowest"></div>
+<div class="bg-surface-container-low rounded-xl p-5 ml-2 hover:bg-surface-container-highest transition-colors cursor-default">
+<div class="flex justify-between items-start mb-2">
+<div class="font-bold text-on-surface text-lg">Isolation Combles Perdus</div>
+<div class="text-sm font-semibold text-outline">Mars 2021</div>
+</div>
+<div class="flex items-center gap-4 text-sm text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">business</span>
+                                            Isolation Plus S.A.
+                                        </div>
+<div class="w-1 h-1 rounded-full bg-outline"></div>
+<div class="font-semibold">3 200 €</div>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="relative">
+<div class="absolute -left-[35px] top-1 w-4 h-4 rounded-full bg-outline-variant ring-4 ring-surface-container-lowest"></div>
+<div class="bg-surface-container-low rounded-xl p-5 ml-2 hover:bg-surface-container-highest transition-colors cursor-default opacity-80">
+<div class="flex justify-between items-start mb-2">
+<div class="font-bold text-on-surface text-lg">Remplacement Porte d'entrée</div>
+<div class="text-sm font-semibold text-outline">Nov 2015</div>
+</div>
+<div class="flex items-center gap-4 text-sm text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">business</span>
+                                            Menuiseries du Nord
+                                        </div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column (40%) -->
+<div class="col-span-1 lg:col-span-5 space-y-10">
+<!-- Carte 4: Suivi Commercial -->
+<section class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_4px_20px_rgba(15,23,42,0.03)]">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline font-bold text-title-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">monitoring</span>
+                                Suivi Commercial
+                            </h3>
+<!-- Chips -->
+<div class="bg-error-container text-on-error-container px-3 py-1 rounded-full text-label-sm font-bold flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[16px] icon-fill">local_fire_department</span>
+                                Intérêt Chaud
+                            </div>
+</div>
+<div class="space-y-4">
+<div class="text-sm text-outline flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">event</span>
+                                Relance prévue : <strong>Semaine prochaine</strong>
+</div>
+<div class="relative">
+<label class="text-label-sm font-semibold text-outline mb-2 block">Notes Agent (Éditable)</label>
+<textarea class="input-erp w-full bg-surface-container-low border-none rounded-xl p-4 text-body-md text-on-surface transition-all resize-none h-32 focus:bg-white" placeholder="Ajouter des notes sur le profil..."></textarea>
+</div>
+</div>
+</section>
+<!-- Carte 5: Profil IA -->
+<section class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_4px_20px_rgba(15,23,42,0.03)] border-t-[4px] border-primary-container">
+<h3 class="font-headline font-bold text-title-md text-on-surface flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary-container">psychology</span>
+                            Profil Psycho-Commercial <span class="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded uppercase tracking-wider align-top">IA Generative</span>
+</h3>
+<div class="space-y-4 mb-6">
+<div class="flex justify-between items-center border-b border-surface-variant pb-2">
+<span class="text-sm text-outline">Sensibilité Prix</span>
+<span class="font-semibold text-on-surface">Moyenne (Recherche le ROI)</span>
+</div>
+<div class="flex justify-between items-center border-b border-surface-variant pb-2">
+<span class="text-sm text-outline">Décideur principal</span>
+<span class="font-semibold text-on-surface">Madame (Technique)</span>
+</div>
+<div class="flex justify-between items-center border-b border-surface-variant pb-2">
+<span class="text-sm text-outline">Appétence Écologique</span>
+<span class="font-semibold text-primary">Forte</span>
+</div>
+<div class="flex justify-between items-center pb-2">
+<span class="text-sm text-outline">Rythme de décision</span>
+<span class="font-semibold text-on-surface">Lent (Besoin de réassurance)</span>
+</div>
+</div>
+<div class="space-y-3">
+<div>
+<span class="text-xs font-bold text-outline uppercase tracking-wider block mb-2">Motivateurs Identifiés</span>
+<div class="flex flex-wrap gap-2">
+<span class="bg-primary-fixed/20 text-on-primary-fixed-variant px-3 py-1 rounded-md text-xs font-semibold">Valorisation patrimoine</span>
+<span class="bg-primary-fixed/20 text-on-primary-fixed-variant px-3 py-1 rounded-md text-xs font-semibold">Confort d'hiver</span>
+</div>
+</div>
+<div class="pt-2">
+<span class="text-xs font-bold text-outline uppercase tracking-wider block mb-2">Barrières Potentielles</span>
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-md text-xs font-semibold">Peur des travaux longs</span>
+<span class="bg-surface-variant text-on-surface-variant px-3 py-1 rounded-md text-xs font-semibold">Incertitude aides de l'état</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Carte 6: Patrimoine 360 -->
+<section class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_4px_20px_rgba(15,23,42,0.03)]">
+<h3 class="font-headline font-bold text-title-md text-on-surface flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary">account_balance</span>
+                            Liens Patrimoniaux 360°
+                        </h3>
+<div class="space-y-4">
+<div class="bg-surface-container-low p-4 rounded-xl">
+<div class="text-xs font-bold text-outline uppercase tracking-wider mb-2">Autres biens connus</div>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-outline mt-0.5">apartment</span>
+<div>
+<div class="font-semibold text-sm">Appartement T2 (Locatif)</div>
+<div class="text-xs text-on-surface-variant">69003 Lyon • DPE: E</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl">
+<div class="text-xs font-bold text-outline uppercase tracking-wider mb-2">Mutations DVF (Open Data)</div>
+<div class="text-sm flex items-center justify-between">
+<span class="font-semibold">Acquisition résidence princ.</span>
+<span class="text-outline">2012</span>
+</div>
+<div class="text-sm flex items-center justify-between mt-1 opacity-70">
+<span>Vente terrain nu (Var)</span>
+<span>2019</span>
+</div>
+</div>
+<!-- Alert Block -->
+<div class="bg-tertiary-fixed text-on-tertiary-fixed p-4 rounded-xl border border-tertiary-container/30 flex gap-3 items-start">
+<span class="material-symbols-outlined text-tertiary-container">family_history</span>
+<div>
+<div class="font-bold text-sm">Succession potentielle détectée</div>
+<div class="text-xs opacity-80 mt-1 leading-relaxed">Indice de probabilité basé sur les tranches d'âge et historiques de mutation. Opportunité de rénovation globale avant revente.</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Carte 7: Actions -->
+<section class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_4px_20px_rgba(15,23,42,0.03)]">
+<h3 class="font-headline font-bold text-title-md text-on-surface flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-primary">bolt</span>
+                            Actions Rapides
+                        </h3>
+<div class="grid grid-cols-2 gap-3">
+<button class="bg-surface-container-low hover:bg-surface-container-highest text-on-surface font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm border border-transparent hover:border-outline-variant/30">
+<span class="material-symbols-outlined text-[18px]">call</span> Appeler
+                            </button>
+<button class="bg-surface-container-low hover:bg-surface-container-highest text-on-surface font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm border border-transparent hover:border-outline-variant/30">
+<span class="material-symbols-outlined text-[18px]">mail</span> Email
+                            </button>
+<button class="bg-surface-container-low hover:bg-surface-container-highest text-on-surface font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm border border-transparent hover:border-outline-variant/30">
+<span class="material-symbols-outlined text-[18px]">sms</span> SMS
+                            </button>
+<button class="bg-primary/10 hover:bg-primary/20 text-primary font-bold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span> RDV
+                            </button>
+<button class="col-span-2 bg-on-secondary-fixed text-surface-bright font-bold py-4 rounded-xl transition-transform active:scale-[0.98] shadow-lg flex items-center justify-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[20px]">request_quote</span> Générer un Devis
+                            </button>
+</div>
+</section>
+</div>
+</div>
+<!-- Footer -->
+<footer class="mt-16 pt-8 border-t border-surface-variant flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-outline">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">security</span>
+                    Audit Log: Fiche créée le 10/09/2023 - Dernière modif. par System (IA Sync) il y a 2h.
+                </div>
+<button class="text-error hover:underline flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-[16px]">report</span>
+                    Signaler "Client problématique"
+                </button>
+</footer>
+</div>
+</main>
+</body></html>

@@ -48,9 +48,21 @@
       "sourceScreen": "projects/6037063388122355367/screens/b3f2d59c90a848ffb1aa5c587bf69dd6",
       "width": 2560,
       "height": 2624,
-      "title": "Mes Leads - CRM BRH Habitat (v2 — charte officielle zinc+vert)",
+      "title": "Mes Leads - CRM BRH Habitat (v2)",
       "generatedAt": "2026-05-19",
-      "description": "Fusion P2+P3 (liste + drawer fiche détaillée), respecte charte BRH du index.css (zéro bleu)"
+      "rejected": true,
+      "rejectReason": "secondary_container lavande perçu comme bleu, projet ID incorrect"
+    },
+    "fiche-client-complete": {
+      "projectId": "12759214816897017502",
+      "projectTitle": "BRHCRM Direction Commerciale (vraie charte BRH native)",
+      "id": "5ac730af3ec0410381a8e67e42ce4a50",
+      "sourceScreen": "projects/12759214816897017502/screens/5ac730af3ec0410381a8e67e42ce4a50",
+      "width": 2560,
+      "height": 4370,
+      "title": "Fiche Client Expert - Famille Lefebvre (v3)",
+      "generatedAt": "2026-05-19",
+      "description": "Vraie charte BRH du projet Stitch officiel (#00600a, INTER). Fiche client complète éditable : contact, DPE avec table postes techniques + entreprises + dates, historique travaux, marqueur 'déjà vu par employé', profil psy, liens patrimoniaux, actions rapides."
     }
   }
 }
