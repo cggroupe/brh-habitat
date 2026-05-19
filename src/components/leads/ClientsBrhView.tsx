@@ -81,16 +81,16 @@ export default function ClientsBrhView({ profile }: Props) {
   }, [profile])
 
   return (
-    <div className="flex h-screen flex-col bg-slate-50">
-      <header className="border-b border-slate-200 bg-white px-6 py-4">
+    <div className="flex h-screen flex-col bg-stone-50">
+      <header className="border-b border-stone-200 bg-white px-6 py-4">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-lg font-semibold text-slate-900">Clients BRH historiques</h1>
-            <p className="text-xs text-slate-600">
+            <h1 className="text-lg font-semibold text-stone-900">Clients BRH historiques</h1>
+            <p className="text-xs text-stone-600">
               Base privée BRH — clients, prospects, RDV. Réservé aux employés BRH internes.
             </p>
           </div>
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-700">
             {isFetching && <Loader2 className="h-3 w-3 animate-spin" />}
             {Number(total).toLocaleString('fr-FR')} contacts
           </div>
@@ -98,19 +98,19 @@ export default function ClientsBrhView({ profile }: Props) {
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <div className="relative flex-1 min-w-[280px]">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
             <input
               type="text"
               placeholder="Nom, société, email, téléphone, ville…"
               value={query}
               onChange={(e) => { setQuery(e.target.value); setPage(0) }}
-              className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-3 text-sm focus:border-slate-500 focus:outline-none"
+              className="w-full rounded-lg border border-stone-300 bg-white py-2 pl-10 pr-3 text-sm focus:border-stone-500 focus:outline-none"
             />
           </div>
           <select
             value={statut}
             onChange={(e) => { setStatut(e.target.value as ''|'Client'|'Prospect'); setPage(0) }}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm"
           >
             <option value="">Tous statuts</option>
             <option value="Client">Clients</option>
@@ -119,7 +119,7 @@ export default function ClientsBrhView({ profile }: Props) {
           <select
             value={dept}
             onChange={(e) => { setDept(e.target.value); setPage(0) }}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            className="rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm"
           >
             {DEPTS.map((d) => (
               <option key={d.v} value={d.v}>{d.l}</option>
@@ -127,8 +127,8 @@ export default function ClientsBrhView({ profile }: Props) {
           </select>
         </div>
 
-        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-700">
-          <span className="inline-flex items-center gap-1 font-semibold text-slate-500">
+        <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-stone-700">
+          <span className="inline-flex items-center gap-1 font-semibold text-stone-500">
             <Filter className="h-3 w-3" />
             Filtres :
           </span>
@@ -152,16 +152,16 @@ export default function ClientsBrhView({ profile }: Props) {
         </div>
 
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-          <span className="inline-flex items-center gap-1 font-semibold text-slate-500">
+          <span className="inline-flex items-center gap-1 font-semibold text-stone-500">
             <Sparkles className="h-3 w-3" />
             Enrichissement :
           </span>
           {([
-            { v: '', label: 'Tous', cls: 'bg-slate-100 text-slate-700 border-slate-300' },
+            { v: '', label: 'Tous', cls: 'bg-stone-100 text-stone-700 border-stone-300' },
             { v: 'gold', label: 'Gold (133)', cls: 'bg-amber-100 text-amber-900 border-amber-300' },
-            { v: 'silver', label: 'Silver (1 543)', cls: 'bg-slate-200 text-slate-800 border-slate-400' },
+            { v: 'silver', label: 'Silver (1 543)', cls: 'bg-stone-200 text-stone-800 border-stone-400' },
             { v: 'bronze', label: 'Bronze (3 848)', cls: 'bg-orange-50 text-orange-800 border-orange-300' },
-            { v: 'none', label: 'À enrichir (11 083)', cls: 'bg-white text-slate-500 border-dashed border-slate-300' },
+            { v: 'none', label: 'À enrichir (11 083)', cls: 'bg-white text-stone-500 border-dashed border-stone-300' },
           ] as const).map((t) => {
             const active = tier === t.v
             return (
@@ -170,7 +170,7 @@ export default function ClientsBrhView({ profile }: Props) {
                 type="button"
                 onClick={() => { setTier(t.v); setPage(0) }}
                 className={`rounded-full border px-2.5 py-1 font-medium transition ${
-                  active ? `${t.cls} ring-2 ring-offset-1 ring-slate-400` : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+                  active ? `${t.cls} ring-2 ring-offset-1 ring-stone-400` : 'border-stone-200 bg-white text-stone-500 hover:bg-stone-50'
                 }`}
               >
                 {t.label}
@@ -184,10 +184,10 @@ export default function ClientsBrhView({ profile }: Props) {
         <div className="mx-auto max-w-6xl space-y-2 p-4">
           {isLoading && rows.length === 0 ? (
             <div className="flex h-64 items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-stone-400" />
             </div>
           ) : rows.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500">
+            <div className="rounded-lg border border-dashed border-stone-300 bg-white p-10 text-center text-sm text-stone-500">
               Aucun contact. Élargissez les filtres.
             </div>
           ) : (
@@ -199,8 +199,8 @@ export default function ClientsBrhView({ profile }: Props) {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-slate-200 bg-white px-4 py-2 text-sm">
-          <div className="text-slate-600">
+        <div className="flex items-center justify-between border-t border-stone-200 bg-white px-4 py-2 text-sm">
+          <div className="text-stone-600">
             Page <b>{page + 1}</b> / {totalPages} · {Number(total).toLocaleString('fr-FR')} résultats
           </div>
           <div className="flex items-center gap-2">
@@ -208,7 +208,7 @@ export default function ClientsBrhView({ profile }: Props) {
               type="button"
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
-              className="rounded-md border border-slate-300 px-3 py-1 disabled:opacity-40"
+              className="rounded-md border border-stone-300 px-3 py-1 disabled:opacity-40"
             >
               Précédente
             </button>
@@ -216,7 +216,7 @@ export default function ClientsBrhView({ profile }: Props) {
               type="button"
               onClick={() => setPage((p) => p + 1)}
               disabled={page + 1 >= totalPages}
-              className="rounded-md border border-slate-300 px-3 py-1 disabled:opacity-40"
+              className="rounded-md border border-stone-300 px-3 py-1 disabled:opacity-40"
             >
               Suivante
             </button>
@@ -229,9 +229,9 @@ export default function ClientsBrhView({ profile }: Props) {
 
 const TIER_BADGE: Record<string, { cls: string; Icon: typeof Crown; label: string }> = {
   gold: { cls: 'border-amber-400 bg-amber-100 text-amber-900', Icon: Crown, label: 'Gold' },
-  silver: { cls: 'border-slate-400 bg-slate-200 text-slate-800', Icon: Award, label: 'Silver' },
+  silver: { cls: 'border-stone-400 bg-stone-200 text-stone-800', Icon: Award, label: 'Silver' },
   bronze: { cls: 'border-orange-300 bg-orange-50 text-orange-800', Icon: Award, label: 'Bronze' },
-  none: { cls: 'border-dashed border-slate-300 bg-white text-slate-400', Icon: Sigma, label: 'À enrichir' },
+  none: { cls: 'border-dashed border-stone-300 bg-white text-stone-400', Icon: Sigma, label: 'À enrichir' },
 }
 
 function ContactRow({ c, profileBase, visits }: {
@@ -244,31 +244,31 @@ function ContactRow({ c, profileBase, visits }: {
   const tierBadge = TIER_BADGE[tierKey]
   const detailHref = profileBase === '/employe' ? `/employe/clients-brh/${c.id}` : null
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3 transition hover:border-slate-300">
+    <div className="rounded-lg border border-stone-200 bg-white p-3 transition hover:border-stone-300">
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-600">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-stone-100 text-stone-600">
           <Icon className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2">
             {detailHref ? (
-              <Link to={detailHref} className="truncate text-sm font-semibold text-slate-900 hover:text-slate-600 hover:underline">
+              <Link to={detailHref} className="truncate text-sm font-semibold text-stone-900 hover:text-stone-600 hover:underline">
                 {c.full_name || c.societe || c.fingerprint_hash.slice(0, 8)}
               </Link>
             ) : (
-              <span className="truncate text-sm font-semibold text-slate-900">
+              <span className="truncate text-sm font-semibold text-stone-900">
                 {c.full_name || c.societe || c.fingerprint_hash.slice(0, 8)}
               </span>
             )}
             {c.societe && c.full_name && (
-              <span className="truncate text-xs text-slate-500">{c.societe}</span>
+              <span className="truncate text-xs text-stone-500">{c.societe}</span>
             )}
             {c.statut && (
               <span
                 className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
                   c.statut === 'Client'
                     ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-sky-100 text-sky-800'
+                    : 'bg-emerald-100 text-emerald-900'
                 }`}
               >
                 {c.statut}
@@ -281,7 +281,7 @@ function ContactRow({ c, profileBase, visits }: {
               </span>
             )}
             {c.nb_rdv > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-medium text-violet-800">
+              <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-[10px] font-medium text-stone-800">
                 <Calendar className="h-3 w-3" />
                 {c.nb_rdv} RDV
               </span>
@@ -298,10 +298,10 @@ function ContactRow({ c, profileBase, visits }: {
             </span>
           </div>
 
-          <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-slate-600">
+          <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-stone-600">
             {c.adresse && (
               <span className="inline-flex items-center gap-1">
-                <MapPin className="h-3 w-3 text-slate-400" />
+                <MapPin className="h-3 w-3 text-stone-400" />
                 {c.adresse} · {c.code_postal} {c.ville}
               </span>
             )}
@@ -317,7 +317,7 @@ function ContactRow({ c, profileBase, visits }: {
             {c.email && (
               <a
                 href={`mailto:${c.email}`}
-                className="inline-flex items-center gap-1 truncate text-sky-700 hover:underline"
+                className="inline-flex items-center gap-1 truncate text-emerald-800 hover:underline"
                 title={c.email}
               >
                 <Mail className="h-3 w-3" />
@@ -327,7 +327,7 @@ function ContactRow({ c, profileBase, visits }: {
           </div>
 
           {(c.enfants || detailHref || (visits && visits.total > 0)) && (
-            <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
+            <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[10px] text-stone-500">
               {c.enfants && (
                 <span className="rounded border border-stone-200 bg-stone-50 px-1.5 py-0.5">
                   Famille : {c.enfants}
@@ -352,8 +352,8 @@ function ContactRow({ c, profileBase, visits }: {
           )}
 
           {c.psy_profile && (
-            <div className="mt-2 rounded-md border border-fuchsia-200 bg-fuchsia-50 p-2">
-              <div className="mb-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-fuchsia-900">
+            <div className="mt-2 rounded-md border border-emerald-200 bg-emerald-50 p-2">
+              <div className="mb-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-emerald-900">
                 <span>Profil psycho-commercial (IA)</span>
                 {c.psy_profile.confidence && (
                   <span className="rounded-full bg-white px-1.5 py-0.5 text-[9px]">
@@ -364,13 +364,13 @@ function ContactRow({ c, profileBase, visits }: {
               {c.psy_profile.personality_traits?.length ? (
                 <div className="mb-1 flex flex-wrap gap-1">
                   {c.psy_profile.personality_traits.map((t, i) => (
-                    <span key={i} className="rounded-full border border-fuchsia-300 bg-white px-1.5 py-0.5 text-[10px] text-fuchsia-800">
+                    <span key={i} className="rounded-full border border-emerald-200 bg-white px-1.5 py-0.5 text-[10px] text-emerald-800">
                       {t}
                     </span>
                   ))}
                 </div>
               ) : null}
-              <div className="grid grid-cols-1 gap-x-3 gap-y-0.5 text-[11px] text-slate-700 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-x-3 gap-y-0.5 text-[11px] text-stone-700 sm:grid-cols-2">
                 {c.psy_profile.communication_style && (
                   <span><b>Style</b> : {c.psy_profile.communication_style}</span>
                 )}
@@ -392,8 +392,8 @@ function ContactRow({ c, profileBase, visits }: {
                 ) : null}
               </div>
               {c.psy_profile.approach_advice && (
-                <div className="mt-1.5 rounded bg-white p-1.5 text-[11px] italic text-slate-700">
-                  <span className="mr-1 font-semibold not-italic text-fuchsia-900">Conseil&nbsp;:</span>
+                <div className="mt-1.5 rounded bg-white p-1.5 text-[11px] italic text-stone-700">
+                  <span className="mr-1 font-semibold not-italic text-emerald-900">Conseil&nbsp;:</span>
                   {c.psy_profile.approach_advice}
                 </div>
               )}
@@ -407,7 +407,7 @@ function ContactRow({ c, profileBase, visits }: {
           {c.linked_dpe_id && (
             <Link
               to={`${profileBase}/leads/adresse/${c.linked_dpe_id}`}
-              className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 hover:bg-slate-50"
+              className="inline-flex items-center gap-1 rounded-md border border-stone-300 bg-white px-2 py-1 text-[11px] font-medium text-stone-700 hover:bg-stone-50"
               title="Voir le DPE lié"
             >
               <FileText className="h-3 w-3" />
@@ -415,7 +415,7 @@ function ContactRow({ c, profileBase, visits }: {
               <ChevronRight className="h-3 w-3" />
             </Link>
           )}
-          <span className="text-[10px] text-slate-400">
+          <span className="text-[10px] text-stone-400">
             {c.source_primaire}
             {c.sources_secondaires?.length > 0 && ` +${c.sources_secondaires.length}`}
           </span>

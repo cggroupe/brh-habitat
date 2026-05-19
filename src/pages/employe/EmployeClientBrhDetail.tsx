@@ -27,9 +27,9 @@ import type { Personne360Identity } from '@/api/brh-personne-360'
 
 const TIER_BADGE: Record<string, { cls: string; Icon: typeof Crown; label: string }> = {
   gold: { cls: 'border-amber-400 bg-amber-100 text-amber-900', Icon: Crown, label: 'Gold' },
-  silver: { cls: 'border-slate-400 bg-slate-200 text-slate-800', Icon: Award, label: 'Silver' },
+  silver: { cls: 'border-stone-400 bg-stone-200 text-stone-800', Icon: Award, label: 'Silver' },
   bronze: { cls: 'border-orange-300 bg-orange-50 text-orange-800', Icon: Award, label: 'Bronze' },
-  none: { cls: 'border-dashed border-slate-300 bg-white text-slate-400', Icon: Sigma, label: 'À enrichir' },
+  none: { cls: 'border-dashed border-stone-300 bg-white text-stone-400', Icon: Sigma, label: 'À enrichir' },
 }
 
 export default function EmployeClientBrhDetail() {
@@ -42,20 +42,20 @@ export default function EmployeClientBrhDetail() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50">
-        <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+      <div className="flex h-screen items-center justify-center bg-stone-50">
+        <Loader2 className="h-8 w-8 animate-spin text-stone-400" />
       </div>
     )
   }
 
   if (error || !data?.identity) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-2 bg-slate-50">
-        <p className="text-sm text-slate-600">Contact introuvable.</p>
+      <div className="flex h-screen flex-col items-center justify-center gap-2 bg-stone-50">
+        <p className="text-sm text-stone-600">Contact introuvable.</p>
         <button
           type="button"
           onClick={() => navigate('/employe/clients-brh')}
-          className="rounded-md bg-slate-900 px-3 py-2 text-sm text-white hover:bg-slate-800"
+          className="rounded-md bg-stone-900 px-3 py-2 text-sm text-white hover:bg-stone-800"
         >
           Retour à la liste
         </button>
@@ -115,19 +115,19 @@ export default function EmployeClientBrhDetail() {
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-5xl space-y-4 p-6">
           {/* IDENTITÉ */}
-          <section className="rounded-lg border border-slate-200 bg-white p-5">
+          <section className="rounded-lg border border-stone-200 bg-white p-5">
             <div className="flex items-start gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-stone-100 text-stone-600">
                 {id360.is_pro || id360.societe ? <Building2 className="h-7 w-7" /> : <User className="h-7 w-7" />}
               </div>
               <div className="flex-1 min-w-0">
-                <h1 className="truncate text-xl font-semibold text-slate-900">
+                <h1 className="truncate text-xl font-semibold text-stone-900">
                   {id360.full_name || id360.societe || `Contact ${id?.slice(0, 8)}`}
                 </h1>
                 {id360.societe && id360.full_name && (
-                  <p className="text-sm text-slate-600">{id360.societe}</p>
+                  <p className="text-sm text-stone-600">{id360.societe}</p>
                 )}
-                <div className="mt-2 grid grid-cols-1 gap-x-4 gap-y-1.5 text-sm text-slate-700 sm:grid-cols-2">
+                <div className="mt-2 grid grid-cols-1 gap-x-4 gap-y-1.5 text-sm text-stone-700 sm:grid-cols-2">
                   {id360.telephone && (
                     <a href={`tel:${id360.telephone}`} className="inline-flex items-center gap-1.5 hover:underline">
                       <Phone className="h-3.5 w-3.5 text-emerald-600" />
@@ -142,7 +142,7 @@ export default function EmployeClientBrhDetail() {
                   )}
                   {id360.adresse && (
                     <span className="inline-flex items-center gap-1.5 sm:col-span-2">
-                      <MapPin className="h-3.5 w-3.5 text-slate-400" />
+                      <MapPin className="h-3.5 w-3.5 text-stone-400" />
                       <span className="truncate">
                         {id360.adresse} · {id360.code_postal} {id360.ville}
                       </span>
@@ -166,19 +166,19 @@ export default function EmployeClientBrhDetail() {
                   {id360.linked_dpe_id && (
                     <Link
                       to={`/employe/leads/adresse/${id360.linked_dpe_id}`}
-                      className="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-2.5 py-0.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                      className="inline-flex items-center gap-1 rounded-full border border-stone-300 bg-white px-2.5 py-0.5 text-xs font-medium text-stone-700 hover:bg-stone-50"
                     >
                       <FileText className="h-3 w-3" />
                       DPE F/G #{id360.linked_dpe_id}
                     </Link>
                   )}
                   {id360.enfants && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-700">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-0.5 text-xs text-stone-700">
                       Famille : {id360.enfants}
                     </span>
                   )}
                   {id360.categorie && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-700">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-0.5 text-xs text-stone-700">
                       {id360.categorie}
                     </span>
                   )}
@@ -213,8 +213,8 @@ export default function EmployeClientBrhDetail() {
 
           {/* PROFIL PSY IA */}
           {psy && Object.keys(psy).length > 0 && (
-            <section className="rounded-lg border border-fuchsia-200 bg-fuchsia-50 p-5">
-              <h2 className="mb-2 inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wider text-fuchsia-900">
+            <section className="rounded-lg border border-emerald-200 bg-emerald-50 p-5">
+              <h2 className="mb-2 inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wider text-emerald-900">
                 <Sparkles className="h-4 w-4" />
                 Profil psycho-commercial (IA)
                 {(psy.confidence as string) && (
@@ -226,13 +226,13 @@ export default function EmployeClientBrhDetail() {
               {Array.isArray(psy.personality_traits) && (psy.personality_traits as unknown[]).length > 0 && (
                 <div className="mb-2 flex flex-wrap gap-1">
                   {(psy.personality_traits as string[]).map((t, i) => (
-                    <span key={i} className="rounded-full border border-fuchsia-300 bg-white px-2 py-0.5 text-xs text-fuchsia-800">
+                    <span key={i} className="rounded-full border border-emerald-200 bg-white px-2 py-0.5 text-xs text-emerald-800">
                       {t}
                     </span>
                   ))}
                 </div>
               )}
-              <dl className="grid grid-cols-1 gap-x-4 gap-y-1 text-sm text-slate-700 sm:grid-cols-2">
+              <dl className="grid grid-cols-1 gap-x-4 gap-y-1 text-sm text-stone-700 sm:grid-cols-2">
                 {psy.communication_style as string && (
                   <div><dt className="inline font-medium">Style : </dt><dd className="inline">{psy.communication_style as string}</dd></div>
                 )}
@@ -250,8 +250,8 @@ export default function EmployeClientBrhDetail() {
                 )}
               </dl>
               {psy.approach_advice as string && (
-                <div className="mt-3 rounded-md bg-white p-3 text-sm italic text-slate-700">
-                  <span className="mr-1 not-italic font-semibold text-fuchsia-900">Conseil commercial : </span>
+                <div className="mt-3 rounded-md bg-white p-3 text-sm italic text-stone-700">
+                  <span className="mr-1 not-italic font-semibold text-emerald-900">Conseil commercial : </span>
                   {psy.approach_advice as string}
                 </div>
               )}
@@ -260,8 +260,8 @@ export default function EmployeClientBrhDetail() {
 
           {/* OSINT APIFY GOOGLE */}
           {apify && (
-            <section className="rounded-lg border border-slate-200 bg-white p-5">
-              <h2 className="mb-2 inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wider text-slate-700">
+            <section className="rounded-lg border border-stone-200 bg-white p-5">
+              <h2 className="mb-2 inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wider text-stone-700">
                 <Sparkles className="h-4 w-4" />
                 OSINT Apify Google
                 <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] normal-case tracking-normal text-amber-800">
@@ -271,7 +271,7 @@ export default function EmployeClientBrhDetail() {
               </h2>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {(id360.osint_linkedin || apify.linkedin as string) && (
-                  <OsintLink label="LinkedIn" url={id360.osint_linkedin ?? (apify.linkedin as string)} cls="border-sky-300 bg-sky-50 text-sky-800" />
+                  <OsintLink label="LinkedIn" url={id360.osint_linkedin ?? (apify.linkedin as string)} cls="border-sky-300 bg-emerald-50 text-emerald-900" />
                 )}
                 {(id360.osint_facebook || apify.facebook as string) && (
                   <OsintLink label="Facebook" url={id360.osint_facebook ?? (apify.facebook as string)} cls="border-blue-300 bg-blue-50 text-blue-800" />
@@ -280,7 +280,7 @@ export default function EmployeClientBrhDetail() {
                   <OsintLink label="Instagram" url={apify.instagram as string} cls="border-pink-300 bg-pink-50 text-pink-800" />
                 )}
                 {apify.twitter as string && (
-                  <OsintLink label="Twitter / X" url={apify.twitter as string} cls="border-slate-300 bg-slate-50 text-slate-800" />
+                  <OsintLink label="Twitter / X" url={apify.twitter as string} cls="border-stone-300 bg-stone-50 text-stone-800" />
                 )}
                 {apify.pagesjaunes as string && (
                   <OsintLink label="PagesJaunes" url={apify.pagesjaunes as string} cls="border-yellow-300 bg-yellow-50 text-yellow-800" />
@@ -323,17 +323,17 @@ export default function EmployeClientBrhDetail() {
 
               {Array.isArray(apify.web_hits) && (apify.web_hits as unknown[]).length > 0 && (
                 <details className="mt-3">
-                  <summary className="cursor-pointer text-xs text-slate-600">
+                  <summary className="cursor-pointer text-xs text-stone-600">
                     Tous les résultats Google ({(apify.web_hits as unknown[]).length})
                   </summary>
                   <ul className="mt-2 space-y-1.5">
                     {(apify.web_hits as Array<{ title: string; url: string; snippet?: string }>).map((h, i) => (
-                      <li key={i} className="rounded border border-slate-200 bg-slate-50 p-2 text-xs">
-                        <a href={h.url} target="_blank" rel="noopener noreferrer" className="block truncate font-medium text-slate-800 hover:underline">
+                      <li key={i} className="rounded border border-stone-200 bg-stone-50 p-2 text-xs">
+                        <a href={h.url} target="_blank" rel="noopener noreferrer" className="block truncate font-medium text-stone-800 hover:underline">
                           {h.title || h.url}
                         </a>
-                        {h.snippet && <p className="mt-0.5 line-clamp-2 text-[11px] text-slate-600">{h.snippet}</p>}
-                        <span className="mt-0.5 block truncate text-[10px] text-slate-400">{h.url}</span>
+                        {h.snippet && <p className="mt-0.5 line-clamp-2 text-[11px] text-stone-600">{h.snippet}</p>}
+                        <span className="mt-0.5 block truncate text-[10px] text-stone-400">{h.url}</span>
                       </li>
                     ))}
                   </ul>
@@ -370,23 +370,23 @@ export default function EmployeClientBrhDetail() {
 
           {/* GRAPHE 360° — adresses + DVF + BODACC + Succession */}
           {(data.adresses_liees.length > 0 || data.mutations_dvf.length > 0 || data.bodacc_alerts.length > 0 || data.sci_deces_pairs.length > 0) && (
-            <section className="rounded-lg border border-slate-200 bg-white p-5">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-700">
+            <section className="rounded-lg border border-stone-200 bg-white p-5">
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-stone-700">
                 Graphe foncier 360°
               </h2>
 
               {data.adresses_liees.length > 0 && (
                 <div className="mb-3">
-                  <p className="mb-1 text-xs font-semibold text-slate-600">
+                  <p className="mb-1 text-xs font-semibold text-stone-600">
                     Adresses DPE liées ({data.adresses_liees.length})
                   </p>
                   <ul className="space-y-1">
                     {data.adresses_liees.slice(0, 6).map((a) => (
-                      <li key={a.dpe_id} className="rounded border border-slate-200 bg-slate-50 p-2 text-xs">
-                        <Link to={`/employe/leads/adresse/${a.dpe_id}`} className="font-medium text-slate-800 hover:underline">
+                      <li key={a.dpe_id} className="rounded border border-stone-200 bg-stone-50 p-2 text-xs">
+                        <Link to={`/employe/leads/adresse/${a.dpe_id}`} className="font-medium text-stone-800 hover:underline">
                           {a.adresse}
                         </Link>
-                        <div className="mt-0.5 flex flex-wrap gap-x-3 text-[11px] text-slate-600">
+                        <div className="mt-0.5 flex flex-wrap gap-x-3 text-[11px] text-stone-600">
                           <span>{a.code_postal} {a.commune}</span>
                           {a.etiquette_dpe && <span>DPE {a.etiquette_dpe}</span>}
                           {a.surface_habitable != null && <span>{a.surface_habitable} m²</span>}
@@ -400,7 +400,7 @@ export default function EmployeClientBrhDetail() {
 
               {data.mutations_dvf.length > 0 && (
                 <div className="mb-3">
-                  <p className="mb-1 text-xs font-semibold text-slate-600">
+                  <p className="mb-1 text-xs font-semibold text-stone-600">
                     Mutations DVF (via adresses, {data.mutations_dvf.filter(m => m.usable_for_brh).length} exploitables / {data.mutations_dvf.length})
                   </p>
                   <ul className="space-y-1">
@@ -408,7 +408,7 @@ export default function EmployeClientBrhDetail() {
                       const eur = m.valeur_fonciere_cents != null ? Math.round(m.valeur_fonciere_cents / 100) : null
                       return (
                         <li key={m.id} className="rounded border border-amber-200 bg-amber-50 p-2 text-xs">
-                          <span className="font-mono text-slate-500">{m.date_mutation}</span>
+                          <span className="font-mono text-stone-500">{m.date_mutation}</span>
                           {' · '}<span className="font-medium">{m.nature_mutation}</span>
                           {m.type_local && <span> · {m.type_local}</span>}
                           {eur != null && <span> · <b>{eur.toLocaleString('fr-FR')} €</b></span>}
@@ -431,9 +431,9 @@ export default function EmployeClientBrhDetail() {
                   </p>
                   <ul className="space-y-1">
                     {data.sci_deces_pairs.map((d, i) => (
-                      <li key={i} className="text-xs text-slate-700">
+                      <li key={i} className="text-xs text-stone-700">
                         <span className="font-medium">{d.prenom} {d.nom}</span>
-                        {d.siren && <span className="font-mono text-[10px] text-slate-500"> · SIREN {d.siren}</span>}
+                        {d.siren && <span className="font-mono text-[10px] text-stone-500"> · SIREN {d.siren}</span>}
                         {d.deces_date && <span className="text-rose-800"> · Décès {d.deces_date}{d.deces_commune && ` à ${d.deces_commune}`}</span>}
                       </li>
                     ))}
@@ -443,11 +443,11 @@ export default function EmployeClientBrhDetail() {
 
               {data.bodacc_alerts.length > 0 && (
                 <div>
-                  <p className="mb-1 text-xs font-semibold text-slate-600">BODACC ({data.bodacc_alerts.length})</p>
+                  <p className="mb-1 text-xs font-semibold text-stone-600">BODACC ({data.bodacc_alerts.length})</p>
                   <ul className="space-y-1">
                     {data.bodacc_alerts.slice(0, 5).map((b) => (
                       <li key={b.id_bodacc} className="rounded border border-indigo-200 bg-indigo-50 p-2 text-xs">
-                        <span className="font-mono text-slate-500">{b.date_publication}</span>
+                        <span className="font-mono text-stone-500">{b.date_publication}</span>
                         {' · '}<span className="font-medium">{b.type_avis || b.famille_avis}</span>
                         {b.denomination && <span> · {b.denomination}</span>}
                         {b.bodacc_url && (
