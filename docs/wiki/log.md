@@ -5,6 +5,43 @@
 
 ---
 
+## 2026-05-19 (18) — Enrichissement dirigeants SCI : cross-match BRH > PagesJaunes
+
+- **Contexte** : après échec PagesJaunes (9 tels / 400 dirigeants = 2.25 %), pivot vers **cross-matching avec les contacts BRH historiques** (18 571 personnes déjà en BDD avec tel/email).
+- **Algorithme** :
+  - Match strict `(nom_norm, prenom_norm)` entre `brh_dirigeants` et `brh_personnes_historique`
+  - **Validation département** : SCI principale du dirigeant ↔ CP du contact BRH → premiers 2 chars égaux
+  - Si validé : copie `telephone` + `email` du contact BRH vers le dirigeant
+  - Tracé dans `osint_other.brh_match` (personne_id + source)
+- **Résultats** :
+  - 209 matches nom+prenom totaux
+  - **121 validés strict** (58 %, dept match)
+  - 88 rejetés (dept différent = homonymes probables)
+  - **110 dirigeants enrichis** avec tel/email depuis BRH
+  - **119 tels totaux** (110 BRH + 9 PagesJaunes)
+  - **70 emails totaux**
+- **Top patrimoines enrichis** :
+  - JEAN DANIEL 42 DPE → 02 96 72 50 04
+  - MICHEL SALAUN 7 DPE → tel + email michelpersan@live.fr
+  - CLAUDE RIBIERAS 7 DPE → 02 96 61 17 45
+  - ERIC CRENN 12 DPE → 02 98 84 58 02
+  - JEAN YVES CLOAREC 11 DPE → 02 98 39 87 43
+- **PagesJaunes 400 batch** : run aborté à $4.46 (limite budget), dataset 4 459 items récupérés, 9 tels validés stricts (2.25 %, attendu) → process terminé.
+- **Verdict OSINT public sur dirigeants SCI bretons** :
+  - LinkedIn quasi inexistant (7 sur 520 dirigeants Apify Google)
+  - PagesJaunes 2-3 % hit rate (opt-in particulier rare)
+  - Pappers / societe.com / polesocietes / contract-factory donnent les MANDATS et la DOB confirmation, **pas le tel/email perso**
+  - **Vraie source rentable = cross-match BDD interne BRH** : 119 tels gratuits
+- **TODO Sprint suivant** :
+  - Étendre cross-match aux contacts via `linked_dpe_id` (un contact BRH dont l'adresse = adresse SCI → c'est probablement le dirigeant)
+  - Pappers API payante (49 €/mois) pour le tel/email pro des 17 403 propriétaires DPE
+  - OSINT Industries $0.50/query pour les top 100 patrimoines (~$50)
+- **Coût Apify cumulé** : ~$6 sur la session OSINT dirigeants
+- **Risque** : Low — match dept strict, archive dans osint_other.brh_match traçable
+- **Status** : ✅ DONE
+
+---
+
 ## 2026-05-19 (17) — OSINT enrichissement dirigeants SCI : test 10 + scale 500
 
 - **Contexte** : enrichir téléphone/email/LinkedIn des 80 844 dirigeants SCI consolidés. Step-by-step demandé.
