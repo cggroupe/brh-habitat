@@ -30,6 +30,13 @@ export interface Personne360Identity {
   osint_facebook: string | null
   osint_other: Record<string, unknown> | null
   linked_dpe_id: number | null
+  employee_notes: string | null
+  travaux_terrain_status: 'aucun' | 'partiel' | 'total' | 'inconnu' | null
+  dpe_terrain_estime: string | null
+  interet_brh: 'chaud' | 'tiede' | 'froid' | 'a_recontacter' | 'refus' | 'inconnu' | null
+  contact_disponibilite: 'matin' | 'apres_midi' | 'soir' | 'weekend' | 'inconnu' | null
+  derniere_visite_terrain: string | null
+  employee_updated_at: string | null
 }
 
 export interface Personne360SciLink {

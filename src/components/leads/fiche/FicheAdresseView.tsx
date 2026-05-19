@@ -7,9 +7,11 @@ import { Home, FileText, Building2, Skull, Wallet, Phone, Users, Flame, Trending
 import FicheBreadcrumb from './FicheBreadcrumb'
 import FicheSection from './FicheSection'
 import { EntityLinksPanel } from '../EntityLinksPanel'
+import { EmployeeEditPanel } from '../EmployeeEditPanel'
 import FicheEntityLink from './FicheEntityLink'
 import FavoriButton from './FavoriButton'
 import { useFicheAdresse } from '@/hooks/queries/useFiche'
+import { useUpdateDpe } from '@/hooks/queries/useEmployeeEdit'
 import { canSee, displayName, type LeadProfile } from '@/lib/rgpd/lead-visibility'
 import type { Dirigeant } from '@/types/fiche'
 
@@ -20,6 +22,7 @@ interface Props {
 
 export default function FicheAdresseView({ dpeId, profile }: Props) {
   const { data, isLoading, error } = useFicheAdresse(dpeId)
+  const updateMutation = useUpdateDpe(dpeId)
 
   if (isLoading) {
     return (
@@ -357,6 +360,21 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
                 ))}
               </div>
             </FicheSection>
+          )}
+
+          {profile === 'employe' && (
+            <EmployeeEditPanel
+              initial={{
+                employee_notes: (dpe as unknown as Record<string, string | null>).employee_notes,
+                travaux_terrain_status: (dpe as unknown as Record<string, string | null>).travaux_terrain_status,
+                dpe_terrain_estime: (dpe as unknown as Record<string, string | null>).dpe_terrain_estime,
+                interet_brh: (dpe as unknown as Record<string, string | null>).interet_brh,
+                contact_disponibilite: (dpe as unknown as Record<string, string | null>).contact_disponibilite,
+                derniere_visite_terrain: (dpe as unknown as Record<string, string | null>).derniere_visite_terrain,
+              }}
+              showContactFields={false}
+              onSave={(patch) => updateMutation.mutateAsync(patch)}
+            />
           )}
 
           <EntityLinksPanel

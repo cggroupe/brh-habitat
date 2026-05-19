@@ -19,6 +19,8 @@ import {
   Sparkles, Crown, Award, Sigma, Skull,
 } from 'lucide-react'
 import { usePersonne360 } from '@/hooks/queries/usePersonne360'
+import { useUpdatePersonne } from '@/hooks/queries/useEmployeeEdit'
+import { EmployeeEditPanel } from '@/components/leads/EmployeeEditPanel'
 import type { Personne360Identity } from '@/api/brh-personne-360'
 
 const TIER_BADGE: Record<string, { cls: string; Icon: typeof Crown; label: string }> = {
@@ -32,6 +34,7 @@ export default function EmployeClientBrhDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { data, isLoading, error } = usePersonne360(id ?? null)
+  const updateMutation = useUpdatePersonne(id ?? '')
 
   if (isLoading) {
     return (
@@ -173,6 +176,25 @@ export default function EmployeClientBrhDetail() {
               </div>
             </div>
           </section>
+
+          {/* SUIVI COMMERCIAL TERRAIN (édition employé BRH) */}
+          <EmployeeEditPanel
+            initial={{
+              telephone: id360.telephone,
+              email: id360.email,
+              adresse: id360.adresse,
+              code_postal: id360.code_postal,
+              ville: id360.ville,
+              employee_notes: id360.employee_notes,
+              travaux_terrain_status: id360.travaux_terrain_status,
+              dpe_terrain_estime: id360.dpe_terrain_estime,
+              interet_brh: id360.interet_brh,
+              contact_disponibilite: id360.contact_disponibilite,
+              derniere_visite_terrain: id360.derniere_visite_terrain,
+            }}
+            showContactFields
+            onSave={(patch) => updateMutation.mutateAsync(patch)}
+          />
 
           {/* PROFIL PSY IA */}
           {psy && Object.keys(psy).length > 0 && (

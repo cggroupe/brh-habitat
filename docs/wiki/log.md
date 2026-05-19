@@ -5,6 +5,55 @@
 
 ---
 
+## 2026-05-19 (9) — Édition employé terrain sur fiches BRH + DPE
+
+- **Contexte** : Philippe veut que ses commerciaux BRH puissent **mettre à jour les fiches** depuis le terrain (DPE encore F/G ? travaux faits ? intérêt commercial ? meilleur créneau de contact ? notes libres ?). Le but est de transformer la BDD en outil vivant pendant la prospection ("rentrer et vendre").
+- **Migration `20260519170000_brh_employee_edit_fields.sql`** :
+  - 8 nouvelles colonnes sur `brh_personnes_historique` ET `brh_dpe_prospects` :
+    - `employee_notes` text
+    - `travaux_terrain_status` enum (aucun/partiel/total/inconnu)
+    - `dpe_terrain_estime` text libre (ex: "F → D après ITE 2024")
+    - `interet_brh` enum (chaud/tiede/froid/a_recontacter/refus/inconnu)
+    - `contact_disponibilite` enum (matin/apres_midi/soir/weekend/inconnu)
+    - `derniere_visite_terrain` date
+    - `employee_updated_at` timestamptz, `employee_updated_by` uuid → profiles
+  - Index partiel sur `interet_brh`
+  - Table `brh_employee_edit_log` (audit) avec RLS BRH internes uniquement
+- **RPCs `20260519180000_rpc_employee_edit.sql`** :
+  - `brh_personne_update_employee(uuid, jsonb)` + `brh_dpe_update_employee(int, jsonb)`
+  - SECURITY DEFINER + check rôle admin/pro/employe
+  - **Whitelist stricte** des champs (10 pour personne, 6 pour DPE)
+  - Pour chaque champ modifié → INSERT dans `brh_employee_edit_log` (audit traçable)
+  - Retourne `{ok, changes: n}` pour feedback UI
+- **API + hook** :
+  - `src/api/brh-employee-edit.ts` (type `EmployeeEditPatch` + 2 méthodes)
+  - `src/hooks/queries/useEmployeeEdit.ts` (`useUpdatePersonne`, `useUpdateDpe`, avec invalidation cache React Query)
+- **Composant `EmployeeEditPanel`** (réutilisable):
+  - Mode "résumé" par défaut (avec bouton "Mettre à jour")
+  - Mode "édition" : formulaire inline avec chips pour intérêt (chaud/tiède/froid/à recontacter/refus), selects pour travaux/dispo, date picker, textarea notes
+  - Diff intelligent : envoie uniquement les champs modifiés à la RPC
+  - Feedback "Enregistré" 3s après save
+  - Prop `showContactFields` (clients BRH : oui, fiche DPE : non — l'adresse vient du DPE source)
+- **Intégrations** :
+  - `EmployeClientBrhDetail` : panel inséré juste après la section identité
+  - `FicheAdresseView` : panel inséré avant `EntityLinksPanel`, uniquement si `profile === 'employe'`
+  - Le RPC `brh_personne_360` expose automatiquement les nouveaux champs via `row_to_json(p.*)::jsonb`
+- **Fichiers** :
+  - `supabase/migrations/20260519170000_brh_employee_edit_fields.sql`
+  - `supabase/migrations/20260519180000_rpc_employee_edit.sql`
+  - `src/api/brh-employee-edit.ts`
+  - `src/hooks/queries/useEmployeeEdit.ts`
+  - `src/components/leads/EmployeeEditPanel.tsx`
+  - `src/pages/employe/EmployeClientBrhDetail.tsx` (import + intégration)
+  - `src/components/leads/fiche/FicheAdresseView.tsx` (import + intégration conditionnée employe)
+  - `src/api/brh-personne-360.ts` (extension type `Personne360Identity`)
+  - `docs/wiki/log.md`
+- **Tests** : `npm run build` OK
+- **Risque** : Low — colonnes nullable, RPC SECURITY DEFINER avec whitelist + audit, UI conditionnée au rôle employe
+- **Status** : ✅ DONE
+
+---
+
 ## 2026-05-19 (8) — Purge OSINT TOTALE + psy BRH-only (zéro hallucination)
 
 - **Contexte** : Philippe demande purge totale (les filtres partiels laissent passer trop d'homonymes — ex Cadour Arnaud où LinkedIn passait le filtre prénom mais était quand même un homonyme), refonte des psy avec **zéro OSINT** (uniquement données BRH internes).
