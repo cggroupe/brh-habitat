@@ -5,6 +5,53 @@
 
 ---
 
+## 2026-05-19 (16) — Enrichissement dirigeants SCI : 80 844 fiches consolidées
+
+- **Contexte** : Philippe demande l'enrichissement des **dirigeants des SCI** (pas les contacts BRH). Les dirigeants étaient jusque-là enfouis dans `brh_sci_companies.dirigeants` (jsonb array) sans table dédiée — impossible de répondre simplement à "M. Dupont dirige combien de SCI ?".
+- **Migration `20260519240000_brh_dirigeants_table.sql`** :
+  - Table `brh_dirigeants` matérialisée : 1 ligne par dirigeant unique (clé naturelle `(nom_norm, prenom_norm, date_naissance)` avec `NULLS NOT DISTINCT`)
+  - Colonnes : identité, sci_dirigees jsonb (cross-SCI), nb_sci_dirigees, nb_sci_actives, nb_dpe_total, est_decede, succession_potentielle
+  - Colonnes OSINT enrichissables : adresse_perso, téléphone, email, LinkedIn, osint_other
+  - Colonnes édition employé : notes, intérêt, dispo, dernière visite, audit
+  - 4 index (nom, dob, succession, nb_sci)
+  - RPC `brh_dirigeants_recompute()` : backfill depuis `brh_sci_companies.dirigeants` avec préservation des overlays employé
+- **Backfill** : **80 844 dirigeants uniques** créés
+  - 77 731 avec date naissance (96 %)
+  - **4 470 dirigeants multi-SCI** (≥2 SCI)
+  - **17 403 propriétaires DPE BRH** via leurs SCI (cible commerciale ÉNORME)
+  - 515 décédés → succession ouverte
+  - Top : MESLIN Sébastien (1969) 15 SCI 8 DPE · LE BANNIER Catherine (1976) 13 SCI · PIGEAULT Jean-Pierre (1951) 12 SCI
+- **Migration `20260519250000_rpc_dirigeant_360.sql`** :
+  - RPC `brh_dirigeant_360(uuid)` : retourne identity + sci_details + dpe_detenus + bodacc_alerts (1 seule requête, optimisée)
+  - RPC `brh_dirigeants_search(query, dept, multi_sci, proprio_dpe, succession, limit, offset)` : recherche avec filtres
+  - RPC `brh_dirigeant_update_employee(id, patch)` : édition employé whitelist stricte
+- **UI livrée** :
+  - `src/pages/employe/EmployeDirigeants.tsx` : page liste filtrable (recherche nom/prénom/SCI, dept, multi-SCI toggle, propriétaire DPE toggle, succession ouverte toggle)
+  - `src/pages/employe/EmployeDirigeantDetail.tsx` : fiche 360° plein écran
+    - Identité + date naissance + statut décès
+    - Suivi commercial terrain inline éditable (téléphone, email, LinkedIn, adresse perso, intérêt, notes, dernière visite)
+    - SCI dirigées cliquables (lien vers FicheEntrepriseView)
+    - DPE F/G détenus via SCI (lien vers FicheAdresseView)
+    - BODACC alertes
+  - `src/api/brh-dirigeants.ts` + `src/hooks/queries/useDirigeants.ts`
+  - Routes `/employe/dirigeants` et `/employe/dirigeants/:id`
+  - Entrée sidebar "Dirigeants SCI" (icône Building2)
+- **Pattern Karpathy** : module additif, ne casse rien des fiches existantes. Tier d'utilisateur : BRH internes uniquement (RLS + SECURITY DEFINER).
+- **Fichiers** :
+  - `supabase/migrations/20260519240000_brh_dirigeants_table.sql`
+  - `supabase/migrations/20260519250000_rpc_dirigeant_360.sql`
+  - `src/api/brh-dirigeants.ts`, `src/hooks/queries/useDirigeants.ts`
+  - `src/pages/employe/EmployeDirigeants.tsx`, `EmployeDirigeantDetail.tsx`
+  - `src/App.tsx` (2 lazy imports + 2 routes)
+  - `src/components/layout/EmployeShell.tsx` (entry Dirigeants SCI)
+- **Tests** : `npm run build` OK
+- **Risque** : Low — additif strict, RLS BRH internes
+- **Status** : ✅ DONE — backend + UI livrés
+
+À suivre : enrichissement OSINT dirigeant (Pappers / Sirene API pour récupérer téléphone/email/site web professionnel), Sitadel pour permis liés aux SCI, matching dirigeants ↔ contacts BRH avec dob.
+
+---
+
 ## 2026-05-19 (15) — Audit complet SCI/entreprises + colonnes OSINT entreprise
 
 - **Contexte** : Philippe demande audit miroir des SCI/personnes morales (qualité, dirigeants, DPE liés, permis, OSINT entreprise, faux positifs).

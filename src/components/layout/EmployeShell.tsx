@@ -9,7 +9,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
   // Map as MapIcon — foncier-only + carte prospects (commenté 2026-05-18)
-  // Building2 — foncier-only (commenté 2026-05-18)
+  Building2,
   ClipboardList,
   // Star, AlertTriangle — foncier-only (commenté 2026-05-18)
   Sparkles,
@@ -54,6 +54,7 @@ const TOP_NAV: NavLeaf[] = [
   { to: '/employe/recherche', label: 'Recherche', icon: Search },
   { to: '/employe/favoris', label: 'Favoris', icon: Bookmark },
   { to: '/employe/clients-brh', label: 'Clients BRH', icon: Users },
+  { to: '/employe/dirigeants', label: 'Dirigeants SCI', icon: Building2 },
 ]
 
 const GROUPS: NavGroup[] = [
