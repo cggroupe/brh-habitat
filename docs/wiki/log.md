@@ -5,6 +5,48 @@
 
 ---
 
+## 2026-05-19 (4) — Graphe d'entités brh_entity_links + fiche personne 360°
+
+- **Contexte** : Philippe demande de transformer la data dispersée en système relié (« charbon → diamant »). Audit révèle 3 espaces déconnectés (personnes BRH ↔ SCI ↔ adresses DPE), liens calculés à la volée par heuristiques fragiles, fiches en MVP avec `patrimoine_direct=[]` et `brh_historique=null`.
+- **Sprint A — Pivot graphe** (`20260519140000_brh_entity_links_pivot.sql`) :
+  - Table `brh_entity_links` (from_type/from_id → to_type/to_id + link_type + confidence + evidence jsonb)
+  - 3 index (from, to, link_type), UK sur 5 colonnes
+  - RLS BRH internes uniquement
+  - Fonction `brh_entity_links_recompute()` idempotente avec ON CONFLICT
+  - **3 règles de matching** :
+    - Règle 1 : `personne_brh ↔ sci` via match nom+prenom (conf 0.85, ou 0.95 si même département)
+    - Règle 2 : `personne_brh ↔ adresse_dpe` via linked_dpe_id (conf 0.90) OU heuristique CP+voie (conf 0.65)
+    - Règle 3 : `adresse_dpe ↔ mutation_dvf` via CP+voie normalisée + filtre `usable_for_brh` (conf 0.70)
+  - **Backfill 30 319 liens** : 219 dirige + 7 321 habite + 22 779 a_mute
+  - Couverture : 44 % des contacts BRH ont une adresse DPE liée
+- **Sprint B — RPC + UI 360°** (`20260519150000_rpc_brh_personne_360.sql`) :
+  - RPC unifiée `brh_personne_360(uuid)` qui retourne 6 jsonb + 1 summary :
+    - `identity` (jsonb), `sci_dirigees[]`, `adresses_liees[]`, `mutations_dvf[]` (transitives via adresses), `bodacc_alerts[]`, `sci_deces_pairs[]`, `links_summary{}`
+  - SECURITY DEFINER + check role
+  - API `src/api/brh-personne-360.ts` (8 types TS)
+  - Hook `usePersonne360` (lazy, enabled=open)
+  - Composant `PersonneGraphPanel` : 5 blocs colorés (SCI indigo / Adresses sky / Mutations ambre / BODACC purple / Succession rose), liens cliquables vers fiches existantes
+  - Remplace `PersonneSignalsExternesPanel` dans `ClientsBrhView`
+- **Sprint D — Wiki** (`docs/wiki/entity-graph.md`) :
+  - Modèle, 4 règles documentées, RPC, UI, roadmap A-G
+  - Référencée dans `index.md`
+- **Test DOLLE ARNAUD** (Brest 29100) : 49 adresses liées + 49 mutations DVF transitives. Note : critère cp+voie trop large pour grandes rues (toute la rue match) — à resserrer en Sprint F (matching par date naissance).
+- **Sprint C** (standardisation 3 fiches) : repoussé pour ne pas casser l'existant en cours d'usage, planifié après Sitadel.
+- **Fichiers** :
+  - `supabase/migrations/20260519140000_brh_entity_links_pivot.sql`
+  - `supabase/migrations/20260519150000_rpc_brh_personne_360.sql`
+  - `src/api/brh-personne-360.ts`
+  - `src/hooks/queries/usePersonne360.ts`
+  - `src/components/leads/PersonneGraphPanel.tsx`
+  - `src/components/leads/ClientsBrhView.tsx` (swap signals panel → graph panel)
+  - `docs/wiki/entity-graph.md`
+  - `docs/wiki/index.md` (ajout entry)
+  - `docs/wiki/log.md` (cette entrée)
+- **Risque** : Low — table neuve avec RLS, RPC SECURITY DEFINER, UI lazy. Idempotence garantie par ON CONFLICT.
+- **Status** : ✅ DONE Sprint A+B+D · 🟡 Sprint C reporté
+
+---
+
 ## 2026-05-19 (3) — DVF quality fix + signaux externes sur fiche client + Sitadel import
 
 - **Contexte** : Philippe pointe que les données DVF affichent parfois un prix global mais pas la surface (et donc prix/m² faussé), et qu'on a des « masses d'informations jamais intégrées ». Audit complet → 13 tables avec données dormantes (104k DVF + 46k SCI décès + 3.6k BODACC + Sitadel vide, etc.).

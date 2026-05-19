@@ -40,6 +40,7 @@
 | [migrations-audit.md](migrations-audit.md) | Catalog des 37 migrations en 5 phases |
 | [osint-enrichment-registry.md](osint-enrichment-registry.md) | ⭐ **Registry campagnes OSINT/IA (19/05)** — couverture par source, doublons, futures campagnes |
 | [data-coverage.md](data-coverage.md) | ⭐ **Data coverage datasets de masse (19/05)** — DVF/Sitadel/BODACC/BDNB/Sirene : ingéré vs câblé UI, plan P1-P4 |
+| [entity-graph.md](entity-graph.md) | ⭐ **Graphe d'entités BRH (19/05)** — table pivot `brh_entity_links`, 4 règles de matching, RPC `brh_personne_360`, UI `PersonneGraphPanel` |
 
 ### Partie 2 — Guides features majeures
 

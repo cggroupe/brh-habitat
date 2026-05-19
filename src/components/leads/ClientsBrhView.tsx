@@ -15,7 +15,7 @@ import {
   Sparkles, Sigma, Crown, Award,
 } from 'lucide-react'
 import { useClientsBrh } from '@/hooks/queries/useClientsBrh'
-import { PersonneSignalsExternesPanel } from './PersonneSignalsExternesPanel'
+import { PersonneGraphPanel } from './PersonneGraphPanel'
 import type { LeadProfile } from '@/lib/rgpd/lead-visibility'
 
 interface Props {
@@ -450,7 +450,7 @@ function ContactRow({ c, profileBase }: { c: ReturnType<typeof useClientsBrh>['d
             </div>
           )}
 
-          <PersonneSignalsExternesPanel personneId={c.id} />
+          <PersonneGraphPanel personneId={c.id} profileBase={profileBase} />
         </div>
 
         <div className="flex shrink-0 flex-col items-end gap-1">
