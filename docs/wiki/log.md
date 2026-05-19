@@ -5,6 +5,44 @@
 
 ---
 
+## 2026-05-19 (10) — Fix bug regex graphe + faux matches DPE + surface manquante
+
+- **Contexte** : Philippe reporte sur la fiche Ribézzo Nicolas (6 Rue Robert Schuman 29480) un DPE lié foireux (5 rue Roger SALENGRO — autre rue). Audit révèle 2 bugs majeurs :
+  1. **Règle "habite" cp+voie** : matche tous les voisins d'une même rue (Wrobel 21 Bd Arago lié au DPE 9 Bd Arago, JONCOURT 32 lié au DPE 9, etc.)
+  2. **Bug regex `[^a-z0-9]`** : appliqué AVANT `lower()`, retire les MAJUSCULES → il ne reste que les chiffres. "25 RUE DE GASCOGNE" matchait "25 BD LAENNEC" car les deux normalisés = "25".
+- **Audit** :
+  - 4 969 liens "habite" cp+voie laxistes (tous faux ou douteux)
+  - 2 352 `linked_dpe_id` pré-import, dont **2 156 (91 %)** pointent vers une adresse DPE différente de l'adresse contact → faux historiques
+  - 22 779 liens "a_mute" DVF (cp+voie laxiste, beaucoup de faux par voie sans numéro)
+  - 9 075 liens "numero+voie+cp_exact" (insérés mais avec bug regex majuscules → tous faux)
+- **Actions Supabase (archives `brh_entity_links_archive`, `brh_linked_dpe_purge_archive`)** :
+  - Purge 4 969 liens habite cp+voie
+  - Purge 2 156 `linked_dpe_id` foireux (adresse complètement différente)
+  - Purge 22 779 `a_mute` laxiste + 9 075 avec bug regex
+  - Recompute strict (`lower(adresse)` AVANT `regexp_replace([^a-z0-9])`)
+- **Liens finaux** :
+  - `habite` : **342** (196 linked_dpe_id valides + 146 numero+voie+cp_exact strict)
+  - `a_mute` : **2 713** (numero+voie_exact, DVF.adresse_numero + DVF.adresse_voie reconstruits)
+  - **Total : 3 055** (vs 30 319 avant fix → 90 % de faux purgés)
+- **Migration `20260519190000_fix_entity_links_strict.sql`** :
+  - Réécriture de `brh_entity_links_recompute()` avec normalisation correcte
+  - Suppression définitive règle 1 (SCI dirige) — homonymes nom+prenom systémiques
+  - Documenté pour Sprint F (match avec date_naissance)
+- **Fix surface fiche DPE** :
+  - Bug `dpe.surface` (undefined) au lieu de `dpe.surface_habitable` (vraie colonne en BDD)
+  - Test Morlaix : DPE id 17874 "45 rue des brebis" a bien 162.8 m² → maintenant affiché
+- **Test post-fix Ribézzo Nicolas** : linked_dpe_id = NULL, 0 lien habite. Plus de fausse adresse Salengro affichée.
+- **Fichiers** :
+  - `supabase/migrations/20260519190000_fix_entity_links_strict.sql`
+  - `src/components/leads/fiche/FicheAdresseView.tsx` (fix surface)
+  - `docs/wiki/log.md` (cette entrée)
+- **Risque** : Low — purges archivées, recompute idempotent
+- **Status** : ✅ DONE
+
+**Pour le Sprint suivant (refonte design)** : Philippe va activer Stitch pour refaire toutes les fiches (clients BRH, leads agence/immo/employé) avec charte BRH cohérente. Pendant ce temps les données sont propres.
+
+---
+
 ## 2026-05-19 (9) — Édition employé terrain sur fiches BRH + DPE
 
 - **Contexte** : Philippe veut que ses commerciaux BRH puissent **mettre à jour les fiches** depuis le terrain (DPE encore F/G ? travaux faits ? intérêt commercial ? meilleur créneau de contact ? notes libres ?). Le but est de transformer la BDD en outil vivant pendant la prospection ("rentrer et vendre").

@@ -177,7 +177,12 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
             <FicheSection title="DPE" icon={<FileText className="h-4 w-4" />} defaultOpen>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <Stat label="Classe DPE" value={dpe.etiquette_dpe} accent={['F', 'G'].includes(String(dpe.etiquette_dpe))} />
-                <Stat label="Surface" value={dpe.surface ? `${dpe.surface} m²` : null} />
+                <Stat label="Surface" value={(() => {
+                  const sh = (dpe as unknown as { surface_habitable?: number | null }).surface_habitable
+                  if (sh != null) return `${sh} m²`
+                  if (dpe.surface != null) return `${dpe.surface} m²`
+                  return null
+                })()} />
                 <Stat label="Année" value={dpe.annee_construction} />
                 <Stat label="Type bâti" value={dpe.type_batiment} />
               </div>
