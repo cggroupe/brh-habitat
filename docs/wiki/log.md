@@ -5,6 +5,36 @@
 
 ---
 
+## 2026-05-19 (7) — Dépollution massive : noms cassés + Apify homonymes + psy hallucinés
+
+- **Contexte** : Philippe rapporte des hallucinations massives sur la fiche `Cadour Arnaud` (LinkedIn homonyme, Facebook Sophie Cadour, Mention société Jean-Guillaume Cadour, profil psy "entrepreneur indépendant" alors qu'il n'a pas d'entreprise). Diagnostic : cascade de bugs root-cause.
+- **Root cause identifiée** :
+  1. **Noms pollués à l'import** : 112 contacts avec `full_name = "NOM Prénom / 06XXXXXXXX"` (téléphone collé). Pour Cadour : `full_name="Cadour Arnaud / 0622577578"`, `nom="0622577578"`.
+  2. **Query Apify polluée** : Google a cherché `"Cadour Arnaud / 0622577578" "Ploudalmezeau"` → résultats hors-sujet
+  3. **Aucun filtre prénom à l'ingest Apify** : tous les "Cadour" indistinctement (Jean-Guillaume, Marie, Sophie, Arnaud homonyme) stockés
+  4. **Claude psy** : extrapolation/hallucination "entrepreneur indépendant" sans evidence factuelle
+- **Actions Supabase (irréversibles côté data, archives conservées)** :
+  - **Fix noms pollués** : extraction du téléphone vers `telephone`, nettoyage `full_name`/`nom`/`prenom` → 112 contacts corrigés (3 cas exceptionnels restants)
+  - **Filtre homonymie strict** : un hit Apify n'est conservé QUE si prénom ET nom apparaissent ensemble dans le titre/URL (variants `prenom-nom`, `prenom.nom`, `prenomnom`)
+  - **Purges** :
+    - LinkedIn : 94 → 48 (49 % homonymes)
+    - Facebook : 667 → 168 (75 % homonymes — pire car URLs `sophie.cadour` matchent "Cadour" sans le bon prénom)
+    - Apify Google complet : 4 734 → 1 869 (60 % de pollution)
+    - Profils psy IA : 3 414 → 1 355 (purge des 2 059 générés sur contacts sans aucun signal Apify/LinkedIn/FB)
+  - Archives conservées : `brh_osint_apify_homonyme_archive`, `brh_psy_profile_archive` (réversibles)
+  - Recompute tiers : **gold 195→59, silver 3 130→1 470, bronze 1 649→1 968 (+319 redistribués), none 11 219→13 110**
+- **Test Cadour Arnaud** : LinkedIn=NULL, Facebook=NULL, Apify=NULL, Psy=NULL, tier=bronze (juste tel + nom + adresse — réel)
+- **À faire en suivant** :
+  - Améliorer prompt Claude psy pour interdire toute extrapolation métier/société non confirmée par les données BRH
+  - Améliorer script Apify ingest : query stricte (sans téléphone/email/slashes), filtrage prénom+nom à l'ingest (pas en post-traitement)
+  - Bouton "marquer faux positif" sur la fiche pour permettre nettoyage manuel par les commerciaux
+- **Fichiers** :
+  - `docs/wiki/log.md` (cette entrée) — pas de code modifié, uniquement data Supabase
+- **Risque** : Low — archives complètes, idempotent, UI déjà à jour (la fiche détaillée du commit précédent affiche maintenant des données propres)
+- **Status** : ✅ DONE pour la dépollution. Sprint F (re-enrichissement propre) à venir après validation Philippe.
+
+---
+
 ## 2026-05-19 (6) — PURGE faux positifs OSINT + page fiche détaillée
 
 - **Contexte** : Philippe rapporte que beaucoup de comptes affichés (GitHub/SoundCloud/Telegram/WordPress) sont **faux** pour des clients BRH de 80+ ans. Diagnostic confirmé :
