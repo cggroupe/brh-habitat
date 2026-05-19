@@ -5,6 +5,39 @@
 
 ---
 
+## 2026-05-19 (14) — Import client PPO_44 → 2 498 clients enrichis
+
+- **Contexte** : Philippe dépose `FICHIER_CLIENT_PPO_44.xlsx` (3 763 lignes, 412 KB) via le nouveau serveur upload BRH (http://147.93.52.70:8916/). Fichier opérateur PPO sur Loire-Atlantique + Maine-et-Loire + Ille-et-Vilaine (1 ligne = 1 chantier, donc beaucoup de "doublons" qui sont en fait des chantiers multiples par client).
+- **Parsing & consolidation** (`parse-ppo-44.py`) :
+  - Headers : NOM, ADRESSE, CP, VILLE, TÉL, MAIL, CHANTIER (type), DATE, NOTE statut, COMPTE RENDU, SUIVI×11 années
+  - 3 763 lignes brutes → **2 498 clients uniques** (par groupe nom+adresse+cp+ville)
+  - 732 clients (29 %) ont ≥2 chantiers
+  - Top types : ISOLATION 588×, TABLEAU ELEC 277×, HYDRO 118×, FACADE 81×, TOITURE 87×, ITE 55×
+  - Top doublons : MACHUEL Saint-Herblain 14×, CHAPALAIN EDOM Vertou 10×, BOUTINOT 9× (multi-chantiers vraie historique commerciale)
+- **Import vers `brh_personnes_historique`** (`import-ppo-vers-brh.py`) :
+  - Étendu CHECK constraint `source_primaire` pour inclure `'ppo_44'`
+  - Pour chaque PPO : match BRH existant par (nom_lower, cp, adresse_normalisée) → MERGE ; sinon CRÉER avec source_primaire='ppo_44', statut='Client', fingerprint_hash déterministe MD5
+  - Mapping intelligent type chantier → poste BRH (8 postes) : TABLEAU ELEC → tableau_electrique, COUVERTURE/CHARPENTE/TOITURE → toiture, FACADE/BARDAGE/RPE/ITE → murs, MENUISERIE/VOLET → fenetres, etc.
+  - Travaux insérés dans `brh_personne_travaux` (avec entreprise='PPO', état='realise_recent' si ≤5 ans sinon 'realise_ancien', date la plus récente)
+  - Notes commerciales insérées comme visites `[PPO import] {note}` dans `brh_personne_visits`
+- **Résultats** :
+  - 18 contacts BRH mergés avec PPO (très peu — BRH = Bretagne ; PPO = surtout 44+49)
+  - 2 480 nouveaux contacts créés
+  - 2 900 travaux PPO catalogués (après dédup poste)
+  - 2 075 visites note commerciale enregistrées
+  - 2 erreurs : 1 date format "00/2017" invalide + 1 FK race condition
+  - **Total brh_personnes_historique : 16 415 → 18 571** (+ 2 156 net)
+- **Fichiers** :
+  - `/root/uploads/brh/FICHIER_CLIENT_PPO_44.xlsx` (source 412 KB)
+  - `/root/uploads/brh/PPO_44_consolide.xlsx` (output consolidé)
+  - `/root/uploads/brh/PPO_44_consolide.json`
+  - `/root/uploads/brh/parse-ppo-44.py` (parser)
+  - `/root/uploads/brh/import-ppo-vers-brh.py` (importer)
+- **Risque** : Low — fingerprint déterministe évite doublons d'import, CHECK constraint étendue proprement, mapping postes fallback `autre` pour types inconnus
+- **Status** : ✅ DONE
+
+---
+
 ## 2026-05-19 (13) — AUDIT COMPLET base BRH + dédoublonnage + purge data test/lieux-dits
 
 - **Contexte** : Philippe demande audit exhaustif de tous les contacts (vérif DPE, isolation, dates, homonymes, etc.).
