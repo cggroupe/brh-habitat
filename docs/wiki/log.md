@@ -5,6 +5,36 @@
 
 ---
 
+## 2026-05-19 (11) — Fiche client : marqueur "Vu" multi-employés + travaux par poste
+
+- **Contexte** : Philippe a validé la composition de la maquette Stitch v3 (`fiche-client-complete`, projet BRHCRM Direction Commerciale 12759214816897017502, screen 5ac730af). Demande : intégrer les 2 sections clés dans le code React BRH Habitat — **labels FR strict**, additif (ne casse pas l'existant), garder la sidebar `EmployeShell`.
+- **2 sections clés intégrées** :
+  1. **« Déjà visité par »** — marqueur multi-employés. Bouton "Marquer comme vu" qui enregistre `(personne, employé, date, note, type)`. Liste avatars chainés des collègues qui ont déjà visité → évite les doublons commerciaux. Si déjà vu par le user courant : badge vert "Vous l'avez déjà visité".
+  2. **« Travaux par poste technique »** — table éditable inline (8 postes : Murs, Toiture, Plancher bas, Fenêtres, Chauffage, Ventilation, Eau chaude, Tableau électrique). Pour chaque poste : état (non réalisé / passoire / partiel / réalisé récent / réalisé ancien / inconnu), entreprise réalisatrice (texte libre, ex "Menuiseries Dubois"), date des travaux. Édition en place (clic crayon → champ input → save vert).
+- **Migration `20260519200000_brh_personne_visits_travaux.sql`** :
+  - 2 tables `brh_personne_visits` et `brh_personne_travaux` + RLS BRH internes + 2 index
+  - 4 RPCs SECURITY DEFINER : `brh_personne_mark_seen`, `brh_personne_visits_list`, `brh_personne_travaux_upsert`, `brh_personne_travaux_list`
+  - Upsert intelligent : un seul travaux par couple `(personne, poste)`, update en place
+- **API `brh-personne-visits-travaux.ts`** + hooks `usePersonneVisits` / `useMarkSeen` / `usePersonneTravaux` / `useUpsertTravaux` (React Query avec invalidation cache)
+- **Composant `ClientVisitsTravauxSection.tsx`** (380 lignes, FR strict) :
+  - VisitsBlock : header avec bouton "Marquer comme vu" + form note optionnelle + liste visites avec avatars initiales + libellés type visite (Visite terrain / Appel / Email / RDV planifié / Autre)
+  - TravauxBlock : table dense 8 lignes pré-définies (un select état + champ entreprise + date picker par ligne)
+  - Couleurs : palette stone (warm gray neutre) + emerald (vert BRH `#15803d`/`#047857` cohérent index.css). Zéro bleu.
+- **Intégration** `EmployeClientBrhDetail.tsx` : composant inséré juste avant `EmployeeEditPanel` (suivi commercial existant). `useAuth()` pour récupérer `currentUserId`. Aucune suppression de code existant — additif pur.
+- **Fichiers** :
+  - `supabase/migrations/20260519200000_brh_personne_visits_travaux.sql` (créé + appliqué)
+  - `src/api/brh-personne-visits-travaux.ts` (créé, libellés FR exportés)
+  - `src/hooks/queries/usePersonneVisitsTravaux.ts` (créé)
+  - `src/components/leads/ClientVisitsTravauxSection.tsx` (créé)
+  - `src/pages/employe/EmployeClientBrhDetail.tsx` (3 imports + 1 insertion conditionnelle)
+- **Tests** : `npm run build` OK
+- **Risque** : Low — additif strict, RPCs SECURITY DEFINER avec check rôle, RLS sur tables, libellés FR systématiques
+- **Status** : ✅ DONE
+
+**À enchaîner** : porter aussi les sections "Profil psy IA" et "Liens patrimoniaux 360°" dans le style de la maquette Stitch v3 (actuellement présentes via `PersonneGraphPanel` mais pas dans le style typographique INTER de la maquette).
+
+---
+
 ## 2026-05-19 (10) — Fix bug regex graphe + faux matches DPE + surface manquante
 
 - **Contexte** : Philippe reporte sur la fiche Ribézzo Nicolas (6 Rue Robert Schuman 29480) un DPE lié foireux (5 rue Roger SALENGRO — autre rue). Audit révèle 2 bugs majeurs :

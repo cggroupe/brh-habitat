@@ -21,6 +21,8 @@ import {
 import { usePersonne360 } from '@/hooks/queries/usePersonne360'
 import { useUpdatePersonne } from '@/hooks/queries/useEmployeeEdit'
 import { EmployeeEditPanel } from '@/components/leads/EmployeeEditPanel'
+import { ClientVisitsTravauxSection } from '@/components/leads/ClientVisitsTravauxSection'
+import { useAuth } from '@/hooks/useAuth'
 import type { Personne360Identity } from '@/api/brh-personne-360'
 
 const TIER_BADGE: Record<string, { cls: string; Icon: typeof Crown; label: string }> = {
@@ -35,6 +37,8 @@ export default function EmployeClientBrhDetail() {
   const navigate = useNavigate()
   const { data, isLoading, error } = usePersonne360(id ?? null)
   const updateMutation = useUpdatePersonne(id ?? '')
+  const { user } = useAuth()
+  const currentUserId = user?.id ?? null
 
   if (isLoading) {
     return (
@@ -176,6 +180,11 @@ export default function EmployeClientBrhDetail() {
               </div>
             </div>
           </section>
+
+          {/* DÉJÀ VISITÉ PAR + TRAVAUX PAR POSTE (maquette Stitch v3) */}
+          {id && (
+            <ClientVisitsTravauxSection personneId={id} currentUserId={currentUserId} />
+          )}
 
           {/* SUIVI COMMERCIAL TERRAIN (édition employé BRH) */}
           <EmployeeEditPanel
