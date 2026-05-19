@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom'
 import {
   Search, Loader2, Phone, Mail, User, Building2,
   Calendar, FileText, MapPin, Wallet, ChevronRight, Filter,
+  Sparkles, Sigma, Crown, Award,
 } from 'lucide-react'
 import { useClientsBrh } from '@/hooks/queries/useClientsBrh'
 import type { LeadProfile } from '@/lib/rgpd/lead-visibility'
@@ -40,6 +41,7 @@ export default function ClientsBrhView({ profile }: Props) {
   const [withCa, setWithCa] = useState(false)
   const [withRdv, setWithRdv] = useState(false)
   const [withDpeLink, setWithDpeLink] = useState(false)
+  const [tier, setTier] = useState<'gold' | 'silver' | 'bronze' | 'none' | ''>('')
   const [page, setPage] = useState(0)
 
   const deferredQuery = useDeferredValue(query)
@@ -53,6 +55,7 @@ export default function ClientsBrhView({ profile }: Props) {
     with_ca: withCa,
     with_rdv: withRdv,
     with_dpe_link: withDpeLink,
+    tier: tier || null,
     limit: PAGE_SIZE,
     offset: page * PAGE_SIZE,
   })
@@ -140,6 +143,34 @@ export default function ClientsBrhView({ profile }: Props) {
             </label>
           ))}
         </div>
+
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+          <span className="inline-flex items-center gap-1 font-semibold text-slate-500">
+            <Sparkles className="h-3 w-3" />
+            Enrichissement :
+          </span>
+          {([
+            { v: '', label: 'Tous', cls: 'bg-slate-100 text-slate-700 border-slate-300' },
+            { v: 'gold', label: 'Gold (133)', cls: 'bg-amber-100 text-amber-900 border-amber-300' },
+            { v: 'silver', label: 'Silver (1 543)', cls: 'bg-slate-200 text-slate-800 border-slate-400' },
+            { v: 'bronze', label: 'Bronze (3 848)', cls: 'bg-orange-50 text-orange-800 border-orange-300' },
+            { v: 'none', label: 'À enrichir (11 083)', cls: 'bg-white text-slate-500 border-dashed border-slate-300' },
+          ] as const).map((t) => {
+            const active = tier === t.v
+            return (
+              <button
+                key={t.v || 'all'}
+                type="button"
+                onClick={() => { setTier(t.v); setPage(0) }}
+                className={`rounded-full border px-2.5 py-1 font-medium transition ${
+                  active ? `${t.cls} ring-2 ring-offset-1 ring-slate-400` : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+                }`}
+              >
+                {t.label}
+              </button>
+            )
+          })}
+        </div>
       </header>
 
       <div className="flex-1 overflow-y-auto">
@@ -189,8 +220,20 @@ export default function ClientsBrhView({ profile }: Props) {
   )
 }
 
+const TIER_BADGE: Record<string, { cls: string; Icon: typeof Crown; label: string }> = {
+  gold: { cls: 'border-amber-400 bg-amber-100 text-amber-900', Icon: Crown, label: 'Gold' },
+  silver: { cls: 'border-slate-400 bg-slate-200 text-slate-800', Icon: Award, label: 'Silver' },
+  bronze: { cls: 'border-orange-300 bg-orange-50 text-orange-800', Icon: Award, label: 'Bronze' },
+  none: { cls: 'border-dashed border-slate-300 bg-white text-slate-400', Icon: Sigma, label: 'À enrichir' },
+}
+
 function ContactRow({ c, profileBase }: { c: ReturnType<typeof useClientsBrh>['data'] extends Array<infer T> | undefined ? T : never; profileBase: string }) {
   const Icon = c.is_pro || c.societe ? Building2 : User
+  const tierKey = (c.enrichment_tier ?? 'none') as keyof typeof TIER_BADGE
+  const tierBadge = TIER_BADGE[tierKey]
+  const apify = c.osint_other?.apify_google
+  const maigret = c.osint_other?.maigret
+  const holehe = c.osint_other?.holehe
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3">
       <div className="flex items-start gap-3">
@@ -228,6 +271,16 @@ function ContactRow({ c, profileBase }: { c: ReturnType<typeof useClientsBrh>['d
                 {c.nb_rdv} RDV
               </span>
             )}
+            <span
+              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${tierBadge.cls}`}
+              title={`Enrichment score ${c.enrichment_score ?? 0} / 15`}
+            >
+              <tierBadge.Icon className="h-3 w-3" />
+              {tierBadge.label}
+              {c.enrichment_score != null && c.enrichment_score > 0 && (
+                <span className="ml-0.5 font-mono opacity-70">{c.enrichment_score}</span>
+              )}
+            </span>
           </div>
 
           <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-slate-600">
@@ -258,7 +311,7 @@ function ContactRow({ c, profileBase }: { c: ReturnType<typeof useClientsBrh>['d
             )}
           </div>
 
-          {(c.osint_linkedin || c.osint_facebook || c.enfants) && (
+          {(c.osint_linkedin || c.osint_facebook || c.enfants || apify || maigret || holehe) && (
             <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
               {c.osint_linkedin && (
                 <a
@@ -285,6 +338,65 @@ function ContactRow({ c, profileBase }: { c: ReturnType<typeof useClientsBrh>['d
                   Famille : {c.enfants}
                 </span>
               )}
+              {apify?.pagesjaunes && (
+                <a
+                  href={apify.pagesjaunes}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded border border-yellow-200 bg-yellow-50 px-1.5 py-0.5 text-yellow-800 hover:bg-yellow-100"
+                >
+                  PagesJaunes
+                </a>
+              )}
+              {apify?.immo_intentions && apify.immo_intentions.length > 0 && (
+                <span
+                  className="rounded border border-rose-300 bg-rose-50 px-1.5 py-0.5 font-medium text-rose-800"
+                  title={apify.immo_intentions.map((h) => h.title).join(' | ')}
+                >
+                  Intention immo · {apify.immo_intentions.length}
+                </span>
+              )}
+              {apify?.societes && apify.societes.length > 0 && (
+                <span
+                  className="rounded border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 text-indigo-800"
+                  title={apify.societes.map((h) => h.title).join(' | ')}
+                >
+                  Sociétés · {apify.societes.length}
+                </span>
+              )}
+              {holehe?.used_on && holehe.used_on.length > 0 && (
+                <span
+                  className="rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-emerald-800"
+                  title={`Email actif sur : ${holehe.used_on.join(', ')}`}
+                >
+                  Email actif · {holehe.used_on.length}
+                </span>
+              )}
+              {maigret && maigret.n_hits != null && maigret.n_hits > 0 && (
+                <span
+                  className="rounded border border-purple-200 bg-purple-50 px-1.5 py-0.5 text-purple-800"
+                  title={(maigret.hits ?? []).map((h) => h.site).join(', ')}
+                >
+                  Maigret · {maigret.n_hits} sites
+                </span>
+              )}
+            </div>
+          )}
+
+          {apify?.immo_intentions && apify.immo_intentions.length > 0 && (
+            <div className="mt-1.5 rounded-md border border-rose-200 bg-rose-50/60 p-1.5">
+              <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-rose-900">
+                Annonces immobilières détectées
+              </div>
+              <ul className="space-y-0.5 text-[11px] text-slate-700">
+                {apify.immo_intentions.slice(0, 3).map((h, i) => (
+                  <li key={i} className="truncate">
+                    <a href={h.url} target="_blank" rel="noopener noreferrer" className="text-rose-800 hover:underline">
+                      {h.title || h.url}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
@@ -330,7 +442,8 @@ function ContactRow({ c, profileBase }: { c: ReturnType<typeof useClientsBrh>['d
               </div>
               {c.psy_profile.approach_advice && (
                 <div className="mt-1.5 rounded bg-white p-1.5 text-[11px] italic text-slate-700">
-                  💡 {c.psy_profile.approach_advice}
+                  <span className="mr-1 font-semibold not-italic text-fuchsia-900">Conseil&nbsp;:</span>
+                  {c.psy_profile.approach_advice}
                 </div>
               )}
             </div>

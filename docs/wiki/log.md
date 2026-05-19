@@ -5,6 +5,74 @@
 
 ---
 
+## 2026-05-19 — UI tier chips + détails OSINT + Claude psy run 2 + registry
+
+- **Contexte** : suite à la création des tiers (entrée précédente), câblage frontend + traçabilité Karpathy + 2e passe IA.
+- **(1) UI `ClientsBrhView`** :
+  - Ajout barre filtre tier (5 chips : Tous / Gold 133 / Silver 1543 / Bronze 3848 / À enrichir 11083)
+  - Badge tier coloré sur chaque carte contact (Crown gold / Award silver+bronze / Sigma none) + score brut `/15` en mono
+  - Affichage chips OSINT inline : PagesJaunes, Intention immo (rose), Sociétés (indigo), Email actif (emerald, holehe), Maigret n_sites (purple)
+  - Bloc dédié « Annonces immobilières détectées » (rouge clair) listant les 3 premières intentions immo (top signal de chaleur commerciale)
+  - Retrait de l'émoji 💡 dans le conseil psy (interdit BRH, remplacé par `Conseil :` en gras)
+- **(2) API `brh-clients-historique.ts`** :
+  - Type `ClientBrhHit` enrichi : `osint_other` (apify_google/maigret/holehe typés), `enrichment_score`, `enrichment_tier`
+  - Filtre `tier?: 'gold' | 'silver' | 'bronze' | 'none' | null` ajouté
+  - Passage de `p_tier` dans la RPC
+- **(3) Claude psy run 2 lancé** :
+  - PID 1761695 · log `/tmp/brh-psy-2.log` · LIMIT 2500
+  - Cible : 3 826 éligibles (apify OR holehe OR sherlock OR (CA+RDV)) ET `psy_profile IS NULL`
+  - Coût attendu : ~13–15 € (sur les 50 € budget, ~30 € total après ce run)
+- **(4) Wiki page `osint-enrichment-registry.md` créée** :
+  - Source de vérité unique des campagnes OSINT/IA — coverage par source, par contact, plan futur
+  - Tableaux : couverture globale, distribution tiers, détail des 7 campagnes (C1→C7), comment savoir ce qui manque par contact, plan P1→P6 futures campagnes
+  - Référencée dans `index.md`
+- **Fichiers modifiés** :
+  - `src/components/leads/ClientsBrhView.tsx`
+  - `src/api/brh-clients-historique.ts`
+  - `docs/wiki/index.md` (ajout entry registry)
+  - `docs/wiki/osint-enrichment-registry.md` (créé)
+  - `docs/wiki/log.md` (cette entrée)
+- **Tests** : `npm run build` OK · pas de TS error
+- **Risque** : Low — additions only, FE compat ascendante (les colonnes nullables sont retournées même pour rows sans psy/osint)
+- **Status** : ✅ DONE pour l'UI et le registry · 🟡 RUNNING pour Claude psy run 2
+
+---
+
+## 2026-05-19 — Enrichment tier + RPC v5 (consolidation OSINT/psy)
+
+- **Contexte** : après nuit d'OSINT (Apify b2 4734 ✅, Maigret v3 200 hits ✅, Holehe 96 hits, Sherlock v2 → 920 hits **dont 96% faux positifs** sites `threads/Linktree/BugCrowd/Pinterest/Polarsteps/...`). Besoin de noter chaque fiche pour que les commerciaux attaquent les vraies golden leads.
+- **Ménage Sherlock** : kill du job + purge stricte → garde uniquement la **whitelist** (GitHub, GitLab, Twitter/X, Instagram, Facebook, LinkedIn, Reddit, Strava, Twitch, Behance, Dribbble, StackOverflow, Bluesky, TradingView, About.me, Hackernews, Keybase, Steam, Letterboxd, Goodreads, last.fm). Résultat : **920 hits bruts → 18 hits réels sur 13 personnes**.
+- **Migration `20260519100000_brh_personnes_enrichment_tier.sql`** :
+  - 2 colonnes : `enrichment_score smallint` (0-15), `enrichment_tier text` (gold/silver/bronze/none)
+  - Formule pondérée : tel(1) + email(1) + linkedin(3) + facebook(2) + psy(3) + apify(2) + maigret_hits(2) + sherlock(1) + holehe_used(1) + ca(1) + rdv(1) + dpe(2)
+  - 2 fonctions `IMMUTABLE` : `brh_personne_enrichment_score(p)` + `brh_personne_enrichment_tier(score)`
+  - Trigger `BEFORE INSERT OR UPDATE OF ...` qui recalcule auto (12 colonnes sources)
+  - 2 index (tier, score DESC)
+  - Backfill 16607 rows OK
+- **Migration `20260519110000_rpc_brh_personnes_search_v5.sql`** :
+  - DROP signature v4 (10 args) → CREATE v5 (11 args) avec `p_tier text DEFAULT NULL`
+  - RETURNS enrichi : ajoute `osint_other jsonb`, `enrichment_score smallint`, `enrichment_tier text` (28 colonnes total)
+  - ORDER BY : `enrichment_score DESC NULLS LAST` en priorité (gold → silver → bronze → none)
+- **Distribution finale tiers (16607 personnes)** :
+  - gold = 133 (0.8%) — fiches prêtes attaque commerciale immédiate
+  - silver = 1543 (9.3%) — exploitables
+  - bronze = 3848 (23.2%) — signal minimal
+  - none = 11083 (66.7%) — à enrichir plus tard
+- **Fichiers modifiés** :
+  - `supabase/migrations/20260519100000_brh_personnes_enrichment_tier.sql` (créé)
+  - `supabase/migrations/20260519110000_rpc_brh_personnes_search_v5.sql` (créé)
+  - `docs/wiki/log.md` (cette entrée)
+- **Migrations appliquées** : ✅ directement sur Supabase prod via psql (non destructif : ALTER ADD COLUMN + CREATE FUNCTION + UPDATE backfill)
+- **Risque** : Low — colonnes ajoutées sont nullable au départ, backfill cohérent, trigger BEFORE garantit consistance, RPC v5 strict superset de v4 (FE peut migrer progressif).
+- **Tests** : sample top 5 gold OK (Petit Michel/Severe Jean-Paul/Sousa Bruno/René Modeste/LEROY Gérard tous score 15 avec apify+psy).
+- **À faire** :
+  - Adapter `src/api/brh-clients-historique.ts` pour exposer `enrichment_tier` au composant
+  - Filtre tier dans `ClientsBrhView.tsx` (chips gold/silver/bronze)
+  - Push migrations (attente accord Philippe)
+- **Status** : 🟡 PARTIEL (data OK, UI à câbler, pas encore push)
+
+---
+
 ## 2026-05-18 (urgence 2) — Fix perf RPC `brh_foncier_prospects_unified` (SECURITY DEFINER)
 
 - **Bug** : après fix smallint→integer, la RPC retournait 0 résultats côté UI car `statement_timeout` (8s pour `authenticated`) cancellait la query. Mesure : 3,4s en superuser, **39s en authenticated** (5× plus lent à cause de RLS appliqué row-by-row sur les 59 306 rows × LEFT JOIN ext_iris/ext_commune).

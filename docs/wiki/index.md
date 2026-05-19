@@ -38,6 +38,7 @@
 | [edge-functions-reference.md](edge-functions-reference.md) | 11 Edge Functions (IA, emails, invitations, SIRET, Clerk bridge) |
 | [hooks-reference.md](hooks-reference.md) | 14 hooks React Query + 25 modules API Zod |
 | [migrations-audit.md](migrations-audit.md) | Catalog des 37 migrations en 5 phases |
+| [osint-enrichment-registry.md](osint-enrichment-registry.md) | ⭐ **Registry campagnes OSINT/IA (19/05)** — couverture par source, doublons, futures campagnes |
 
 ### Partie 2 — Guides features majeures
 

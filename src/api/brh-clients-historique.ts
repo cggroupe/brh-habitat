@@ -29,6 +29,34 @@ export interface ClientBrhHit {
   link_confidence: number | null
   osint_linkedin: string | null
   osint_facebook: string | null
+  osint_other?: {
+    apify_google?: {
+      query?: string
+      enriched_at?: string
+      linkedin?: string
+      facebook?: string
+      instagram?: string
+      twitter?: string
+      pagesjaunes?: string
+      immo_intentions?: Array<{ url: string; title: string }>
+      societes?: Array<{ url: string; title: string }>
+      web_hits?: Array<{ title: string; url: string; snippet?: string }>
+    }
+    maigret?: {
+      checked_at?: string
+      username?: string
+      n_hits?: number
+      hits?: Array<{ site: string; url: string }>
+      categories?: Record<string, Array<{ site: string; url: string }>>
+    }
+    holehe?: {
+      checked_at?: string
+      used_on?: string[]
+    }
+    [k: string]: unknown
+  } | null
+  enrichment_score: number | null
+  enrichment_tier: 'gold' | 'silver' | 'bronze' | 'none' | null
   total_count: number
   psy_profile?: {
     personality_traits?: string[]
@@ -52,6 +80,7 @@ export interface ClientsBrhFilters {
   with_ca?: boolean
   with_rdv?: boolean
   with_dpe_link?: boolean
+  tier?: 'gold' | 'silver' | 'bronze' | 'none' | null
   limit?: number
   offset?: number
 }
@@ -67,6 +96,7 @@ export const brhClientsHistoriqueApi = {
       p_with_ca: filters.with_ca ?? false,
       p_with_rdv: filters.with_rdv ?? false,
       p_with_dpe_link: filters.with_dpe_link ?? false,
+      p_tier: filters.tier ?? null,
       p_limit: Math.min(filters.limit ?? 50, 200),
       p_offset: Math.max(0, filters.offset ?? 0),
     })
