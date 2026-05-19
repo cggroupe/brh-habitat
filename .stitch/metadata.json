@@ -38,8 +38,19 @@
       "sourceScreen": "projects/6037063388122355367/screens/e8b951d3c95e425fa5a93049033a977a",
       "width": 2560,
       "height": 2048,
-      "title": "Mes Leads - CRM BRH Habitat",
-      "generatedAt": "2026-05-19"
+      "title": "Mes Leads - CRM BRH Habitat (v1, REJETÉE — du bleu)",
+      "generatedAt": "2026-05-19",
+      "rejected": true,
+      "rejectReason": "couleurs hors charte (bleu)"
+    },
+    "leads-management": {
+      "id": "b3f2d59c90a848ffb1aa5c587bf69dd6",
+      "sourceScreen": "projects/6037063388122355367/screens/b3f2d59c90a848ffb1aa5c587bf69dd6",
+      "width": 2560,
+      "height": 2624,
+      "title": "Mes Leads - CRM BRH Habitat (v2 — charte officielle zinc+vert)",
+      "generatedAt": "2026-05-19",
+      "description": "Fusion P2+P3 (liste + drawer fiche détaillée), respecte charte BRH du index.css (zéro bleu)"
     }
   }
 }

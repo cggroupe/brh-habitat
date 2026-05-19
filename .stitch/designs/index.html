@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>BRH Habitat — Stitch Designs Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --surface-2: #f5f5f4;
+    --primary: #003404;
+    --primary-on: #ecfdf5;
+    --primary-light: #86efac;
+    --text: #1c1917;
+    --muted: #57534e;
+    --outline: #e7e5e4;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: 'Manrope', system-ui, sans-serif; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 48px 24px; }
+  h1 { font-family: 'Epilogue', sans-serif; font-weight: 700; font-size: 32px; margin: 0 0 8px; }
+  .lede { color: var(--muted); font-size: 15px; margin-bottom: 40px; max-width: 720px; }
+  .lede code { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+  .card { background: white; border: 1px solid var(--surface); border-radius: 12px; overflow: hidden; transition: all .2s; }
+  .card:hover { box-shadow: 0 8px 24px rgba(11,28,48,0.08); transform: translateY(-2px); }
+  .card a.thumb { display: block; aspect-ratio: 16/10; background: var(--surface); overflow: hidden; }
+  .card img { width: 100%; height: 100%; object-fit: cover; object-position: top; transition: transform .3s; }
+  .card:hover img { transform: scale(1.02); }
+  .card-body { padding: 16px 20px 20px; }
+  .badge { display: inline-block; padding: 3px 8px; background: var(--primary-on); color: var(--primary); border-radius: 999px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .card-title { font-family: 'Epilogue', sans-serif; font-weight: 600; font-size: 17px; margin: 0 0 4px; }
+  .card-meta { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+  .actions { display: flex; gap: 8px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 500; transition: all .15s; }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-secondary { background: white; color: var(--primary); border: 1px solid var(--outline); }
+  .btn-secondary:hover { background: var(--surface); }
+  .footer { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--surface); font-size: 12px; color: var(--muted); }
+  .legacy { margin-top: 32px; padding: 16px 20px; background: var(--surface); border-radius: 8px; font-size: 13px; }
+  .legacy strong { color: var(--primary); }
+  .legacy a { color: var(--primary); }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>BRH Habitat — Stitch Designs Preview</h1>
+    <p class="lede">
+      Maquettes Stitch générées le 19/05/2026 via <code>@_davideast/stitch-mcp</code> + Gemini 3.1 Pro
+      sur le projet <code>6037063388122355367</code>. Design system « Premium B2B Habitat » :
+      Epilogue + Manrope, fond champagne <code>#fbf9f8</code>, vert BRH <code>#003404</code>.
+    </p>
+
+    <div class="grid">
+
+      <div class="card" style="grid-column: 1 / -1; border: 2px solid var(--primary);">
+        <a class="thumb" href="leads-management.html"><img src="leads-management.png" alt="" /></a>
+        <div class="card-body">
+          <span class="badge" style="background: var(--primary); color: white;">⭐ v2 — Charte officielle BRH (zinc + vert)</span>
+          <h2 class="card-title">Mes Leads — CRM BRH Habitat (fusion P2+P3)</h2>
+          <p class="card-meta">2560×2624 · Sidebar vert + Liste + Drawer fiche · ZÉRO bleu · Charte index.css respectée</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="leads-management.html">Ouvrir HTML →</a>
+            <a class="btn btn-secondary" href="leads-management.png">PNG plein écran</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="opacity:0.6">
+        <a class="thumb" href="fiche-client-brh.html"><img src="fiche-client-brh.png" alt="" /></a>
+        <div class="card-body">
+          <span class="badge" style="background:#fee2e2; color:#991b1b;">v1 rejetée (du bleu)</span>
+          <h2 class="card-title">Fiche Client BRH — v1</h2>
+          <p class="card-meta">À refaire avec charte officielle</p>
+          <div class="actions">
+            <a class="btn btn-secondary" href="fiche-client-brh.html">Voir v1</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="opacity:0.6">
+        <a class="thumb" href="fiche-adresse-dpe.html"><img src="fiche-adresse-dpe.png" alt="" /></a>
+        <div class="card-body">
+          <span class="badge" style="background:#fef3c7; color:#92400e;">v1 partiellement OK</span>
+          <h2 class="card-title">Fiche Adresse DPE — v1</h2>
+          <p class="card-meta">Bon contenu mais palette à corriger</p>
+          <div class="actions">
+            <a class="btn btn-secondary" href="fiche-adresse-dpe.html">Voir v1</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="opacity:0.6">
+        <a class="thumb" href="liste-leads.html"><img src="liste-leads.png" alt="" /></a>
+        <div class="card-body">
+          <span class="badge" style="background:#fee2e2; color:#991b1b;">v1 rejetée (du bleu)</span>
+          <h2 class="card-title">Liste leads — v1</h2>
+          <p class="card-meta">Fusionné dans v2 ci-dessus</p>
+          <div class="actions">
+            <a class="btn btn-secondary" href="liste-leads.html">Voir v1</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="legacy">
+      <strong>Anciens designs Stitch</strong> (mai 2026 — agences MLM, à archiver) :
+      <a href="dashboard.html">dashboard</a> ·
+      <a href="leaderboard.html">leaderboard</a> ·
+      <a href="arbre-mlm.html">arbre-mlm</a>
+    </div>
+
+    <p class="footer">
+      Project Stitch <code>6037063388122355367</code> · Design system <code>Premium B2B Habitat System</code> ·
+      Serveur preview port 8903 · Voir <a href="https://github.com/cggroupe/brh-habitat">repo GitHub</a>
+    </p>
+  </div>
+</body>
+</html>

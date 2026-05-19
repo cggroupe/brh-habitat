@@ -1,72 +1,87 @@
-# BRH Habitat — Design System (extrait de Stitch project 6037063388122355367)
+# BRH Habitat — Design System (charte officielle du code)
 
-Synthèse pour les prompts Stitch et les implémentations React. Issue des 3 designs Stitch validés : dashboard, leaderboard, arbre-mlm (2026-05-08).
+**Source de vérité** : `src/index.css` (variables CSS du repo brh-habitat).
+Ce fichier remplace les anciennes extractions erronées (designs Stitch v1 contenaient du bleu hors-charte).
 
 ---
 
 ## 1. Identité visuelle
 
-**Style** : Material Design 3 (Material You) appliqué au B2B BTP français. Luxe sobre, hauts de gamme, **vert BRH brand sparing**, neutres dominants. Ton "startup américaine prospection MLM" combiné Stripe Dashboard + Linear Inbox + Pipedrive + doTerra.
+**Style** : SaaS B2B premium pour BRH Habitat (rénovation énergétique habitat F/G en Bretagne). Vert profond brand sparing + neutres zinc dominants. Pas de bleu (sauf info sémantique rare). Material Design 3 retenu, mais **palette stricte** : ZINC + VERT BRH uniquement.
 
-**Cible** : commerciaux internes BRH (employés terrain) + agences partenaires de Bretagne Rénovation Habitat. Pas de dark mode obligatoire. Pas de jargon corporate. Métier = rénovation énergétique habitat F/G en Bretagne.
+**Référence** : Stripe Dashboard + Linear Inbox + Pipedrive — mais en VERT BRH, jamais bleu.
 
 ---
 
-## 2. Palette de couleurs
+## 2. Palette (officielle, depuis index.css)
 
-### Vert BRH (brand, usage parcimonieux)
+### Vert BRH (brand)
 ```
-primary:               #003404  ← vert profond, headlines + CTA primaires
-primary-container:     #abf59d  ← chips actifs, mentions success
-on-primary-container:  #78be6d  ← icônes sur primary-container
-inverse-primary:       #90d883  ← darkmode-ish, accent secondaire
-on-tertiary-container: #66c25b  ← variantes vert clair
-on-primary-fixed:      #002202  ← vert très foncé contraste
-```
-
-### Surfaces (dominantes)
-```
-background:            #fbf9f8  ← champagne beige (BODY)
-surface-container-low: #eff4ff  ← cartes secondaires
-surface-container:     #e5eeff  ← cartes principales
-surface-container-high:#dce9ff  ← cartes hover/active
-surface-variant:       #d3e4fe  ← chip background, divider zones
+brand-deep      #003404   ← sidebar bg, CTA primary, headlines critiques
+brand           #00600a   ← primary actions, links
+brand-light     #86efac   ← hover state, illumination
+brand-soft      #ecfdf5   ← background subtil "active", chips success doux
+primary         #0f7a2a   ← variantes
+primary-dark    #062a0d   ← variantes très foncées
+secondary       #16a34a   ← Tailwind green-600 (success principal)
+accent          #86efac
 ```
 
-### Texte
+### Neutres ZINC (dominants — PAS slate, PAS gray, PAS bleu)
 ```
-on-surface:            #0b1c30  ← texte principal (slate-900 like)
-on-background:         #0b1c30  ← idem
-secondary:             #5e5e5e  ← labels, captions
-outline:               #717a6c  ← bordures discrètes
-outline-variant:       #c0c9ba  ← séparateurs
+canvas          #fafaf9   ← BODY page (zinc-50)
+surface         #ffffff   ← cards, panels (blanc pur)
+surface-low     #f5f5f4   ← hover row, zebra subtle (zinc-100)
+surface-muted   #e7e5e4   ← border subtle (zinc-200)
+border          #e7e5e4   ← zinc-200
+border-strong   #d6d3d1   ← zinc-300
+text            #1c1917   ← zinc-900 (texte principal)
+text-muted      #57534e   ← zinc-600 (labels, captions)
+text-subtle     #a8a29e   ← zinc-400 (placeholders, dividers)
+neutral-dark    #44403c   ← zinc-700
+footer-dark     #292524   ← zinc-800
 ```
 
-### Sémantique
+### Sémantiques
 ```
-success / chaud:       #286c25, bg #abf59d/#9af98a
-warning / tiède:       #ba1a1a... non, c'est rouge
-error:                 #ba1a1a, bg #ffdad6, text on error: #93000a
-info / froid:          surface-variant #d3e4fe
-neutre:                #c7c6c5 (secondary-fixed-dim)
+success         #16a34a   bg soft #dcfce7
+warning         #d97706   bg soft #fef3c7   (orange)
+danger          #dc2626   bg soft #fee2e2
+info            #2563eb   bg soft #dbeafe   ← SEUL bleu, à éviter sauf alerte info
+
+score-ultra     #dc2626   ← rouge intense
+score-hot       #ea580c   ← orange vif
+score-warm      #d97706   ← orange
+score-cold      #71717a   ← gris zinc
 ```
 
 ### Tier badges BRH (gold/silver/bronze)
 ```
-gold:    bg #fff8e1 border #ffc107 text #b8860b   (à valider avec Philippe)
-silver:  bg #f5f5f5 border #9e9e9e text #424242
-bronze:  bg #fff3e0 border #cd7f32 text #8d4a00
-none:    bg #ffffff border #c0c9ba text #5e5e5e (outline-variant)
+gold     bg #fef3c7  border #d97706  text #92400e   (warm amber)
+silver   bg #e7e5e4  border #57534e  text #1c1917   (zinc neutre)
+bronze   bg #fed7aa  border #c2410c  text #7c2d12   (orange profond)
+none     bg #fafaf9  border-dashed #d6d3d1  text #a8a29e
 ```
 
-### Intérêt commercial (chips éditables)
+### Intérêt commercial chips (édition employé terrain)
 ```
-chaud:           bg #ffdad6 border #ba1a1a text #93000a  (rouge)
-tiède:           bg #fff3e0 border #ff9800 text #c66900  (orange)
-froid:           bg #d3e4fe border #5e5e5e text #0b1c30  (bleu)
-à recontacter:   bg #e1bee7 border #7b1fa2 text #4a148c  (violet)
-refus:           bg #c7c6c5 border #5e5e5e text #1b1c1b  (gris)
-inconnu:         bg #ffffff border #c0c9ba text #717a6c  (vide)
+chaud           bg #fee2e2 border #dc2626 text #991b1b   (rouge)
+tiede           bg #fef3c7 border #d97706 text #92400e   (amber)
+froid           bg #f5f5f4 border #57534e text #1c1917   (zinc neutre — PAS bleu)
+a_recontacter   bg #ecfdf5 border #16a34a text #14532d   (vert pâle BRH)
+refus           bg #e7e5e4 border #44403c text #1c1917   (zinc foncé)
+inconnu         bg #ffffff border-dashed #d6d3d1 text #a8a29e
+```
+
+### DPE labels (officiels gouvernement)
+```
+A   bg #00a651 text white
+B   bg #51b04b text white
+C   bg #c4d041 text #1c1917
+D   bg #fff200 text #1c1917
+E   bg #f5b300 text white
+F   bg #f47b00 text white   ← cible BRH prioritaire
+G   bg #d80000 text white   ← cible BRH prioritaire
 ```
 
 ---
@@ -76,165 +91,100 @@ inconnu:         bg #ffffff border #c0c9ba text #717a6c  (vide)
 ```
 Font display (titres) :   Epilogue 600/700
 Font body (paragraphes) : Manrope 400/500/700
+(L'app React utilise Inter en fallback, mais Stitch privilégie Epilogue+Manrope)
 Icônes :                  Material Symbols Outlined (FILL 0, wght 400)
-
-Hiérarchie :
-- H1 page :       Epilogue 700, 28-32px
-- H2 section :    Epilogue 600, 20-24px
-- H3 card :       Epilogue 600, 16-18px
-- Body :          Manrope 400, 14-16px
-- Caption :       Manrope 500, 11-12px uppercase tracking-wide
 ```
-
-CDN à inclure si HTML pur :
-```html
-<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-```
-
-Dans le repo React : `Inter` (déjà en place) reste OK pour le body, mais ajouter `Epilogue` pour les titres clés des fiches refondues.
 
 ---
 
-## 4. Composants clés
+## 4. Composants
 
-### Carte (card)
+### Carte
 ```
-background : white (#ffffff)
-border :     1px solid #e5eeff (surface-container)
+background : #ffffff
+border :     1px solid #e7e5e4
 radius :     12px (rounded-xl)
 padding :    20-24px
-shadow :     0 1px 3px rgba(11,28,48,0.04) (très subtil)
-hover :      bg → #f8f9ff (surface neutre), shadow elevation 2
-```
-
-### Chips (filtres, badges)
-```
-height : 28px
-radius : 9999px (rounded-full)
-padding : 6-12px
-typography : Manrope 500 11-12px
-état actif : ring-2 ring-offset-1 ring-#717a6c
+hover :      bg #fafaf9, border #d6d3d1
+shadow :     0 1px 2px rgba(28,25,23,0.04)
 ```
 
 ### Bouton primaire
 ```
-bg :     #003404 (primary)
-text :   #ffffff
-radius : 8px
-padding : 10-16px
-hover :  brightness-110
+bg #003404 text #ffffff radius 8px padding 10-16px hover brightness-110
 ```
 
 ### Bouton secondaire
 ```
-bg :     #ffffff
-text :   #003404
-border : 1px solid #c0c9ba (outline-variant)
-radius : 8px
+bg #ffffff text #003404 border #d6d3d1 radius 8px hover bg #f5f5f4
 ```
 
-### Input/Form
+### Sidebar (référence pages portail)
 ```
-border :    1px solid #c0c9ba
-radius :    8px
-padding :   8-12px
-focus :     ring-2 ring-#003404 ring-offset-1
-font :      Manrope 400 14px
-background: #ffffff
-label :     uppercase tracking-wide 11px color #5e5e5e
+bg #003404 (brand-deep)
+text white sur active, text #86efac (brand-light) sur hover, text #ecfdf5 sur idle
+items padding 12-16px, gap 4px entre liens
+icône Material Symbols filled=0
 ```
 
-### Section header avec icône
+### Chip
 ```
-icon :     Material Symbol filled=0 wght=400 size=18-20
-label :    Epilogue 600 12-14px uppercase tracking-widest color #003404
+height 28px radius 9999px padding 6-12px font Manrope 500 11-12px
+active : ring-2 ring-offset-1 ring-#00600a
 ```
 
 ---
 
-## 5. Layout & espacement
-
-```
-Max-width container : 1280px (xl) pour listes, 960px (md) pour fiches détaillées
-Padding container :   24-32px (px-6 ou px-8)
-Gap entre cartes :    16-24px (gap-4 ou gap-6)
-Padding card :        20-24px (p-5 ou p-6)
-Margin sections :     32-48px (my-8 ou my-12)
-```
-
-Header sticky (fiche détaillée) :
-- Position : sticky top-0 z-10
-- Background : white avec shadow-sm
-- Padding : py-3 px-6
-- Contenu : breadcrumb gauche + actions droite
-
----
-
-## 6. Design System Notes for Stitch Generation
+## 5. Design System Notes for Stitch Generation
 
 > **À copier-coller au début de chaque prompt Stitch.**
 
 ```
-DESIGN SYSTEM BRH HABITAT (REQUIRED) :
+DESIGN SYSTEM BRH HABITAT (REQUIRED — charte officielle du code, src/index.css) :
 
 Fonts: Epilogue 600/700 for headings, Manrope 400/500/700 for body, Material Symbols Outlined for icons.
 
-Background body: champagne beige #fbf9f8.
+Palette = ZINC NEUTRAL + VERT BRH (PAS DE BLEU, jamais).
 
-Colors:
-- Primary green (brand BRH, sparing): #003404
-- Primary container: #abf59d (success chips, active states)
-- Surface container: #e5eeff (cards), #dce9ff (hover), #d3e4fe (variants)
-- Text on surface: #0b1c30 ; secondary: #5e5e5e ; outline: #717a6c
-- Error: #ba1a1a on #ffdad6
-- Success: #286c25 on #abf59d
+Background body: #fafaf9 (zinc-50).
+Cards: #ffffff (white pur), border #e7e5e4, radius 12px.
+Hover/zebra rows: #f5f5f4 (zinc-100).
+Border subtle: #e7e5e4, strong: #d6d3d1.
+
+Text: #1c1917 (zinc-900), muted #57534e (zinc-600), subtle #a8a29e (zinc-400).
+
+Vert BRH (brand — sparing) :
+- brand-deep #003404 (sidebar, CTA primary, headlines critiques)
+- brand #00600a (links, secondary primary)
+- brand-light #86efac (hover, illumination)
+- brand-soft #ecfdf5 (background actif subtil)
+- success principal #16a34a / bg-soft #dcfce7
+
+Sémantique : warning #d97706 / soft #fef3c7, danger #dc2626 / soft #fee2e2.
+
+INTERDIT : bleu (#2563eb, #1d4ed8, #3b82f6 etc), violet, rose-saumon. Seul bleu toléré = info sémantique rare.
 
 Tier badges :
-- Gold : bg #fff8e1 border #ffc107 text #b8860b
-- Silver : bg #f5f5f5 border #9e9e9e
-- Bronze : bg #fff3e0 border #cd7f32 text #8d4a00
+- Gold : bg #fef3c7 border #d97706 text #92400e (amber warm)
+- Silver : bg #e7e5e4 border #57534e text #1c1917 (zinc neutre)
+- Bronze : bg #fed7aa border #c2410c text #7c2d12
 
-Intérêt commercial chips (cliquables) :
-- chaud rouge, tiède orange, froid bleu, à recontacter violet, refus gris
+Intérêt commercial chips :
+- chaud rouge #fee2e2/#dc2626
+- tiède amber #fef3c7/#d97706
+- froid zinc neutre #f5f5f4/#57534e (PAS bleu)
+- à recontacter vert pâle BRH #ecfdf5/#16a34a
+- refus zinc foncé #e7e5e4/#44403c
 
-Layout: max-w-6xl container, cards rounded-xl with subtle border #e5eeff, padding p-5 to p-6, gap-4 to gap-6.
+DPE labels officiels : A vert, B vert clair, C jaune-vert, D jaune, E orange clair, F orange #f47b00, G rouge #d80000.
 
-Style: Material Design 3 (Material You) applied to B2B premium. Luxe sobre, neutres dominants, vert BRH brand sparing. Référence: Stripe Dashboard + Linear Inbox + Pipedrive.
+Layout: max-w-7xl container, cards rounded-xl, padding p-5 to p-6, gap-4 to gap-6.
 
-Target user: commerciaux BRH (rénovation énergétique habitat Bretagne).
-Pas de dark mode. Pas de jargon corporate.
+Style: Material Design 3 (Material You) en VERT BRH. Référence: Stripe Dashboard + Linear Inbox + Pipedrive, mais SANS bleu. Densité commerciale Pipedrive-like pour CRM.
+
+Target: commerciaux BRH terrain (rénovation énergétique habitat Bretagne).
 ```
 
 ---
 
-## 7. Iconographie Material Symbols (références utiles BRH)
-
-```
-home, location_on, badge, person, business, group,
-phone, mail, sms,
-trending_up, trending_down, monetization_on, savings, request_quote,
-calendar_month, event, schedule,
-construction, build, engineering, energy_savings_leaf,
-favorite, star, bookmark, label_important,
-edit, save, history, search, filter_list,
-warning, error, check_circle, info,
-chevron_right, expand_more, arrow_forward,
-local_fire_department (chaud), ac_unit (froid)
-```
-
----
-
-## 8. Référence projets Stitch existants
-
-- **Project ID** : `6037063388122355367`
-- **Designs validés** (HTML+PNG dans `.stitch/designs/`) :
-  - `dashboard.html` — Inbox du jour Linear-style
-  - `leaderboard.html` — Classement Bretagne MLM
-  - `arbre-mlm.html` — Visualisation parrainage 5 niveaux
-
-Ces 3 designs sont la **source de vérité** de la charte. Toute nouvelle génération doit s'y aligner.
-
----
-
-**Dernière maj** : 2026-05-19 — Claude Opus 4.7 (1M ctx), extrait des designs Stitch 2026-05-08.
+**Dernière maj** : 2026-05-19 — Claude Opus 4.7, **charte corrigée depuis index.css officiel** (les v1 contenaient du bleu hors-charte, invalidé par Philippe).

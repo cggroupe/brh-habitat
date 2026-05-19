@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BRH Habitat - Mes leads</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@600;700&amp;family=Manrope:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-tint": "#386933",
+                      "outline": "#72796d",
+                      "surface-bright": "#f8faf2",
+                      "on-primary-fixed-variant": "#20511d",
+                      "surface-muted": "#e7e5e4",
+                      "error-container": "#ffdad6",
+                      "outline-variant": "#c1c9bb",
+                      "text-main": "#1c1917",
+                      "background": "#f8faf2",
+                      "on-tertiary-container": "#ca7a9e",
+                      "surface-variant": "#e1e3dc",
+                      "primary-fixed": "#b9f1ac",
+                      "on-surface-variant": "#42493e",
+                      "on-tertiary-fixed-variant": "#723050",
+                      "brand-main": "#00600a",
+                      "tertiary-fixed-dim": "#ffafd1",
+                      "primary-fixed-dim": "#9ed592",
+                      "surface-container-high": "#e7e9e1",
+                      "warning": "#d97706",
+                      "canvas": "#fafaf9",
+                      "border-strong": "#d6d3d1",
+                      "on-secondary-fixed-variant": "#005320",
+                      "on-error": "#ffffff",
+                      "brand-soft": "#ecfdf5",
+                      "text-subtle": "#a8a29e",
+                      "tertiary-fixed": "#ffd8e6",
+                      "dpe-f": "#f47b00",
+                      "surface-container": "#edefe7",
+                      "inverse-on-surface": "#f0f2ea",
+                      "on-secondary-fixed": "#002109",
+                      "on-secondary-container": "#007230",
+                      "on-primary-fixed": "#002202",
+                      "text-muted": "#57534e",
+                      "primary-container": "#003404",
+                      "on-background": "#191c18",
+                      "brand-light": "#86efac",
+                      "secondary-fixed": "#7ffc97",
+                      "tier-bronze-bg": "#fed7aa",
+                      "secondary-container": "#7cf994",
+                      "on-primary-container": "#6ca063",
+                      "surface-low": "#f5f5f4",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-container": "#501434",
+                      "primary": "#001d01",
+                      "inverse-surface": "#2e312c",
+                      "tertiary": "#35001f",
+                      "secondary-fixed-dim": "#62df7d",
+                      "on-primary": "#ffffff",
+                      "on-surface": "#191c18",
+                      "primary-dark": "#062a0d",
+                      "tier-gold-bg": "#fef3c7",
+                      "surface-dim": "#d9dbd3",
+                      "surface-container-low": "#f3f4ec",
+                      "danger": "#dc2626",
+                      "surface": "#ffffff",
+                      "tier-bronze-text": "#7c2d12",
+                      "on-error-container": "#93000a",
+                      "info": "#2563eb",
+                      "error": "#ba1a1a",
+                      "surface-container-highest": "#e1e3dc",
+                      "on-tertiary-fixed": "#3b0323",
+                      "inverse-primary": "#9ed592",
+                      "on-secondary": "#ffffff",
+                      "tier-gold-text": "#92400e",
+                      "surface-container-lowest": "#ffffff",
+                      "secondary": "#006e2d",
+                      "dpe-g": "#d80000"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "card-padding": "1.5rem",
+                      "gutter": "1.5rem",
+                      "margin": "1.25rem",
+                      "container-max": "1280px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "Manrope"
+                      ],
+                      "body-lg": [
+                              "Manrope"
+                      ],
+                      "chip-label": [
+                              "Manrope"
+                      ],
+                      "label-md": [
+                              "Manrope"
+                      ],
+                      "headline-lg": [
+                              "Epilogue"
+                      ],
+                      "headline-md": [
+                              "Epilogue"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "chip-label": [
+                              "11px",
+                              {
+                                      "lineHeight": "14px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+          font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for tight data views */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e;
+        }
+    </style>
+</head>
+<body class="bg-canvas text-text-main font-body-md min-h-screen flex antialiased">
+<!-- SideNavBar (Shared Component Shell) -->
+<nav class="h-full w-64 fixed left-0 top-0 border-r border-outline-variant/20 dark:border-outline-variant/10 flex flex-col h-screen p-4 overflow-y-auto bg-primary-container dark:bg-primary-container z-50">
+<!-- Header -->
+<div class="mb-8 px-2 mt-2">
+<h1 class="font-headline-md text-headline-md font-bold text-primary-fixed dark:text-primary-fixed-dim">BRH Habitat</h1>
+<p class="font-body-md text-body-md text-primary-fixed-dim/70 mt-1">Portail Architecte</p>
+</div>
+<!-- CTA -->
+<button class="mb-8 w-full bg-brand-light text-primary-container hover:bg-brand-soft transition-colors rounded-lg py-3 px-4 font-label-md text-label-md flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">add</span>
+            Nouveau Projet
+        </button>
+<!-- Navigation Tabs -->
+<ul class="flex-1 space-y-2">
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-primary-fixed-variant hover:text-primary-fixed transition-colors hover:bg-on-primary-fixed-variant/10 font-label-lg text-label-lg group" href="#">
+<span class="material-symbols-outlined text-[20px] text-brand-soft group-hover:text-brand-light transition-colors" data-icon="dashboard">dashboard</span>
+                    Tableau de bord
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-secondary text-on-secondary font-bold font-label-lg text-label-lg group" href="#">
+<span class="material-symbols-outlined text-[20px] text-white" data-icon="leaderboard" data-weight="fill" style="font-variation-settings: 'FILL' 1;">leaderboard</span>
+                    Mes leads
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-primary-fixed-variant hover:text-primary-fixed transition-colors hover:bg-on-primary-fixed-variant/10 font-label-lg text-label-lg group" href="#">
+<span class="material-symbols-outlined text-[20px] text-brand-soft group-hover:text-brand-light transition-colors" data-icon="architecture">architecture</span>
+                    Projets
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-primary-fixed-variant hover:text-primary-fixed transition-colors hover:bg-on-primary-fixed-variant/10 font-label-lg text-label-lg group" href="#">
+<span class="material-symbols-outlined text-[20px] text-brand-soft group-hover:text-brand-light transition-colors" data-icon="handshake">handshake</span>
+                    Partenaires
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-primary-fixed-variant hover:text-primary-fixed transition-colors hover:bg-on-primary-fixed-variant/10 font-label-lg text-label-lg group" href="#">
+<span class="material-symbols-outlined text-[20px] text-brand-soft group-hover:text-brand-light transition-colors" data-icon="analytics">analytics</span>
+                    Analytiques
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-primary-fixed-variant hover:text-primary-fixed transition-colors hover:bg-on-primary-fixed-variant/10 font-label-lg text-label-lg group" href="#">
+<span class="material-symbols-outlined text-[20px] text-brand-soft group-hover:text-brand-light transition-colors" data-icon="settings">settings</span>
+                    Paramètres
+                </a>
+</li>
+</ul>
+<!-- Footer Tabs -->
+<div class="mt-auto border-t border-outline-variant/10 pt-4 space-y-2">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-primary-fixed-variant hover:text-primary-fixed transition-colors hover:bg-on-primary-fixed-variant/10 font-label-lg text-label-lg group" href="#">
+<span class="material-symbols-outlined text-[20px] text-brand-soft group-hover:text-brand-light transition-colors" data-icon="help">help</span>
+                Aide
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-primary-fixed-variant hover:text-primary-fixed transition-colors hover:bg-on-primary-fixed-variant/10 font-label-lg text-label-lg group" href="#">
+<span class="material-symbols-outlined text-[20px] text-brand-soft group-hover:text-brand-light transition-colors" data-icon="logout">logout</span>
+                Déconnexion
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 flex flex-col min-w-0">
+<!-- TopAppBar (Shared Component Shell) -->
+<header class="sticky top-0 w-full z-40 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline-variant/30 flex justify-between items-center h-[72px] px-6">
+<!-- Contextual Title / Breadcrumbs (Replacing Navigation Links for this deep view) -->
+<div class="flex items-center gap-2 text-text-muted">
+<span class="font-headline-sm text-[20px] font-bold text-on-surface dark:text-on-surface-variant">BRH Habitat</span>
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+<span class="font-label-md text-label-md text-primary font-bold">Vue d'ensemble</span>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-subtle text-[20px]">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-low border border-surface-muted rounded-lg text-body-md font-body-md focus:outline-none focus:border-brand-main focus:ring-1 focus:ring-brand-main w-64" placeholder="Rechercher..." type="text"/>
+</div>
+<div class="flex items-center gap-2 border-l border-surface-muted pl-4">
+<button class="p-2 text-text-muted hover:text-text-main hover:bg-surface-container-high rounded-full transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-text-muted hover:text-text-main hover:bg-surface-container-high rounded-full transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+<button class="ml-2 bg-primary-container text-white px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-primary-dark transition-colors border border-primary-container shadow-sm flex items-center gap-2">
+                        Exporter CSV
+                    </button>
+</div>
+</div>
+</header>
+<!-- View Content -->
+<div class="flex-1 overflow-hidden flex flex-col">
+<!-- Sub Header & Filters -->
+<div class="bg-surface border-b border-surface-muted px-6 py-4 shrink-0 shadow-[0_1px_2px_rgba(28,25,23,0.04)] z-30">
+<div class="flex justify-between items-end mb-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-text-main m-0 leading-none mb-2">Mes leads</h2>
+<p class="font-body-md text-body-md text-text-muted m-0">16 607 contacts BRH · 5 524 enrichis · 133 gold</p>
+</div>
+</div>
+<!-- Filters -->
+<div class="flex items-center gap-3 flex-wrap">
+<button class="flex items-center gap-2 px-3 py-1.5 bg-surface border border-surface-muted rounded-lg text-body-md font-body-md text-text-main hover:bg-surface-low transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        Filtres
+                    </button>
+<div class="h-6 w-px bg-surface-muted mx-1"></div>
+<div class="flex gap-2">
+<button class="px-3 py-1 bg-surface-low border border-surface-muted rounded-full font-chip-label text-chip-label text-text-muted hover:bg-surface-muted transition-colors flex items-center gap-1">
+                            Avec téléphone
+                        </button>
+<button class="px-3 py-1 bg-surface-low border border-surface-muted rounded-full font-chip-label text-chip-label text-text-muted hover:bg-surface-muted transition-colors flex items-center gap-1">
+                            Avec email
+                        </button>
+<button class="px-3 py-1 bg-surface-low border border-surface-muted rounded-full font-chip-label text-chip-label text-text-muted hover:bg-surface-muted transition-colors flex items-center gap-1">
+                            DPE F/G
+                        </button>
+</div>
+<div class="h-6 w-px bg-surface-muted mx-1"></div>
+<div class="flex gap-2">
+<button class="px-3 py-1 bg-tier-gold-bg border border-yellow-300 rounded-full font-chip-label text-chip-label text-tier-gold-text hover:brightness-95 transition-colors">
+                            Gold
+                        </button>
+<button class="px-3 py-1 bg-surface border border-zinc-300 rounded-full font-chip-label text-chip-label text-text-muted hover:bg-surface-low transition-colors">
+                            Silver
+                        </button>
+<button class="px-3 py-1 bg-tier-bronze-bg border border-orange-300 rounded-full font-chip-label text-chip-label text-tier-bronze-text hover:brightness-95 transition-colors">
+                            Bronze
+                        </button>
+</div>
+</div>
+</div>
+<!-- Content Split -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Left Column: Leads List -->
+<div class="w-2/3 h-full overflow-y-auto bg-canvas p-6">
+<div class="bg-surface rounded-xl border border-surface-muted shadow-[0_1px_2px_rgba(28,25,23,0.04)] overflow-hidden">
+<!-- Table Header -->
+<div class="grid grid-cols-[60px_2fr_1.5fr_80px_100px_120px] gap-4 px-4 py-3 bg-surface-low border-b border-surface-muted font-label-md text-label-md text-text-muted uppercase tracking-wider sticky top-0 z-10">
+<div>Tier</div>
+<div>Contact</div>
+<div>Ville</div>
+<div>DPE</div>
+<div>Surface</div>
+<div>Intérêt</div>
+</div>
+<!-- Rows -->
+<div class="divide-y divide-surface-muted">
+<!-- Row 1: Selected -->
+<div class="grid grid-cols-[60px_2fr_1.5fr_80px_100px_120px] gap-4 px-4 py-3 items-center bg-brand-soft cursor-pointer hover:bg-brand-soft/80 transition-colors relative group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-brand-main"></div>
+<div class="flex justify-center">
+<div class="w-2 h-2 rounded-full bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.6)]"></div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-text-muted font-label-md text-label-md">JM</div>
+<div class="font-body-md text-body-md font-medium text-text-main truncate">Jean-Pierre Martin</div>
+</div>
+<div class="font-body-md text-body-md text-text-muted truncate">Rouen</div>
+<div>
+<span class="inline-block px-2 py-0.5 bg-dpe-g text-white font-chip-label text-[10px] font-bold rounded">G</span>
+</div>
+<div class="font-body-md text-body-md text-text-main">162 m²</div>
+<div>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-chip-label text-chip-label">
+<span class="w-1.5 h-1.5 rounded-full bg-error mr-1.5"></span>
+                                        Chaud
+                                    </span>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="grid grid-cols-[60px_2fr_1.5fr_80px_100px_120px] gap-4 px-4 py-3 items-center hover:bg-surface-low cursor-pointer transition-colors group">
+<div class="flex justify-center">
+<div class="w-2 h-2 rounded-full bg-zinc-300"></div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center text-text-muted font-label-md text-label-md">DB</div>
+<div class="font-body-md text-body-md font-medium text-text-main truncate">Dubois Bernard</div>
+</div>
+<div class="font-body-md text-body-md text-text-muted truncate">Le Havre</div>
+<div>
+<span class="inline-block px-2 py-0.5 bg-dpe-f text-white font-chip-label text-[10px] font-bold rounded">F</span>
+</div>
+<div class="font-body-md text-body-md text-text-main">95 m²</div>
+<div>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-muted text-text-muted font-chip-label text-chip-label">
+<span class="w-1.5 h-1.5 rounded-full bg-text-subtle mr-1.5"></span>
+                                        À contacter
+                                    </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Detail Drawer -->
+<div class="w-1/3 h-full border-l border-surface-muted bg-surface flex flex-col shadow-[-4px_0_12px_rgba(0,0,0,0.02)]">
+<!-- Drawer Header -->
+<div class="px-6 py-5 border-b border-surface-muted flex justify-between items-start bg-canvas sticky top-0 z-20">
+<div>
+<div class="flex items-center gap-2 text-text-subtle mb-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="font-label-md text-label-md uppercase tracking-wider">Rouen · 76000</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-text-main m-0">45 rue des Brebis</h3>
+</div>
+<div class="flex gap-1">
+<button class="p-1.5 text-text-subtle hover:text-yellow-500 rounded-md transition-colors">
+<span class="material-symbols-outlined">star</span>
+</button>
+<button class="p-1.5 text-text-subtle hover:text-text-main hover:bg-surface-low rounded-md transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</div>
+<!-- Drawer Content Scrollable -->
+<div class="flex-1 overflow-y-auto p-6 space-y-8">
+<!-- Identity & DPE -->
+<div class="flex gap-6 items-center">
+<div class="w-20 h-24 bg-dpe-g rounded-lg flex flex-col items-center justify-center text-white shadow-sm shrink-0">
+<span class="font-headline-lg text-[40px] leading-none font-bold">G</span>
+<span class="font-chip-label text-[10px] mt-1 opacity-80 uppercase tracking-wide">DPE</span>
+</div>
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="px-2 py-0.5 bg-surface-low border border-surface-muted rounded font-label-md text-[11px] text-text-muted">Maison Individuelle</span>
+<span class="px-2 py-0.5 bg-surface-low border border-surface-muted rounded font-label-md text-[11px] text-text-muted">1962</span>
+</div>
+<div class="font-body-lg text-[18px] text-text-main">
+<span class="font-semibold">162 m²</span> habitables
+                                </div>
+</div>
+</div>
+<!-- Divider -->
+<div class="h-px w-full bg-surface-muted"></div>
+<!-- Habitants & Propriétaire -->
+<div class="grid grid-cols-2 gap-4">
+<div>
+<h4 class="font-label-md text-label-md text-text-muted mb-2 uppercase tracking-wider">Habitants</h4>
+<div class="bg-canvas border border-surface-muted rounded-lg p-3">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-muted flex items-center justify-center text-text-muted text-[10px] font-bold">JM</div>
+<div class="font-body-md text-[13px] font-medium text-text-main truncate">Jean-Pierre Martin</div>
+</div>
+</div>
+</div>
+<div>
+<h4 class="font-label-md text-label-md text-text-muted mb-2 uppercase tracking-wider">Propriétaire</h4>
+<div class="bg-canvas border border-surface-muted rounded-lg p-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-text-subtle">domain</span>
+<div class="font-body-md text-[13px] font-medium text-text-main truncate">SCI Les Brebis</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Performance Breakdown -->
+<div>
+<h4 class="font-label-md text-label-md text-text-muted mb-3 uppercase tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">thermostat</span>
+                                Performance Énergétique
+                            </h4>
+<div class="grid grid-cols-2 gap-2">
+<div class="flex items-center justify-between p-2 bg-canvas border border-surface-muted rounded-md">
+<span class="font-body-md text-[13px] text-text-muted">Murs</span>
+<span class="w-3 h-3 rounded-sm bg-dpe-g"></span>
+</div>
+<div class="flex items-center justify-between p-2 bg-canvas border border-surface-muted rounded-md">
+<span class="font-body-md text-[13px] text-text-muted">Toiture</span>
+<span class="w-3 h-3 rounded-sm bg-dpe-f"></span>
+</div>
+<div class="flex items-center justify-between p-2 bg-canvas border border-surface-muted rounded-md">
+<span class="font-body-md text-[13px] text-text-muted">Fenêtres</span>
+<span class="w-3 h-3 rounded-sm bg-green-500"></span>
+</div>
+<div class="flex items-center justify-between p-2 bg-canvas border border-surface-muted rounded-md">
+<span class="font-body-md text-[13px] text-text-muted">Chauffage</span>
+<span class="w-3 h-3 rounded-sm bg-dpe-g"></span>
+</div>
+</div>
+</div>
+<!-- Scoring Gauges (Bento style mini) -->
+<div>
+<h4 class="font-label-md text-label-md text-text-muted mb-3 uppercase tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">radar</span>
+                                Scoring Probabilité
+                            </h4>
+<div class="flex justify-between px-2">
+<div class="flex flex-col items-center gap-2">
+<div class="relative w-12 h-12 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e7e5e4" stroke-width="3"></path>
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f47b00" stroke-dasharray="85, 100" stroke-width="3"></path>
+</svg>
+<span class="absolute font-label-md text-[10px] font-bold text-text-main">85%</span>
+</div>
+<span class="font-chip-label text-[10px] text-text-muted uppercase">Travaux</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="relative w-12 h-12 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e7e5e4" stroke-width="3"></path>
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#f47b00" stroke-dasharray="62, 100" stroke-width="3"></path>
+</svg>
+<span class="absolute font-label-md text-[10px] font-bold text-text-main">62%</span>
+</div>
+<span class="font-chip-label text-[10px] text-text-muted uppercase">Vente</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="relative w-12 h-12 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e7e5e4" stroke-width="3"></path>
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#22c55e" stroke-dasharray="91, 100" stroke-width="3"></path>
+</svg>
+<span class="absolute font-label-md text-[10px] font-bold text-text-main">91%</span>
+</div>
+<span class="font-chip-label text-[10px] text-text-muted uppercase">Succession</span>
+</div>
+</div>
+</div>
+<!-- Divider -->
+<div class="h-px w-full bg-surface-muted"></div>
+<!-- Suivi Commercial (Editable area) -->
+<div class="bg-surface-low rounded-xl p-4 border border-surface-muted">
+<h4 class="font-label-md text-label-md text-text-main mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">edit_note</span>
+                                Suivi Commercial
+                            </h4>
+<div class="space-y-4">
+<!-- Interest Toggle -->
+<div>
+<label class="block font-label-md text-[11px] text-text-muted mb-2">Niveau d'intérêt</label>
+<div class="flex gap-2">
+<button class="flex-1 py-1.5 px-2 bg-error-container text-on-error-container border border-error-container rounded-md font-chip-label text-[11px] text-center shadow-sm">Chaud</button>
+<button class="flex-1 py-1.5 px-2 bg-surface border border-surface-muted text-text-muted rounded-md font-chip-label text-[11px] text-center hover:bg-surface-muted transition-colors">Tiède</button>
+<button class="flex-1 py-1.5 px-2 bg-surface border border-surface-muted text-text-muted rounded-md font-chip-label text-[11px] text-center hover:bg-surface-muted transition-colors">Froid</button>
+</div>
+</div>
+<!-- Select -->
+<div>
+<label class="block font-label-md text-[11px] text-text-muted mb-2">Projet prioritaire</label>
+<select class="w-full bg-surface border border-surface-muted rounded-md py-2 px-3 text-body-md font-body-md focus:ring-1 focus:ring-brand-main focus:border-brand-main">
+<option>Isolation thermique par l'extérieur (ITE)</option>
+<option>Pompe à chaleur</option>
+<option>Menuiseries</option>
+</select>
+</div>
+<!-- Notes -->
+<div>
+<label class="block font-label-md text-[11px] text-text-muted mb-2">Notes</label>
+<textarea class="w-full bg-surface border border-surface-muted rounded-md py-2 px-3 text-body-md font-body-md focus:ring-1 focus:ring-brand-main focus:border-brand-main min-h-[80px] resize-none" placeholder="Ajouter une note..."></textarea>
+</div>
+<button class="w-full bg-primary-container text-white py-2.5 rounded-lg font-label-md text-label-md hover:bg-primary-dark transition-colors mt-2 flex items-center justify-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">save</span>
+                                    Enregistrer
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
