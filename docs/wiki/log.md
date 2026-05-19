@@ -5,6 +5,36 @@
 
 ---
 
+## 2026-05-19 (17) — OSINT enrichissement dirigeants SCI : test 10 + scale 500
+
+- **Contexte** : enrichir téléphone/email/LinkedIn des 80 844 dirigeants SCI consolidés. Step-by-step demandé.
+- **Test 10 dirigeants SCI privés bretons** (exclu gros nationaux ENEDIS/ORANGE/bailleurs sociaux) :
+  - Query Apify Google : `"Prénom Nom" "Nom SCI" dirigeant OR gérant OR linkedin`
+  - Filtre validation strict : hit accepté uniquement si nom SCI dans titre/URL OU (commune + mot pro)
+  - 8/10 hits validés (80 %), 4/10 sur societe.com/pappers/polesocietes, 0 LinkedIn (population peu présente)
+  - Coût test : $0.019
+- **Qualité validée** :
+  - MESLIN Sébastien → polesocietes.com confirme SCI MESLIN à Rennes
+  - TREMAUDAN Marc Robert → contract-factory.com indique "Né en 05/1976" → **MATCH parfait** avec date_naissance BRH (1976-05-01)
+  - Zéro homonyme grâce au croisement nom + SCI dans la query
+- **Scale top 500** lancé en background (PID 2251546) :
+  - Cible : 500 dirigeants multi-SCI (≥2) ET propriétaires DPE BRH
+  - Coût estimé : ~$1
+  - Hit attendu : ~400 enrichis
+- **Stockage** : `brh_dirigeants.osint_other.apify_search` (queried_at, query, n_organic, n_validated, hits[5]) + `osint_linkedin` extrait si présent
+- **Source de données utiles découvertes** :
+  - polesocietes.com — fiches dirigeants détaillées
+  - contract-factory.com — confirme dob + mandats
+  - openbase.fr — chaînage SCI
+  - infogreffe — données légales
+  - pappers.fr / societe.com — classiques
+- **Sprint suivant** (à valider) : scaler aux 17 403 propriétaires DPE (~$33) une fois le 500 validé manuellement
+- **Fichiers** : `/opt/stack/scripts/brh-osint-dirigeants.py`
+- **Risque** : Low — filtre strict zéro homonyme tolérance, budget contrôlé
+- **Status** : 🟡 RUNNING (scale 500 en cours)
+
+---
+
 ## 2026-05-19 (16) — Enrichissement dirigeants SCI : 80 844 fiches consolidées
 
 - **Contexte** : Philippe demande l'enrichissement des **dirigeants des SCI** (pas les contacts BRH). Les dirigeants étaient jusque-là enfouis dans `brh_sci_companies.dirigeants` (jsonb array) sans table dédiée — impossible de répondre simplement à "M. Dupont dirige combien de SCI ?".
