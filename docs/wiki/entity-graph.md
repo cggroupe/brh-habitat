@@ -78,8 +78,13 @@ Une seule RPC retourne pour un contact BRH :
 
 SECURITY DEFINER + check role (admin/pro/employe).
 
-### `brh_entity_neighbors(p_type, p_id)` — **futur**
-Symétrique pour SCI et adresse_dpe (à créer au Sprint C).
+### `brh_entity_neighbors(p_type text, p_id text)`
+RPC générique réutilisable sur n'importe quelle entité du graphe. Retourne :
+- `direction` (`outgoing` | `incoming`)
+- `other_type`, `other_id`, `link_type`, `confidence`, `evidence`
+- `display` (jsonb) : libellé court prêt pour l'UI (denomination/full_name/adresse/date_mutation…)
+
+Utilisée par `EntityLinksPanel` sur `FicheAdresseView` et `FicheEntrepriseView`.
 
 ---
 
@@ -117,7 +122,7 @@ total_links = 30 319
 |---|---|---|
 | A | Table `brh_entity_links` + 3 règles + recompute | ✅ DONE |
 | B | RPC `brh_personne_360` + UI `PersonneGraphPanel` | ✅ DONE |
-| C | RPC `brh_entity_neighbors` (générique) + standardisation FicheAdresse/SCI/Personne avec panel commun | 🟡 Pending |
+| C | RPC `brh_entity_neighbors` (générique) + composant `EntityLinksPanel` intégré dans `FicheAdresseView` + `FicheEntrepriseView` (Personne MVP reste séparée, ré-intégration Sprint F) | ✅ DONE |
 | D | Wiki `entity-graph.md` (cette page) | ✅ DONE |
 | E | Règle 4 Sitadel après import | 🟡 Pending (import en cours) |
 | F | Matching par date de naissance (réduire faux positifs SCI) | Pending |

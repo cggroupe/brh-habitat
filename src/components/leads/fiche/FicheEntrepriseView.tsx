@@ -7,6 +7,7 @@ import FicheBreadcrumb from './FicheBreadcrumb'
 import FicheSection from './FicheSection'
 import FicheEntityLink from './FicheEntityLink'
 import FavoriButton from './FavoriButton'
+import { EntityLinksPanel } from '../EntityLinksPanel'
 import { useFicheEntreprise } from '@/hooks/queries/useFiche'
 import { canSee, type LeadProfile } from '@/lib/rgpd/lead-visibility'
 
@@ -191,6 +192,12 @@ export default function FicheEntrepriseView({ siren, profile }: Props) {
               </div>
             </FicheSection>
           )}
+
+          <EntityLinksPanel
+            type="sci"
+            id={siren}
+            profileBase={`/${profile}`}
+          />
         </div>
       </div>
     </div>

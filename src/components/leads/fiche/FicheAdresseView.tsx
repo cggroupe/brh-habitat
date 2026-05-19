@@ -6,6 +6,7 @@
 import { Home, FileText, Building2, Skull, Wallet, Phone, Users, Flame, TrendingUp, Hammer } from 'lucide-react'
 import FicheBreadcrumb from './FicheBreadcrumb'
 import FicheSection from './FicheSection'
+import { EntityLinksPanel } from '../EntityLinksPanel'
 import FicheEntityLink from './FicheEntityLink'
 import FavoriButton from './FavoriButton'
 import { useFicheAdresse } from '@/hooks/queries/useFiche'
@@ -357,6 +358,12 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
               </div>
             </FicheSection>
           )}
+
+          <EntityLinksPanel
+            type="adresse_dpe"
+            id={String(dpeId)}
+            profileBase={`/${profile}`}
+          />
         </div>
       </div>
     </div>

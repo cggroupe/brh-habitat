@@ -5,6 +5,37 @@
 
 ---
 
+## 2026-05-19 (5) — Sprint C : RPC entity_neighbors générique + EntityLinksPanel sur fiches
+
+- **Contexte** : suite Sprint A+B (graphe + fiche personne 360°). Standardiser pour que **toutes** les fiches (Adresse, SCI) profitent du graphe avec un composant commun.
+- **RPC `brh_entity_neighbors(p_type, p_id)`** — migration `20260519160000` :
+  - SECURITY DEFINER + check rôle BRH interne
+  - Retourne `direction` (outgoing/incoming), `other_type`, `other_id`, `link_type`, `confidence`, `evidence`, `display` (jsonb prêt UI : denomination/full_name/adresse/date_mutation/prix/etiquette_dpe…)
+  - Polymorphique : marche pour `personne_brh`, `sci`, `adresse_dpe`, `mutation_dvf`
+- **API + hook + composant** :
+  - `src/api/brh-entity-neighbors.ts` (types + 1 méthode)
+  - `src/hooks/queries/useEntityNeighbors.ts` (lazy)
+  - `src/components/leads/EntityLinksPanel.tsx` : panel collapsible groupé par `(link_type, other_type)`, badge `↩ entrant` pour incoming, lien cliquable vers la fiche cible (routes `/<profile>/leads/{adresse|entreprise|personne}/<id>`), confiance affichée par lien
+- **Intégration fiches** :
+  - `FicheAdresseView.tsx` : `<EntityLinksPanel type="adresse_dpe" id={dpeId} />` ajouté en fin de page
+  - `FicheEntrepriseView.tsx` : `<EntityLinksPanel type="sci" id={siren} />` ajouté en fin de page
+  - `FichePersonneView.tsx` : laissée intacte (signature `nameOrId` MVP, refacto Sprint F avec UUID `brh_personnes_historique.id`)
+- **Wiki** : `entity-graph.md` mis à jour (section RPC + roadmap Sprint C ✅)
+- **Fichiers** :
+  - `supabase/migrations/20260519160000_rpc_brh_entity_neighbors.sql`
+  - `src/api/brh-entity-neighbors.ts`
+  - `src/hooks/queries/useEntityNeighbors.ts`
+  - `src/components/leads/EntityLinksPanel.tsx`
+  - `src/components/leads/fiche/FicheAdresseView.tsx` (import + panel)
+  - `src/components/leads/fiche/FicheEntrepriseView.tsx` (import + panel)
+  - `docs/wiki/entity-graph.md`
+  - `docs/wiki/log.md`
+- **Tests** : `npm run build` OK
+- **Risque** : Low — additions only sur les fiches existantes, panel collapsible (UX neutre quand fermé)
+- **Status** : ✅ DONE Sprint C
+
+---
+
 ## 2026-05-19 (4) — Graphe d'entités brh_entity_links + fiche personne 360°
 
 - **Contexte** : Philippe demande de transformer la data dispersée en système relié (« charbon → diamant »). Audit révèle 3 espaces déconnectés (personnes BRH ↔ SCI ↔ adresses DPE), liens calculés à la volée par heuristiques fragiles, fiches en MVP avec `patrimoine_direct=[]` et `brh_historique=null`.
