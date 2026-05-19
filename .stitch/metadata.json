@@ -3,5 +3,43 @@
   "projectId": "6037063388122355367",
   "title": "BRH Habitat — Portails Partenaires Premium",
   "deviceType": "DESKTOP",
-  "screens": {}
+  "designTheme": {
+    "colorMode": "LIGHT",
+    "font": "EPILOGUE",
+    "roundness": "ROUND_EIGHT",
+    "customColor": "#003404",
+    "headlineFont": "EPILOGUE",
+    "bodyFont": "MANROPE",
+    "labelFont": "MANROPE"
+  },
+  "designSystem": {
+    "name": "assets/91ab5af0580645ef9c5e70373032e6be",
+    "displayName": "Premium B2B Habitat System"
+  },
+  "screens": {
+    "fiche-client-brh": {
+      "id": "bcb51b0877394fb882868761d6788d06",
+      "sourceScreen": "projects/6037063388122355367/screens/bcb51b0877394fb882868761d6788d06",
+      "width": 2560,
+      "height": 2150,
+      "title": "Fiche Client - Jean-Marc Lefebvre",
+      "generatedAt": "2026-05-19"
+    },
+    "fiche-adresse-dpe": {
+      "id": "3059fe1c4d154cfcab2441017d94719a",
+      "sourceScreen": "projects/6037063388122355367/screens/3059fe1c4d154cfcab2441017d94719a",
+      "width": 2560,
+      "height": 3812,
+      "title": "Fiche Adresse DPE - 45 rue des Brebis",
+      "generatedAt": "2026-05-19"
+    },
+    "liste-leads": {
+      "id": "e8b951d3c95e425fa5a93049033a977a",
+      "sourceScreen": "projects/6037063388122355367/screens/e8b951d3c95e425fa5a93049033a977a",
+      "width": 2560,
+      "height": 2048,
+      "title": "Mes Leads - CRM BRH Habitat",
+      "generatedAt": "2026-05-19"
+    }
+  }
 }

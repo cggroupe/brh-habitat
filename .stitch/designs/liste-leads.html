@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mes leads - BRH Habitat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#9ed592",
+                        "on-secondary-container": "#2f722b",
+                        "secondary-fixed-dim": "#90d883",
+                        "surface-variant": "#e1e3dc",
+                        "on-secondary-fixed": "#002202",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#edefe7",
+                        "secondary": "#286c25",
+                        "surface-bright": "#f8faf2",
+                        "on-secondary-fixed-variant": "#09530e",
+                        "on-surface": "#191c18",
+                        "background": "#f8faf2",
+                        "surface": "#f8faf2",
+                        "outline-variant": "#c1c9bb",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#f0f2ea",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-container": "#501434",
+                        "on-tertiary-fixed-variant": "#723050",
+                        "on-surface-variant": "#42493e",
+                        "on-tertiary-container": "#ca7a9e",
+                        "primary": "#001d01",
+                        "primary-container": "#003404",
+                        "primary-fixed-dim": "#9ed592",
+                        "inverse-surface": "#2e312c",
+                        "on-primary-fixed": "#002202",
+                        "surface-container-low": "#f3f4ec",
+                        "on-primary-fixed-variant": "#20511d",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#386933",
+                        "outline": "#72796d",
+                        "secondary-fixed": "#abf59d",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#e7e9e1",
+                        "on-tertiary-fixed": "#3b0323",
+                        "on-primary-container": "#6ca063",
+                        "on-background": "#191c18",
+                        "primary-fixed": "#b9f1ac",
+                        "surface-container-highest": "#e1e3dc",
+                        "tertiary-fixed-dim": "#ffafd1",
+                        "secondary-container": "#abf59d",
+                        "tertiary-fixed": "#ffd8e6",
+                        "tertiary": "#35001f",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#d9dbd3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "row-height-dense": "48px",
+                        "stack-gap": "8px",
+                        "cell-padding-x": "12px",
+                        "cell-padding-y": "8px",
+                        "row-height-standard": "56px",
+                        "grid-margin": "24px",
+                        "grid-gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Epilogue"],
+                        "headline-md": ["Epilogue"],
+                        "headline-lg": ["Epilogue"],
+                        "label-sm": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "label-md": ["Manrope"],
+                        "body-md": ["Manrope"],
+                        "label-lg": ["Manrope"],
+                        "headline-sm": ["Epilogue"],
+                        "body-sm": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "30px", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-sm": ["10px", { "lineHeight": "12px", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-lg": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Custom scrollbar for high-density look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d9dbd3;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #c1c9bb;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased overflow-hidden flex">
+<!-- SideNavBar -->
+<nav class="bg-primary-container dark:bg-primary-container text-on-primary-container dark:text-primary-fixed h-screen w-64 fixed left-0 top-0 border-r border-outline-variant/20 flex flex-col h-full p-4 z-50">
+<div class="mb-8 px-2 flex flex-col gap-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center overflow-hidden">
+<img alt="Architect Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJSq11LQe56xTCWHfXS18Z3jlw2mz7OjfKef9XzwSKJdreo5p6aWrPLVPLmFAEOjIpnOH73L0VFgfvxLxrvWEQscep8nPDxwVN6zRzo61lc9vhWaaSmZ-GYFB-FRzBqAT636fb5j-DFhda5Fxv010ChhNp7DqurqmOYzSVczJ0rPv6ZFcSDWcThWAufXOjPlXtZraHv9FENhiCdPnkwPFyobIGqVshYsLv9A4cHJOAvYVPqsd7tQQDAVJelt2n-spqjaU8ZzPsSvY"/>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm text-on-primary-fixed">BRH Habitat</h1>
+<p class="font-label-sm text-label-sm opacity-80">Architect Portal</p>
+</div>
+</div>
+</div>
+<button class="w-full bg-secondary text-on-secondary rounded-lg py-3 px-4 font-label-md text-label-md flex items-center justify-center gap-2 mb-6 hover:bg-secondary/90 transition-colors">
+<span class="material-symbols-outlined">add</span>
+            New Project
+        </button>
+<ul class="flex-1 space-y-1 font-label-lg text-label-lg">
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-on-secondary-fixed-variant/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 bg-secondary-container text-on-secondary-container rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">person_search</span>
+                    Leads
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-on-secondary-fixed-variant/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">architecture</span>
+                    Projects
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-on-secondary-fixed-variant/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">description</span>
+                    Documents
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-on-secondary-fixed-variant/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+                    Settings
+                </a>
+</li>
+</ul>
+<div class="mt-auto border-t border-outline-variant/20 pt-4">
+<ul class="space-y-1 font-label-lg text-label-lg">
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-on-secondary-fixed-variant/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+                        Help
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-on-secondary-fixed-variant/10 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">logout</span>
+                        Logout
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 ml-64 flex flex-col h-screen overflow-hidden">
+<!-- TopAppBar -->
+<header class="bg-surface-bright dark:bg-surface-dim text-on-surface dark:text-on-surface sticky top-0 w-full z-40 border-b border-outline-variant/30 flex justify-between items-center px-grid-margin py-cell-padding-y shrink-0">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md text-primary">BRH Habitat</span>
+<nav class="hidden md:flex items-center gap-6 ml-8">
+<a class="font-label-lg text-label-lg text-primary border-b-2 border-primary pb-1 transition-all duration-300" href="#">List View</a>
+<a class="font-label-lg text-label-lg text-on-surface-variant hover:text-primary transition-all duration-300" href="#">Map View</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<button class="p-2 rounded-full hover:bg-surface-container-highest transition-colors"><span class="material-symbols-outlined">notifications</span></button>
+<button class="p-2 rounded-full hover:bg-surface-container-highest transition-colors"><span class="material-symbols-outlined">apps</span></button>
+</div>
+<button class="bg-primary-container text-on-primary font-label-md text-label-md px-4 py-2 rounded-lg hover:bg-primary-container/90 transition-colors">
+                    Nouveau lead
+                </button>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant/50">
+<img alt="User Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3kF9i-0LfNZHm8fRs_2gVV3YAcWvmfL7iiO-mzmc367x53GAdezbVVc8VmlIDOKMEnhDL4CEgZ3S8FQ-vloeRBcSN_GFKSY5oGqADbPS1kB1cF-Sz-lwFGDXL-vUS49W2sAiAL55TTSnt8WgW0IBEXhYyrnHWGDTIW-x_kZr_5O-f_5aXEud0Rj972Vhpqj_QgU3emZ4mhA7Ky5aQjNes2igP8BzXZJieC10LYbIMEEg8CNfYB-jgnWa6rLH7X_uB6rxajx4pRGI"/>
+</div>
+</div>
+</header>
+<!-- Page Canvas -->
+<main class="flex-1 overflow-y-auto overflow-x-hidden p-grid-margin flex flex-col gap-grid-gutter relative">
+<div class="max-w-[1440px] w-full mx-auto flex flex-col gap-grid-gutter h-full">
+<!-- Page Header -->
+<div class="flex items-end justify-between shrink-0">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Mes leads</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">16 607 contacts BRH · 5 524 enrichis</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex bg-surface-container-high rounded-lg p-1">
+<button class="px-4 py-1.5 rounded-md bg-surface-container-lowest shadow-sm font-label-md text-label-md text-on-surface">Liste</button>
+<button class="px-4 py-1.5 rounded-md font-label-md text-label-md text-on-surface-variant hover:text-on-surface">Carte</button>
+</div>
+<button class="border border-outline px-4 py-2 rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-container transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                            Exporter CSV
+                        </button>
+</div>
+</div>
+<!-- Main Data Density Area -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl flex-1 flex flex-col overflow-hidden shadow-sm">
+<!-- Toolbar / Filters -->
+<div class="p-cell-padding-x border-b border-outline-variant/20 flex items-center gap-4 shrink-0 bg-surface-bright">
+<div class="relative flex-1 max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-bright border border-outline-variant/50 rounded-lg text-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="Nom, société, ville, téléphone…" type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<select class="py-2 pl-3 pr-8 bg-surface-bright border border-outline-variant/50 rounded-lg text-body-md text-on-surface focus:outline-none focus:border-primary">
+<option>Département: Tous</option>
+<option>22</option>
+<option>29</option>
+<option>35</option>
+<option>56</option>
+</select>
+</div>
+<div class="flex-1 flex justify-end">
+<button class="text-on-surface-variant hover:text-primary font-label-md flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[18px]">tune</span> Filtres avancés
+                            </button>
+</div>
+</div>
+<!-- Filter Chips Bar -->
+<div class="px-cell-padding-x py-2 border-b border-outline-variant/20 flex items-center gap-2 overflow-x-auto whitespace-nowrap shrink-0 bg-surface-bright/50">
+<span class="font-label-sm text-on-surface-variant uppercase tracking-wider mr-2">Rapides</span>
+<button class="px-3 py-1 rounded-full border border-outline-variant/50 bg-surface-container-lowest text-body-sm text-on-surface hover:bg-surface-container transition-colors">Avec téléphone</button>
+<button class="px-3 py-1 rounded-full border border-outline-variant/50 bg-surface-container-lowest text-body-sm text-on-surface hover:bg-surface-container transition-colors">Avec email</button>
+<div class="w-px h-4 bg-outline-variant/40 mx-1"></div>
+<span class="font-label-sm text-on-surface-variant uppercase tracking-wider mx-2">Tiers</span>
+<button class="px-3 py-1 rounded-full border border-outline-variant/50 bg-[#fff8e1] text-[#f57f17] text-body-sm font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">military_tech</span> Gold (133)</button>
+<button class="px-3 py-1 rounded-full border border-outline-variant/50 bg-[#eceff1] text-[#546e7a] text-body-sm font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">workspace_premium</span> Silver (1.5k)</button>
+</div>
+<!-- Data Table -->
+<div class="flex-1 overflow-auto bg-surface-bright">
+<table class="w-full text-left border-collapse">
+<thead class="sticky top-0 bg-surface-container-lowest border-b border-outline-variant/30 z-10 font-label-sm text-on-surface-variant uppercase tracking-wider">
+<tr>
+<th class="py-cell-padding-y px-cell-padding-x w-10"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/></th>
+<th class="py-cell-padding-y px-cell-padding-x font-semibold">Tier</th>
+<th class="py-cell-padding-y px-cell-padding-x font-semibold">Contact</th>
+<th class="py-cell-padding-y px-cell-padding-x font-semibold">Ville</th>
+<th class="py-cell-padding-y px-cell-padding-x font-semibold">DPE</th>
+<th class="py-cell-padding-y px-cell-padding-x font-semibold">Dernier RDV</th>
+<th class="py-cell-padding-y px-cell-padding-x font-semibold text-right">Action</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-on-surface divide-y divide-outline-variant/10">
+<!-- Row 1 -->
+<tr class="h-row-height-dense hover:bg-surface-container transition-colors group cursor-pointer">
+<td class="px-cell-padding-x"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="px-cell-padding-x"><span class="material-symbols-outlined text-[#f57f17] text-[18px]">military_tech</span></td>
+<td class="px-cell-padding-x">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center font-bold text-[10px]">JD</div>
+<div>
+<div class="font-medium text-on-surface">Jean Dupont</div>
+<div class="text-[11px] text-on-surface-variant">SCI Horizon</div>
+</div>
+</div>
+</td>
+<td class="px-cell-padding-x">Rennes (35)</td>
+<td class="px-cell-padding-x"><span class="inline-flex items-center justify-center w-6 h-[18px] rounded text-[10px] font-bold text-white bg-[#e53935]">F</span></td>
+<td class="px-cell-padding-x text-on-surface-variant">12 Oct 2023</td>
+<td class="px-cell-padding-x text-right">
+<button class="text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[18px]">more_horiz</span></button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="h-row-height-dense hover:bg-surface-container transition-colors group cursor-pointer">
+<td class="px-cell-padding-x"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/></td>
+<td class="px-cell-padding-x"><span class="material-symbols-outlined text-[#546e7a] text-[18px]">workspace_premium</span></td>
+<td class="px-cell-padding-x">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-[10px]">ML</div>
+<div>
+<div class="font-medium text-on-surface">Marie Laurent</div>
+<div class="text-[11px] text-on-surface-variant">Particulier</div>
+</div>
+</div>
+</td>
+<td class="px-cell-padding-x">Vannes (56)</td>
+<td class="px-cell-padding-x"><span class="inline-flex items-center justify-center w-6 h-[18px] rounded text-[10px] font-bold text-white bg-[#43a047]">A</span></td>
+<td class="px-cell-padding-x text-on-surface-variant">--</td>
+<td class="px-cell-padding-x text-right">
+<button class="text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"><span class="material-symbols-outlined text-[18px]">more_horiz</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="p-cell-padding-x border-t border-outline-variant/20 bg-surface-bright flex items-center justify-between shrink-0">
+<span class="font-label-sm text-on-surface-variant">Page 1 / 31 · 1 543 résultats</span>
+<div class="flex items-center gap-2">
+<button class="p-1 rounded hover:bg-surface-container text-on-surface-variant disabled:opacity-50" disabled=""><span class="material-symbols-outlined text-[20px]">chevron_left</span></button>
+<button class="p-1 rounded hover:bg-surface-container text-on-surface-variant"><span class="material-symbols-outlined text-[20px]">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
