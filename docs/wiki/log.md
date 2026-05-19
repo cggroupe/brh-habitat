@@ -5,6 +5,46 @@
 
 ---
 
+## 2026-05-19 (13) — AUDIT COMPLET base BRH + dédoublonnage + purge data test/lieux-dits
+
+- **Contexte** : Philippe demande audit exhaustif de tous les contacts (vérif DPE, isolation, dates, homonymes, etc.).
+- **Audit livré** (16 607 contacts → 16 415 après cleanup) :
+  - **Identité** : 83 nom manquant, 5 caractères spéciaux, 366 sans adresse, 593 sans ville, 3 850 sans contact tel/email (acceptable, leads à enrichir)
+  - **DPE liés (13)** : 13/13 strictement validés (numéro+voie exact). DPE F/G avec conso/date/chauffage cohérents. 10/13 avec année construction.
+  - **DPE F/G base globale (59 306)** : 100 % avec étiquette+date+chauffage, 99.97 % conso valide, 6 % sans isolation murs renseignée
+  - **Homonymes** : 2 910 contacts dans 1 326 groupes (17.5 %). **133 doublons certains** (même prenom+nom+adresse).
+  - **psy_profile** : 1 488 (358 medium / 1 130 low, 100 % ancrés données BRH)
+  - **CA anomalies** : 3 CA négatifs (bug import) → fixés à NULL
+- **Cleanup appliqué** :
+  1. **50 contacts "test" purgés** (archive `brh_test_contacts_archive`) — Test Test, gabin test, ament test, TEST GUIANVARCH, etc.
+  2. **3 linked_dpe_id sur lieux-dits sans numéro purgés** (Kerherhal Plouguin → Bianic, etc.) — politique stricte : un lien adresse n'est validé que si les 2 ont un numéro extractible identique
+  3. **171 liens entity_links a_mute (DVF) sur lieux-dits ambigus purgés**
+  4. **142 doublons exacts dédoublonnés** (132 groupes) :
+     - Sélection survivant par score d'enrichissement DESC + nb champs renseignés DESC + créé récent
+     - Merge des champs nullables : survivor récupère tel/email/DPE/CA/RDV manquants depuis ses doublons
+     - Migration FK : visits/travaux/entity_links pointent vers survivor
+     - Archive `brh_dedup_archive` (réversible)
+  5. **3 CA négatifs purgés**
+- **État final 16 415 contacts** :
+  - 12 278 avec téléphone (75 %)
+  - 4 505 avec email (27 %)
+  - 13 linked_dpe_id strictement valides
+  - 1 493 psy_profile BRH-only
+  - 3 791 sans contact (23 %, leads à enrichir)
+  - **0 doublons restants** (vérifié)
+- **Fichiers** : `docs/wiki/log.md` (entrée). Pas de code applicatif modifié — uniquement data Supabase.
+- **Risque** : Low — toutes purges archivées, merge intelligent (pas de perte de données réelles, juste consolidation), idempotent.
+- **Status** : ✅ DONE — base propre.
+
+**Politique permanente définitive** :
+1. Linked_dpe_id valide UNIQUEMENT si même numéro + même voie + même CP
+2. Lieux-dits ruraux sans numéro = laissés non liés (mieux rien qu'un faux)
+3. Doublons (même prenom+nom+adresse) = merge automatique, conservation du survivant le plus enrichi
+4. Aucun OSINT externe affiché (linkedin/facebook/apify/sherlock = 0)
+5. psy_profile basé uniquement sur signaux BRH internes vérifiables
+
+---
+
 ## 2026-05-19 (12) — Bombarde : header fiche refondu + 2 maquettes Stitch v2 + colonne "Vu par X" sur liste
 
 - **Contexte** : Philippe valide la composition v3 + demande d'enchaîner sans demander ("bombarde"). 4 sprints livrés en parallèle.
