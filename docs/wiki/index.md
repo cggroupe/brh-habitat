@@ -39,6 +39,7 @@
 | [hooks-reference.md](hooks-reference.md) | 14 hooks React Query + 25 modules API Zod |
 | [migrations-audit.md](migrations-audit.md) | Catalog des 37 migrations en 5 phases |
 | [osint-enrichment-registry.md](osint-enrichment-registry.md) | ⭐ **Registry campagnes OSINT/IA (19/05)** — couverture par source, doublons, futures campagnes |
+| [data-coverage.md](data-coverage.md) | ⭐ **Data coverage datasets de masse (19/05)** — DVF/Sitadel/BODACC/BDNB/Sirene : ingéré vs câblé UI, plan P1-P4 |
 
 ### Partie 2 — Guides features majeures
 

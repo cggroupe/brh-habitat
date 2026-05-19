@@ -5,6 +5,47 @@
 
 ---
 
+## 2026-05-19 (3) — DVF quality fix + signaux externes sur fiche client + Sitadel import
+
+- **Contexte** : Philippe pointe que les données DVF affichent parfois un prix global mais pas la surface (et donc prix/m² faussé), et qu'on a des « masses d'informations jamais intégrées ». Audit complet → 13 tables avec données dormantes (104k DVF + 46k SCI décès + 3.6k BODACC + Sitadel vide, etc.).
+- **(1) Fix qualité DVF** — migration `20260519120000_brh_dvf_quality_columns.sql` :
+  - 3 colonnes calculées sans rien écraser : `prix_m2_calc` (NULL si surface absente), `is_groupee` (TRUE pour VEFA + ventes immeuble entier), `usable_for_brh` (Vente + Maison/Apt + surface > 0)
+  - Distribution sur 104 225 mutations : 43 484 avec prix/m² fiable · 58 416 groupées · **39 711 exploitables BRH** (38 %)
+  - 2 index : `usable_for_brh` partiel + `(code_postal, lower(adresse_voie))`
+  - L'UI ne calcule plus de faux prix/m² : badge « groupée » + « surface non détaillée » à la place
+- **(2) RPC `brh_personne_signals_externes(uuid)`** — migration `20260519130000` :
+  - Une seule RPC SECURITY DEFINER qui retourne 3 listes (dvf_mutations, sci_deces_matches, bodacc_alerts)
+  - DVF match par code_postal + voie normalisée (regex pour retirer le numéro de rue), top 10 dates
+  - SCI décès match par lower(nom)+lower(prenom) (top 5)
+  - BODACC match par denomination ↔ societe (top 10)
+- **(3) API + hook + composant** :
+  - `src/api/brh-personne-signals.ts` (3 types + 1 méthode)
+  - `src/hooks/queries/usePersonneSignals.ts` (lazy, enabled=open)
+  - `src/components/leads/PersonneSignalsExternesPanel.tsx` (collapsible, 3 blocs colorés : ambre DVF, rose succession, indigo BODACC)
+  - Intégré en bas de chaque carte contact dans `ClientsBrhView.tsx`
+- **(4) Sitadel import Bretagne lancé** :
+  - PID 1797418 · log `/tmp/brh-sitadel-ingest.log`
+  - 4 fichiers Sitadel3 (logements, locaux, démolir, aménager) · dép 22/29/35/56
+  - Cible : `intentions.sitadel_permis` (entity-hub PG 5434). À syncer ensuite vers `brh_permis_construire` dans Supabase.
+- **(5) Wiki Karpathy** :
+  - Nouvelle page `docs/wiki/data-coverage.md` — état complet datasets (chargé/vide/dormant) + plan d'intégration P1-P4
+  - Référencée dans `index.md` à côté de `osint-enrichment-registry.md`
+- **Fichiers** :
+  - `supabase/migrations/20260519120000_brh_dvf_quality_columns.sql` (créé + appliqué)
+  - `supabase/migrations/20260519130000_rpc_brh_personne_signals_externes.sql` (créé + appliqué)
+  - `src/api/brh-personne-signals.ts` (créé)
+  - `src/hooks/queries/usePersonneSignals.ts` (créé)
+  - `src/components/leads/PersonneSignalsExternesPanel.tsx` (créé)
+  - `src/components/leads/ClientsBrhView.tsx` (import + intégration panel)
+  - `docs/wiki/data-coverage.md` (créé)
+  - `docs/wiki/index.md` (ajout entry)
+  - `docs/wiki/log.md` (cette entrée)
+- **Tests** : `npm run build` OK
+- **Risque** : Low — colonnes ADD COLUMN IF NOT EXISTS, RPC SECURITY DEFINER avec check role, UI lazy (pas de surcharge réseau initiale)
+- **Status** : 🟢 DONE pour DVF qualité + signaux externes UI · 🟡 PARTIEL pour Sitadel (import en cours)
+
+---
+
 ## 2026-05-19 — UI tier chips + détails OSINT + Claude psy run 2 + registry
 
 - **Contexte** : suite à la création des tiers (entrée précédente), câblage frontend + traçabilité Karpathy + 2e passe IA.
