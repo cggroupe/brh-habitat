@@ -56,6 +56,8 @@ export interface Personne360SciLink {
   evidence: Record<string, unknown>
 }
 
+export type DpeRole = 'proprietaire' | 'dirigeant' | 'occupant'
+
 export interface Personne360AdresseLink {
   dpe_id: number
   adresse: string | null
@@ -65,6 +67,11 @@ export interface Personne360AdresseLink {
   surface_habitable: number | null
   annee_construction: number | null
   score_v2: number | null
+  owner_name: string | null
+  owner_siren: string | null
+  owner_type: string | null
+  dpe_role: DpeRole | null
+  employee_overrides: Record<string, unknown> | null
   confidence: number
   evidence: Record<string, unknown>
 }

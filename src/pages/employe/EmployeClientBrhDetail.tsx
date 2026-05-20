@@ -164,15 +164,34 @@ export default function EmployeClientBrhDetail() {
                       {id360.nb_rdv} RDV
                     </span>
                   )}
-                  {id360.linked_dpe_id && (
-                    <Link
-                      to={`/employe/leads/adresse/${id360.linked_dpe_id}`}
-                      className="inline-flex items-center gap-1 rounded-full border border-stone-300 bg-white px-2.5 py-0.5 text-xs font-medium text-stone-700 hover:bg-stone-50"
-                    >
-                      <FileText className="h-3 w-3" />
-                      DPE F/G #{id360.linked_dpe_id}
-                    </Link>
-                  )}
+                  {id360.linked_dpe_id && (() => {
+                    const mainAdr = data.adresses_liees.find((a) => a.dpe_id === id360.linked_dpe_id)
+                    const role = mainAdr?.dpe_role
+                    return (
+                      <>
+                        <Link
+                          to={`/employe/leads/adresse/${id360.linked_dpe_id}`}
+                          className="inline-flex items-center gap-1 rounded-full border border-stone-300 bg-white px-2.5 py-0.5 text-xs font-medium text-stone-700 hover:bg-stone-50"
+                        >
+                          <FileText className="h-3 w-3" />
+                          DPE F/G #{id360.linked_dpe_id}
+                        </Link>
+                        {role === 'occupant' && mainAdr?.owner_name && (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 ring-1 ring-amber-200"
+                            title={`DPE détenu par ${mainAdr.owner_name}${mainAdr.owner_siren ? ` (SIREN ${mainAdr.owner_siren})` : ''}`}
+                          >
+                            Occupant · {formatNameFr(mainAdr.owner_name)} détient
+                          </span>
+                        )}
+                        {role === 'dirigeant' && mainAdr?.owner_name && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 ring-1 ring-emerald-200">
+                            Dirigeant SCI
+                          </span>
+                        )}
+                      </>
+                    )
+                  })()}
                   {id360.enfants && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-0.5 text-xs text-stone-700">
                       Famille : {id360.enfants}
@@ -384,13 +403,39 @@ export default function EmployeClientBrhDetail() {
                   <ul className="space-y-1">
                     {data.adresses_liees.slice(0, 6).map((a) => (
                       <li key={a.dpe_id} className="rounded border border-stone-200 bg-stone-50 p-2 text-xs">
-                        <Link to={`/employe/leads/adresse/${a.dpe_id}`} className="font-medium text-stone-800 hover:underline">
-                          {a.adresse}
-                        </Link>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link to={`/employe/leads/adresse/${a.dpe_id}`} className="font-medium text-stone-800 hover:underline">
+                            {a.adresse}
+                          </Link>
+                          {a.dpe_role === 'occupant' && (
+                            <span
+                              className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800 ring-1 ring-amber-200"
+                              title={a.owner_name ? `Détenu par ${a.owner_name}${a.owner_siren ? ` (SIREN ${a.owner_siren})` : ''}` : undefined}
+                            >
+                              Occupant
+                            </span>
+                          )}
+                          {a.dpe_role === 'dirigeant' && (
+                            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800 ring-1 ring-emerald-200">
+                              Via SCI dirigée
+                            </span>
+                          )}
+                          {a.dpe_role === 'proprietaire' && (
+                            <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-medium text-sky-800 ring-1 ring-sky-200">
+                              Propriétaire
+                            </span>
+                          )}
+                        </div>
                         <div className="mt-0.5 flex flex-wrap gap-x-3 text-[11px] text-stone-600">
                           <span>{a.code_postal} {a.commune}</span>
                           {a.etiquette_dpe && <span>DPE {a.etiquette_dpe}</span>}
                           {a.surface_habitable != null && <span>{a.surface_habitable} m²</span>}
+                          {a.dpe_role === 'occupant' && a.owner_name && (
+                            <span className="text-amber-700">
+                              Détenu par {formatNameFr(a.owner_name)}
+                              {a.owner_siren ? ` · SIREN ${a.owner_siren}` : ''}
+                            </span>
+                          )}
                           <span className="text-emerald-700">conf. {(a.confidence * 100).toFixed(0)}%</span>
                         </div>
                       </li>

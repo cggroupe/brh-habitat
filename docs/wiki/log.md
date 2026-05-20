@@ -5,6 +5,30 @@
 
 ---
 
+## 2026-05-20 (20) — DPE éditable + rôle propriétaire/dirigeant/occupant (bug Bodard ↔ SCI La Colline)
+
+- **Contexte** : screenshot Philippe sur fiche "bodard francois" (14 rue Bugeaud Brest). DPE détenu par SCI La Colline (SIREN 343268967) liée à Bodard via `linked_dpe_id=4480` alors que Bodard n'est PAS dirigeant SCI (les dirigeants sont GUEGUEN Karinne + Bruno). En clair : Bodard est simple **occupant** (locataire probable), pas propriétaire. Par ailleurs, les postes techniques du DPE (isolation murs / plancher / toiture / ventilation / chauffage / ECS) étaient en lecture seule sur `FicheAdresseView` — l'équipe BRH ne pouvait pas noter les travaux observés terrain.
+- **Décisions Philippe** :
+  1. Conserver le DPE visible sur la fiche particulier mais **tagger "Occupant"** quand `owner_siren ≠ NULL` ET personne pas dirigeante.
+  2. Stocker les modifications employé en **JSONB `employee_overrides`** sur `brh_dpe_prospects` (un objet par poste : status + comment + audit).
+  3. **7 postes éditables** : isolation murs / menuiseries / plancher bas / plancher haut + toiture-combles + ventilation + chauffage + ECS.
+- **Fichiers modifiés** :
+  - `supabase/migrations/20260520100000_brh_dpe_employee_overrides.sql` (CRÉÉ) — colonne `employee_overrides jsonb` + RPC `brh_dpe_employee_update` (whitelist 7 postes, status `realise/en_cours/a_realiser/na`, audit `updated_by/at`) + RPC helper `brh_dpe_role_for_personne`
+  - `supabase/migrations/20260520110000_rpc_brh_personne_360_dpe_role.sql` (CRÉÉ) — RPC v2 qui enrichit `adresses_liees[]` avec `owner_name`, `owner_siren`, `owner_type`, `dpe_role` (proprietaire/dirigeant/occupant) et `employee_overrides`
+  - `src/api/brh-employee-edit.ts` — ajout `updateDpeOverrides()` + types `DpePosteStatus`, `DpePosteOverride`, constante `DPE_POSTES` (7 entrées)
+  - `src/hooks/queries/useEmployeeEdit.ts` — hook `useUpdateDpeOverrides(dpeId)`
+  - `src/api/brh-personne-360.ts` — type `DpeRole` + champs supplémentaires sur `Personne360AdresseLink`
+  - `src/components/leads/DpePostesEmployeePanel.tsx` (CRÉÉ) — panneau employé : 7 lignes éditables (poste / état DPE / état BRH select / commentaire), bouton "Enregistrer" avec dirty-tracking
+  - `src/components/leads/fiche/FicheAdresseView.tsx` — injecte `DpePostesEmployeePanel` au-dessus de `EmployeeEditPanel` (employé only)
+  - `src/pages/employe/EmployeClientBrhDetail.tsx` — badge "Occupant · X détient" sur le DPE principal + tag rôle (Occupant / Via SCI dirigée / Propriétaire) sur chaque adresse liée + libellé propriétaire formaté FR
+- **Migrations créées** : 20260520100000, 20260520110000
+- **Pages wiki impactées** : log.md (cette entrée). À synchroniser ultérieurement avec `data-model.md` (colonnes `employee_overrides`) et `fiches-drill-down.md` (concept rôle propriétaire/occupant).
+- **Risque** : Low — pas de drop, pas de RLS modifiée. RPC en SECURITY DEFINER limitée à admin/employe. Le DPE ADEME certifié n'est PAS écrasé : les surcharges vivent dans une colonne séparée.
+- **Tests** : `npm run build` ✅ (20.86s, 0 erreur TS strict). Migrations validées en transaction `BEGIN; … ROLLBACK;` (non-destructif) ✅. Pas encore appliquées en prod (`supabase db push` requiert le GO de Philippe).
+- **Status** : ✅ DONE (code) · 🟡 PENDING (db push attente accord Philippe)
+
+---
+
 ## 2026-05-20 (19) — Fix 3 bugs UI fiche client BRH (formatage français)
 
 - **Contexte** : screenshot Philippe sur fiche "bodard francois" (14/05/2026) — 3 bugs visuels identifiés :

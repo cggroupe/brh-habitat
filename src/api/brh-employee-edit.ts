@@ -37,4 +37,41 @@ export const brhEmployeeEditApi = {
     if (error) throw error
     return data as { ok: boolean; changes: number }
   },
+
+  async updateDpeOverrides(
+    dpeId: number,
+    overrides: Record<string, DpePosteOverrideInput>,
+  ): Promise<Record<string, DpePosteOverride>> {
+    const { data, error } = await supabase.rpc('brh_dpe_employee_update', {
+      p_dpe_id: dpeId,
+      p_overrides: overrides,
+    })
+    if (error) throw error
+    return (data ?? {}) as Record<string, DpePosteOverride>
+  },
 }
+
+export type DpePosteStatus = 'realise' | 'en_cours' | 'a_realiser' | 'na'
+
+export interface DpePosteOverrideInput {
+  status: DpePosteStatus
+  comment?: string
+}
+
+export interface DpePosteOverride extends DpePosteOverrideInput {
+  updated_at: string
+  updated_by: string
+}
+
+export const DPE_POSTES = [
+  { key: 'qualite_isolation_murs', label: 'Isolation murs' },
+  { key: 'qualite_isolation_menuiseries', label: 'Menuiseries' },
+  { key: 'qualite_isolation_plancher_bas', label: 'Plancher bas' },
+  { key: 'qualite_isolation_plancher_haut', label: 'Plancher haut' },
+  { key: 'isolation_toiture_detail', label: 'Toiture / combles' },
+  { key: 'type_ventilation', label: 'Ventilation' },
+  { key: 'energie_chauffage', label: 'Chauffage' },
+  { key: 'energie_ecs', label: 'Eau chaude sanitaire' },
+] as const
+
+export type DpePosteKey = (typeof DPE_POSTES)[number]['key']
