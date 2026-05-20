@@ -23,6 +23,7 @@ import { useUpdatePersonne } from '@/hooks/queries/useEmployeeEdit'
 import { EmployeeEditPanel } from '@/components/leads/EmployeeEditPanel'
 import { ClientVisitsTravauxSection } from '@/components/leads/ClientVisitsTravauxSection'
 import { useAuth } from '@/hooks/useAuth'
+import { formatNameFr, formatPhoneFr, formatFullAddress } from '@/lib/format-fr'
 import type { Personne360Identity } from '@/api/brh-personne-360'
 
 const TIER_BADGE: Record<string, { cls: string; Icon: typeof Crown; label: string }> = {
@@ -85,7 +86,7 @@ export default function EmployeClientBrhDetail() {
             </Link>
             <span className="text-stone-300">›</span>
             <span className="truncate text-sm font-medium text-stone-800">
-              {id360.full_name || id360.societe || 'Contact'}
+              {formatNameFr(id360.full_name) || id360.societe || 'Contact'}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -122,7 +123,7 @@ export default function EmployeClientBrhDetail() {
               </div>
               <div className="flex-1 min-w-0">
                 <h1 className="truncate text-xl font-semibold text-stone-900">
-                  {id360.full_name || id360.societe || `Contact ${id?.slice(0, 8)}`}
+                  {formatNameFr(id360.full_name) || id360.societe || `Contact ${id?.slice(0, 8)}`}
                 </h1>
                 {id360.societe && id360.full_name && (
                   <p className="text-sm text-stone-600">{id360.societe}</p>
@@ -131,7 +132,7 @@ export default function EmployeClientBrhDetail() {
                   {id360.telephone && (
                     <a href={`tel:${id360.telephone}`} className="inline-flex items-center gap-1.5 hover:underline">
                       <Phone className="h-3.5 w-3.5 text-emerald-600" />
-                      <span className="font-mono">{id360.telephone}</span>
+                      <span className="font-mono">{formatPhoneFr(id360.telephone)}</span>
                     </a>
                   )}
                   {id360.email && (
@@ -144,7 +145,7 @@ export default function EmployeClientBrhDetail() {
                     <span className="inline-flex items-center gap-1.5 sm:col-span-2">
                       <MapPin className="h-3.5 w-3.5 text-stone-400" />
                       <span className="truncate">
-                        {id360.adresse} · {id360.code_postal} {id360.ville}
+                        {formatFullAddress(id360.adresse, id360.code_postal, id360.ville)}
                       </span>
                     </span>
                   )}

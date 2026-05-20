@@ -5,6 +5,23 @@
 
 ---
 
+## 2026-05-20 (19) — Fix 3 bugs UI fiche client BRH (formatage français)
+
+- **Contexte** : screenshot Philippe sur fiche "bodard francois" (14/05/2026) — 3 bugs visuels identifiés :
+  1. Nom affiché en minuscules `bodard francois` au lieu de `Bodard François`
+  2. Téléphone brut `0683533275` au lieu de `06 83 53 32 75`
+  3. Adresse dupliquée : champ `adresse` contient déjà CP+ville (`14 rue bugeaud 29200 Brest France`) mais l'UI ré-ajoutait `· 29200 Brest`
+- **Fichiers modifiés** :
+  - `src/lib/format-fr.ts` (CRÉÉ) — 3 helpers : `formatNameFr` (capitalisation française mots + tirets + apostrophes, preserve mixed-case), `formatPhoneFr` (10 chiffres FR → `06 83 53 32 75`, gère +33), `formatFullAddress` (déduplique CP/ville si déjà présents dans adresse)
+  - `src/pages/employe/EmployeClientBrhDetail.tsx` — import helpers, applique `formatNameFr` au breadcrumb + H1 identité, `formatPhoneFr` à la ligne téléphone, `formatFullAddress` à l'adresse
+- **Migrations créées** : aucune
+- **Pages wiki impactées** : log.md (cette entrée). Pas de doc séparée — helpers atomiques formatage UI.
+- **Risque** : Low — fonctions pures sans side-effect, fallback brut si format inattendu, no DB change
+- **Tests** : `npm run build` ✅ (29.33s, 0 erreur TS strict, project references OK)
+- **Status** : ✅ DONE
+
+---
+
 ## 2026-05-19 (18) — Enrichissement dirigeants SCI : cross-match BRH > PagesJaunes
 
 - **Contexte** : après échec PagesJaunes (9 tels / 400 dirigeants = 2.25 %), pivot vers **cross-matching avec les contacts BRH historiques** (18 571 personnes déjà en BDD avec tel/email).
