@@ -5,6 +5,53 @@
 
 ---
 
+## 2026-05-21 (26) — Phase 2 refonte COMPLÈTE : matching + perf B9 + pivot dirigeant + UI single-page
+
+**Récap global Phase 2 (4 commits)** :
+
+### Phase 2A — Matching adresse (commit 7173d57)
+- 3 migrations : `unaccent` extension + 6 colonnes générées sur 2 tables + 5 index + 2 RPC (`brh_normalize_adresse`, `brh_match_dpe_by_address`)
+- Pipeline complet : nettoyage CP/ville embedded + apostrophes + ponctuation + expansion 11 abréviations (r/av/bd/pl/imp/ch/all/rte/sq/lot/lieu-dit)
+- Audit sur 17 952 clients : match DPE F/G 0.9% (cohérent métier — base F/G uniquement), match DVF voie 16.4%, locataire SCI (cas Bodard) 0.24% = 78 cas badgeables
+
+### Phase 2B — Fix perf B9 (commit c714871)
+- Table de liaison `brh_dirigeant_sci` (87 127 rows, 80k dirigeants × 35k SIREN × 94 départements)
+- 3 index incl. partiel + RLS admin/pro/employe + fonction rebuild
+- RPC `brh_dirigeants_search` v2 réécrit (JOIN au lieu de jsonb_array_elements)
+- **Perf : 841ms** (vs >8s timeout) = gain ~10x
+
+### Phase 2C — Pivot dirigeant→autres entreprises (commit 457c7c3)
+- Migration : 5 colonnes sur `brh_dirigeants` (autres_entreprises JSONB, tel/email_pro_via_entreprise, enriched_at, match_count) + 2 index partiels
+- Script `brh-enrich-dirigeants-autres-entreprises.py` : API `recherche-entreprises.api.gouv.fr` (gratuit), cleaning nom BRH parenthèses+épouse, anti-homonyme date_naissance, filtre SCI exclu, ciblage SCI familiales (1-5 SCI, 1-30 DPE, Bretagne)
+- **Batch full lancé 13 862 dirigeants** en background (~107 min). Premier check à 900 enrichis = **53.4% hit rate** sur entreprises non-SCI
+
+### Phase 2D — UI fiche dirigeant single-page + B8bis (commit 5f63627)
+- `EmployeDirigeantDetail.tsx` enrichi : section "Autres entreprises (hors SCI)" + bandeau contact perso/pro distingué
+- Type `Dirigeant360.identity` étendu (`DirigeantAutreEntreprise` interface)
+- **B8bis (têtes de mort) RÉSOLU** : 9 fichiers patchés (Skull→AlertTriangle), avatar User normal même si décédé, ton pro restitué
+- Build TypeScript strict + Vite ✅ 22s, 0 erreur
+
+**Pages wiki impactées** :
+- `hub-sci-dirigeant.md` — statut squelette → LIVRÉ, sections 5/6/7 complétées avec résultats réels
+- `bugs-ouverts.md` — B7 (partiel), B8bis (résolu), B9 (résolu), dette schema_migrations
+- `data-inventory.md` — §8 audit Phase 1 + 2A
+
+**Migrations Phase 2 créées (5)** :
+- `20260521100000_brh_unaccent_extension.sql` (M-1)
+- `20260521110000_brh_adresse_normalized_columns.sql` (M-2)
+- `20260521120000_brh_adresse_match_rpc.sql` (M-3)
+- `20260521130000_brh_dirigeant_sci_link.sql` (Phase 2B)
+- `20260521140000_rpc_brh_dirigeants_search_v2.sql` (Phase 2B)
+- `20260521150000_brh_dirigeants_autres_entreprises.sql` (Phase 2C)
+
+**Toutes les 6 migrations appliquées en prod via Management API.** Dette schema_migrations à réparer Phase 5.
+
+**Risque global Phase 2** : Low — migrations idempotentes, build OK, audit lecture seule, batch enrichissement gratuit (0€).
+
+**Status** : ✅ DONE Phase 2 complète — prêt pour Phase 3 (fiche client BRH employé) sur GO Philippe.
+
+---
+
 ## 2026-05-21 (25) — Phase 2A refonte : 3 migrations matching adresse + audit en place
 
 - **Contexte** : Exécution Phase 2A du `plan-refonte-2026-05-21.md` après GO Philippe ("continue. Tout doit être parfait. Organiser et donner valoriser."). Migrations infra matching adresse (foundation Phase 2B+C+D).

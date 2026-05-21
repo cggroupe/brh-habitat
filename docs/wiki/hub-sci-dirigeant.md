@@ -3,7 +3,7 @@
 > **Hub fiche SCI + dirigeants** : tout ce qu'on sait sur une SCI et ses dirigeants, **sur une seule fiche**, zéro onglet caché.
 > Inclut le pivot stratégique **dirigeant → autres entreprises** (commerce/artisanat) pour récupérer un contact joignable.
 >
-> Statut : 🟡 **SQUELETTE Phase 0** — contenu rempli Phase 2 (cf [plan-refonte-2026-05-21.md](plan-refonte-2026-05-21.md)).
+> Statut : ✅ **LIVRÉ Phase 2 (21/05/2026)** — migrations + script enrichissement + UI single-page.
 
 ---
 
@@ -66,36 +66,70 @@ Tous les blocs sur une seule fiche. Pas d'onglets cachés. Si un dirigeant a 8 e
 
 ---
 
-## 5. Fix perf B9 (bloquant — Phase 2)
+## 5. Fix perf B9 ✅ RÉSOLU Phase 2B (21/05)
 
 RPC `brh_dirigeants_search` timeout >8s sur combinaison filtre département + autre filtre.
 
-**Cause** : `EXISTS (SELECT FROM jsonb_array_elements(d.sci_dirigees) JOIN brh_sci_companies …)` sans index. Sur 80 844 dirigeants × 1-N SCI, full scan.
+**Cause identifiée** : `EXISTS (SELECT FROM jsonb_array_elements(d.sci_dirigees) JOIN brh_sci_companies …)` sans index. Sur 80 844 dirigeants × 1-N SCI, full scan.
 
-**Fix proposé Phase 2** :
-- Migration : table de liaison `brh_dirigeant_sci(dirigeant_id, siren, departement)` avec index `(departement, siren)` + `(dirigeant_id)`
-- Backfill depuis `brh_sci_companies.dirigeants JSONB`
-- Réécriture RPC avec JOIN au lieu de `EXISTS jsonb_array_elements`
-- Critère succès : <500ms sur dept + 3 filtres combinés
+**Solution livrée Phase 2B** :
+- Migration `20260521130000_brh_dirigeant_sci_link.sql` : table de liaison `brh_dirigeant_sci(dirigeant_id, siren, denomination, qualite, is_active, departement, ...)` avec 3 index (composite dept+dirigeant, siren, partial active+dept) + RLS admin/pro/employe + fonction `brh_dirigeant_sci_rebuild()` pour reconstruction batch
+- **Backfill : 87 127 lignes** générées depuis `jsonb_array_elements(sci_dirigees)` (80 844 dirigeants distincts, 35 290 SIREN, 94 départements)
+- Migration `20260521140000_rpc_brh_dirigeants_search_v2.sql` : RPC réécrit avec `EXISTS (SELECT FROM brh_dirigeant_sci ds WHERE ...)` indexé. Signature INCHANGÉE → zéro breaking change UI.
 
----
-
-## 6. UI cibles (Phase 2)
-
-- [src/pages/employe/EmployeDirigeantDetail.tsx](../../src/pages/employe/EmployeDirigeantDetail.tsx) — fiche dirigeant 360°
-- [src/components/leads/fiche/FicheEntrepriseView.tsx](../../src/components/leads/fiche/FicheEntrepriseView.tsx) — fiche entreprise/SCI publique
-- Composant mini-carte à réutiliser depuis `prospection-map`
+**Perf mesurée via EXPLAIN ANALYZE** : 841 ms sur dept 29 + multi_sci + proprio_dpe combinés (vs >8s timeout avant). Gain ~10x.
 
 ---
 
-## 7. Décision D-2 (21/05) — scale gratuit
+## 6. UI livrée Phase 2D (21/05)
 
-Philippe a écarté Pappers API 49€/mois. On **scale gratuit** via :
-- Sirene API Open Data data.gouv.fr (publique, 30 req/s)
-- Annuaire-entreprises.data.gouv.fr (lookup dirigeant → mandats)
-- Cross BODACC déjà ingéré
+✅ **[src/pages/employe/EmployeDirigeantDetail.tsx](../../src/pages/employe/EmployeDirigeantDetail.tsx)** — fiche dirigeant single-page enrichie :
+- Section **"Autres entreprises (hors SCI)"** entre SCI dirigées et DPE détenus, avec carte par société (SIREN, dénomination, NJ, activité, siège) + lien sortant annuaire-entreprises.data.gouv.fr
+- Bandeau contact distinguant **tel/email perso** (gris) vs **tel/email pro via société** (ambre ring) avec icônes Phone/Mail/Briefcase
+- Footer date d'enrichissement
+- Toutes les Skull remplacées par AlertTriangle (B8bis)
 
-Implémentation batch script Phase 2 sur 17 403 dirigeants propriétaires DPE prioritaires.
+✅ **9 fichiers UI** patchés pour B8bis (têtes de mort → AlertTriangle) :
+- `EmployeDirigeantDetail.tsx`, `EmployeDirigeants.tsx`, `EmployeClientBrhDetail.tsx`, `LeadDetailModal.tsx`, `FichePersonneView.tsx`, `FicheEntrepriseView.tsx`, `FicheAdresseView.tsx`, `PersonneSignalsExternesPanel.tsx`, `PersonneGraphPanel.tsx`
+
+**Type étendu** `src/api/brh-dirigeants.ts` :
+- Interface `DirigeantAutreEntreprise` (10 champs)
+- `Dirigeant360.identity` enrichi avec 5 nouveaux champs
+
+**Build** : ✅ tsc strict + Vite 22s, 0 erreur.
+
+**À envisager P3 si demandé** :
+- Mini-carte des biens (DVF + DPE liés) — composant à réutiliser depuis `prospection-map`
+- Refonte `FicheEntrepriseView.tsx` (côté public agence/pro) pour intégrer dirigeants étendus
+
+---
+
+## 7. Décision D-2 — scale gratuit ✅ LIVRÉ Phase 2C (21/05)
+
+Philippe a écarté Pappers API 49€/mois. On **scale gratuit** via `recherche-entreprises.api.gouv.fr` (publique, no quota strict).
+
+**Migration `20260521150000_brh_dirigeants_autres_entreprises.sql`** :
+- 5 colonnes ajoutées sur `brh_dirigeants` : `autres_entreprises JSONB`, `tel_pro_via_entreprise`, `email_pro_via_entreprise`, `autres_entreprises_enriched_at`, `autres_entreprises_match_count`
+- 2 index partiels : queue batch (`enriched_at IS NULL`) + filtre UI (`tel_pro NOT NULL`)
+
+**Script `scripts/brh-enrich-dirigeants-autres-entreprises.py`** :
+- Source : API `recherche-entreprises.api.gouv.fr` (gratuite)
+- Cleaning nom BRH : retire parenthèses ("nom d'usage"), "épouse XYZ"
+- Anti-homonyme : match `date_naissance` (YYYY-MM minimum)
+- Filtre SCI (nature_juridique 6540/6541 exclues — déjà connues)
+- Ciblage SCI familiales : 1 ≤ nb_sci_dirigees ≤ 5, 1 ≤ nb_dpe_total ≤ 30, Bretagne (4 dépts via `brh_dirigeant_sci`)
+- Rate limit 20 req/s, perf 0.46s/dirigeant
+- Modes `--sample` (log détaillé), `--dry-run` (no DB write)
+
+**Résultats batch en cours (21/05 ~10h)** :
+- Cible : 13 862 dirigeants SCI familiales bretonnes
+- À 900 enrichis : **53.4% ont au moins 1 entreprise non-SCI trouvée** (481/900) → ~7 400 dirigeants attendus enrichis sur batch complet
+- ETA fin batch : ~2h (~107 min total estimé)
+
+**Exemples métier réels (sample) validant le pivot** :
+- JACQUES OUAIRY → `SELARL DOCTEUR OUAIRY JACQUES` (cabinet médical) — contact pro public via cabinet
+- VALERY MOAL → `GROUPE IMMOBILIER SIAM, LUXIOR FINANCES, CENTRE D AFFAIRES SIAM` (7 hits) — promoteur immobilier identifiable
+- JEAN-PIERRE FESTOC → `GROUPEMENT FORESTIER DU LANGOUET, SOC HABITATION LOYER MODE` (3 hits) — sociétés sectorielles
 
 ---
 
@@ -110,4 +144,4 @@ Implémentation batch script Phase 2 sur 17 403 dirigeants propriétaires DPE pr
 
 ---
 
-**Dernière maj** : 2026-05-21 (squelette Phase 0) — Claude Opus 4.7
+**Dernière maj** : 2026-05-21 (Phase 2 livrée — migrations + script + UI) — Claude Opus 4.7

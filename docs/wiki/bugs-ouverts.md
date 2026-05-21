@@ -33,9 +33,9 @@ supabase migration repair --status applied 20260521100000 20260521110000 2026052
 | # | Bug | Diagnostic | Action requise | Phase plan |
 |---|-----|------------|----------------|------------|
 | **B6** | Filtre "Propriétaire DPE BRH" page `/employe/dirigeants` paraît inopérant | Faux bug technique : RPC fonctionne, 80 844 → 17 403. Mais tri par défaut `nb_dpe_total DESC` met déjà tous les propriétaires en tête → top 5 identique avec/sans filtre. Seul le compteur change. | Tri conditionnel (nom A→Z par défaut, patrimoine DESC si filtre coché) + compteur + bandeau "Filtré par : …" | Phase 4 |
-| **B7** | Fiche dirigeant SCI ne montre pas les éléments fonciers complets | Aujourd'hui : liste DPE détenus + BODACC + détails SCI. Manque : mutations DVF, mini-carte des biens, score patrimoine agrégé, carnet de bord BRH, autres entreprises du dirigeant (pivot P-C) | Décision Philippe nécessaire — voir [hub-sci-dirigeant.md](hub-sci-dirigeant.md) | Phase 2 |
+| **B7** | Fiche dirigeant SCI ne montre pas les éléments fonciers complets | ✅ **PARTIEL Phase 2D** — Section "Autres entreprises (hors SCI)" + bandeau contact pro distinguant perso/pro ajoutés. Reste P3 si Philippe le demande : mini-carte des biens (DVF+DPE), score patrimoine agrégé, mutations DVF historique. | Phase 2D (partiel) |
 | **B8** | "Leads BRH vue unifiée" mélange clients + prospects | Confusion utilisateur : on voit des contacts BRH (déjà facturés) et des prospects DPE F/G (jamais contactés) sans distinction. | Investiguer routes `/agence/leads-v2` vs `/employe/clients-brh`, identifier doublon. Séparer clairement les 2 segments. | Phase 3 + Phase 4 |
-| **B8bis** | Têtes de mort résiduelles dans segment "succession en cours" | Grep ☠/💀 dans `src/` = 0 occurrence → source probable : icône Lucide `Skull`, caractère UTF-8 alternatif, ou rendu côté Postgres | Localiser et supprimer | Phase 4 (début) |
+| ~~**B8bis**~~ | ~~Têtes de mort résiduelles dans segment "succession en cours"~~ | ✅ **RÉSOLU Phase 2D (21/05)** — Source identifiée : icône Lucide `Skull` utilisée dans 9 fichiers (8 composants + 1 page). Tous remplacés par `AlertTriangle` (ton pro). Avatar dirigeant : `User` normal même si décédé, contexte porté par badge texte. | Phase 2D ✅ |
 
 ---
 
