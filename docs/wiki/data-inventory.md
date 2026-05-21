@@ -30,7 +30,7 @@ Rowcounts vérifiés **psql direct sur `lygmmvxnmvlgynmrcpny` au 2026-05-21**.
 
 | Table | Rows | Couverture | Pivot principal | Source | Statut UI | Notes |
 |---|--:|---|---|---|---|---|
-| `brh_dpe_prospects` | **59 306** | DPE F/G Bretagne (4 dépts) + extension nationale partielle | `numero_dpe` (ADEME), `owner_siren` (SCI), `code_postal+adresse` (BAN) | ADEME DPE 3CL 2021 | 🟢 vue Foncier + fiche adresse | Source unifiée |
+| `brh_dpe_prospects` | **145 796** | **E + F/G** Bretagne (4 dépts) — élargissement Phase 7 du 21/05 (E ajouté : +86 490 rows) + extension nationale partielle | `numero_dpe` (ADEME), `owner_siren` (SCI), `code_postal+adresse` (BAN) | ADEME DPE v2 logements existants (`meg-83tjwtg8dyz4vv7h1dqe`) | 🟢 vue Foncier + fiche adresse | Périmètre passoires élargi DPE E (anticipation interdiction 2034) |
 | `brh_dvf_archive` | **104 225** | Mutations 10 ans (DVF data.gouv) — 2 869 sur Brest seul | `code_postal+lower(adresse_voie)` | data.gouv DVF | 🟢 fiche client + foncier | 39 711 `usable_for_brh=TRUE` après fix 19/05 (cf §5) |
 | `brh_intention_signals` | **13 000** | Signaux travaux/vente par DPE | `dpe_id` | Calc interne (DVF + permis + BODACC) | 🟢 fiche adresse | Relié `dpe_id` |
 | `brh_score_vente_v1` | **59 255** | Score propension vente par DPE | `dpe_id` | Heuristique 13 règles | 🟡 | Pas affiché ailleurs que `/agence/leads-v2` |

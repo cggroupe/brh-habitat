@@ -5,6 +5,55 @@
 
 ---
 
+## 2026-05-21 (31) — Phase 7 : ingestion DPE classe E Bretagne + fix voie_norm
+
+**Décision Philippe (vocal 21/05)** : « ça vaut le coup d'élargir le périmètre FG pour intégrer E dedans ». Anticipation interdiction location nue DPE E à partir de 2034.
+
+### Volumétrie ingérée
+- Source : API ADEME `meg-83tjwtg8dyz4vv7h1dqe` (DPE Logements existants depuis juillet 2021)
+- Filtre : `etiquette_dpe:E AND code_departement_ban:[22|29|35|56]`
+- Pagination : cursor `next` (size=10000 max)
+
+| Dept | DPE E ingérés | Durée |
+|------|--------------:|-------|
+| 22 | 17 161 | 13s |
+| 29 | 25 162 | 36s |
+| 35 | 24 991 | 55s |
+| 56 | 19 176 | 31s |
+| **Total** | **86 490** | **2min13s** |
+
+### Volumétrie totale brh_dpe_prospects (avant → après)
+- Avant Phase 7 : 59 306 (F+G uniquement)
+- Après Phase 7 : **145 796** (E+F+G) → +146% couverture
+
+### Fix bug regex voie_norm (`20260521200000`)
+Bug détecté post-ingest : les adresses ADEME viennent au format `"77 rue du Bot 29200 Brest"` (CP+ville embedded), alors que les anciens F/G étaient propres `"14 rue PRAD KELLEN"`. Conséquence : voie_norm contenait `"rue du bot 29200 brest"` → 0 match clients BRH sur DPE E.
+
+Solution : DROP + RECREATE des 3 colonnes générées (`adresse_norm`, `numero_norm`, `voie_norm`) sur `brh_dpe_prospects` avec le regex amélioré de `brh_personnes_historique` (suppression `\d{5}\s*[a-z][a-z\s\-]*\s*(france|fr)?\s*$`). Les 5 index dépendants recréés.
+
+### Match clients BRH ↔ DPE après fix
+| Classe | DPE total | Clients BRH matchés à l'adresse |
+|--------|----------:|-------------------------------:|
+| E | 86 490 | **253** ⭐ |
+| F | 38 074 | 79 |
+| G | 21 232 | 47 |
+| **Total** | **145 796** | **379** |
+
+**Gain 3x** vs Phase 2A.6 (155 matches F/G uniquement) — l'ouverture E + fix regex permet de tripler la couverture clients BRH.
+
+### Sequence brh_dpe_prospects_id_seq
+Désynchro détectée (seq_last=2 vs MAX(id)=59 306) → `SELECT setval('brh_dpe_prospects_id_seq', 59306, true)` pour repair avant ingest. Documenté pour futurs ingest.
+
+### Fichiers créés
+- `/opt/stack/scripts/brh-ingest-dpe-e-bretagne.py` — script ingestion ADEME cursor pagination
+- `supabase/migrations/20260521200000_fix_dpe_prospects_voie_norm_strip_cp.sql`
+
+### Migrations Phase 7 : 1 (20260521200000) appliquée + repair OK
+### Risque : Low — ADD/DROP COLUMN sur table 145k rows = ~30s, smoke tests OK
+### Status : ✅ DONE Phase 7 — périmètre E+F+G actif en prod
+
+---
+
 ## 2026-05-21 (30) — Phase 6 backlog : F4 délais + B7 mini-carte + Sitadel branché
 
 Continuation du backlog post-refonte sur GO Philippe ("continu"). Items reportés P3 que la wiki avait documentés.
