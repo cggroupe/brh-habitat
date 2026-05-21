@@ -164,11 +164,56 @@ Sur **échantillon dept 35** (528 clients × 14 492 DPE) :
 
 ### Bloqueurs techniques identifiés
 
-| Bloqueur | Détection | Action Phase 2 |
-|----------|-----------|----------------|
-| Extension `unaccent` non installée sur Supabase | `SELECT FROM pg_extension WHERE extname='unaccent'` = vide | Migration `CREATE EXTENSION unaccent;` |
-| Aucun index `(code_postal, adresse)` sur `brh_dpe_prospects` | 18 index existent mais aucun pour matcher l'adresse | Colonnes générées `adresse_norm`/`numero_norm`/`voie_norm` + index composite |
-| `brh_personnes_historique` n'a pas d'`adresse_ban_id` | Schema check | Optionnel P3 : enrichir via API BAN à l'ingestion → match 95%+ |
+| Bloqueur | Détection | Status |
+|----------|-----------|--------|
+| Extension `unaccent` non installée sur Supabase | `SELECT FROM pg_extension WHERE extname='unaccent'` = vide | ✅ Résolu Phase 2A.M-1 (migration `20260521100000`) |
+| Aucun index `(code_postal, adresse)` sur `brh_dpe_prospects` | 18 index existants mais aucun pour matcher l'adresse | ✅ Résolu Phase 2A.M-2 (migration `20260521110000`) — colonnes générées + 5 nouveaux index |
+| `brh_personnes_historique` n'a pas d'`adresse_ban_id` | Schema check | 🟡 Reporté P3 (enrichissement BAN à l'ingestion → match 95%+) |
+
+### Résultats audit post-migration Phase 2A.6 (21/05)
+
+**1. Taux de match DPE F/G par dept** (clé `(code_postal, numero_norm, voie_norm)` indexée)
+
+| Dept | Clients | Match num+voie | Lieu-dit (voie only) | Total match |
+|------|--------:|---------------:|---------------------:|------------:|
+| 22 | 3 369 | 25 (0.7%) | 7 / 146 lieux-dits | **32 (1.0%)** |
+| 29 | 10 045 | 72 (0.7%) | 27 / 1 120 | **99 (1.0%)** |
+| 35 | 528 | 7 (1.3%) | 0 / 19 | **7 (1.3%)** |
+| 44 | 1 518 | 0 (0%) | 0 / 44 | **0 (0%)** — pas de DPE Bretagne |
+| 56 | 2 492 | 11 (0.4%) | 6 / 87 | **17 (0.7%)** |
+| **Total** | **17 952** | **115 (0.6%)** | **40 / 1 416** | **155 (0.9%)** |
+
+**Conclusion** : Le 0.9% est cohérent métier — `brh_dpe_prospects` ne contient que les DPE **F/G** (passoires thermiques, filtre BRH). Les 17 800 autres clients possèdent simplement des logements en classe A-E ou sans DPE. La normalisation fonctionne correctement, le bottleneck est la couverture DPE F/G ADEME, pas le matching.
+
+**2. Taux de match DVF (voie uniquement, 10 ans Bretagne)**
+
+| Dept | Clients | Match voie DVF |
+|------|--------:|---------------:|
+| 22 | 3 368 | 568 (**16.9%**) |
+| 29 | 9 700 | 1 562 (**16.1%**) |
+| 35 | 528 | 75 (14.2%) |
+| 44 | 1 517 | 305 (**20.1%**) ⭐ |
+| 56 | 2 491 | 380 (15.3%) |
+| **Total** | **17 604** | **2 890 (16.4%)** |
+
+⭐ DVF est la source la plus utile pour enrichir la fiche client : 16.4% des clients ont au moins une mutation à leur adresse → historique acquéreur/vendeur identifiable.
+
+**3. Cas "locataire SCI" (cas Bodard généralisé)**
+
+- 32 825 DPE F/G détenus par SCI sur 4 dépts bretons
+- **78 cas** où un client BRH a une adresse qui matche exactement un DPE F/G détenu par SCI = 0.24% des DPE SCI
+- → Confirme la prédiction Philippe : "il y en aura très peu, nos clients sont en général les propriétaires"
+- → Ces 78 cas doivent afficher le badge `"Locataire — SCI X propriétaire"` en Phase 3 (cas B4)
+
+### Migrations Phase 2A appliquées en prod (21/05)
+
+| Migration | Fichier | Status |
+|-----------|---------|--------|
+| M-1 unaccent + `f_unaccent()` IMMUTABLE | `20260521100000_brh_unaccent_extension.sql` | ✅ Appliqué via Management API |
+| M-2 colonnes générées + 5 index | `20260521110000_brh_adresse_normalized_columns.sql` | ✅ Appliqué (regex `numero_norm` patché : suffixe lettré collé OU bis/ter/quater espacé) |
+| M-3 RPC `brh_normalize_adresse` + `brh_match_dpe_by_address` | `20260521120000_brh_adresse_match_rpc.sql` | ✅ Appliqué (pipeline complet : nettoyage CP/ville embedded + expansion abréviations 11 mots-clés) |
+
+⚠️ **Dette `schema_migrations`** : ces 3 migrations sont en prod mais PAS enregistrées dans la table `schema_migrations` Supabase (application directe via Management API). À réparer Phase 5 via `supabase migration repair --status applied 20260521100000 20260521110000 20260521120000` avant `supabase db push` final. Documenté dans [bugs-ouverts.md](bugs-ouverts.md).
 
 ---
 

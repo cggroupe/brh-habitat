@@ -20,6 +20,12 @@
 
 **⚠️ Conflit timestamp détecté 21/05** : `20260520100000_brh_dpe_employee_overrides.sql` partage le même préfixe que `20260520100000_brh_prospect_letters.sql` (Phase 13 killer feature, déjà appliquée prod). Renommer en `20260520105000_*` avant push. Décision Philippe 21/05 : **suspendre push, fix au push final Phase 5**.
 
+**⚠️ Dette `schema_migrations` Phase 2A** : 3 migrations Phase 2A (`20260521100000_brh_unaccent_extension`, `20260521110000_brh_adresse_normalized_columns`, `20260521120000_brh_adresse_match_rpc`) appliquées en prod via Management API directement (raison : besoin d'auditer le taux de match en place + accélérer Phase 2B/C/D qui dépendent des colonnes normalisées). Ces 3 migrations existent dans `supabase/migrations/` localement mais ne sont PAS dans `schema_migrations` côté Supabase. **À réparer Phase 5** :
+```bash
+supabase migration repair --status applied 20260521100000 20260521110000 20260521120000
+# puis supabase db push pour les autres migrations en attente
+```
+
 ---
 
 ### Bugs ENCORE OUVERTS

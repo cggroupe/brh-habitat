@@ -5,6 +5,34 @@
 
 ---
 
+## 2026-05-21 (25) — Phase 2A refonte : 3 migrations matching adresse + audit en place
+
+- **Contexte** : Exécution Phase 2A du `plan-refonte-2026-05-21.md` après GO Philippe ("continue. Tout doit être parfait. Organiser et donner valoriser."). Migrations infra matching adresse (foundation Phase 2B+C+D).
+- **Stratégie d'application** : Philippe a validé application via Management API direct (vs `supabase db push` bloqué par conflit timestamp `20260520100000` cf log entry 22). Repair `schema_migrations` à effectuer en Phase 5.
+- **3 migrations créées + appliquées en prod** :
+  - `supabase/migrations/20260521100000_brh_unaccent_extension.sql` (M-1) — `CREATE EXTENSION unaccent` + wrapper `public.f_unaccent(text)` IMMUTABLE STRICT PARALLEL SAFE pour usage en colonnes générées + index expression
+  - `supabase/migrations/20260521110000_brh_adresse_normalized_columns.sql` (M-2) — 3 colonnes générées STORED sur `brh_dpe_prospects` (59 306 rows) et `brh_personnes_historique` (18 571 rows) : `adresse_norm`, `numero_norm`, `voie_norm`. 5 nouveaux index : 2 composites `(code_postal, numero_norm, voie_norm)` + 2 partiels `(code_postal, voie_norm) WHERE numero_norm IS NULL` (lieux-dits) + 1 simple `code_postal` sur DPE
+  - `supabase/migrations/20260521120000_brh_adresse_match_rpc.sql` (M-3) — RPC `brh_normalize_adresse(text)` IMMUTABLE STRICT (pipeline complet : nettoyage CP/ville embedded + apostrophes + ponctuation + expansion 11 abréviations + extraction num/voie) + RPC `brh_match_dpe_by_address(adresse, code_postal)` STABLE (2 modes : exact num+voie, lieu-dit voie-only)
+- **Bugs détectés et patchés en cours d'application** :
+  - Regex `numero_norm` initial extrayait trop ("13 la Giduais" → num "13 l" car "l" interprété comme suffixe lettré). Patch : `^\s*(\d+(?:[a-zA-Z]|\s*(?:bis|ter|quater))?)` — suffixe lettré seul si COLLÉ au numéro, sinon bis/ter/quater obligatoires
+  - RPC `brh_normalize_adresse` smoke test échec sur "Av. de la République" car `\m...\M` ne match pas après point. Patch : ajout étape `regexp_replace(\1.\2, '\1 ')` qui remplace "av." par "av " avant expansion
+- **Audit Phase 2A.6 (post-migration)** :
+  - **Match DPE F/G strict** : 155/17 952 clients = **0.9%** sur les 5 dépts cibles. CONCLUSION métier : cohérent — la base ne contient que les DPE F/G (passoires), les autres clients ont des logements A-E ou sans DPE. La normalisation fonctionne, le bottleneck = couverture DPE F/G ADEME
+  - **Match DVF (voie 10 ans)** : 2 890/17 604 = **16.4%** clients avec mutation à leur adresse. Source la plus utile pour enrichir la fiche client (historique acquéreur/vendeur identifiable)
+  - **Cas "locataire SCI" (cas Bodard généralisé)** : 78 clients sur 32 825 DPE détenus par SCI = 0.24%. Confirme prédiction Philippe ("très peu, nos clients sont propriétaires"). Ces 78 cas afficheront badge "Locataire — SCI X propriétaire" Phase 3
+- **Verdict Philippe (insight critique)** : `brh_dpe_prospects` étant filtré F/G uniquement, le taux de match est nécessairement plafonné. Pour matcher plus de clients, il faudrait ingérer tous les DPE ADEME (~500k logements Bretagne) — décision à prendre Phase 4 ou plus tard
+- **Dette technique introduite** :
+  - **schema_migrations désynchro** : 3 migrations Phase 2A pas dans la table Supabase. Repair via `supabase migration repair --status applied ...` à exécuter Phase 5 avant le push final. Documenté dans `bugs-ouverts.md`
+- **Pages wiki impactées** :
+  - `docs/wiki/data-inventory.md` — section §8 enrichie : status bloqueurs (✅ résolus) + 3 tables d'audit (DPE match / DVF match / locataire SCI) + table migrations Phase 2A appliquées
+  - `docs/wiki/bugs-ouverts.md` — nouvelle entrée "Dette schema_migrations Phase 2A"
+- **Migrations créées** : 3 (20260521100000, 20260521110000, 20260521120000)
+- **Risque** : Low — migrations idempotentes (CREATE OR REPLACE, IF NOT EXISTS, ADD COLUMN IF NOT EXISTS). Aucune perte de données possible.
+- **Tests** : smoke tests inclus dans chaque migration (DO blocks RAISE EXCEPTION) + audit volumétrique sur 17 952 clients en lecture
+- **Status** : ✅ DONE Phase 2A — prêt pour Phase 2B (fix B9 perf RPC dirigeants_search) sur GO Philippe
+
+---
+
 ## 2026-05-21 (24) — Phase 1 refonte : spec matching adresse + audit volumétrique 5 dépts
 
 - **Contexte** : Exécution Phase 1 du `plan-refonte-2026-05-21.md` après GO Philippe. Spec stricte du matching adresse + audit volumétrique psql sur les 5 dépts cibles (22/29/35/44/56).
