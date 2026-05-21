@@ -5,6 +5,32 @@
 
 ---
 
+## 2026-05-21 (24) — Phase 1 refonte : spec matching adresse + audit volumétrique 5 dépts
+
+- **Contexte** : Exécution Phase 1 du `plan-refonte-2026-05-21.md` après GO Philippe. Spec stricte du matching adresse + audit volumétrique psql sur les 5 dépts cibles (22/29/35/44/56).
+- **Méthode** : audit via Supabase Management API endpoint `/database/query` avec service_role key. Aucun ALTER, lecture seule.
+- **Fichiers source clients identifiés** :
+  - Bretagne (4 dépts) : `/opt/stack/entity-hub/clients-uploads/20260515-*.csv` (3 fichiers)
+  - Loire-Atlantique (44) : `/root/uploads/brh/FICHIER_CLIENT_PPO_44.xlsx` + `PPO_44_consolide.{json,xlsx}` + scripts `parse-ppo-44.py` / `import-ppo-vers-brh.py`
+- **Verdict matching** :
+  - Match strict naïf `lower(adresse)+code_postal` sur dept 35 (528 clients × 14 492 DPE) = **0.8% (4 hits)** ⚠️
+  - Sources non normalisées : DPE ADEME tout-caps avec particules vs clients mixed-case sans particules vs PPO 44 avec CP+ville+pays embedded
+  - Extension `unaccent` PAS installée sur Supabase (`SELECT FROM pg_extension` = vide)
+  - Aucun index `(code_postal, adresse)` sur `brh_dpe_prospects` (18 index mais aucun pour le matching)
+- **Volumétrie 5 dépts** : 17 952 clients sur 18 571 total (97%). Dept 29 = 56% des clients + 43% emails (vs <3% autres). **Dept 44 a 0 DPE en base** — BRH Bretagne only.
+- **Distribution SCI** : 55% des 59 306 DPE F/G Bretagne détenus par SCI (32 825 cas) → le contact actionnable est le dirigeant, pas l'occupant.
+- **Fichiers modifiés** :
+  - `docs/wiki/matching-adresse.md` (RÉÉCRIT v1 → v2 complet) — pipeline normalisation (nettoyage + lower + unaccent + expansion abréviations) + clé `(cp, numero_norm, voie_norm)` + 8 cas ambigus tranchés + 4 migrations Phase 2 (M-1 extension, M-2 colonnes générées + index, M-3 expansion abrev option B retenue, M-4 RPC matching) + alternative BAN ID + algo `brh_client_360` v2
+  - `docs/wiki/data-inventory.md` — section §8 "Audit Phase 1" ajoutée (fichiers source, volumétrie 5 dépts, distribution SCI, verdict match, bloqueurs techniques)
+- **Audit reporté Phase 2** : taux locataire SCI (cas Bodard) — bloqué par timeout SQL sans index code_postal sur DPE prospects
+- **Migrations créées** : aucune (Phase 1 = spec uniquement)
+- **Pages wiki impactées** : 2 (matching-adresse.md + data-inventory.md)
+- **Risque** : None — documentation uniquement
+- **Tests** : audit psql en lecture seule via Management API, 0 modification BD
+- **Status** : ✅ DONE Phase 1 — prêt pour Phase 2 (migration unaccent + colonnes générées + index + fix B9 + pivot dirigeant→autres entreprises) sur GO Philippe
+
+---
+
 ## 2026-05-21 (23) — Phase 0 refonte : ménage wiki + 4 hubs entité-pivot
 
 - **Contexte** : Exécution Phase 0 du `plan-refonte-2026-05-21.md`. Philippe a validé 5 décisions (D-1 fusion data-inventory OUI, D-2 scale gratuit pour pivot dirigeant, D-3 ouvrir filtre DPE à E, D-4 réutiliser `brh_personnes_historique` existant pas de nouvelle table, D-5 suspendre push jusqu'à Phase 5 à cause d'un conflit timestamp `20260520100000`).

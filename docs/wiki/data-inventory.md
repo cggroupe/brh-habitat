@@ -116,7 +116,63 @@ Rowcounts vérifiés **psql direct sur `lygmmvxnmvlgynmrcpny` au 2026-05-21**.
 
 ---
 
-## 8. Fix DVF 19/05 (référencement)
+## 8. Audit Phase 1 — couverture par département cible (21/05)
+
+### Fichiers source identifiés sur le VPS
+
+| Dépt | Fichier source brut | Format | Status |
+|------|---------------------|--------|--------|
+| 22 / 29 / 35 / 56 | `/opt/stack/entity-hub/clients-uploads/20260515-21011{3,9}-upload-bretagne-renovation-habitat_export_{1,2}.csv` | CSV BRH export legacy | Importé `brh_personnes_historique` |
+| 22 / 29 / 35 / 56 | `/opt/stack/entity-hub/clients-uploads/20260515-210126-upload-export_RDV_NETTOYE_2023_2025.csv` | CSV RDV nettoyés | Importé (8 050 noms corrigés depuis `staging.brh_rdv.titre`) |
+| 44 | `/root/uploads/brh/FICHIER_CLIENT_PPO_44.xlsx` (raw) + `PPO_44_consolide.{json,xlsx}` (consolidé) + `parse-ppo-44.py` + `import-ppo-vers-brh.py` | XLSX + JSON + scripts Python | Importé `brh_personnes_historique` |
+
+### Clients BRH par département cible (au 21/05)
+
+| Dépt | Clients | Adresse exploitable | Tel | Email | DPE F/G en base | Score qualité parsing adresse |
+|------|--------:|--------------------:|----:|------:|----------------:|------------------------------|
+| 22 | 3 369 | 100% | 71% | 2.6% | 14 115 | 95% commencent par num |
+| 29 | 10 045 | 97% | 79% | **43%** ⭐ | 18 012 | 88% (plus de lieux-dits) |
+| 35 | 528 | 100% | 89% | 2.5% | 14 492 | 96% |
+| 44 | 1 518 | 100% | 97% | 0.3% | **0** ⚠️ | 97% (PPO 44 normalisé) |
+| 56 | 2 492 | 100% | 63% | 3% | 12 687 | 96% |
+| **Total 5 dépts** | **17 952** (97% du total 18 571) | | | | **59 306** | |
+
+**Constats** :
+- Le dept **29 (Finistère)** est l'or massif : 56% des clients BRH, 43% emails (campagne d'enrichissement vs autres dépts à <3%)
+- Le dept **44 (Loire-Atlantique) n'a pas de DPE en base** : BRH a importé Bretagne uniquement. À ingérer pour les 1 518 clients PPO 44 (P2)
+- Le dept **35** est le moins peuplé (528 clients) mais aussi très propre (96% parsing adresse)
+
+### DPE détenus par SCI (cas Bodard) — distribution par dépt
+
+| Dépt | DPE total | Détenus par SCI | Détenus par particulier |
+|------|----------:|----------------:|------------------------:|
+| 22 | 14 115 | 7 177 (51%) | 6 938 (49%) |
+| 29 | 18 012 | 9 725 (54%) | 8 287 (46%) |
+| 35 | 14 492 | 9 389 (65%) | 5 103 (35%) |
+| 56 | 12 687 | 6 534 (51%) | 6 153 (49%) |
+| **Total** | **59 306** | **32 825** (55%) | **26 481** (45%) |
+
+> **Implication** : 55% des DPE F/G en Bretagne sont détenus par une SCI → pour ces 32 825 logements, le contact actionnable n'est PAS le client BRH (occupant) mais le dirigeant SCI (cf [hub-sci-dirigeant.md](hub-sci-dirigeant.md) + cas Bodard B4).
+
+### Match strict client ↔ DPE — verdict
+
+Sur **échantillon dept 35** (528 clients × 14 492 DPE) :
+- Match strict naïf `lower(adresse) + code_postal` : **4 hits = 0.8%** ⚠️
+- Cause : sources non normalisées (DPE ADEME `"14 RUE DE BUGEAUD"` vs client `"14 Rue Bugeaud"` vs `"16 RUE DE LA MAISON NEUVE  35720 BONNEMAIN France"`)
+
+**Spec complète de normalisation** : [matching-adresse.md](matching-adresse.md) — pipeline lower + unaccent + expansion abréviations + clé `(code_postal, numero_norm, voie_norm)` + migration Phase 2
+
+### Bloqueurs techniques identifiés
+
+| Bloqueur | Détection | Action Phase 2 |
+|----------|-----------|----------------|
+| Extension `unaccent` non installée sur Supabase | `SELECT FROM pg_extension WHERE extname='unaccent'` = vide | Migration `CREATE EXTENSION unaccent;` |
+| Aucun index `(code_postal, adresse)` sur `brh_dpe_prospects` | 18 index existent mais aucun pour matcher l'adresse | Colonnes générées `adresse_norm`/`numero_norm`/`voie_norm` + index composite |
+| `brh_personnes_historique` n'a pas d'`adresse_ban_id` | Schema check | Optionnel P3 : enrichir via API BAN à l'ingestion → match 95%+ |
+
+---
+
+## 9. Fix DVF 19/05 (référencement)
 
 **Problème** : 60 154 mutations avec prix mais sans surface (VEFA + ventes groupées d'immeubles) → prix/m² incohérent.
 
@@ -139,4 +195,4 @@ Rowcounts vérifiés **psql direct sur `lygmmvxnmvlgynmrcpny` au 2026-05-21**.
 
 ---
 
-**Dernière maj** : 2026-05-21 (Phase 0 refonte) — Claude Opus 4.7
+**Dernière maj** : 2026-05-21 (Phase 1 — audit volumétrique 5 dépts + bloqueurs matching) — Claude Opus 4.7
