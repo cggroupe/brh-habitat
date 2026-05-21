@@ -62,6 +62,31 @@ Voir [docs/wiki/index.md](docs/wiki/index.md) pour la liste complète.
 13. **JAMAIS `toISOString().slice(0,10)`** — utiliser `getFullYear/getMonth/getDate`
 14. **TOUJOURS `@layer base { }`** pour resets CSS Tailwind 4
 
+## RÈGLES ANTI-SATURATION DB (issues incident 21/05)
+
+Incident 21/05 : DB Supabase tombée 3× en UNHEALTHY à cause de queries pré-optimisation. Causes + règles à respecter pour ne pas refaire :
+
+### 1. JAMAIS de regex full-scan sur grande table
+- ❌ `WHERE col ~ '\m<voie>\M'` sur 195k+ rows sans WHERE indexable préalable
+- ❌ Les anchors regex `\m \M ^ $` **n'utilisent PAS** l'index GIN trigram (limitation Postgres)
+- ✅ **Précomputer en colonne générée STORED** + index B-Tree + match `=` strict
+- ✅ Pattern reproductible : `voie_norm` + `idx_(code_postal, voie_norm)`
+
+### 2. JAMAIS de batches concurrents lourds sur même DB
+- Sitadel ingest (200k INSERTs) + Apify UPDATEs + recalc score V2 simultanés = pooler saturé
+- ✅ Lancer en **série**, pas en parallèle. Un batch à la fois.
+- ✅ `sleep 0.2-0.5s` entre INSERTs/UPDATEs dans les scripts Python (free tier surtout)
+
+### 3. TOUJOURS un index sur les colonnes de WHERE/JOIN
+- Si query touche table > 50k rows : vérifier `EXPLAIN ANALYZE` avant prod
+- Aucune query d'audit ne devrait dépasser **5s sur la table la plus grande**
+
+### 4. Migration corrective = pattern colonne générée STORED
+- Ajouter colonne dérivée à l'INGEST plutôt que regex à la query
+- Coût : ~5 MB par 100k rows pour index B-Tree (négligeable)
+
+### 5. Si saturation observée : STOP tous les batches + analyser, pas restart en boucle
+
 ---
 
 ## RÈGLES GLOBALES (MEMORY.md rappel)
