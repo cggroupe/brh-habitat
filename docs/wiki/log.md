@@ -5,6 +5,67 @@
 
 ---
 
+## 2026-05-21 (29) — Phase 5 refonte : DB push 20/05 + repair schema_migrations + smoke tests E2E
+
+**Phase 5 = synchronisation prod/local + QA finale avant push git.**
+
+### 5.1 — Fix conflit timestamp (commit a76a2ad)
+- `git mv 20260520100000_brh_dpe_employee_overrides.sql → 20260520105000_*` (slot libre entre prospect_letters appliqué prod et rpc_personne_360_dpe_role)
+- Préserve ordre logique : 100000 prospect_letters → 105000 employee_overrides → 110000 rpc_dpe_role
+
+### 5.2 — Audit état schema_migrations
+- 78 migrations locales sans tracker remote (héritage pré-existant)
+- Sondage objets prod : confirme refonte 21/05 appliquée + Sprint 20/05 (employee_overrides, RPCs) PAS appliquée
+- **Décision** : ne pas toucher aux 76 migrations héritées (hors scope), appliquer seulement les 2 vraies migrations refonte manquantes + repair pour Phase 2-4
+
+### 5.3 — Repair Phase 2-4 (8 migrations)
+- `supabase migration repair --status applied 20260521100000 20260521110000 20260521120000 20260521130000 20260521140000 20260521150000 20260521160000 20260521170000`
+- Status : ✅ Repaired migration history → applied
+
+### 5.4 — Application + repair Sprint 20/05 (2 migrations)
+- Application Management API : `20260520105000_brh_dpe_employee_overrides.sql` + `20260520110000_rpc_brh_personne_360_dpe_role.sql`
+- Vérif post-application :
+  - `brh_dpe_prospects.employee_overrides` (jsonb) : ✅ créée
+  - RPC `brh_dpe_employee_update` : ✅ créée
+  - RPC `brh_dpe_role_for_personne` : ✅ créée
+- Repair : `supabase migration repair --status applied 20260520105000 20260520110000` → applied
+
+### 5.5 — Smoke tests E2E refonte 21/05
+| Objet | Résultat |
+|-------|----------|
+| `f_unaccent('École à Plouguer')` | ✅ "Ecole a Plouguer" |
+| `brh_normalize_adresse('14 R De L''Argoat 35720 Bonnemain France')` | ✅ num="14" voie="rue de l argoat" (expansion abrév + suppression CP/ville/pays) |
+| `brh_dirigeant_sci` dept 29 | ✅ 18 342 lignes, 16 875 dirigeants distincts |
+| Colonne `autres_entreprises` enrichie | ✅ 5 300 dirigeants enrichis batch en cours, 2 689 avec hit (50.7%) |
+| RPC `brh_client_foncier_at_address(p_personne_id uuid)` | ✅ signature OK |
+| RPC `brh_dirigeants_search` | ⚠️ 2 surcharges détectées → `DROP FUNCTION ... v2` exécuté → ✅ 1 seule signature v3 reste |
+
+### 5.6 — État final migrations refonte 21/05 alignées local↔remote
+```
+20260520100000 | 20260520100000 | prospect_letters (pré-existant)
+20260520105000 | 20260520105000 | brh_dpe_employee_overrides ✅
+20260520110000 | 20260520110000 | rpc_brh_personne_360_dpe_role ✅
+20260521100000 | 20260521100000 | unaccent extension + f_unaccent ✅
+20260521110000 | 20260521110000 | adresse normalized columns + 5 index ✅
+20260521120000 | 20260521120000 | brh_normalize_adresse + brh_match_dpe_by_address ✅
+20260521130000 | 20260521130000 | brh_dirigeant_sci + rebuild fn (87k rows) ✅
+20260521140000 | 20260521140000 | brh_dirigeants_search v2 ✅
+20260521150000 | 20260521150000 | brh_dirigeants.autres_entreprises columns ✅
+20260521160000 | 20260521160000 | brh_client_foncier_at_address ✅
+20260521170000 | 20260521170000 | brh_dirigeants_search v3 (p_order_by) ✅
+```
+
+### Pages wiki impactées
+- `bugs-ouverts.md` : dette schema_migrations Phase 2A → ✅ RÉSOLUE Phase 5 + section "dette héritée hors scope" documentée (76 migrations Phase 11+ pré-existantes — recommandation audit futur)
+- `log.md` : entry 29 Phase 5
+
+### Migrations Phase 5 créées : 0 (rebrandé existant)
+### Build : pas re-run (aucun fichier .ts modifié Phase 5)
+### Risque : Low — opérations idempotentes (CREATE IF NOT EXISTS) + repair sécurisé
+### Status : ✅ DONE Phase 5 — prêt pour `git push origin main` sur GO Philippe
+
+---
+
 ## 2026-05-21 (28) — Phase 4 refonte : filtres "Mes leads" + B6 tri + B8 clarification + P-B vérifié
 
 - **Contexte** : Phase 4 du plan-refonte-2026-05-21. Demandes Philippe (vocal 21/05) : refonte filtres `/employe/leads-v2` et `/agence/leads-v2` (segments incompréhensibles, score non expliqué, DPE figé F/G alors qu'on veut E aussi (D-3), confusion clients/prospects (B8), tri inopérant filtre dirigeants (B6)).

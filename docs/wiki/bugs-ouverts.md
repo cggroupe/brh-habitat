@@ -20,11 +20,17 @@
 
 **⚠️ Conflit timestamp détecté 21/05** : `20260520100000_brh_dpe_employee_overrides.sql` partage le même préfixe que `20260520100000_brh_prospect_letters.sql` (Phase 13 killer feature, déjà appliquée prod). Renommer en `20260520105000_*` avant push. Décision Philippe 21/05 : **suspendre push, fix au push final Phase 5**.
 
-**⚠️ Dette `schema_migrations` Phase 2A** : 3 migrations Phase 2A (`20260521100000_brh_unaccent_extension`, `20260521110000_brh_adresse_normalized_columns`, `20260521120000_brh_adresse_match_rpc`) appliquées en prod via Management API directement (raison : besoin d'auditer le taux de match en place + accélérer Phase 2B/C/D qui dépendent des colonnes normalisées). Ces 3 migrations existent dans `supabase/migrations/` localement mais ne sont PAS dans `schema_migrations` côté Supabase. **À réparer Phase 5** :
-```bash
-supabase migration repair --status applied 20260521100000 20260521110000 20260521120000
-# puis supabase db push pour les autres migrations en attente
-```
+**✅ Dette `schema_migrations` refonte 21/05 — RÉSOLUE Phase 5** :
+- 8 migrations Phase 2-4 (`20260521100000` → `20260521170000`) appliquées en prod via Management API et `supabase migration repair --status applied` → trackées
+- 2 migrations Sprint 20/05 (`20260520105000_brh_dpe_employee_overrides` renommé depuis `20260520100000` pour fix conflit timestamp + `20260520110000_rpc_brh_personne_360_dpe_role`) appliquées via Management API + repair → trackées
+- Smoke tests E2E OK : f_unaccent, brh_normalize_adresse, brh_dirigeant_sci (18 342 rows dept 29), autres_entreprises enrichi (5 300 dirigeants), brh_client_foncier_at_address, brh_dirigeants_search v3 (drop v2 inline pour propreté)
+
+**⚠️ Dette technique HÉRITÉE — hors scope refonte 21/05** :
+- **76 migrations locales pré-existantes** non trackées dans `schema_migrations` (datées 17/05 → 06/07 — Phase 11+ portail agence/employé/artisan).
+- Probablement appliquées en prod par sprints précédents via `db push` partiel ou Management API direct (héritage).
+- **Risque** : si quelqu'un exécute `supabase db push` brut, il va tenter de ré-appliquer ces 76 et échouer (objets déjà existants).
+- **Action recommandée** (futur, hors scope) : audit manuel objet par objet (table/RPC/index existe en prod ?) puis `supabase migration repair --status applied <version>` en batch. Volumétrie estimée : 4-6h de boulot.
+- **En attendant** : éviter `supabase db push` brut. Appliquer chaque nouvelle migration via Management API + repair (pattern Phase 2-4-5 refonte 21/05).
 
 ---
 
