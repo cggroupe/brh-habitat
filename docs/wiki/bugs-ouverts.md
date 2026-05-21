@@ -43,7 +43,7 @@ supabase migration repair --status applied 20260521100000 20260521110000 2026052
 
 | # | Bug | Diagnostic | Phase plan |
 |---|-----|------------|------------|
-| **B9** | RPC `brh_dirigeants_search` timeout (>8s) quand on combine filtre département + n'importe quel autre filtre | Cause : `EXISTS (SELECT FROM jsonb_array_elements(d.sci_dirigees) JOIN brh_sci_companies …)` sans index. Sur 80 844 dirigeants × 1-N SCI chacun, full scan. **Fix proposé** : matérialiser une colonne `departements text[]` sur `brh_dirigeants` + index GIN. Ou créer table de liaison `brh_dirigeant_sci(dirigeant_id, siren, departement)` avec index. | Phase 2 (bloquant pour Phase 4 où on étend les filtres) |
+| ~~**B9**~~ | ~~RPC `brh_dirigeants_search` timeout (>8s) quand on combine filtre département + n'importe quel autre filtre~~ | ✅ **RÉSOLU Phase 2B (21/05)** — Table de liaison `brh_dirigeant_sci(dirigeant_id, siren, departement)` créée avec 3 index. Backfill 87 127 lignes. RPC `brh_dirigeants_search` v2 réécrit avec JOIN au lieu de `jsonb_array_elements`. **Perf : 841ms** (vs >8s avant) sur dept 29 + multi_sci + proprio_dpe combinés. Migrations `20260521130000` + `20260521140000`. | Phase 2B ✅ |
 
 ---
 
@@ -67,7 +67,7 @@ Onglet `/agence/leads-v2` (et `/employe/leads-v2`) — composant [UnifiedLeadsVi
 |-------|---------------|
 | Phase 0 (en cours) | — documentation uniquement |
 | Phase 1 | — spec matching (aucun bug direct) |
-| Phase 2 | **B7** (fiche dirigeant enrichie) + **B9** (perf RPC) |
+| Phase 2 | **B7** (fiche dirigeant enrichie) + ~~**B9**~~ ✅ (perf RPC résolu 21/05) |
 | Phase 3 | **B8** partiel (séparer clients/prospects côté employé) |
 | Phase 4 | **B6** + **B8** (final) + **B8bis** + **F1** à **F5** |
 | Phase 5 | Push prod + résolution conflit timestamp `20260520100000` |
