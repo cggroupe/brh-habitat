@@ -3,7 +3,10 @@
  * Affiche DPE + propriétaire (cliquable) + voisinage (cliquable) + sections lazy.
  * RGPD-aware via lead-visibility.ts.
  */
-import { Home, FileText, Building2, AlertTriangle, Wallet, Phone, Users, Flame, TrendingUp, Hammer } from 'lucide-react'
+import { useState, lazy, Suspense } from 'react'
+import { Home, FileText, Building2, AlertTriangle, Wallet, Phone, Users, Flame, TrendingUp, Hammer, UserPlus } from 'lucide-react'
+
+const CreateProspectFromDpeModal = lazy(() => import('../CreateProspectFromDpeModal'))
 import FicheBreadcrumb from './FicheBreadcrumb'
 import FicheSection from './FicheSection'
 import { EntityLinksPanel } from '../EntityLinksPanel'
@@ -25,6 +28,7 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
   const { data, isLoading, error } = useFicheAdresse(dpeId)
   const updateMutation = useUpdateDpe(dpeId)
   const overridesMutation = useUpdateDpeOverrides(dpeId)
+  const [showCreateProspect, setShowCreateProspect] = useState(false)
 
   if (isLoading) {
     return (
@@ -169,6 +173,18 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
                 profile={profile}
                 variant="row"
               />
+            ) : profile === 'employe' ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="text-sm text-slate-500">Propriétaire inconnu (DPE anonyme)</div>
+                <button
+                  type="button"
+                  onClick={() => setShowCreateProspect(true)}
+                  className="inline-flex items-center gap-1.5 rounded-md bg-emerald-700 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-800"
+                >
+                  <UserPlus className="h-3 w-3" />
+                  Enregistrer le propriétaire
+                </button>
+              </div>
             ) : (
               <div className="text-sm text-slate-500">Propriétaire inconnu</div>
             )}
@@ -398,6 +414,17 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
           />
         </div>
       </div>
+
+      {/* Modal création prospect — visible employé uniquement (DPE anonyme) */}
+      {profile === 'employe' && showCreateProspect && (
+        <Suspense fallback={null}>
+          <CreateProspectFromDpeModal
+            dpeId={dpeId}
+            open={showCreateProspect}
+            onClose={() => setShowCreateProspect(false)}
+          />
+        </Suspense>
+      )}
     </div>
   )
 }
