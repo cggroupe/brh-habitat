@@ -5,6 +5,24 @@
 
 ---
 
+## 2026-05-21 (22) — Plan refonte 5 axes Philippe + ménage wiki proposé
+
+- **Contexte** : Philippe envoie 5 axes vocaux à reprendre proprement (fiche client BRH enrichie, fiche lead public sans PII, fiche SCI second cerveau, UX filtres "Mes leads" + têtes de mort résiduelles, ménage wiki). Demande explicite : "plan détaillé par phase d'abord, aucun développement pour le moment". Mapping fait avec les 4 axes initiaux Claude (sauvegardés en memory `brh-axes-travail-2026-05-21.md`).
+- **Fichiers modifiés** :
+  - `docs/wiki/plan-refonte-2026-05-21.md` (CRÉÉ) — 7 sections : contexte + mapping axes, état repo (3 commits non pushés), 6 phases ordonnées (0 wiki / 1 spec matching / 2 fiche SCI + fix B9 / 3 fiche client / 4 lead public + UX filtres / 5 QA + push), récap charge ~50-57h sur ~9j, 5 décisions D-1 à D-5 à valider, risques transverses, glossaire
+  - `docs/wiki/index.md` — entrée catalogue ajoutée (Partie 1, après bugs-and-data-strategy)
+- **Doublons wiki identifiés** (à fusionner Phase 0 sous réserve D-1) :
+  - `data-coverage.md` + `osint-enrichment-registry.md` + `bugs-and-data-strategy-2026-05-21.md` → overlap >70% sur inventaire `brh_*`
+  - 3 pages "hub" entité-pivot proposées : `hub-client-brh.md`, `hub-lead-public.md`, `hub-sci-dirigeant.md`, + `matching-adresse.md` centrale
+- **Migrations créées** : aucune (page wiki uniquement)
+- **Pages wiki impactées** : `index.md`, `plan-refonte-2026-05-21.md` (nouvelle)
+- **Audit Explore livré** : 39 pages wiki recensées + 37 migrations 2026-05-* + fichiers UI clés (`EmployeClientBrhDetail.tsx`, `EmployeDirigeantDetail.tsx`, `FicheEntrepriseView.tsx`, `FichePersonneView.tsx`, `FicheAdresseView.tsx`, `UnifiedLeadsView.tsx`) + grep emoji ☠/💀 dans src/ = 0 occurrence (le "tête de mort" est probablement icône Lucide `Skull` à localiser en Phase 4)
+- **Risque** : None — documentation/plan uniquement, aucune ligne de code modifiée
+- **Tests** : aucun (doc)
+- **Status** : 🟡 PROPOSITION — attente GO Philippe sur 5 décisions D-1 à D-5
+
+---
+
 ## 2026-05-21 (21) — Cartographie bugs ouverts + inventaire data + pivots OSINT
 
 - **Contexte** : Philippe demande un récap consolidé : 1) liste des bugs en cours, 2) tous les éléments de data qu'on a (DPE/ADEME, DVF, BODACC, décès, Sirene, RGE, contacts BRH, etc.), 3) principes de pivot (ex: SCI dirigeant → autres entreprises non-SCI où il est mandataire → tel pro public).
