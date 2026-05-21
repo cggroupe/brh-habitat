@@ -5,6 +5,25 @@
 
 ---
 
+## 2026-05-21 (21) — Cartographie bugs ouverts + inventaire data + pivots OSINT
+
+- **Contexte** : Philippe demande un récap consolidé : 1) liste des bugs en cours, 2) tous les éléments de data qu'on a (DPE/ADEME, DVF, BODACC, décès, Sirene, RGE, contacts BRH, etc.), 3) principes de pivot (ex: SCI dirigeant → autres entreprises non-SCI où il est mandataire → tel pro public).
+- **Fichiers modifiés** :
+  - `docs/wiki/bugs-and-data-strategy-2026-05-21.md` (CRÉÉ) — 5 sections :
+    1. **Bugs ouverts** : 5 corrigés en local non-pushés (B1-B5 : formatage FR + DPE éditable + rôle occupant), 3 ouverts (B6 filtre Propriétaire DPE faux bug UX, B7 fiche dirigeant manque foncier, B8 confusion leads), 1 perf (B9 timeout RPC dirigeants combiné dept+filtre)
+    2. **Inventaire data réel au 21/05** : 13 tables principales avec rowcounts vérifiés (DPE 59 306, DVF 104 225, dirigeants 80 844 incl. 17 403 propriétaires DPE, SCI 36 491, BODACC 3 653, contacts BRH 18 571, décès matchs 46 730)
+    3. **6 pivots OSINT actionables** : (P1) SCI→commerce dirigeant via Pappers ⭐, (P2) cross-match BDD interne (déjà 110 validés), (P3) DPE propriétaire vs occupant, (P4) succession SCI→héritiers, (P5) BODACC cession→capital liquide, (P6) DVF récent→travaux 12-24m
+    4. **Sources non câblées par priorité** : Pappers API 49€/mois P1, Sitadel permis P2, BDNB Bretagne P3, DVF historique P3, mairies meublés tourisme P4
+    5. Résumé 3 phrases pour mémoire
+  - `docs/wiki/index.md` — entrée catalogue ajoutée (Partie 1)
+- **Migrations créées** : aucune (page wiki uniquement)
+- **Pages wiki impactées** : `index.md` (entrée catalogue), `bugs-and-data-strategy-2026-05-21.md` (nouvelle). Compagnon de `data-coverage.md` et `osint-enrichment-registry.md` (référencement croisé).
+- **Risque** : None — documentation uniquement
+- **Tests** : aucun (doc), mais chiffres data vérifiés en psql direct sur Supabase prod
+- **Status** : ✅ DONE
+
+---
+
 ## 2026-05-20 (20) — DPE éditable + rôle propriétaire/dirigeant/occupant (bug Bodard ↔ SCI La Colline)
 
 - **Contexte** : screenshot Philippe sur fiche "bodard francois" (14 rue Bugeaud Brest). DPE détenu par SCI La Colline (SIREN 343268967) liée à Bodard via `linked_dpe_id=4480` alors que Bodard n'est PAS dirigeant SCI (les dirigeants sont GUEGUEN Karinne + Bruno). En clair : Bodard est simple **occupant** (locataire probable), pas propriétaire. Par ailleurs, les postes techniques du DPE (isolation murs / plancher / toiture / ventilation / chauffage / ECS) étaient en lecture seule sur `FicheAdresseView` — l'équipe BRH ne pouvait pas noter les travaux observés terrain.

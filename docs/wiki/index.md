@@ -41,6 +41,7 @@
 | [osint-enrichment-registry.md](osint-enrichment-registry.md) | ⭐ **Registry campagnes OSINT/IA (19/05)** — couverture par source, doublons, futures campagnes |
 | [data-coverage.md](data-coverage.md) | ⭐ **Data coverage datasets de masse (19/05)** — DVF/Sitadel/BODACC/BDNB/Sirene : ingéré vs câblé UI, plan P1-P4 |
 | [entity-graph.md](entity-graph.md) | ⭐ **Graphe d'entités BRH (19/05)** — table pivot `brh_entity_links`, 4 règles de matching, RPC `brh_personne_360`, UI `PersonneGraphPanel` |
+| [bugs-and-data-strategy-2026-05-21.md](bugs-and-data-strategy-2026-05-21.md) | ⭐ **Bugs ouverts + stratégie data (21/05)** — 9 bugs (5 fixed local, 4 ouverts incl. B9 timeout RPC dirigeants), inventaire `brh_*` complet avec rows réels (DPE 59k / DVF 104k / SCI 36k / dirigeants 80k / contacts BRH 18k / BODACC 3.6k), 6 pivots OSINT actionables (SCI→commerce dirigeant, cross-BDD BRH, DPE propriétaire/occupant, succession, BODACC cession, DVF récent) + P1-P4 sources non câblées (Pappers, Sitadel, BDNB, mairies meublés) |
 
 ### Partie 2 — Guides features majeures
 
