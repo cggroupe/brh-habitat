@@ -87,7 +87,9 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
   const [filterParticulier, setFilterParticulier] = useState(false)
   const [filterSuccession, setFilterSuccession] = useState(false)
   const [typeBatiment, setTypeBatiment] = useState<string>('') // 'maison' | 'appartement' | 'immeuble' | ''
-  const [filterMutationDvfRecente, setFilterMutationDvfRecente] = useState(false) // dvf_mutation_24m
+  // F4 (21/05) : filtre délai mutation DVF sélectionnable.
+  // Valeurs : 'off' (pas de filtre) | '12m' | '24m' | '36m' | '60m'
+  const [dvfDelai, setDvfDelai] = useState<'off' | '12m' | '24m' | '36m' | '60m'>('off')
   const [page, setPage] = useState(0)
   const [selectedLead, setSelectedLead] = useState<LeadRow | null>(null)
   const navigate = useNavigate()
@@ -175,10 +177,18 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
       if (dpeClasses.size > 0 && !dpeClasses.has(String(r.etiquette_dpe))) return false
       if (etiquetteFilter && String(r.etiquette_dpe) !== etiquetteFilter) return false
       if (typeBatiment && String(r.type_batiment ?? '').toLowerCase() !== typeBatiment) return false
-      if (filterMutationDvfRecente && !r.dvf_mutation_24m) return false
+      // F4 — filtre délai DVF sélectionnable (12/24/36/60m)
+      if (dvfDelai !== 'off') {
+        if (!r.dvf_date) return false
+        const months = dvfDelai === '12m' ? 12 : dvfDelai === '24m' ? 24 : dvfDelai === '36m' ? 36 : 60
+        const mutationTime = Date.parse(r.dvf_date)
+        if (Number.isNaN(mutationTime)) return false
+        const cutoffMs = Date.now() - months * 30 * 24 * 60 * 60 * 1000
+        if (mutationTime < cutoffMs) return false
+      }
       return true
     })
-  }, [rows, dpeClasses, etiquetteFilter, typeBatiment, filterMutationDvfRecente])
+  }, [rows, dpeClasses, etiquetteFilter, typeBatiment, dvfDelai])
 
 
   return (
@@ -413,18 +423,32 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
                 <span>Succession en cours</span>
               </label>
             )}
-            <label className="flex items-center gap-2 text-slate-700">
-              <input
-                type="checkbox"
-                checked={filterMutationDvfRecente}
-                onChange={(e) => {
-                  setFilterMutationDvfRecente(e.target.checked)
-                  setPage(0)
-                }}
-                className="rounded"
-              />
-              <span>Mutation DVF &lt; 24 mois</span>
+          </div>
+
+          {/* F4 — Délai mutation DVF sélectionnable (21/05) */}
+          <div className="mt-3">
+            <label className="mb-1 block text-xs font-medium text-slate-600" title="Filtre une mutation DVF dans le délai choisi (basé sur dvf_date)">
+              Mutation DVF récente
             </label>
+            <select
+              value={dvfDelai}
+              onChange={(e) => {
+                setDvfDelai(e.target.value as typeof dvfDelai)
+                setPage(0)
+              }}
+              className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs"
+            >
+              <option value="off">— pas de filtre —</option>
+              <option value="12m">≤ 12 mois (très récente)</option>
+              <option value="24m">≤ 24 mois</option>
+              <option value="36m">≤ 36 mois</option>
+              <option value="60m">≤ 60 mois (5 ans)</option>
+            </select>
+            {dvfDelai !== 'off' && (
+              <p className="mt-1 text-[10px] text-slate-500">
+                Adresses sans date DVF exclues du résultat.
+              </p>
+            )}
           </div>
 
           {/* Filtres avancés (foncier fusionné dans la vue unifiée 18/05) */}

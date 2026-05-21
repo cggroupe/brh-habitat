@@ -10,8 +10,10 @@ import {
   ArrowLeft, Loader2, User, Building2, Home, ExternalLink, Save,
   Pencil, X, AlertTriangle, Briefcase, Phone, Mail,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { useDirigeant360, useUpdateDirigeant } from '@/hooks/queries/useDirigeants'
+
+const DirigeantBienMiniMap = lazy(() => import('@/components/leads/DirigeantBienMiniMap'))
 import type { DirigeantEditPatch } from '@/api/brh-dirigeants'
 
 const INTERET_OPTIONS = [
@@ -274,6 +276,22 @@ export default function EmployeDirigeantDetail() {
                 )}
               </ul>
             </section>
+          )}
+
+          {/* Mini-carte des biens (Phase 6B — B7 final) */}
+          {data.dpe_detenus && data.dpe_detenus.length > 0 && (
+            <Suspense
+              fallback={
+                <div className="rounded-lg border border-stone-200 bg-white p-5">
+                  <div className="flex items-center gap-2 text-sm text-stone-500">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Chargement de la carte…
+                  </div>
+                </div>
+              }
+            >
+              <DirigeantBienMiniMap dpeDetenus={data.dpe_detenus} />
+            </Suspense>
           )}
 
           {/* BODACC */}

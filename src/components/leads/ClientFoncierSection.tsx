@@ -10,7 +10,7 @@
  *
  * Source : RPC brh_client_foncier_at_address (Phase 3 migration 20260521160000).
  */
-import { Home, Building2, ShieldAlert, TrendingUp, Loader2, ExternalLink } from 'lucide-react'
+import { Home, Building2, ShieldAlert, TrendingUp, Loader2, ExternalLink, FileText } from 'lucide-react'
 import { useClientFoncier } from '@/hooks/queries/useClientFoncier'
 import type { ClientFoncierDpeRole } from '@/api/brh-client-foncier'
 
@@ -67,8 +67,8 @@ export default function ClientFoncierSection({ personneId }: Props) {
     return null
   }
 
-  const { client_address, dpe_matches, dvf_matches, is_tenant_of_sci, sci_proprietaire } = data
-  const hasAnything = dpe_matches.length > 0 || dvf_matches.length > 0
+  const { client_address, dpe_matches, dvf_matches, permis_matches, is_tenant_of_sci, sci_proprietaire } = data
+  const hasAnything = dpe_matches.length > 0 || dvf_matches.length > 0 || permis_matches.length > 0
 
   if (!client_address.code_postal || !client_address.voie_norm) {
     return (
@@ -178,6 +178,40 @@ export default function ClientFoncierSection({ personneId }: Props) {
             ))}
             {dvf_matches.length > 6 && (
               <li className="text-[11px] italic text-stone-500">+ {dvf_matches.length - 6} autres mutations</li>
+            )}
+          </ul>
+        </div>
+      )}
+
+      {/* Permis Sitadel (Phase 6D — branché, actif dès ingest) */}
+      {permis_matches.length > 0 && (
+        <div className="mb-3">
+          <h3 className="mb-2 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-stone-600">
+            <FileText className="h-3.5 w-3.5" />
+            Permis de construire ({permis_matches.length})
+          </h3>
+          <ul className="space-y-1">
+            {permis_matches.slice(0, 5).map((p) => (
+              <li key={p.id_permis} className="rounded-md border border-stone-100 bg-stone-50/40 p-2 text-xs">
+                <span className="font-mono text-stone-500">{p.date_depot}</span>
+                {' · '}
+                <span className="font-medium">{p.type_permis ?? 'Permis'}</span>
+                {p.nature_travaux && <span className="text-stone-600"> · {p.nature_travaux}</span>}
+                {p.surface_plancher_m2 != null && <span className="text-stone-600"> · {p.surface_plancher_m2} m² plancher</span>}
+                {p.nombre_logements_crees != null && p.nombre_logements_crees > 0 && (
+                  <span className="ml-2 rounded bg-emerald-100 px-1.5 py-0.5 text-[9px] text-emerald-900">
+                    +{p.nombre_logements_crees} logt
+                  </span>
+                )}
+                {p.decision && (
+                  <span className={`ml-2 rounded px-1.5 py-0.5 text-[9px] ${p.decision === 'Accordé' || p.decision === 'Tacite' ? 'bg-emerald-100 text-emerald-900' : 'bg-stone-200 text-stone-700'}`}>
+                    {p.decision}
+                  </span>
+                )}
+              </li>
+            ))}
+            {permis_matches.length > 5 && (
+              <li className="text-[11px] italic text-stone-500">+ {permis_matches.length - 5} autres permis</li>
             )}
           </ul>
         </div>

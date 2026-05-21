@@ -103,6 +103,8 @@ export interface Dirigeant360 {
     etiquette_dpe: string | null
     surface_habitable: number | null
     annee_construction: number | null
+    lat: number | null
+    lng: number | null
     owner_siren: string | null
     owner_name: string | null
   }>

@@ -39,7 +39,7 @@
 | # | Bug | Diagnostic | Action requise | Phase plan |
 |---|-----|------------|----------------|------------|
 | ~~**B6**~~ | ~~Filtre "Propriétaire DPE BRH" page `/employe/dirigeants` paraît inopérant~~ | ✅ **RÉSOLU Phase 4 (21/05)** — RPC v3 `brh_dirigeants_search` ajoute param `p_order_by` (patrimoine / nom / sci_count). UI : sélecteur tri visible + bascule auto `nom → patrimoine` si filtre actif + bandeau "Filtré par : …" listant chaque filtre actif + bouton "Tout effacer". Migration `20260521170000_rpc_brh_dirigeants_search_v3.sql`. | Phase 4 ✅ |
-| **B7** | Fiche dirigeant SCI ne montre pas les éléments fonciers complets | ✅ **PARTIEL Phase 2D** — Section "Autres entreprises (hors SCI)" + bandeau contact pro distinguant perso/pro ajoutés. Reste P3 si Philippe le demande : mini-carte des biens (DVF+DPE), score patrimoine agrégé, mutations DVF historique. | Phase 2D (partiel) |
+| ~~**B7**~~ | ~~Fiche dirigeant SCI ne montre pas les éléments fonciers complets~~ | ✅ **RÉSOLU Phase 2D + 6B (21/05)** — Section "Autres entreprises (hors SCI)" + bandeau contact pro distingué Phase 2D. **Mini-carte des biens** ajoutée Phase 6B (RPC v2 retourne lat/lng + composant `DirigeantBienMiniMap` lazy avec markers CircleMarker couleur DPE + fitBounds auto). Reste P3 si demandé : score patrimoine agrégé, mutations DVF historique. | Phase 2D + 6B ✅ |
 | ~~**B8**~~ | ~~"Leads BRH vue unifiée" mélange clients + prospects~~ | ✅ **RÉSOLU Phase 4 (21/05)** — Titres + sous-titres explicites : `/employe/leads-v2` = "Prospects DPE F/G — Vue unifiée · Adresses à conquérir (passoires). Pour vos contacts BRH historiques, voir Clients BRH." `/agence/leads-v2` = "Prospects Foncier · DPE F/G de votre zone — propriétaires anonymisés (RGPD)." Prop `subtitle` ajouté à `UnifiedLeadsView`. Confusion levée par sémantique métier sans changement data. | Phase 3 partiel + Phase 4 ✅ |
 | ~~**B8bis**~~ | ~~Têtes de mort résiduelles dans segment "succession en cours"~~ | ✅ **RÉSOLU Phase 2D (21/05)** — Source identifiée : icône Lucide `Skull` utilisée dans 9 fichiers (8 composants + 1 page). Tous remplacés par `AlertTriangle` (ton pro). Avatar dirigeant : `User` normal même si décédé, contexte porté par badge texte. | Phase 2D ✅ |
 
@@ -75,7 +75,8 @@ Onglet `/agence/leads-v2` (et `/employe/leads-v2`) — composant [UnifiedLeadsVi
 | Phase 1 | — spec matching (aucun bug direct) |
 | Phase 2 | **B7** (fiche dirigeant enrichie) + ~~**B9**~~ ✅ (perf RPC résolu 21/05) |
 | Phase 3 | **B8** partiel (séparer clients/prospects côté employé) |
-| Phase 4 ✅ | B6 (résolu) + B8 (résolu) + B8bis (résolu Phase 2D) + F1/F2/F3/F5/F6 (résolus). F4 délais reporté P3. |
+| Phase 4 ✅ | B6 (résolu) + B8 (résolu) + B8bis (résolu Phase 2D) + F1/F2/F3/F5/F6 (résolus) |
+| Phase 6 ✅ (post-refonte, backlog P3) | F4 délais 12/24/36/60m (résolu, filtre client-side `dvf_date`) + B7 final mini-carte dirigeant (RPC v2 lat/lng + composant Leaflet lazy) + Sitadel branché RPC v2 + UI permis (actif dès ingest) |
 | Phase 5 | Push prod + résolution conflit timestamp `20260520100000` |
 
 ---

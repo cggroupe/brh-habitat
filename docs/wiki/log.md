@@ -5,6 +5,51 @@
 
 ---
 
+## 2026-05-21 (30) — Phase 6 backlog : F4 délais + B7 mini-carte + Sitadel branché
+
+Continuation du backlog post-refonte sur GO Philippe ("continu"). Items reportés P3 que la wiki avait documentés.
+
+### 6A — F4 délais filtre DVF sélectionnables
+- Remplacement du toggle binaire "< 24 mois" par select 5 valeurs : off / 12m / 24m / 36m / 60m
+- Filtre côté CLIENT (pas de migration RPC) — utilise `dvf_date` retourné déjà par la RPC `brh_foncier_prospects_unified`
+- État : `dvfDelai: 'off' | '12m' | '24m' | '36m' | '60m'` dans `UnifiedLeadsView.tsx`
+- Hint texte si filtre actif : "Adresses sans date DVF exclues du résultat."
+
+### 6B — B7 final : mini-carte fiche dirigeant SCI
+- **Migration** `20260521180000_rpc_brh_dirigeant_360_v2_coords.sql` appliquée + repair → ajout `lat`, `lng` dans le JSON `dpe_detenus` (issu de `brh_dpe_prospects.latitude/longitude`, 99.97% remplis)
+- Type `Dirigeant360.dpe_detenus[]` étendu avec `lat, lng`
+- **Composant** `DirigeantBienMiniMap.tsx` (nouveau) — Leaflet `react-leaflet` lazy-loaded :
+  - CartoDB Voyager tile layer (gratuit, sans clé)
+  - `CircleMarker` couleur par classe DPE A→G (`#10b981` → `#b91c1c`)
+  - `FitBoundsOnMount` auto + `invalidateSize` multi-pass (mount + 800ms)
+  - Tooltip avec adresse + classe + surface
+  - `preferCanvas` pour perf 10x
+  - Filtre `dpeDetenus.filter((d) => d.lat != null && d.lng != null)` (skip rows sans coords)
+- Intégration `EmployeDirigeantDetail.tsx` via `Suspense` + lazy import — affichée entre "DPE détenus" et "BODACC", uniquement si `dpe_detenus.length > 0`
+- Header : "Carte des biens (N géolocalisé{s}{ / M total si différent})"
+
+### 6C — FicheEntrepriseView publique (skip)
+La vue publique consomme déjà `canSee(profile, ...)` sur la matrice RGPD pour 4 profils (employe/agence/artisan/notaire). Aucune refonte requise — l'enrichissement public (autres_entreprises côté agence) supposerait d'élargir la matrice RGPD, décision non triviale qui dépasse le scope backlog.
+
+### 6D — Permis Sitadel branchement final
+- **Migration** `20260521190000_rpc_brh_client_foncier_with_permis.sql` appliquée + repair
+- RPC `brh_client_foncier_at_address` v2 — `permis_matches` passe d'un placeholder `[]` à une vraie agrégation jsonb (match `code_postal + LIKE %voie_norm% via f_unaccent`) — actif dès que `brh_permis_construire` est populée
+- État table : 0 rows à ce jour (import Sitadel toujours en cours selon data-inventory) → la RPC retourne `[]` automatiquement, aucun changement comportemental visible côté UI
+- Type TS `ClientFoncierPermis` ajouté à `brh-client-foncier.ts`
+- Section UI permis ajoutée à `ClientFoncierSection.tsx` (date_depot + type + nature_travaux + surface + nb logements créés + badge décision)
+
+### Migrations Phase 6 créées : 2 (`20260521180000`, `20260521190000`)
+Les deux appliquées en prod via Management API + repair `--status applied`.
+
+### Build : ✅ tsc strict + Vite 21s, 0 erreur
+
+### Pages wiki impactées
+- `bugs-ouverts.md` : B7 marqué RÉSOLU (vs partiel), F4 marqué résolu, nouvelle ligne "Phase 6 ✅" dans suivi par phase
+
+### Status : ✅ DONE Phase 6 backlog — items P3 du plan-refonte qui étaient explicitement reportés sont maintenant tous traités (sauf score patrimoine agrégé fiche dirigeant + ingestion DPE A-E qui dépendent de décisions Philippe ou de data externe)
+
+---
+
 ## 2026-05-21 (29) — Phase 5 refonte : DB push 20/05 + repair schema_migrations + smoke tests E2E
 
 **Phase 5 = synchronisation prod/local + QA finale avant push git.**

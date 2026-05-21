@@ -55,11 +55,26 @@ export interface ClientFoncierSciProprio {
   siren: string | null
 }
 
+export interface ClientFoncierPermis {
+  id_permis: string
+  type_permis: string | null
+  nature_travaux: string | null
+  date_depot: string | null
+  date_decision: string | null
+  decision: string | null
+  surface_plancher_m2: number | null
+  nombre_logements_crees: number | null
+  adresse_complete: string | null
+  commune: string | null
+  lat: number | null
+  lng: number | null
+}
+
 export interface ClientFoncierAtAddress {
   client_address: ClientFoncierAddress
   dpe_matches: ClientFoncierDpe[]
   dvf_matches: ClientFoncierDvf[]
-  permis_matches: unknown[]
+  permis_matches: ClientFoncierPermis[]
   is_tenant_of_sci: boolean
   sci_proprietaire: ClientFoncierSciProprio | null
 }
