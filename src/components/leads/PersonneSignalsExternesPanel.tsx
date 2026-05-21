@@ -5,7 +5,7 @@
  * Chargé uniquement quand l'utilisateur clique « Voir signaux externes ».
  */
 import { useState } from 'react'
-import { Loader2, Home, Skull, Bell, ChevronDown, ChevronRight, ExternalLink } from 'lucide-react'
+import { Loader2, Home, AlertTriangle, Bell, ChevronDown, ChevronRight, ExternalLink } from 'lucide-react'
 import { usePersonneSignals } from '@/hooks/queries/usePersonneSignals'
 
 interface Props {
@@ -126,7 +126,7 @@ function SciDecesBlock({ matches }: { matches: NonNullable<ReturnType<typeof use
   return (
     <div className="rounded-md border border-rose-300 bg-rose-50/80 p-2">
       <div className="mb-1 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-rose-900">
-        <Skull className="h-3 w-3" />
+        <AlertTriangle className="h-3 w-3" />
         Succession potentielle (décès dirigeant SCI) — {matches.length}
       </div>
       <ul className="space-y-1">

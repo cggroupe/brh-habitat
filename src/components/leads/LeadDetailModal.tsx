@@ -10,7 +10,7 @@
  *   - Contacts (email/phone, BRH interne uniquement)
  *   - OSINT (BRH interne uniquement)
  */
-import { X, Home, Building2, Skull, Phone, Wallet, FileText, Flame } from 'lucide-react'
+import { X, Home, Building2, AlertTriangle, Phone, Wallet, FileText, Flame } from 'lucide-react'
 import type { LeadRow } from '@/types/lead'
 import { canSee, displayName, type LeadProfile } from '@/lib/rgpd/lead-visibility'
 
@@ -142,7 +142,7 @@ export default function LeadDetailModal({ lead, profile, onClose }: Props) {
           {canSee(profile, 'sci_succession') && (lead.succession_active || lead.deces_date) && (
             <section>
               <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-red-800">
-                <Skull className="h-4 w-4" />
+                <AlertTriangle className="h-4 w-4" />
                 Succession / Vente proche probable
               </div>
               <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm">

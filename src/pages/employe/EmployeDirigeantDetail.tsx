@@ -7,8 +7,8 @@
  */
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
-  ArrowLeft, Loader2, User, Skull, Building2, Home, ExternalLink, Save,
-  Pencil, X, AlertTriangle,
+  ArrowLeft, Loader2, User, Building2, Home, ExternalLink, Save,
+  Pencil, X, AlertTriangle, Briefcase, Phone, Mail,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useDirigeant360, useUpdateDirigeant } from '@/hooks/queries/useDirigeants'
@@ -72,7 +72,7 @@ export default function EmployeDirigeantDetail() {
           <div className="flex items-center gap-2">
             {d.succession_potentielle && (
               <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-[11px] font-medium text-rose-900 ring-1 ring-rose-200">
-                <Skull className="h-3 w-3" />
+                <AlertTriangle className="h-3 w-3" />
                 Succession ouverte
               </span>
             )}
@@ -89,7 +89,7 @@ export default function EmployeDirigeantDetail() {
           <section className="rounded-lg border border-stone-200 bg-white p-5">
             <div className="flex items-start gap-4">
               <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-lg ${d.est_decede ? 'bg-rose-50 text-rose-700' : 'bg-stone-100 text-stone-600'}`}>
-                {d.est_decede ? <Skull className="h-7 w-7" /> : <User className="h-7 w-7" />}
+                <User className="h-7 w-7" />
               </div>
               <div className="flex-1 min-w-0">
                 <h1 className="text-xl font-semibold text-stone-900">
@@ -107,12 +107,29 @@ export default function EmployeDirigeantDetail() {
                 <div className="mt-3 flex flex-wrap gap-2 text-sm">
                   {d.osint_telephone && (
                     <a href={`tel:${d.osint_telephone}`} className="inline-flex items-center gap-1 rounded-md bg-stone-100 px-2.5 py-1 text-stone-800 hover:bg-stone-200">
+                      <Phone className="h-3 w-3" />
                       <span className="font-mono">{d.osint_telephone}</span>
+                      <span className="text-[10px] text-stone-500">perso</span>
+                    </a>
+                  )}
+                  {d.tel_pro_via_entreprise && d.tel_pro_via_entreprise !== d.osint_telephone && (
+                    <a href={`tel:${d.tel_pro_via_entreprise}`} className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2.5 py-1 text-amber-900 hover:bg-amber-100 ring-1 ring-amber-200">
+                      <Phone className="h-3 w-3" />
+                      <span className="font-mono">{d.tel_pro_via_entreprise}</span>
+                      <span className="text-[10px] text-amber-700">pro (via société)</span>
                     </a>
                   )}
                   {d.osint_email && (
                     <a href={`mailto:${d.osint_email}`} className="inline-flex items-center gap-1 rounded-md bg-stone-100 px-2.5 py-1 text-stone-800 hover:bg-stone-200">
+                      <Mail className="h-3 w-3" />
                       {d.osint_email}
+                    </a>
+                  )}
+                  {d.email_pro_via_entreprise && d.email_pro_via_entreprise !== d.osint_email && (
+                    <a href={`mailto:${d.email_pro_via_entreprise}`} className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2.5 py-1 text-amber-900 hover:bg-amber-100 ring-1 ring-amber-200">
+                      <Mail className="h-3 w-3" />
+                      {d.email_pro_via_entreprise}
+                      <span className="text-[10px] text-amber-700">pro</span>
                     </a>
                   )}
                   {d.osint_linkedin && (
@@ -156,8 +173,8 @@ export default function EmployeDirigeantDetail() {
                       )}
                       {s.has_deceased_dirigeant && (
                         <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] text-amber-900">
-                          <Skull className="h-2.5 w-2.5" />
-                          Décès
+                          <AlertTriangle className="h-2.5 w-2.5" />
+                          Décès co-dirigeant
                         </span>
                       )}
                       {s.nb_dpe_owned > 0 && (
@@ -175,6 +192,56 @@ export default function EmployeDirigeantDetail() {
                   </Link>
                 ))}
               </div>
+            </section>
+          )}
+
+          {/* Autres entreprises (pivot rentable — hors SCI) */}
+          {d.autres_entreprises && d.autres_entreprises.length > 0 && (
+            <section className="rounded-lg border border-amber-200 bg-amber-50/30 p-5">
+              <h2 className="mb-1 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-amber-900">
+                <Briefcase className="h-4 w-4" />
+                Autres entreprises (hors SCI) — {d.autres_entreprises.length}
+              </h2>
+              <p className="mb-3 text-xs text-amber-800/80">
+                Pivot contact pro : ces sociétés dirigées par {d.prenom} {d.nom} peuvent avoir un téléphone ou email public utilisable pour le contacter.
+              </p>
+              <div className="space-y-2">
+                {d.autres_entreprises.map((e) => (
+                  <a
+                    key={e.siren}
+                    href={`https://annuaire-entreprises.data.gouv.fr/entreprise/${e.siren}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block rounded-md border border-amber-200/60 bg-white p-3 hover:bg-amber-50 hover:border-amber-300"
+                  >
+                    <div className="flex flex-wrap items-baseline gap-2">
+                      <span className="text-sm font-medium text-stone-900">{e.denomination ?? e.siren}</span>
+                      <span className="font-mono text-[10px] text-stone-500">SIREN {e.siren}</span>
+                      {e.nature_juridique && (
+                        <span className="rounded-full bg-stone-200 px-1.5 py-0.5 text-[9px] text-stone-700">NJ {e.nature_juridique}</span>
+                      )}
+                      {e.etat_administratif === 'C' && (
+                        <span className="rounded-full bg-rose-100 px-1.5 py-0.5 text-[9px] text-rose-900">Cessée</span>
+                      )}
+                      <ExternalLink className="ml-auto h-3 w-3 text-stone-400" />
+                    </div>
+                    <div className="mt-1 text-xs text-stone-600">
+                      {e.activite_principale && <span className="font-mono text-[10px] text-stone-500">{e.activite_principale}</span>}
+                      {e.siege_adresse && (
+                        <span className="block truncate">
+                          {e.siege_adresse}
+                          {e.siege_code_postal && ` · ${e.siege_code_postal} ${e.siege_commune ?? ''}`}
+                        </span>
+                      )}
+                    </div>
+                  </a>
+                ))}
+              </div>
+              {d.autres_entreprises_enriched_at && (
+                <p className="mt-3 text-[10px] italic text-amber-700/70">
+                  Enrichi le {new Date(d.autres_entreprises_enriched_at).toLocaleDateString('fr-FR')} via recherche-entreprises.data.gouv.fr (gratuit)
+                </p>
+              )}
             </section>
           )}
 

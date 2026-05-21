@@ -8,7 +8,7 @@
 import { useState, useDeferredValue } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Search, Loader2, User, Building2, Home, Skull, Filter,
+  Search, Loader2, User, Building2, Home, AlertTriangle, Filter,
 } from 'lucide-react'
 import { useDirigeantsSearch } from '@/hooks/queries/useDirigeants'
 
@@ -132,7 +132,7 @@ export default function EmployeDirigeants() {
               >
                 <div className="flex items-start gap-3">
                   <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md ${d.est_decede ? 'bg-rose-50 text-rose-700' : 'bg-stone-100 text-stone-600'}`}>
-                    {d.est_decede ? <Skull className="h-5 w-5" /> : <User className="h-5 w-5" />}
+                    <User className="h-5 w-5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-2">
@@ -146,7 +146,7 @@ export default function EmployeDirigeants() {
                       )}
                       {d.succession_potentielle && (
                         <span className="inline-flex items-center gap-0.5 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-medium text-rose-900 ring-1 ring-rose-200">
-                          <Skull className="h-2.5 w-2.5" />
+                          <AlertTriangle className="h-2.5 w-2.5" />
                           Succession ouverte
                         </span>
                       )}

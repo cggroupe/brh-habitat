@@ -13,7 +13,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Loader2, ChevronDown, ChevronRight, ExternalLink,
-  Building2, Home, Skull, Bell, Hash, MapPin,
+  Building2, Home, AlertTriangle, Bell, Hash, MapPin,
 } from 'lucide-react'
 import { usePersonne360 } from '@/hooks/queries/usePersonne360'
 
@@ -266,7 +266,7 @@ function DecesBlock({ deces }: { deces: NonNullable<ReturnType<typeof usePersonn
   return (
     <div className="rounded-md border border-rose-300 bg-rose-50/80 p-2">
       <div className="mb-1 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-rose-900">
-        <Skull className="h-3 w-3" />
+        <AlertTriangle className="h-3 w-3" />
         Succession potentielle — {deces.length}
       </div>
       <ul className="space-y-1">

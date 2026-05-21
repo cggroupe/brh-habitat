@@ -3,7 +3,7 @@
  * Affiche DPE + propriétaire (cliquable) + voisinage (cliquable) + sections lazy.
  * RGPD-aware via lead-visibility.ts.
  */
-import { Home, FileText, Building2, Skull, Wallet, Phone, Users, Flame, TrendingUp, Hammer } from 'lucide-react'
+import { Home, FileText, Building2, AlertTriangle, Wallet, Phone, Users, Flame, TrendingUp, Hammer } from 'lucide-react'
 import FicheBreadcrumb from './FicheBreadcrumb'
 import FicheSection from './FicheSection'
 import { EntityLinksPanel } from '../EntityLinksPanel'
@@ -287,7 +287,7 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
             (sci?.has_deceased_dirigeant || dpe.succession_active || dpe.deces_date) && (
               <FicheSection
                 title="Succession probable"
-                icon={<Skull className="h-4 w-4 text-red-600" />}
+                icon={<AlertTriangle className="h-4 w-4 text-red-600" />}
                 defaultOpen
               >
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">

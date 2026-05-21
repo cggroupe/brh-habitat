@@ -16,7 +16,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Loader2, Phone, Mail, MapPin, Wallet, Calendar,
   Building2, FileText, AlertTriangle, ExternalLink, User,
-  Sparkles, Crown, Award, Sigma, Skull,
+  Sparkles, Crown, Award, Sigma,
 } from 'lucide-react'
 import { usePersonne360 } from '@/hooks/queries/usePersonne360'
 import { useUpdatePersonne } from '@/hooks/queries/useEmployeeEdit'
@@ -472,7 +472,7 @@ export default function EmployeClientBrhDetail() {
               {data.sci_deces_pairs.length > 0 && (
                 <div className="mb-3 rounded-md border border-rose-300 bg-rose-50 p-3">
                   <p className="mb-1 inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-rose-900">
-                    <Skull className="h-3 w-3" />
+                    <AlertTriangle className="h-3 w-3" />
                     Succession potentielle ({data.sci_deces_pairs.length})
                   </p>
                   <ul className="space-y-1">

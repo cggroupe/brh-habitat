@@ -4,7 +4,7 @@
  * MVP : assemblé depuis brh_sci_companies.dirigeants JSONB + brh_dpe_prospects.particulier_name.
  * À enrichir Sprint 3 avec entity-hub (core.person, core.contact, core.event, signaux).
  */
-import { User, Building2, Skull, Calendar, Briefcase } from 'lucide-react'
+import { User, Building2, AlertTriangle, Calendar, Briefcase } from 'lucide-react'
 import FicheBreadcrumb from './FicheBreadcrumb'
 import FicheSection from './FicheSection'
 import FicheEntityLink from './FicheEntityLink'
@@ -100,7 +100,7 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                 />
                 {isDeceased && (
                   <div className="flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-800">
-                    <Skull className="h-3.5 w-3.5" />
+                    <AlertTriangle className="h-3.5 w-3.5" />
                     Succession active
                   </div>
                 )}

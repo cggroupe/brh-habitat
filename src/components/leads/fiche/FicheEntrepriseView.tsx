@@ -2,7 +2,7 @@
  * Vue fiche entreprise/SCI — drill-down depuis adresse ou dirigeant.
  * Dirigeants cliquables → fiche personne. Adresses détenues cliquables → fiche adresse.
  */
-import { Building2, User, Home, AlertTriangle, Skull } from 'lucide-react'
+import { Building2, User, Home, AlertTriangle } from 'lucide-react'
 import FicheBreadcrumb from './FicheBreadcrumb'
 import FicheSection from './FicheSection'
 import FicheEntityLink from './FicheEntityLink'
@@ -79,7 +79,7 @@ export default function FicheEntrepriseView({ siren, profile }: Props) {
                 />
                 {sci.has_deceased_dirigeant && (
                   <div className="flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-800">
-                    <Skull className="h-3.5 w-3.5" />
+                    <AlertTriangle className="h-3.5 w-3.5" />
                     Succession probable
                   </div>
                 )}

@@ -15,6 +15,19 @@ export interface DirigeantSciSummary {
   date_creation: string | null
 }
 
+export interface DirigeantAutreEntreprise {
+  siren: string
+  denomination: string | null
+  nature_juridique: string | null
+  activite_principale: string | null
+  etat_administratif: string | null
+  siege_adresse: string | null
+  siege_code_postal: string | null
+  siege_commune: string | null
+  tranche_effectif: string | null
+  date_creation: string | null
+}
+
 export interface DirigeantSearchRow {
   id: string
   nom: string
@@ -60,6 +73,11 @@ export interface Dirigeant360 {
     employee_notes: string | null
     interet_brh: string | null
     derniere_visite_terrain: string | null
+    autres_entreprises: DirigeantAutreEntreprise[] | null
+    autres_entreprises_match_count: number | null
+    autres_entreprises_enriched_at: string | null
+    tel_pro_via_entreprise: string | null
+    email_pro_via_entreprise: string | null
   } | null
   sci_details: Array<{
     siren: string
