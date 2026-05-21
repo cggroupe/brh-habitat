@@ -28,23 +28,45 @@
 
 ## Catalogue des pages
 
-### Partie 1 — État actuel du projet
+### Partie 1 — Hubs entité-pivot (refonte 21/05)
+
+> **3 hubs métier centraux** : chaque entité opérationnelle (client BRH, lead public, SCI/dirigeant) a une page hub unique qui décrit ce qu'on doit voir, d'où viennent les données, et comment câbler l'UI. **Single-page, zéro onglet caché.**
+
+| Page | Sujet |
+|------|-------|
+| [hub-client-brh.md](hub-client-brh.md) | 🎯 **Hub Client BRH (employé seul)** — fiche 360° contact `brh_personnes_historique` : identité + travaux + contact + cross adresse (DPE/permis/BDNB/DVF) + détection locataire SCI |
+| [hub-lead-public.md](hub-lead-public.md) | 🎯 **Hub Lead Public (agences/pros BTP)** — fiche prospect anonyme : DPE complet + cross permis/BDNB/DVF + détection siège société + filtres "Mes leads" UX refondue (F1-F6) |
+| [hub-sci-dirigeant.md](hub-sci-dirigeant.md) | 🎯 **Hub SCI + Dirigeant "second cerveau"** — fiche SCI single-page : DPE détenus + dirigeants + autres entreprises (pivot rentable) + BODACC + succession + 6 pivots OSINT actionables |
+| [matching-adresse.md](matching-adresse.md) | 🔑 **Règle stricte num+rue+CP** (page centrale référencée par les 3 hubs) — normalisation, clé `(numero, voie_norm, code_postal)`, audit volumétrique Phase 1 |
+
+### Partie 2 — État data + bugs
+
+| Page | Sujet |
+|------|-------|
+| [data-inventory.md](data-inventory.md) | ⭐ **Inventaire data canonique (21/05)** — toutes les tables `brh_*` avec rowcounts réels (DPE 59k / DVF 104k / SCI 36k / dirigeants 80k / contacts BRH 18k / BODACC 3.6k) + statut UI + datasets bruts non ingérés + sources P1-P4. Remplace `data-coverage.md`. |
+| [bugs-ouverts.md](bugs-ouverts.md) | ⭐ **Suivi bugs UI/UX/perf (21/05)** — B1-B5 corrigés local (formatage FR + DPE éditable + rôle), B6-B8 ouverts UX, B9 perf RPC dirigeants, F1-F6 filtres "Mes leads" |
+| [data-model.md](data-model.md) | Tables par domaine, RLS, triggers, fonctions SECURITY DEFINER |
+| [entity-graph.md](entity-graph.md) | Graphe d'entités BRH — table pivot `brh_entity_links`, 4 règles matching, RPC `brh_personne_360`, UI `PersonneGraphPanel` |
+| [osint-enrichment-registry.md](osint-enrichment-registry.md) | Registry campagnes OSINT/IA contact-par-contact (Apify/Holehe/Maigret/Sherlock/Claude psy) — couverture par source, doublons, distribution tiers gold/silver/bronze |
+| [migrations-audit.md](migrations-audit.md) | Catalog des 37+ migrations en phases |
+| [edge-functions-reference.md](edge-functions-reference.md) | 41 Edge Functions (IA, emails, invitations, SIRET, Clerk bridge) |
+| [hooks-reference.md](hooks-reference.md) | 70 hooks React Query + 73 modules API Zod |
+
+### Partie 3 — Architecture & accès
 
 | Page | Sujet |
 |------|-------|
 | [architecture-snapshot.md](architecture-snapshot.md) | Stack, 119 pages, 33+ tables `brh_*`, 70 routes, score 9.8/10 |
-| [auth-access-matrix.md](auth-access-matrix.md) | ⭐ **Source de vérité auth/accès (08/05)** — 9 personas, 78 routes × 9 personas (✅/🔄), graphe inscription, login switcher, parrainage MLM cross-persona, 10 anomalies identifiées |
-| [data-model.md](data-model.md) | Tables par domaine, RLS, triggers, fonctions SECURITY DEFINER |
-| [edge-functions-reference.md](edge-functions-reference.md) | 11 Edge Functions (IA, emails, invitations, SIRET, Clerk bridge) |
-| [hooks-reference.md](hooks-reference.md) | 14 hooks React Query + 25 modules API Zod |
-| [migrations-audit.md](migrations-audit.md) | Catalog des 37 migrations en 5 phases |
-| [osint-enrichment-registry.md](osint-enrichment-registry.md) | ⭐ **Registry campagnes OSINT/IA (19/05)** — couverture par source, doublons, futures campagnes |
-| [data-coverage.md](data-coverage.md) | ⭐ **Data coverage datasets de masse (19/05)** — DVF/Sitadel/BODACC/BDNB/Sirene : ingéré vs câblé UI, plan P1-P4 |
-| [entity-graph.md](entity-graph.md) | ⭐ **Graphe d'entités BRH (19/05)** — table pivot `brh_entity_links`, 4 règles de matching, RPC `brh_personne_360`, UI `PersonneGraphPanel` |
-| [bugs-and-data-strategy-2026-05-21.md](bugs-and-data-strategy-2026-05-21.md) | ⭐ **Bugs ouverts + stratégie data (21/05)** — 9 bugs (5 fixed local, 4 ouverts incl. B9 timeout RPC dirigeants), inventaire `brh_*` complet avec rows réels (DPE 59k / DVF 104k / SCI 36k / dirigeants 80k / contacts BRH 18k / BODACC 3.6k), 6 pivots OSINT actionables (SCI→commerce dirigeant, cross-BDD BRH, DPE propriétaire/occupant, succession, BODACC cession, DVF récent) + P1-P4 sources non câblées (Pappers, Sitadel, BDNB, mairies meublés) |
-| [plan-refonte-2026-05-21.md](plan-refonte-2026-05-21.md) | 🟡 **Plan refonte 21/05 — EN ATTENTE GO** — 5 axes Philippe (fiche client BRH / lead public / SCI second cerveau / UX filtres / ménage wiki) découpés en 6 phases (~50-57h / ~9j). 5 décisions D-1 à D-5 à valider avant démarrage. Doublons wiki identifiés (data-coverage + osint-enrichment + bugs-strategy = fusion proposée). |
+| [auth-access-matrix.md](auth-access-matrix.md) | ⭐ **Source de vérité auth/accès (08/05)** — 9 personas, 78 routes × 9 personas, graphe inscription, login switcher, parrainage MLM cross-persona, 10 anomalies identifiées |
+| [lead-visibility-rgpd.md](lead-visibility-rgpd.md) | Matrice RGPD : 4 profils (employé/agence/artisan/notaire) × visibilité PII |
 
-### Partie 2 — Guides features majeures
+### Partie 4 — Plans & roadmap actifs
+
+| Page | Sujet |
+|------|-------|
+| [plan-refonte-2026-05-21.md](plan-refonte-2026-05-21.md) | 🟡 **Plan refonte 21/05 (en cours)** — 5 axes Philippe en 6 phases (~50-57h / ~9j). Phase 0 (ménage wiki) livrée le 21/05. Décisions D-1 à D-5 actées. |
+
+### Partie 5 — Guides features majeures
 
 | Page | Sujet |
 |------|-------|
@@ -72,7 +94,7 @@
 | [reseau-social-status.md](reseau-social-status.md) | 🟢 **Phase 18 Status (06/05)** — **8/12 étapes livrées** : audit + blueprint + migration SQL + infra UI + graphe social + feed MVP + marketplace chantiers KILLER + bridge AUTAF V1. Reste 4 : modération avancée, bootstrap, SEO, monétisation. MVP utilisable atteint. |
 | [autaf-bridge.md](autaf-bridge.md) | 🔗 **Phase 18.8 (06/05)** — Bridge API AUTAF (WordPress OVH ↔ BRH Supabase). V1 livré : config manuelle token + EF `autaf-recommendations-fetch` + composant `AutafRecommendations` read-only avec fallback gracieux. V1.5 = OAuth flow + cross-post (en attente API Genesii). Spec endpoints + email type à envoyer à Genesii. |
 
-### Partie 3 — Qualité & opérations
+### Partie 6 — Qualité & opérations
 
 | Page | Sujet |
 |------|-------|
@@ -83,12 +105,21 @@
 | [audit-ux-2026-05-08.md](audit-ux-2026-05-08.md) | 🔍 **Audit UX/UI complet (08/05/2026)** — Référentiel startup US (Stripe/Linear/Pipedrive/Apollo) + MLM (doTerra/Beachbody). Score actuel **5.4/10** → cible 9/10. Top 25 problèmes priorisés. Roadmap 5 sprints / 30 tâches / 14 jours. Gap critique MLM **2/10** vs cible business 20k€ MRR. |
 | [audit-ux-2026-05-12.md](audit-ux-2026-05-12.md) | 🔥 **Retour test Philippe (12/05/2026)** — 9 points (bugs login particulier/affilié/employé, PLUi qui déborde, marker cadastre, pivot Phase 18 feed → chantiers/dispo only, admin quotas granulaires, RDV créneaux flous, simulateur Cabrenove, templates emails, polish UX global). Ordre d'attaque proposé : bugs → quick wins → admin → simu → décision pivot. |
 
-### Partie 4 — Méta
+### Partie 7 — Méta
 
 | Page | Sujet |
 |------|-------|
 | [karpathy-pattern-setup.md](karpathy-pattern-setup.md) | Règles d'usage de cette wiki |
 | [log.md](log.md) | Journal append-only des modifications |
+
+### Archive
+
+Pages remplacées par des refactorings successifs. **Ne pas modifier, ne pas linker depuis pages vivantes.** Voir [archive/README.md](archive/README.md).
+
+| Page archivée | Date | Remplacée par |
+|---------------|------|---------------|
+| [archive/data-coverage.md](archive/data-coverage.md) | 2026-05-21 | [data-inventory.md](data-inventory.md) |
+| [archive/bugs-and-data-strategy-2026-05-21.md](archive/bugs-and-data-strategy-2026-05-21.md) | 2026-05-21 | [data-inventory.md](data-inventory.md) + [bugs-ouverts.md](bugs-ouverts.md) + [hub-sci-dirigeant.md](hub-sci-dirigeant.md) |
 
 ### Tooling
 

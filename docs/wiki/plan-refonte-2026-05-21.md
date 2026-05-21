@@ -2,7 +2,7 @@
 
 > **Statut** : 🟡 PROPOSITION — en attente GO Philippe phase par phase
 > **Rédacteur** : Claude Opus 4.7 · **Commanditaire** : Philippe Gagnon
-> **Compagnon de** : [bugs-and-data-strategy-2026-05-21.md](bugs-and-data-strategy-2026-05-21.md)
+> **Compagnon de** : [data-inventory.md](data-inventory.md) + [bugs-ouverts.md](bugs-ouverts.md) (issus de la fusion de bugs-and-data-strategy en Phase 0)
 
 ---
 

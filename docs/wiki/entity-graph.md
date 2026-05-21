@@ -136,7 +136,7 @@ total_links = 30 319
 - RPC 360 : [`20260519150000_rpc_brh_personne_360.sql`](../supabase/migrations/20260519150000_rpc_brh_personne_360.sql)
 - API : [`src/api/brh-personne-360.ts`](../../src/api/brh-personne-360.ts)
 - UI : [`src/components/leads/PersonneGraphPanel.tsx`](../../src/components/leads/PersonneGraphPanel.tsx)
-- Data coverage globale : [data-coverage.md](data-coverage.md)
+- Data coverage globale : [data-inventory.md](data-inventory.md)
 - OSINT registry : [osint-enrichment-registry.md](osint-enrichment-registry.md)
 - Log : [log.md](log.md)
 

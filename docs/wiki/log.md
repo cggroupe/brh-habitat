@@ -5,6 +5,31 @@
 
 ---
 
+## 2026-05-21 (23) — Phase 0 refonte : ménage wiki + 4 hubs entité-pivot
+
+- **Contexte** : Exécution Phase 0 du `plan-refonte-2026-05-21.md`. Philippe a validé 5 décisions (D-1 fusion data-inventory OUI, D-2 scale gratuit pour pivot dirigeant, D-3 ouvrir filtre DPE à E, D-4 réutiliser `brh_personnes_historique` existant pas de nouvelle table, D-5 suspendre push jusqu'à Phase 5 à cause d'un conflit timestamp `20260520100000`).
+- **Fichiers modifiés** :
+  - `docs/wiki/data-inventory.md` (CRÉÉ) — fusion canonique inventaire `brh_*` (datasets ingérés + bruts disque + sources P1-P4 non câblées)
+  - `docs/wiki/bugs-ouverts.md` (CRÉÉ) — extraction B1-B9 + F1-F6 filtres + suivi par phase
+  - `docs/wiki/hub-client-brh.md` (CRÉÉ) — squelette fiche client BRH employé
+  - `docs/wiki/hub-lead-public.md` (CRÉÉ) — squelette fiche prospect agence/pro sans PII
+  - `docs/wiki/hub-sci-dirigeant.md` (CRÉÉ) — squelette fiche SCI "second cerveau" + 6 pivots OSINT
+  - `docs/wiki/matching-adresse.md` (CRÉÉ) — squelette règle stricte num+rue+CP (spec Phase 1)
+  - `docs/wiki/archive/README.md` (CRÉÉ) — registre pages archivées
+  - `docs/wiki/archive/data-coverage.md` (DÉPLACÉ via `git mv`)
+  - `docs/wiki/archive/bugs-and-data-strategy-2026-05-21.md` (DÉPLACÉ via `git mv`)
+  - `docs/wiki/index.md` — restructuré en 7 parties (1 Hubs entité-pivot / 2 État data + bugs / 3 Architecture & accès / 4 Plans & roadmap / 5 Guides features / 6 Qualité & opérations / 7 Méta) + section Archive
+  - `docs/wiki/entity-graph.md` — fix lien cassé `data-coverage.md` → `data-inventory.md`
+  - `docs/wiki/plan-refonte-2026-05-21.md` — fix lien compagnon
+- **Décision réseau-social-blueprint** : NON archivée — référencée par `reseau-social-status.md` qui documente une livraison réelle (8/12 étapes). La mention "PAUSE" suffit.
+- **Migrations créées** : aucune (wiki uniquement)
+- **Pages wiki impactées** : 11 fichiers (7 créés + 2 déplacés + 2 mis à jour)
+- **Risque** : None — documentation uniquement, aucun code modifié
+- **Tests** : aucun (doc)
+- **Status** : ✅ DONE Phase 0 — prêt pour Phase 1 (spec matching adresse + audit data) sur GO Philippe
+
+---
+
 ## 2026-05-21 (22) — Plan refonte 5 axes Philippe + ménage wiki proposé
 
 - **Contexte** : Philippe envoie 5 axes vocaux à reprendre proprement (fiche client BRH enrichie, fiche lead public sans PII, fiche SCI second cerveau, UX filtres "Mes leads" + têtes de mort résiduelles, ménage wiki). Demande explicite : "plan détaillé par phase d'abord, aucun développement pour le moment". Mapping fait avec les 4 axes initiaux Claude (sauvegardés en memory `brh-axes-travail-2026-05-21.md`).
