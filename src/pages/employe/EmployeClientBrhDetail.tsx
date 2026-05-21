@@ -22,6 +22,7 @@ import { usePersonne360 } from '@/hooks/queries/usePersonne360'
 import { useUpdatePersonne } from '@/hooks/queries/useEmployeeEdit'
 import { EmployeeEditPanel } from '@/components/leads/EmployeeEditPanel'
 import { ClientVisitsTravauxSection } from '@/components/leads/ClientVisitsTravauxSection'
+import ClientFoncierSection from '@/components/leads/ClientFoncierSection'
 import { useAuth } from '@/hooks/useAuth'
 import { formatNameFr, formatPhoneFr, formatFullAddress } from '@/lib/format-fr'
 import type { Personne360Identity } from '@/api/brh-personne-360'
@@ -211,6 +212,9 @@ export default function EmployeClientBrhDetail() {
           {id && (
             <ClientVisitsTravauxSection personneId={id} currentUserId={currentUserId} />
           )}
+
+          {/* FONCIER À L'ADRESSE (Phase 3 — cross DPE/DVF/permis + badge locataire SCI) */}
+          {id && <ClientFoncierSection personneId={id} />}
 
           {/* SUIVI COMMERCIAL TERRAIN (édition employé BRH) */}
           <EmployeeEditPanel

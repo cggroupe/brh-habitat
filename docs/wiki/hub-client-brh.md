@@ -3,7 +3,7 @@
 > **Hub fiche client BRH** : vue 360° d'un contact qui figure dans `brh_personnes_historique`.
 > Accessible **uniquement par les employés BRH** (route `/employe/clients-brh/:id`).
 >
-> Statut : 🟡 **SQUELETTE Phase 0** — contenu rempli Phase 3 (cf [plan-refonte-2026-05-21.md](plan-refonte-2026-05-21.md)).
+> Statut : ✅ **LIVRÉ Phase 3 (21/05/2026)** — RPC foncier + section UI + détection locataire SCI.
 
 ---
 
@@ -53,20 +53,47 @@ Demande Philippe 21/05 (vocal) :
 
 ---
 
-## 4. RPC cibles (à créer ou enrichir Phase 3)
+## 4. RPC livrée Phase 3 ✅
 
-- `brh_personne_360` v2 (existant — sortie cas Bodard) → étendre avec :
-  - `foncier_at_address` : DPE + permis + BDNB + DVF matchés par clé stricte
-  - `is_tenant_of_sci` BOOLEAN
-- Ou nouveau RPC `brh_client_360` qui agrège tout en 1 round-trip
+**[supabase/migrations/20260521160000_rpc_brh_client_foncier_at_address.sql](../../supabase/migrations/20260521160000_rpc_brh_client_foncier_at_address.sql)**
+
+Signature : `brh_client_foncier_at_address(p_personne_id uuid)`
+
+Retour (TABLE) :
+- `client_address jsonb` : adresse brute + clé normalisée `(numero_norm, voie_norm)`
+- `dpe_matches jsonb[]` : DPE F/G strictement matchés à l'adresse client + `role` calculé (`proprietaire_particulier` / `dirigeant_sci` / `locataire_sci`)
+- `dvf_matches jsonb[]` : 20 dernières mutations DVF à la voie (`usable_for_brh = TRUE`)
+- `permis_matches jsonb[]` : permis Sitadel — array vide tant que `brh_permis_construire` non populée
+- `is_tenant_of_sci boolean` : flag cas Bodard
+- `sci_proprietaire jsonb | null` : `{name, siren}` si is_tenant_of_sci
+
+Algorithme matching :
+1. Match exact `(code_postal, numero_norm, voie_norm)` si numero présent
+2. Match lieu-dit (voie only) sinon
+3. Pour chaque DPE matché avec `owner_siren NOT NULL` : vérifier via `brh_entity_links` si le client est dirigeant SCI → sinon = locataire
+
+SECURITY DEFINER + access guard `profiles.role ∈ (admin, pro, employe)` + `SET search_path = ''` (règle anti-bug #12).
 
 ---
 
-## 5. UI cible
+## 5. UI livrée Phase 3 ✅
 
-Fichier : [src/pages/employe/EmployeClientBrhDetail.tsx](../../src/pages/employe/EmployeClientBrhDetail.tsx)
+**Composant** : [src/components/leads/ClientFoncierSection.tsx](../../src/components/leads/ClientFoncierSection.tsx)
 
-Section "Foncier à l'adresse" à ajouter — single-page, pas d'onglet caché.
+Affiche en single-page sur la fiche client BRH :
+- **En-tête** : icône Home + clé normalisée affichée (debug visible)
+- **Badge "Locataire — SCI propriétaire"** (ambre) si `is_tenant_of_sci = TRUE` — cas Bodard, mentionne le nom + SIREN de la SCI propriétaire et précise "Pour les travaux, contacter le propriétaire"
+- **Bloc DPE F/G** : badge couleur A→G + numéro DPE + surface + année + rôle (propriétaire / dirigeant / locataire) avec code couleur
+- **Bloc Mutations DVF** : date + nature + type local + surface + valeur foncière formatée FR + prix/m² (sauf si is_groupee → badge "groupée")
+- **Fallback vide** : lien Géoportail si aucun match
+
+**Intégré** dans [src/pages/employe/EmployeClientBrhDetail.tsx](../../src/pages/employe/EmployeClientBrhDetail.tsx) juste après `ClientVisitsTravauxSection` (logique métier : adresse → foncier → visites terrain).
+
+**Hook + API** :
+- [src/api/brh-client-foncier.ts](../../src/api/brh-client-foncier.ts) — 6 interfaces TypeScript + `brhClientFoncierApi.getFoncier()`
+- [src/hooks/queries/useClientFoncier.ts](../../src/hooks/queries/useClientFoncier.ts) — React Query `staleTime: 60s`
+
+**Build** : ✅ tsc strict + Vite 22s, 0 erreur.
 
 ---
 
@@ -80,4 +107,4 @@ Section "Foncier à l'adresse" à ajouter — single-page, pas d'onglet caché.
 
 ---
 
-**Dernière maj** : 2026-05-21 (squelette Phase 0) — Claude Opus 4.7
+**Dernière maj** : 2026-05-21 (Phase 3 livrée — RPC + UI Foncier à l'adresse) — Claude Opus 4.7

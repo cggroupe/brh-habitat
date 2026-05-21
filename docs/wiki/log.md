@@ -5,6 +5,30 @@
 
 ---
 
+## 2026-05-21 (27) — Phase 3 refonte : fiche client BRH foncier à l'adresse + badge locataire SCI
+
+- **Contexte** : Phase 3 du plan-refonte-2026-05-21. Demande Philippe (vocal 21/05) : "Bien faire attention que ces informations [DPE à l'adresse client] ne soient pas rattachées à une SCI — dans ces cas-là le client est maintenant locataire du propriétaire." Audit Phase 2A.6 a identifié 78 cas Bodard généralisés en Bretagne.
+- **Migration créée + appliquée prod** :
+  - `supabase/migrations/20260521160000_rpc_brh_client_foncier_at_address.sql` — RPC qui agrège pour un personne_id : DPE F/G matchés strict + DVF voie + permis Sitadel (vide) + flag `is_tenant_of_sci` + SCI propriétaire si applicable
+  - Algorithme : match exact `(code_postal, numero_norm, voie_norm)` via index Phase 2A, fallback lieu-dit voie-only. Calcul rôle via `brh_entity_links` (link_type='dirige') pour distinguer dirigeant SCI propriétaire vs locataire.
+  - SECURITY DEFINER + access guard `profiles.role IN (admin, pro, employe)` + `SET search_path = ''`
+- **Frontend livré** :
+  - `src/api/brh-client-foncier.ts` (nouveau) — 6 interfaces TS (`ClientFoncierAddress`, `ClientFoncierDpe` avec `ClientFoncierDpeRole` union type, `ClientFoncierDvf`, `ClientFoncierSciProprio`, `ClientFoncierAtAddress`) + `brhClientFoncierApi.getFoncier()` avec gestion erreur Zod-compatible
+  - `src/hooks/queries/useClientFoncier.ts` (nouveau) — React Query hook `staleTime: 60s`
+  - `src/components/leads/ClientFoncierSection.tsx` (nouveau, 175 lignes) — composant single-page avec 3 sections (badge locataire SCI + DPE + DVF), code couleur DPE A→G, formatage EUR Intl, fallback Géoportail
+  - `src/pages/employe/EmployeClientBrhDetail.tsx` — intégration après `ClientVisitsTravauxSection` (logique métier : adresse → foncier → terrain)
+- **Test logique** : sur client `7130ea03-edfd-...` (65 rue de Treguier 22660 Trevou-Treguignec) → 1 DPE matché, détenu par SCI, `has_sci_owner=TRUE` (cas Bodard confirmé). Access check bloque le test direct depuis Management API (sécurité fonctionnelle).
+- **Build** : ✅ tsc strict + Vite 22s, 0 erreur.
+- **Pages wiki impactées** :
+  - `hub-client-brh.md` — statut squelette → LIVRÉ, sections 4/5 complétées avec architecture détaillée
+  - `bugs-ouverts.md` — B8 marqué PARTIEL (côté employé résolu, côté agence Phase 4)
+- **Migrations Phase 3 créées** : 1 (`20260521160000`)
+- **Risque** : Low — RPC SELECT-only avec access guard, aucune mutation BD, IF NOT EXISTS sur la fonction
+- **Tests** : logique validée via Management API (bypass access check, simulation des sous-requêtes), build TypeScript strict
+- **Status** : ✅ DONE Phase 3 — prêt pour Phase 4 (fiche lead public + UX filtres "Mes leads" + DPE E ouvert + bug B8 final côté agence)
+
+---
+
 ## 2026-05-21 (26) — Phase 2 refonte COMPLÈTE : matching + perf B9 + pivot dirigeant + UI single-page
 
 **Récap global Phase 2 (4 commits)** :
