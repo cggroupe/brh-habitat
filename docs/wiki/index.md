@@ -6,7 +6,7 @@
 
 **Date création** : 2026-04-23 · **Rédacteur** : Claude Opus 4.7 (audit commandé par Philippe Gagnon)
 **Projet** : Bretagne Rénovation Habitat — Plateforme SaaS multi-portails
-**App** : https://www.renovation-brh.fr · Base44 : brh-habitat-e9ba58c9.base44.app
+**App** : https://brh-habitat.vercel.app · Base44 : brh-habitat-e9ba58c9.base44.app
 
 ---
 
@@ -171,7 +171,7 @@ Pages remplacées par des refactorings successifs. **Ne pas modifier, ne pas lin
 
 ## Liens externes essentiels
 
-- Site public : https://www.renovation-brh.fr
+- Site public : https://brh-habitat.vercel.app
 - Base44 app : https://brh-habitat-e9ba58c9.base44.app (App ID : `69735696675e3c24e9ba58c9`)
 - Supabase : project `lygmmvxnmvlgynmrcpny`
 - Repo : `/Users/philippegagnon/Desktop/brh-habitat/brh-habitat/`

@@ -5,6 +5,59 @@
 
 ---
 
+## 2026-05-21 (32) — Phase 8 : fix lien Vercel + ingest DPE 44 + score V2 sur E + extraction tel pro
+
+**Décisions Philippe (21/05, 4 items du backlog)** : (1) vrai lien Vercel = `https://brh-habitat.vercel.app/`, (2) étendre heuristique score V2 aux DPE E, (3) ingest DPE 44 = oui, (5) extraction tel pro = oui. Item 4 (score patrimoine agrégé) refusé ("bruit").
+
+### 8.1 — Fix lien Vercel prod dans wiki + CLAUDE.md
+- `docs/wiki/index.md` : `https://www.renovation-brh.fr` → `https://brh-habitat.vercel.app` (lignes 9 + 174)
+- `CLAUDE.md` : idem ligne 155
+- Non touché : `edge-functions-reference.md`, `tenant-multitenancy.md`, `score-vente-amelioration-pre-build.md`, `audit-retard-phases-mai-2026.md` (config interne EFs ou docs historiques)
+
+### 8.2 — Ingestion DPE 44 (E + F + G) — script paramétrable
+- Script `brh-ingest-dpe-e-bretagne.py` étendu : ajout `--classes` paramétrable (défaut E) + ajout dept 44 à `DEPTS_DEFAULT`
+- Commande : `python3 brh-ingest-dpe-e-bretagne.py --dept 44 --classes E,F,G`
+- **60 456 DPE 44 ingérés en 1min42s** :
+  - E : 38 140
+  - F : 14 900
+  - G : 7 416
+- Total `brh_dpe_prospects` : 145 796 → **206 252** (+42%) sur 5 dépts cibles
+
+### 8.3 — Score V2 étendu aux DPE classe E (`20260521210000_score_v2_extend_to_e.sql`)
+- **Constat** : 86 490 DPE E (puis +38 140 du 44 = 124 630) avaient `score_v2 = NULL`. La migration `20260706550000_brh_phase_11_6_score_v2_22_rules.sql` ne traitait que F/G.
+- **Stratégie** : Score MINIMAL pour E sans dépendre des tables `brh_ext_iris`/`brh_ext_commune` (iris_code = 0% sur E nouvellement ingérés). Règles utilisées :
+  - `r_classe` granulaire : E=5, F=10, G=10 (anticipation interdiction 2034 vs effective 2025-2028)
+  - `r_mut_24m` étendu : E avec mutation 24m = +20 pts (vs F/G=35)
+  - `r_enedis` + `r_pv` : applicables toutes classes
+- Score V2 max théorique pour E sans IRIS : 40 pts (suffisant pour filtres)
+- Pour score complet sur E : enrichissement IRIS requis (P3 futur)
+- **Résultat post-migration** :
+  - E : 124 630 DPE, 100% scorés (min=5, avg=5)
+  - F : 52 974 DPE, 100% scorés (avg=31, max=100)
+  - G : 28 648 DPE, 100% scorés (avg=32, max=70)
+
+### 8.4 — Extraction téléphone pro public depuis entreprises Phase 2C
+- Script `brh-extract-tel-pro-entreprises.py` (nouveau)
+- Source : Apify Google Search Scraper (token déjà présent `/opt/stack/.env`)
+- Query : `"{denomination} {commune} téléphone"`
+- Parsing : regex tel français (0X XX XX XX XX + +33 international) sur snippets organiques
+- Cible : 8 449 SIREN distincts (depuis `brh_dirigeants.autres_entreprises[]`)
+- Test sample 20 : 10% hit rate confirmé (CARRIERES BRANDEFERT → 02 40 22 07 80, HEXAOM → 02 98 66 68 00)
+- **Batch full lancé en background** (PID 3777365) — ETA ~2h, budget estimé ~$25 (largement < 50€)
+- UPDATE `brh_dirigeants.tel_pro_via_entreprise` + flag `autres_entreprises[].telephone_found`
+
+### Fichiers créés/modifiés
+- Scripts : `brh-ingest-dpe-e-bretagne.py` (étendu) + `brh-extract-tel-pro-entreprises.py` (nouveau)
+- Migration : `20260521210000_score_v2_extend_to_e.sql`
+- Wiki : `index.md` + `CLAUDE.md` + `data-inventory.md` + `log.md` (entry 32)
+
+### Migrations Phase 8 : 1 (`20260521210000`) appliquée + repair OK
+### Build : pas re-run (aucun .ts touché)
+### Risque : Low — UPDATE conditionnel sur classe DPE, aucune perte data, idempotent
+### Status : ✅ Phase 8 livrée (4/4 items Philippe traités). Item 4 refusé. Batch tel pro tournant.
+
+---
+
 ## 2026-05-21 (31) — Phase 7 : ingestion DPE classe E Bretagne + fix voie_norm
 
 **Décision Philippe (vocal 21/05)** : « ça vaut le coup d'élargir le périmètre FG pour intégrer E dedans ». Anticipation interdiction location nue DPE E à partir de 2034.

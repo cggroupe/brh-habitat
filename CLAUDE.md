@@ -152,7 +152,7 @@ JAMAIS de `import.meta.env.VITE_SUPABASE_*` directement dans un module hors `lib
 
 ## Références
 
-- Site public : https://www.renovation-brh.fr
+- Site public : https://brh-habitat.vercel.app
 - Base44 (legacy mockup) : https://brh-habitat-e9ba58c9.base44.app
 - ARCHITECTURE.md audit v7 : [ARCHITECTURE.md](ARCHITECTURE.md)
 - PARTNER-PLATFORM.md blueprint : [PARTNER-PLATFORM.md](PARTNER-PLATFORM.md)

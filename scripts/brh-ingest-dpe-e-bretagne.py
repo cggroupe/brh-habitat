@@ -46,6 +46,8 @@ ADEME_DATASET_ID = "meg-83tjwtg8dyz4vv7h1dqe"
 ADEME_BASE = f"https://data.ademe.fr/data-fair/api/v1/datasets/{ADEME_DATASET_ID}/lines"
 
 DEPTS_BRETAGNE = ("22", "29", "35", "56")
+DEPTS_DEFAULT = ("22", "29", "35", "44", "56")  # +44 ajouté Phase 8.2 du 21/05
+DEFAULT_CLASSES = ("E",)  # historique : Bretagne avait F/G, on a ajouté E
 
 # Champs ADEME à demander (limite la bande passante + parse).
 ADEME_FIELDS = ",".join([
@@ -118,11 +120,12 @@ def map_ademe_row(r: dict[str, Any]) -> dict[str, Any] | None:
     }
 
 
-def fetch_ademe_pages(dept: str):
-    """Generator qui yield les pages ADEME pour un dept via cursor pagination."""
+def fetch_ademe_pages(dept: str, classes: tuple[str, ...]):
+    """Generator qui yield les pages ADEME pour un dept × classes via cursor pagination."""
+    classes_qs = " OR ".join(f"etiquette_dpe:{c}" for c in classes)
     params = {
         "size": 10000,
-        "qs": f"etiquette_dpe:E AND code_departement_ban:{dept}",
+        "qs": f"({classes_qs}) AND code_departement_ban:{dept}",
         "select": ADEME_FIELDS,
     }
     url = ADEME_BASE
@@ -185,10 +188,12 @@ def insert_rows(conn, rows: list[dict[str, Any]]) -> int:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dept", choices=DEPTS_BRETAGNE, help="Dept unique (sinon tous)")
+    parser.add_argument("--dept", help="Dept unique (sinon tous defaults)")
+    parser.add_argument("--classes", default="E", help="Classes DPE séparées par virgule (ex: E,F,G). Défaut: E")
     args = parser.parse_args()
 
-    depts = (args.dept,) if args.dept else DEPTS_BRETAGNE
+    depts = (args.dept,) if args.dept else DEPTS_DEFAULT
+    classes = tuple(c.strip().upper() for c in args.classes.split(",") if c.strip())
 
     log("Connexion DB...")
     conn = psycopg.connect(SUPA_DSN, autocommit=False)
@@ -200,7 +205,7 @@ def main():
     for dept in depts:
         log(f"━━━━ Dept {dept} ━━━━")
         dept_ingested = 0
-        for page in fetch_ademe_pages(dept):
+        for page in fetch_ademe_pages(dept, classes):
             mapped = [m for m in (map_ademe_row(r) for r in page) if m]
             inserted = insert_rows(conn, mapped)
             dept_ingested += inserted
