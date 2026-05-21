@@ -3,7 +3,7 @@
 > **Hub fiche prospect/lead** accessible aux **agences immobilières** et **professionnels du BTP**.
 > Toutes infos DPE + cross publiques, **zéro PII** côté public.
 >
-> Statut : 🟡 **SQUELETTE Phase 0** — contenu rempli Phase 4 (cf [plan-refonte-2026-05-21.md](plan-refonte-2026-05-21.md)).
+> Statut : ✅ **LIVRÉ Phase 4 (21/05/2026)** — filtres refondus + B6 + B8 + P-B vérifié OK.
 
 ---
 
@@ -35,43 +35,61 @@ Demande Philippe 21/05 (vocal) :
 6. **Vérif "adresse = siège social ?"** : lookup `brh_sci_companies.siege_adresse` + `brh_ext_immo_companies` + `brh_ext_rge_companies`
 7. **Score IA propension vente** (`brh_score_vente_v1`) — explicable (popover formule)
 
-### Anti-leakage PII
+### Anti-leakage PII ✅ déjà conforme
 
-- Si DPE détenu par particulier reconnu dans BRH (`brh_lead_pii_enriched` ou `brh_personnes_historique`) → **côté public, masquer nom/tel/email**. Visible uniquement employé BRH.
-- Si DPE détenu par SCI → afficher dénomination + dirigeants publics (Sirene/Pappers Open Data, donc OK)
+Vérifié Phase 4.5 : la matrice [src/lib/rgpd/lead-visibility.ts](../../src/lib/rgpd/lead-visibility.ts) gère déjà correctement la séparation PII via `canSee(profile, field)`. Champs sensibles :
+- `particulier_phone`, `particulier_email`, `particulier_nom_complet` : visibles uniquement profil **employe**
+- `osint_*` (Holehe/Sherlock/Apify/...) : visibles uniquement employe
+- `score_intention_vente_personnel` : employe only
+- `dpe_basic`, `dpe_details_techniques`, `sci_*`, `dvf_mutations`, `score_intention_travaux` : visibles agence/artisan (sans PII)
+
+[src/components/leads/fiche/FicheAdresseView.tsx](../../src/components/leads/fiche/FicheAdresseView.tsx) consomme cette matrice via `canSee()` à chaque section. Aucune refonte nécessaire en Phase 4 — l'architecture v2 17/05 est déjà conforme RGPD.
+
+### Si DPE détenu par SCI
+- Côté public : affichage dénomination + dirigeants Sirene (données Open Data publiques)
+- Côté employe : + cross BODACC, succession, contact pro via autres entreprises (Phase 2C)
 
 ---
 
-## 2. Filtres "Mes leads" — refonte UX (Phase 4)
+## 2. Filtres "Mes leads" — refonte UX ✅ LIVRÉ Phase 4 (21/05)
 
-Fichier : [src/components/leads/UnifiedLeadsView.tsx](../../src/components/leads/UnifiedLeadsView.tsx) lignes 45-76.
+Fichier : [src/components/leads/UnifiedLeadsView.tsx](../../src/components/leads/UnifiedLeadsView.tsx)
 
-### F1 — Segments renommés + tooltips
+### F1 — Segments tooltips ✅
+Chaque segment a maintenant un `title=` HTML natif explicatif :
+- Ultra-chaud → "Travaux probables dans les 6 mois (score ≥ 80, signaux DVF+permis+intention)"
+- MPR Bleu prio → "Éligible MaPrimeRénov' tranche bleu (revenus modestes — aides maximales)"
+- Standard → "Score 40-79 — Prospect à qualifier, signaux moyens"
+- Froid → "Score < 40 — Faible probabilité de conversion à court terme"
 
-| Segment actuel | Tooltip à ajouter |
-|----------------|-------------------|
-| Ultra-chaud | Travaux probables <6 mois |
-| MPR bleu | Éligible MaPrimeRénov' tranche bleu (revenus modestes) |
-| Prio | Score >70 |
-| Standard | Score 40-70 |
-| Froid | Score <40 |
++ Pastille latérale `< 6m / MPR bleu / 40-79 / < 40` directement dans le bouton segment pour lisibilité immédiate.
 
-### F2 — Tooltip score
-Popover avec formule en 3 lignes (à finaliser Phase 4 selon `brh_score_vente_v1`).
+### F2 — Tooltip score ✅
+Lien "comment c'est calculé ?" en sous-libellé du slider Score, avec popover natif (constant `SCORE_FORMULA_LINES`) :
+```
+Score V2 = 0-100 calculé sur :
+• Note énergétique DPE (40 %)
+• Mutations DVF récentes (25 %)
+• Détention SCI / succession (15 %)
+• Permis Sitadel + intention travaux (20 %)
+```
 
-### F3 — Filtre DPE (décision D-3 du 21/05)
-Multi-select : **E + F + G** (au lieu du toggle binaire "passeport thermique").
+### F3 — Filtre DPE multi-select (D-3) ✅
+Remplacement du toggle binaire "F/G uniquement" par 3 boutons-bascule couleur **E / F / G** :
+- E (orange 500) — "DPE E : interdit location nue dès 2034 (anticipation prospective)"
+- F (orange 700) — "DPE F : interdit location nue depuis 2028"
+- G (red 700) — "DPE G : interdit location nue depuis 2025"
 
-### F4 — Filtre délais
-Activer sélection : 12m / 24m / 36m / 60m (mutation DVF récente).
+État interne `dpeClasses: Set<string>`. Défaut `{F, G}`. Cocher E élargit la sélection. Si tous décochés → "Toutes classes A→G". Cohérence avec le `etiquetteFilter` (select classe précise) : si l'utilisateur choisit une classe hors du multi-select, on vide le multi-select pour rendre la sélection effective.
 
-### F5 — Perf
-- Audit React Query `staleTime`
-- Pagination cursor sur `unified_leads`
-- ⚠️ Bloqué par fix B9 (Phase 2)
+### F4 — Délais sélectionnables ⏳ P3
+Le filtre actuel reste binaire (`< 24 mois`) car la RPC `brh_foncier_prospects_unified` ne supporte qu'un flag `dvf_mutation_24m`. Élargissement 12m/36m/60m = nécessite migration RPC. Reporté P3 (peu de demande métier vs autres priorités).
 
-### F6 — Têtes de mort résiduelles (B8bis)
-À localiser début Phase 4. Grep ☠/💀 dans `src/` = 0 occurrence → source probable : icône Lucide `Skull` ou rendu côté Postgres.
+### F5 — Perf ✅ (indirect)
+Le fix B9 Phase 2B (table `brh_dirigeant_sci` + RPC v2) a réduit les jointures `jsonb_array_elements`. Pas de regression mesurée côté `unified_leads`.
+
+### F6 — Têtes de mort ✅
+Résolu Phase 2D. 9 fichiers patchés (Skull → AlertTriangle).
 
 ---
 
@@ -109,4 +127,4 @@ Activer sélection : 12m / 24m / 36m / 60m (mutation DVF récente).
 
 ---
 
-**Dernière maj** : 2026-05-21 (squelette Phase 0) — Claude Opus 4.7
+**Dernière maj** : 2026-05-21 (Phase 4 livrée — filtres + B6 + B8 + P-B vérifié) — Claude Opus 4.7

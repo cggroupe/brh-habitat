@@ -32,9 +32,9 @@ supabase migration repair --status applied 20260521100000 20260521110000 2026052
 
 | # | Bug | Diagnostic | Action requise | Phase plan |
 |---|-----|------------|----------------|------------|
-| **B6** | Filtre "Propriétaire DPE BRH" page `/employe/dirigeants` paraît inopérant | Faux bug technique : RPC fonctionne, 80 844 → 17 403. Mais tri par défaut `nb_dpe_total DESC` met déjà tous les propriétaires en tête → top 5 identique avec/sans filtre. Seul le compteur change. | Tri conditionnel (nom A→Z par défaut, patrimoine DESC si filtre coché) + compteur + bandeau "Filtré par : …" | Phase 4 |
+| ~~**B6**~~ | ~~Filtre "Propriétaire DPE BRH" page `/employe/dirigeants` paraît inopérant~~ | ✅ **RÉSOLU Phase 4 (21/05)** — RPC v3 `brh_dirigeants_search` ajoute param `p_order_by` (patrimoine / nom / sci_count). UI : sélecteur tri visible + bascule auto `nom → patrimoine` si filtre actif + bandeau "Filtré par : …" listant chaque filtre actif + bouton "Tout effacer". Migration `20260521170000_rpc_brh_dirigeants_search_v3.sql`. | Phase 4 ✅ |
 | **B7** | Fiche dirigeant SCI ne montre pas les éléments fonciers complets | ✅ **PARTIEL Phase 2D** — Section "Autres entreprises (hors SCI)" + bandeau contact pro distinguant perso/pro ajoutés. Reste P3 si Philippe le demande : mini-carte des biens (DVF+DPE), score patrimoine agrégé, mutations DVF historique. | Phase 2D (partiel) |
-| **B8** | "Leads BRH vue unifiée" mélange clients + prospects | ✅ **PARTIEL Phase 3** — Côté employé la fiche client BRH (route `/employe/clients-brh/:id`) affiche désormais explicitement le foncier à l'adresse avec badge "Locataire SCI" si applicable, donc la confusion client BRH / prospect DPE F/G est levée côté employé. Reste **Phase 4** : séparer côté agence `/agence/leads-v2` (ne montrer que les prospects DPE, pas les clients BRH). | Phase 3 (partiel) → Phase 4 |
+| ~~**B8**~~ | ~~"Leads BRH vue unifiée" mélange clients + prospects~~ | ✅ **RÉSOLU Phase 4 (21/05)** — Titres + sous-titres explicites : `/employe/leads-v2` = "Prospects DPE F/G — Vue unifiée · Adresses à conquérir (passoires). Pour vos contacts BRH historiques, voir Clients BRH." `/agence/leads-v2` = "Prospects Foncier · DPE F/G de votre zone — propriétaires anonymisés (RGPD)." Prop `subtitle` ajouté à `UnifiedLeadsView`. Confusion levée par sémantique métier sans changement data. | Phase 3 partiel + Phase 4 ✅ |
 | ~~**B8bis**~~ | ~~Têtes de mort résiduelles dans segment "succession en cours"~~ | ✅ **RÉSOLU Phase 2D (21/05)** — Source identifiée : icône Lucide `Skull` utilisée dans 9 fichiers (8 composants + 1 page). Tous remplacés par `AlertTriangle` (ton pro). Avatar dirigeant : `User` normal même si décédé, contexte porté par badge texte. | Phase 2D ✅ |
 
 ---
@@ -69,7 +69,7 @@ Onglet `/agence/leads-v2` (et `/employe/leads-v2`) — composant [UnifiedLeadsVi
 | Phase 1 | — spec matching (aucun bug direct) |
 | Phase 2 | **B7** (fiche dirigeant enrichie) + ~~**B9**~~ ✅ (perf RPC résolu 21/05) |
 | Phase 3 | **B8** partiel (séparer clients/prospects côté employé) |
-| Phase 4 | **B6** + **B8** (final) + **B8bis** + **F1** à **F5** |
+| Phase 4 ✅ | B6 (résolu) + B8 (résolu) + B8bis (résolu Phase 2D) + F1/F2/F3/F5/F6 (résolus). F4 délais reporté P3. |
 | Phase 5 | Push prod + résolution conflit timestamp `20260520100000` |
 
 ---

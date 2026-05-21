@@ -10,5 +10,11 @@
 import UnifiedLeadsView from '@/components/leads/UnifiedLeadsView'
 
 export default function AgenceLeadsV2() {
-  return <UnifiedLeadsView profile="agence" title="Leads & Foncier — Vue unifiée" />
+  return (
+    <UnifiedLeadsView
+      profile="agence"
+      title="Prospects Foncier — Vue unifiée"
+      subtitle="Adresses DPE F/G de votre zone — propriétaires anonymisés (RGPD). Cliquez sur une ligne pour voir les détails techniques."
+    />
+  )
 }

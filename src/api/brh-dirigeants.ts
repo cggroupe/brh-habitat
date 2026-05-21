@@ -43,6 +43,8 @@ export interface DirigeantSearchRow {
   total_count: number
 }
 
+export type DirigeantSearchOrder = 'patrimoine' | 'nom' | 'sci_count'
+
 export interface DirigeantSearchFilters {
   query?: string | null
   dept?: string | null
@@ -51,6 +53,7 @@ export interface DirigeantSearchFilters {
   succession?: boolean
   limit?: number
   offset?: number
+  order_by?: DirigeantSearchOrder
 }
 
 export interface Dirigeant360 {
@@ -133,6 +136,7 @@ export const brhDirigeantsApi = {
       p_succession: filters.succession ?? false,
       p_limit: Math.min(filters.limit ?? 50, 200),
       p_offset: Math.max(0, filters.offset ?? 0),
+      p_order_by: filters.order_by ?? 'patrimoine',
     })
     if (error) throw error
     return (data ?? []) as DirigeantSearchRow[]

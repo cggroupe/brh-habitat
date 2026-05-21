@@ -37,8 +37,18 @@ export default function EmployeDirigeants() {
   const [multiSci, setMultiSci] = useState(false)
   const [proprioDpe, setProprioDpe] = useState(false)
   const [succession, setSuccession] = useState(false)
+  // B6 (21/05) : tri configurable. Défaut 'nom' (A→Z) — basculé sur 'patrimoine'
+  // dès qu'un filtre est actif pour que les résultats les plus pertinents
+  // remontent en tête.
+  const [orderBy, setOrderBy] = useState<'nom' | 'patrimoine' | 'sci_count'>('nom')
   const [page, setPage] = useState(0)
   const deferredQuery = useDeferredValue(query)
+
+  const hasActiveFilter = !!(dept || multiSci || proprioDpe || succession || deferredQuery)
+  // Si l'utilisateur n'a pas changé le tri manuellement (orderBy reste à
+  // 'nom'), on bascule automatiquement vers 'patrimoine' quand un filtre
+  // est actif. Sinon on respecte son choix.
+  const effectiveOrderBy = hasActiveFilter && orderBy === 'nom' ? 'patrimoine' : orderBy
 
   const { data, isLoading, isFetching } = useDirigeantsSearch({
     query: deferredQuery || undefined,
@@ -48,6 +58,7 @@ export default function EmployeDirigeants() {
     succession,
     limit: PAGE_SIZE,
     offset: page * PAGE_SIZE,
+    order_by: effectiveOrderBy,
   })
 
   const rows = data ?? []
@@ -110,7 +121,70 @@ export default function EmployeDirigeants() {
               <span>{f.label}</span>
             </label>
           ))}
+
+          {/* B6 — Sélecteur tri */}
+          <div className="ml-auto flex items-center gap-1.5">
+            <span className="text-stone-500">Trier par :</span>
+            <select
+              value={orderBy}
+              onChange={(e) => { setOrderBy(e.target.value as 'nom' | 'patrimoine' | 'sci_count'); setPage(0) }}
+              className="rounded-md border border-stone-300 bg-white px-2 py-0.5 text-xs"
+            >
+              <option value="nom">Nom (A→Z)</option>
+              <option value="patrimoine">Patrimoine DPE (▼)</option>
+              <option value="sci_count">Nb de SCI (▼)</option>
+            </select>
+          </div>
         </div>
+
+        {/* B6 — Bandeau "Filtré par" actif */}
+        {hasActiveFilter && (
+          <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50/60 px-3 py-1.5 text-xs">
+            <span className="font-semibold text-emerald-900">Filtré par :</span>
+            {deferredQuery && (
+              <span className="rounded-full bg-white px-2 py-0.5 text-emerald-900 ring-1 ring-emerald-200">
+                « {deferredQuery} »
+              </span>
+            )}
+            {dept && (
+              <span className="rounded-full bg-white px-2 py-0.5 text-emerald-900 ring-1 ring-emerald-200">
+                Dept {dept}
+              </span>
+            )}
+            {multiSci && (
+              <span className="rounded-full bg-white px-2 py-0.5 text-emerald-900 ring-1 ring-emerald-200">
+                Multi-SCI
+              </span>
+            )}
+            {proprioDpe && (
+              <span className="rounded-full bg-white px-2 py-0.5 text-emerald-900 ring-1 ring-emerald-200">
+                Propriétaire DPE
+              </span>
+            )}
+            {succession && (
+              <span className="rounded-full bg-white px-2 py-0.5 text-emerald-900 ring-1 ring-emerald-200">
+                Succession ouverte
+              </span>
+            )}
+            <span className="ml-auto text-emerald-700">
+              {Number(total).toLocaleString('fr-FR')} résultats · tri {effectiveOrderBy === 'nom' ? 'nom A→Z' : effectiveOrderBy === 'patrimoine' ? 'patrimoine DPE' : 'nb SCI'}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setQuery('')
+                setDept('')
+                setMultiSci(false)
+                setProprioDpe(false)
+                setSuccession(false)
+                setPage(0)
+              }}
+              className="rounded-md bg-emerald-700 px-2 py-0.5 text-[10px] font-medium text-white hover:bg-emerald-800"
+            >
+              Tout effacer
+            </button>
+          </div>
+        )}
       </header>
 
       <div className="flex-1 overflow-y-auto">

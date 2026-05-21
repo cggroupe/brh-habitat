@@ -5,6 +5,52 @@
 
 ---
 
+## 2026-05-21 (28) — Phase 4 refonte : filtres "Mes leads" + B6 tri + B8 clarification + P-B vérifié
+
+- **Contexte** : Phase 4 du plan-refonte-2026-05-21. Demandes Philippe (vocal 21/05) : refonte filtres `/employe/leads-v2` et `/agence/leads-v2` (segments incompréhensibles, score non expliqué, DPE figé F/G alors qu'on veut E aussi (D-3), confusion clients/prospects (B8), tri inopérant filtre dirigeants (B6)).
+
+### Filtres `UnifiedLeadsView.tsx` — refonte UX
+- **Segments** (ultra_chaud / mpr_bleu_prio / standard / cold) : ajout `tip` explicatif par segment via attribut `title=` HTML natif. Pastille latérale (`< 6m`, `MPR bleu`, `40-79`, `< 40`) directement dans le bouton.
+- **Score** : nouveau lien "comment c'est calculé ?" en sous-libellé du slider, popover natif avec formule décomposée (DPE 40 % + DVF 25 % + SCI/succession 15 % + permis/intention 20 %).
+- **DPE multi-select (D-3)** : remplacement du toggle binaire "F/G uniquement" par 3 boutons-bascule E/F/G avec code couleur (orange 500/700/red 700) et tooltips métier ("interdit location nue dès 2034 / depuis 2028 / depuis 2025"). État interne `dpeClasses: Set<string>` défaut `{F, G}`. Cohérence avec sélecteur classe précise A→G existant.
+- **F4 délais (12m/24m/36m/60m)** : reporté P3 (nécessite migration RPC `brh_foncier_prospects_unified`, peu de demande métier vs autres priorités).
+
+### B6 — Fix tri filtre dirigeants
+- **Migration `20260521170000_rpc_brh_dirigeants_search_v3.sql`** appliquée prod : ajout `p_order_by text DEFAULT 'patrimoine'` (valeurs `patrimoine|nom|sci_count`). Backward compat préservé.
+- `src/api/brh-dirigeants.ts` : ajout type `DirigeantSearchOrder` + champ `order_by` au filter.
+- `src/pages/employe/EmployeDirigeants.tsx` :
+  - État `orderBy` (défaut `nom` A→Z)
+  - **Bascule auto** : si filtre actif (dept/multi/proprio/succession/query) ET orderBy=nom → effectiveOrderBy='patrimoine'. Sinon respecte choix utilisateur.
+  - Sélecteur tri visible dans la barre filtres (Nom A→Z / Patrimoine DPE ▼ / Nb SCI ▼)
+  - **Bandeau "Filtré par"** vert listant chaque filtre actif (chip) + compteur résultats + tri effectif + bouton "Tout effacer"
+
+### B8 — Clarification confusion clients/prospects
+- Prop `subtitle?: string` ajouté à `UnifiedLeadsView` (rendu sous le `title` en gris)
+- `EmployeLeadsV2.tsx` : titre "Prospects DPE F/G — Vue unifiée" + subtitle "Adresses à conquérir (passoires thermiques). Pour vos contacts BRH historiques, voir Clients BRH."
+- `AgenceLeadsV2.tsx` : titre "Prospects Foncier — Vue unifiée" + subtitle "Adresses DPE F/G de votre zone — propriétaires anonymisés (RGPD)."
+
+### P-B / FicheAdresseView — vérifié OK
+La fiche publique [src/components/leads/fiche/FicheAdresseView.tsx](../../src/components/leads/fiche/FicheAdresseView.tsx) consomme déjà `canSee(profile, field)` à chaque section, sur la base de [src/lib/rgpd/lead-visibility.ts](../../src/lib/rgpd/lead-visibility.ts) (matrice 4 profils × 20+ champs). Aucune refonte nécessaire — l'architecture v2 17/05 est conforme RGPD.
+
+### Fichiers modifiés
+- `supabase/migrations/20260521170000_rpc_brh_dirigeants_search_v3.sql` (CRÉÉ, appliqué prod)
+- `src/api/brh-dirigeants.ts` — type + filter
+- `src/pages/employe/EmployeDirigeants.tsx` — tri + bandeau
+- `src/components/leads/UnifiedLeadsView.tsx` — DPE multi + tooltips + score popover + subtitle
+- `src/pages/employe/EmployeLeadsV2.tsx` — titres explicites
+- `src/pages/agence/AgenceLeadsV2.tsx` — titres explicites
+- `docs/wiki/hub-lead-public.md` — statut squelette → LIVRÉ, §2/§3 détaillés
+- `docs/wiki/bugs-ouverts.md` — B6 et B8 marqués résolus
+- `docs/wiki/log.md` — entrée 28
+
+### Migrations Phase 4 créées : 1 (`20260521170000`)
+### Build : ✅ tsc strict + Vite 23s, 0 erreur
+### Risque : Low — RPC backward compat (p_order_by avec défaut), pas de DDL destructive, état UI nouveau
+
+**Status** : ✅ DONE Phase 4 — Plan-refonte-2026-05-21 reste **Phase 5 QA + push prod** à exécuter.
+
+---
+
 ## 2026-05-21 (27) — Phase 3 refonte : fiche client BRH foncier à l'adresse + badge locataire SCI
 
 - **Contexte** : Phase 3 du plan-refonte-2026-05-21. Demande Philippe (vocal 21/05) : "Bien faire attention que ces informations [DPE à l'adresse client] ne soient pas rattachées à une SCI — dans ces cas-là le client est maintenant locataire du propriétaire." Audit Phase 2A.6 a identifié 78 cas Bodard généralisés en Bretagne.

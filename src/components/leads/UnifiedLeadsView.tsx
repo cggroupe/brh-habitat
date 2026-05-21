@@ -40,6 +40,8 @@ type Props = {
   profile: LeadProfile
   /** Titre de page (ex: "Leads Foncier", "Mes Prospects") */
   title?: string
+  /** Sous-titre / clarification métier (B8) */
+  subtitle?: string
 }
 
 const DEPTS = [
@@ -50,24 +52,36 @@ const DEPTS = [
   { v: '56', l: '56 — Morbihan' },
 ] as const
 
-const SEGMENTS: Array<{ v: ScoreV2Segment | ''; l: string; cls: string; dot: string }> = [
-  { v: '', l: 'Tous segments', cls: 'border-slate-300 text-slate-700', dot: 'bg-slate-400' },
-  { v: 'ultra_chaud', l: 'Ultra-chaud', cls: 'border-red-300 text-red-800 bg-red-50', dot: 'bg-red-600' },
-  { v: 'mpr_bleu_prio', l: 'MPR Bleu prio', cls: 'border-sky-300 text-sky-800 bg-sky-50', dot: 'bg-sky-600' },
-  { v: 'standard', l: 'Standard', cls: 'border-amber-300 text-amber-800 bg-amber-50', dot: 'bg-amber-500' },
-  { v: 'cold', l: 'Froid', cls: 'border-slate-300 text-slate-700 bg-slate-50', dot: 'bg-slate-500' },
+const SEGMENTS: Array<{ v: ScoreV2Segment | ''; l: string; cls: string; dot: string; tip: string }> = [
+  { v: '', l: 'Tous segments', cls: 'border-slate-300 text-slate-700', dot: 'bg-slate-400', tip: 'Aucun filtre par segment commercial' },
+  { v: 'ultra_chaud', l: 'Ultra-chaud', cls: 'border-red-300 text-red-800 bg-red-50', dot: 'bg-red-600', tip: 'Travaux probables dans les 6 mois (score ≥ 80, signaux DVF+permis+intention)' },
+  { v: 'mpr_bleu_prio', l: 'MPR Bleu prio', cls: 'border-sky-300 text-sky-800 bg-sky-50', dot: 'bg-sky-600', tip: 'Éligible MaPrimeRénov\' tranche bleu (revenus modestes — aides maximales)' },
+  { v: 'standard', l: 'Standard', cls: 'border-amber-300 text-amber-800 bg-amber-50', dot: 'bg-amber-500', tip: 'Score 40-79 — Prospect à qualifier, signaux moyens' },
+  { v: 'cold', l: 'Froid', cls: 'border-slate-300 text-slate-700 bg-slate-50', dot: 'bg-slate-500', tip: 'Score < 40 — Faible probabilité de conversion à court terme' },
+]
+
+const DPE_CLASSES_PASSOIRES_ELARGI = ['E', 'F', 'G'] as const
+
+const SCORE_FORMULA_LINES = [
+  'Score V2 = 0-100 calculé sur :',
+  '• Note énergétique DPE (40 %)',
+  '• Mutations DVF récentes (25 %)',
+  '• Détention SCI / succession (15 %)',
+  '• Permis Sitadel + intention travaux (20 %)',
 ]
 
 const PAGE_SIZE = 50
 
-export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: Props) {
+export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', subtitle }: Props) {
   const [view, setView] = useState<'list' | 'map'>('list')
   const [search, setSearch] = useState('')
   const [dept, setDept] = useState<string>('')
   const [segment, setSegment] = useState<ScoreV2Segment | ''>('')
   const [scoreMin, setScoreMin] = useState<number>(0)
-  const [filterFG, setFilterFG] = useState(true) // par défaut F/G uniquement (passoires)
-  const [etiquetteFilter, setEtiquetteFilter] = useState<string>('') // classe DPE précise (A-G) si non vide
+  // D-3 (21/05) : filtre DPE multi-select. Par défaut F+G (passoires classiques)
+  // ; possible d'élargir à E (extension Philippe pour anticiper interdiction 2034).
+  const [dpeClasses, setDpeClasses] = useState<Set<string>>(new Set(['F', 'G']))
+  const [etiquetteFilter, setEtiquetteFilter] = useState<string>('') // legacy — gardé pour rétrocompat carte/RPC
   const [filterFioul, setFilterFioul] = useState(false)
   const [filterSCI, setFilterSCI] = useState(false)
   const [filterParticulier, setFilterParticulier] = useState(false)
@@ -155,20 +169,28 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
   // Filtres affineurs appliqués côté client (les filtres "lourds" passent au RPC)
   const filteredRows = useMemo(() => {
     return rows.filter((r) => {
-      if (filterFG && !['F', 'G'].includes(String(r.etiquette_dpe))) return false
+      // D-3 : filtre DPE multi-select. Si aucune classe cochée, on n'applique pas
+      // le filtre (toutes les classes A→G sont conservées, sauf raffinement
+      // etiquetteFilter ci-dessous).
+      if (dpeClasses.size > 0 && !dpeClasses.has(String(r.etiquette_dpe))) return false
       if (etiquetteFilter && String(r.etiquette_dpe) !== etiquetteFilter) return false
       if (typeBatiment && String(r.type_batiment ?? '').toLowerCase() !== typeBatiment) return false
       if (filterMutationDvfRecente && !r.dvf_mutation_24m) return false
       return true
     })
-  }, [rows, filterFG, etiquetteFilter, typeBatiment, filterMutationDvfRecente])
+  }, [rows, dpeClasses, etiquetteFilter, typeBatiment, filterMutationDvfRecente])
 
 
   return (
     <div className="flex h-screen flex-col bg-slate-50">
       {/* Header */}
       <header className="flex items-center gap-4 border-b border-slate-200 bg-white px-6 py-3 shadow-sm">
-        <h1 className="text-lg font-semibold text-slate-900">{title}</h1>
+        <div className="flex flex-col gap-0.5">
+          <h1 className="text-lg font-semibold text-slate-900">{title}</h1>
+          {subtitle && (
+            <p className="text-xs text-slate-500">{subtitle}</p>
+          )}
+        </div>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-0.5 text-xs font-medium text-slate-700">
           {isFetching && <Loader2 className="h-3 w-3 animate-spin text-slate-500" />}
           {total.toLocaleString('fr-FR')} résultats
@@ -244,7 +266,7 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
 
           {/* Segment */}
           <div className="mb-4">
-            <label className="mb-1 block text-xs font-medium text-slate-700">Segment</label>
+            <label className="mb-1 block text-xs font-medium text-slate-700">Segment commercial</label>
             <div className="space-y-1">
               {SEGMENTS.map((s) => (
                 <button
@@ -253,24 +275,36 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
                     setSegment(s.v)
                     setPage(0)
                   }}
-                  className={`w-full rounded-md border px-2 py-1.5 text-left text-xs transition ${
+                  title={s.tip}
+                  className={`group w-full rounded-md border px-2 py-1.5 text-left text-xs transition ${
                     segment === s.v ? s.cls + ' border-2' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                   }`}
                 >
-                  <span className="inline-flex items-center gap-2">
-                    <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
-                    {s.l}
+                  <span className="inline-flex w-full items-baseline gap-2">
+                    <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${s.dot}`} />
+                    <span className="font-medium">{s.l}</span>
+                    <span className="ml-auto truncate text-[10px] text-slate-500 group-hover:text-slate-700">
+                      {s.v === 'ultra_chaud' ? '< 6m' : s.v === 'mpr_bleu_prio' ? 'MPR bleu' : s.v === 'standard' ? '40-79' : s.v === 'cold' ? '< 40' : ''}
+                    </span>
                   </span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Score min */}
+          {/* Score min — avec popover formule */}
           <div className="mb-4">
-            <label className="mb-1 block text-xs font-medium text-slate-700">
-              Score minimum : <span className="font-bold text-slate-900">{scoreMin}</span>
-            </label>
+            <div className="mb-1 flex items-baseline justify-between">
+              <label className="block text-xs font-medium text-slate-700">
+                Score minimum : <span className="font-bold text-slate-900">{scoreMin}</span>
+              </label>
+              <span
+                className="cursor-help text-[10px] text-slate-500 underline decoration-dotted"
+                title={SCORE_FORMULA_LINES.join('\n')}
+              >
+                comment c'est calculé ?
+              </span>
+            </div>
             <input
               type="range"
               min={0}
@@ -285,17 +319,54 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
             />
           </div>
 
+          {/* Filtre DPE multi-select (D-3 21/05 — élargissement à E) */}
+          <div className="mb-4">
+            <div className="mb-1 flex items-baseline justify-between">
+              <label className="block text-xs font-medium text-slate-700">Classes DPE</label>
+              <span className="text-[10px] text-slate-500">passoires + extension 2034</span>
+            </div>
+            <div className="flex gap-1.5">
+              {DPE_CLASSES_PASSOIRES_ELARGI.map((cls) => {
+                const active = dpeClasses.has(cls)
+                const cssActive: Record<string, string> = {
+                  E: 'bg-orange-500 text-white border-orange-600',
+                  F: 'bg-orange-700 text-white border-orange-800',
+                  G: 'bg-red-700 text-white border-red-800',
+                }
+                const tips: Record<string, string> = {
+                  E: 'DPE E — interdit location nue dès 2034 (anticipation prospective)',
+                  F: 'DPE F — interdit location nue depuis 2028',
+                  G: 'DPE G — interdit location nue depuis 2025',
+                }
+                return (
+                  <button
+                    key={cls}
+                    type="button"
+                    title={tips[cls]}
+                    onClick={() => {
+                      const next = new Set(dpeClasses)
+                      if (active) next.delete(cls); else next.add(cls)
+                      setDpeClasses(next)
+                      setPage(0)
+                    }}
+                    className={`flex-1 rounded-md border-2 px-2 py-1 text-xs font-bold transition ${
+                      active ? cssActive[cls] : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300'
+                    }`}
+                  >
+                    {cls}
+                  </button>
+                )
+              })}
+            </div>
+            <p className="mt-1 text-[10px] text-slate-500">
+              {dpeClasses.size === 0
+                ? 'Toutes classes A→G affichées'
+                : `Affichées : ${Array.from(dpeClasses).sort().join(', ')}`}
+            </p>
+          </div>
+
           {/* Filtres checkboxes */}
           <div className="space-y-2 text-sm">
-            <label className="flex items-center gap-2 text-slate-700">
-              <input
-                type="checkbox"
-                checked={filterFG}
-                onChange={(e) => setFilterFG(e.target.checked)}
-                className="rounded"
-              />
-              <span>DPE F/G uniquement (passoires)</span>
-            </label>
             <label className="flex items-center gap-2 text-slate-700">
               <input
                 type="checkbox"
@@ -364,8 +435,10 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés' }: 
                 value={etiquetteFilter}
                 onChange={(e) => {
                   setEtiquetteFilter(e.target.value)
-                  if (e.target.value && ['A', 'B', 'C', 'D', 'E'].includes(e.target.value)) {
-                    setFilterFG(false)
+                  // Si on cible une classe précise hors du multi-select actuel,
+                  // on vide le multi-select pour rendre la sélection effective.
+                  if (e.target.value && !dpeClasses.has(e.target.value)) {
+                    setDpeClasses(new Set())
                   }
                   setPage(0)
                 }}
