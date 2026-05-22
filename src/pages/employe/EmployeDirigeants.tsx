@@ -67,11 +67,11 @@ export default function EmployeDirigeants() {
 
   return (
     <div className="flex h-screen flex-col bg-stone-50">
-      <header className="border-b border-stone-200 bg-white px-6 py-4">
-        <div className="flex items-center justify-between gap-4">
+      <header className="border-b border-stone-200 bg-white px-3 py-3 sm:px-6 sm:py-4">
+        <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center sm:gap-4">
           <div>
-            <h1 className="text-lg font-semibold text-stone-900">Dirigeants SCI</h1>
-            <p className="text-xs text-stone-600">
+            <h1 className="text-base font-semibold text-stone-900 sm:text-lg">Dirigeants SCI</h1>
+            <p className="text-[11px] text-stone-600 sm:text-xs">
               80 844 dirigeants consolidés · 4 470 multi-SCI · 17 403 propriétaires DPE
             </p>
           </div>

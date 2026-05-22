@@ -17,7 +17,7 @@ export function SidePanel({ step }: SidePanelProps) {
   const tip = STEP_TIPS[step]
 
   return (
-    <aside className="w-[280px] shrink-0 space-y-6 sticky top-8">
+    <aside className="hidden lg:block lg:w-[280px] shrink-0 space-y-6 sticky top-8">
       {/* Expert tip */}
       {tip && (
         <div className="bg-primary/5 border border-primary/10 rounded-xl p-6">

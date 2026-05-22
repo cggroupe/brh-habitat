@@ -15,7 +15,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Building2, User as UserIcon } from 'lucide-react'
 import {
   Search, Filter, List, Map as MapIcon, ChevronRight, Loader2,
-  Flame, Phone, Mail,
+  Flame, Phone, Mail, X,
 } from 'lucide-react'
 import { useFoncierProspectsUnified } from '@/hooks/queries/foncier-prospects-unified'
 import type { ScoreV2Segment } from '@/api/foncier-prospects-table'
@@ -74,6 +74,7 @@ const PAGE_SIZE = 50
 
 export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', subtitle }: Props) {
   const [view, setView] = useState<'list' | 'map'>('list')
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [dept, setDept] = useState<string>('')
   const [segment, setSegment] = useState<ScoreV2Segment | ''>('')
@@ -193,27 +194,27 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
 
   return (
     <div className="flex h-screen flex-col bg-slate-50">
-      {/* Header */}
-      <header className="flex items-center gap-4 border-b border-slate-200 bg-white px-6 py-3 shadow-sm">
+      {/* Header — responsive : stack en mobile, row en desktop */}
+      <header className="flex flex-col gap-3 border-b border-slate-200 bg-white px-3 py-3 shadow-sm sm:px-6 md:flex-row md:items-center md:gap-4">
         <div className="flex flex-col gap-0.5">
-          <h1 className="text-lg font-semibold text-slate-900">{title}</h1>
+          <h1 className="text-base font-semibold text-slate-900 sm:text-lg">{title}</h1>
           {subtitle && (
             <p className="text-xs text-slate-500">{subtitle}</p>
           )}
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-0.5 text-xs font-medium text-slate-700">
+        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-slate-100 px-3 py-0.5 text-xs font-medium text-slate-700">
           {isFetching && <Loader2 className="h-3 w-3 animate-spin text-slate-500" />}
           {total.toLocaleString('fr-FR')} résultats
         </span>
 
-        <div className="flex-1" />
+        <div className="hidden flex-1 md:block" />
 
         {/* Recherche globale */}
-        <div className="relative w-96">
+        <div className="relative w-full md:w-96">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Adresse, nom, SIREN, SCI... (Entrée pour appliquer)"
+            placeholder="Adresse, nom, SIREN, SCI..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => {
@@ -223,36 +224,67 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
           />
         </div>
 
-        {/* Toggle Liste / Carte */}
-        <div className="flex rounded-lg border border-slate-300 bg-white p-1">
+        <div className="flex items-center gap-2">
+          {/* Toggle filtres mobile */}
           <button
-            onClick={() => setView('list')}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-sm font-medium transition ${
-              view === 'list' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
-            }`}
-            title="Vue liste (rapide, par défaut)"
+            type="button"
+            onClick={() => setMobileFiltersOpen(true)}
+            className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 md:hidden"
+            aria-label="Ouvrir les filtres"
           >
-            <List className="h-4 w-4" /> Liste
+            <Filter className="h-4 w-4" />
+            Filtres
           </button>
-          <button
-            onClick={() => setView('map')}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-sm font-medium transition ${
-              view === 'map' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
-            }`}
-            title="Vue carte (chargement à la demande)"
-          >
-            <MapIcon className="h-4 w-4" /> Carte
-          </button>
+
+          {/* Toggle Liste / Carte */}
+          <div className="flex rounded-lg border border-slate-300 bg-white p-1">
+            <button
+              onClick={() => setView('list')}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-sm font-medium transition ${
+                view === 'list' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+              }`}
+              title="Vue liste"
+            >
+              <List className="h-4 w-4" /> <span className="hidden sm:inline">Liste</span>
+            </button>
+            <button
+              onClick={() => setView('map')}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-sm font-medium transition ${
+                view === 'map' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+              }`}
+              title="Vue carte"
+            >
+              <MapIcon className="h-4 w-4" /> <span className="hidden sm:inline">Carte</span>
+            </button>
+          </div>
         </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Colonne filtres */}
-        <aside className="flex w-72 shrink-0 flex-col border-r border-slate-200 bg-white">
+        {/* Backdrop mobile drawer */}
+        {mobileFiltersOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/40 md:hidden"
+            onClick={() => setMobileFiltersOpen(false)}
+          />
+        )}
+
+        {/* Colonne filtres — drawer mobile / sidebar desktop */}
+        <aside className={`${mobileFiltersOpen ? 'fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw]' : 'hidden md:flex md:w-72 md:shrink-0'} flex-col border-r border-slate-200 bg-white`}>
           <div className="overflow-y-auto p-4">
-          <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900">
-            <Filter className="h-4 w-4" />
-            Filtres
+          <div className="mb-4 flex items-center justify-between gap-2">
+            <div className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900">
+              <Filter className="h-4 w-4" />
+              Filtres
+            </div>
+            <button
+              type="button"
+              onClick={() => setMobileFiltersOpen(false)}
+              className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 md:hidden"
+              aria-label="Fermer les filtres"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
 
           {/* Département */}
