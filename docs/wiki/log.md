@@ -5,6 +5,22 @@
 
 ---
 
+## 2026-05-22 (PM) — Handoff complet pour reprise nouvelle session
+
+- **Contexte** : Philippe veut un fichier de référence pour pouvoir reprendre le projet dans une nouvelle conversation Claude avec toutes les infos centralisées.
+- **Fichier créé** : `docs/wiki/handoff-2026-05-22.md` (266 lignes, 14 KB)
+- **Copies** :
+  - `/root/HANDOFF-BRH.md` (raccourci direct racine home)
+  - `/root/ebooks/brh-habitat/handoff-2026-05-22.md` (espace ebooks Philippe)
+- **Contenu** : accès rapide (URLs, credentials Pierre Collard), état data (8 tables volumétrie + 5 matches clés), état dev (11 phases + 22 migrations + bugs résolus), backlog (BDNB + IRIS + brh_ext_commune 44), dette technique (76 migrations héritées + rôle 'employe' check), architecture fichiers clés, métriques globales avant/après, commandes utiles pour reprendre
+- **Index.md** : entrée ajoutée en Partie 4 (Plans & roadmap actifs)
+- **Risque** : None — doc uniquement
+- **Status** : ✅ DONE
+
+---
+
+---
+
 ## 2026-05-21 (32) — Phase 8 : fix lien Vercel + ingest DPE 44 + score V2 sur E + extraction tel pro
 
 **Décisions Philippe (21/05, 4 items du backlog)** : (1) vrai lien Vercel = `https://brh-habitat.vercel.app/`, (2) étendre heuristique score V2 aux DPE E, (3) ingest DPE 44 = oui, (5) extraction tel pro = oui. Item 4 (score patrimoine agrégé) refusé ("bruit").

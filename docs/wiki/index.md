@@ -65,6 +65,7 @@
 | Page | Sujet |
 |------|-------|
 | [plan-refonte-2026-05-21.md](plan-refonte-2026-05-21.md) | 🟡 **Plan refonte 21/05 (en cours)** — 5 axes Philippe en 6 phases (~50-57h / ~9j). Phase 0 (ménage wiki) livrée le 21/05. Décisions D-1 à D-5 actées. |
+| [handoff-2026-05-22.md](handoff-2026-05-22.md) | ⭐ **HANDOFF complet (22/05)** — état projet pour reprendre dans une nouvelle session : data, dev, métriques, backlog, dettes techniques, accès Pierre Collard, commandes utiles. Copie aussi dans `/root/HANDOFF-BRH.md`. |
 
 ### Partie 5 — Guides features majeures
 
