@@ -5,6 +5,112 @@
 
 ---
 
+## 2026-05-24 — Phase C+D dette technique : data backlog + perf/tests
+
+- **Contexte** : Suite Phase A (DB) + B (anti-patterns code). Cible : combler les limitations data (dept 44, BAN, BDNB, IRIS) + perf bundle + tests coverage.
+
+- **C1 — `brh_ext_commune` dept 44 (Loire-Atlantique)** :
+  - Constat audit : 0 communes 44 vs 1 203 pour 22/29/35/56 → 60 456 DPE 44 avec `score_v2 = 5` fixe (RPC join sur `iris_code` → 0 match).
+  - Script existant `scripts/external/seed-commune-bretagne.ts` lancé avec `--dept=44` → **207 communes 44 ajoutées** (16 colonnes principales : radon, RGA, sismique, PPRI, RGE counts).
+  - Migration `20260524120000_score_v2_dept44_via_insee_commune.sql` : recalcul score V2 pour 38 092 DPE 44 (E/F/G) avec join via `code_insee` (au lieu d'iris_code). 19/22 règles applicables sans IRIS (les 3 IRIS-dépendantes restent à 0 : r_mpr, r_precar, r_proprio_ancien, r_vacance).
+  - **Résultat dept 44 E** : score V2 avg 5→13, max 25 (vs F/G qui restent à 10 — peu de signaux activés sans données patrimoniales communales).
+  - 🟡 **PARTIEL — restant ad-hoc** : 47 colonnes commune (catnat, lovac, dju, population_2022, prix_m2_median_3y, tlv, audits_ademe_count, basias_count, sru_carencee, etc.) sont remplies par scripts/ingestions one-shot non versionnés. Pour les 4 dépts bretons elles sont peuplées, pour le 44 elles sont NULL → score V2 dept 44 atteint son plafond pratique à ~25 (vs ~50 pour Bretagne).
+  - Resolution complète = sprint dédié "remplissage commune 44" (Enedis, INSEE pop, LOVAC, Géorisques catnat, ANIL OPAH, taxes locales) — estimé 10-15h.
+
+- **C2 — Enrichissement BAN `brh_personnes_historique`** (lancé en background, finalisation post-session) :
+  - Migration `20260524130000_add_adresse_ban_to_personnes_historique.sql` : 6 colonnes ajoutées (`adresse_ban_id`, `_score`, `_lat`, `_lon`, `_label`, `_enriched_at`) + 2 index partiels.
+  - Script `scripts/brh-enrich-ban-personnes.py` : appel `api-adresse.data.gouv.fr/search` avec `q={adresse}&postcode={cp}` + throttle 25 req/s + batch UPDATE 100/0.5s anti-saturation.
+  - Hit rate confirmé en cours : **~93%** (1856/2000, 2771/3000, 3693/4000) — l'API BAN gérera les ~18 218 personnes en ~40 min wall-clock.
+  - Impact attendu post-finalisation : matches client↔DPE de 419 → potentiellement 95%+ (via adresse_ban_id qui sera la clé exacte de jointure).
+
+- **C3 — BDNB Bretagne** : **DEFERRED** :
+  - Inventaire : 4 zips de 600-750 MB = 2.4 GB compressé → ~40 GB SQL décompressé (`bdnb.sql` 2.4 GB par dept, format SQL plain pas custom).
+  - Volume cible : ~1.5 M bâtiments × 200+ colonnes = blowup Supabase Pro 8GB DB.
+  - Recette pour sprint dédié : instance PostgreSQL locale (Docker) + extract CSV des 5-10 colonnes utiles pour scoring (typologie bâti, % vitrage, matériaux, étages) + charger une table `brh_ext_bdnb_batiments` minimale dans Supabase. Estimé 10-20h.
+
+- **C4 — IRIS via shapefile IGN** : **DEFERRED** :
+  - Constat : API IGN reverse IRIS via `apicarto.ign.fr` retourne HTML (endpoint manquant), WFS `data.geopf.fr` (`STATISTICALUNITS.IRIS:contours_iris`) renvoie 0 features (problème projection SRS).
+  - Recette pour sprint dédié : télécharger contours-iris shapefile IGN (~50 MB) → `ogr2ogr` import dans PostgreSQL local avec PostGIS → point-in-polygon pour chaque DPE avec lat/lng → batch UPDATE `iris_code`. Estimé 4-6h.
+
+- **D1 — Bundle Vite warning** :
+  - Audit : `react-pdf` chunk = 1.5 MB MAIS chargé uniquement à la demande (lazy via routes /audit, /pro/audits, /admin/commissions, /diagnostic-results). Main bundle = 478 KB (vendor + 6 shells + HomePage + Router) → gzip 150 KB. 156 lazy() vs 24 static dans App.tsx.
+  - Fix : `vite.config.ts` `chunkSizeWarningLimit: 600 → 1600` avec documentation des splits intentionnels. Warning supprimé, build vert.
+
+- **D2 — Tests coverage** :
+  - Constat : 21 fichiers test, 390 cas passants (wiki disait "0 tests auto" — périmé). Suite solide sur DPE engine, scoring, reseau, lib métier.
+  - Gap identifié : helpers critiques BRH `formatNameFr`, `formatPhoneFr`, `formatFullAddress` (bugs B1/B2/B3 fiche client) + `formatLocalDate`/`isSafeUrl` jamais testés.
+  - Ajoutés : `src/lib/format-fr.test.ts` (18 tests) + `src/lib/utils.test.ts` (8 tests) → **23 fichiers test, 416 cas (+26)**.
+
+- **Fichiers créés** :
+  - `supabase/migrations/20260524120000_score_v2_dept44_via_insee_commune.sql`
+  - `supabase/migrations/20260524130000_add_adresse_ban_to_personnes_historique.sql`
+  - `scripts/brh-enrich-ban-personnes.py`
+  - `src/lib/format-fr.test.ts`
+  - `src/lib/utils.test.ts`
+- **Fichiers modifiés** : `vite.config.ts` (chunkSizeWarningLimit).
+- **Pages wiki impactées** : `log.md` (cette entrée), `bugs-ouverts.md` (à mettre à jour avec C1/C2/D1/D2 status).
+- **Migrations créées** : 2 (`20260524120000`, `20260524130000`)
+- **Risque** : Low. Build vert. Tests 416 OK. BAN enrich idempotent.
+- **Status** : ✅ DONE Phase C+D. C2 (BAN) finalisera en background ~40 min. C3+C4 reportés avec recettes documentées.
+
+---
+
+## 2026-05-24 — Phase B dette technique : anti-patterns code + vulnérabilité RLS
+
+- **Contexte** : Suite Phase A (DB). Cible : 14 règles anti-bug wiki + B01.
+- **B4 partiel** : régénération `database-generated.ts` depuis prod (5 437 → 10 773 lignes — nouvelles tables ingérées 17-22/05). Tentative de typer `supabase = createClient<Database>(...)` a révélé 193 erreurs TS dispersées (string|null vs string, overloads PostgrestVersion 14.1). Rollback `supabase.ts` à état hybride : `supabase` non typé (rétrocompat) + `supabaseTyped` pour nouvelles tables. Résolution complète B01 = sprint dédié avec validation runtime.
+- **B3** : 5 call sites `toISOString().slice(0, 10)` remplacés par helper `formatLocalDate()` (déjà présent dans `lib/utils.ts`). Fichiers : `xml-ademe.ts`, `foncier-tertiaire.ts`, `AgenceFoncierSci.tsx`, `DiagnosticCtaSection.tsx`, `AgenceFoncierProspects.tsx`. Seul match restant = commentaire du helper.
+- **B1** : refactor `as unknown as` 53 → 26 (-51%) :
+  - Script `scripts/simplify-as-unknown-as.py` : 25 simplifications automatiques `as unknown as X` → `as X` (sur src/api/, src/pages/admin/, src/lib/dpe-engine/).
+  - 5 cas restaurés (JOIN compat — TS exige explicitement `as unknown as` quand types ne sont pas comparables) : `field-visits.ts` (×2), `lead-assignments.ts`, `score-vente.ts`, `AdminAgenceSocialPosts.tsx`.
+  - Refactor `FicheAdresseView.tsx` : 8 casts répétés `(dpe as unknown as Record<string, ...>).field` consolidés en 1 type local `DpeWithEmployeeFields` + 1 cast initial documenté (lié migration `20260520105000_brh_dpe_employee_overrides`). Net : -7 occurrences sur ce fichier.
+  - 26 occurrences restantes toutes légitimes : JSON serialization (audits/audit-enrichment/reseau-posts), interop libs (HeatmapLayer/Leaflet, MlmTreeViz/D3), JOIN compat (4 cas), form data → Record (ManualWizard).
+- **B2** : audit RLS `USING (true)` — 60+ policies en prod (12 références migration). Catégorisation :
+  - ✅ Légitimes : référentiels publics DPE 3CL (40+ tables `brh_dpe_coef_*`, `brh_dpe_seuils`), cadastre/communes (`brh_ext_iris`, `brh_ext_commune`, `brh_communes_sociodemo`), entreprises publiques (`brh_sci_companies`, `brh_ext_immo_companies`, `brh_ext_rge_companies`), permis Sitadel, DVF, BODACC, badges (déjà documenté).
+  - 🔴 **VULNÉRABILITÉ détectée** : `brh_agence_audits.agence_audits_respond_anon` (UPDATE anon avec `qual=true AND with_check=true`, SANS validation `response_token`). Un anon pouvait UPDATE n'importe quelle ligne (corruption feedback, pollution stats audits). Aucune route `/audit/respond` côté frontend → policy INUTILISÉE en prod → DROP safe.
+  - Migration `20260524110000_drop_unsafe_audit_respond_anon_policy.sql` créée + appliquée + trackée. La feature de réponse anon devra être réimplémentée via RPC SECURITY DEFINER `brh_audit_respond(token, feedback, msg)` quand la page sera livrée.
+- **Fichiers créés** :
+  - `scripts/simplify-as-unknown-as.py`
+  - `scripts/refactor-database-types-to-aliases.py` (utilisé pour exploration B4, conservé en doc)
+  - `supabase/migrations/20260524110000_drop_unsafe_audit_respond_anon_policy.sql`
+- **Fichiers modifiés** (B1+B3+B4) : `src/lib/supabase.ts`, `src/types/database-generated.ts` (régénéré), 5 call sites toISOString, 15 fichiers `as unknown as` simplifiés, `src/components/leads/fiche/FicheAdresseView.tsx` (consolidation type).
+- **Pages wiki impactées** : `log.md` (cette entrée), `bugs-ouverts.md` (à mettre à jour avec B1/B2/B3/B4 status).
+- **Migrations créées** : 1 (`20260524110000`)
+- **Risque** : Low. Build vert 0 erreur TS après chaque phase. Policy droppée était inutilisée.
+- **Tests** : `npm run build` ✅ (warning bundle > 600KB attendu, sera traité en D1).
+- **Status** : ✅ DONE Phase B. Prochaine : Phase C (data backlog) puis D (perf/tests).
+
+---
+
+## 2026-05-24 — Phase A dette technique : 76 migrations héritées trackées + rôle `employe` ajouté
+
+- **Contexte** : Demande Philippe « régler toutes les dettes techniques pour avoir un site absolument parfait ». Découpage 4 phases A→D séquentielles. Phase A = critique DB.
+- **A1 — Audit objet-par-objet** des 76 migrations non trackées dans `schema_migrations` :
+  - Script `scripts/audit-untracked-migrations.py` parse chaque migration (CREATE TABLE/FUNCTION/INDEX/POLICY/TRIGGER) puis check via Management API si chaque objet existe en prod.
+  - Verdict initial : 65 SAFE_REPAIR / 3 PARTIAL / 2 MISSING_FULL / 7 REVIEW_NO_DDL.
+  - Re-vérification fine des 12 cas non-SAFE : tous résolus par drift acceptable (renommages d'index/policies par refontes ultérieures) ou faux positif scanner (storage schema). **Final : 76/76 SAFE_REPAIR**.
+- **A2 — Batch repair** :
+  - Fix collision timestamp `20260706200000` : `brh_artisan_phase_17_1.sql` → `20260706200001` (Phase 17 logique après Phase 16 unified). Renommage via `git mv`.
+  - Script `scripts/repair-untracked-migrations.py` INSERT direct dans `supabase_migrations.schema_migrations` (équivalent `supabase migration repair --status applied`).
+  - 77 versions insérées (76 héritées + nouvelle timestamp post-rename).
+  - **Vérif : 155 trackées prod ↔ 155 fichiers locaux = ✅ alignés**.
+- **A3 — Rôle `employe`** :
+  - Découverte : `brh_employees` n'a PAS de colonne `role` (handoff inexact). Le vrai mismatch est `profiles.role_check` qui n'incluait pas `'employe'` malgré 29 RPCs et 4 composants frontend (`ReseauPortalShell`, `ReseauGuard`, `ArtisanGuard`, `UnifiedLeadsView`) qui l'attendent.
+  - `EmployeGuard` route via whitelist email (`lib/brh-employees.ts`), pas via `profiles.role` → Pierre Collard reste `admin` (aucun backfill nécessaire, aucun user n'avait `role='employe'` jusqu'ici).
+  - Migration `20260524100000_add_employe_to_role_check.sql` créée + appliquée + trackée.
+- **Fichiers créés** :
+  - `scripts/audit-untracked-migrations.py`
+  - `scripts/repair-untracked-migrations.py`
+  - `supabase/migrations/20260524100000_add_employe_to_role_check.sql`
+- **Renommé** : `supabase/migrations/20260706200000_brh_artisan_phase_17_1.sql` → `20260706200001_brh_artisan_phase_17_1.sql`
+- **Pages wiki impactées** : `bugs-ouverts.md` (dette héritée marquée RÉSOLUE), `log.md` (cette entrée). Handoff `/root/HANDOFF-BRH.md` à mettre à jour en fin de Phase D.
+- **Migrations créées** : 1 (`20260524100000`)
+- **Risque** : None — INSERTs sur `schema_migrations` idempotents (`ON CONFLICT DO NOTHING`), check constraint élargi sans suppression de valeurs existantes.
+- **Tests** : vérif alignement migrations OK, vérif constraint via `pg_get_constraintdef` OK.
+- **Status** : ✅ DONE Phase A. Prochaine : Phase B (anti-patterns code).
+
+---
+
 ## 2026-05-22 (PM) — Handoff complet pour reprise nouvelle session
 
 - **Contexte** : Philippe veut un fichier de référence pour pouvoir reprendre le projet dans une nouvelle conversation Claude avec toutes les infos centralisées.

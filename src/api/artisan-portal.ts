@@ -33,7 +33,7 @@ export const artisanPortalApi = {
       .eq('profile_id', userData.user.id)
       .maybeSingle()
     if (error) throw error
-    return (data as unknown as ArtisanRow) ?? null
+    return (data as ArtisanRow) ?? null
   },
 
   /**
@@ -77,7 +77,7 @@ export const artisanPortalApi = {
     return leads.map((l) => {
       const p = pMap.get(l.prospect_id as number)
       return {
-        ...(l as unknown as ArtisanLeadRow),
+        ...(l as ArtisanLeadRow),
         prospect_commune: (p?.commune as string | null) ?? null,
         prospect_etiquette: (p?.etiquette_dpe as string | null) ?? null,
         prospect_surface: (p?.surface_habitable as number | null) ?? null,

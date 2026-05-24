@@ -67,7 +67,7 @@ export default function AdminLeadAssignments() {
       if (filterStatus) q = q.eq('status', filterStatus)
       const { data, error } = await q
       if (error) throw error
-      return (data ?? []) as unknown as AdminAssignment[]
+      return (data ?? []) as AdminAssignment[]
     },
   })
 

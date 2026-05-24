@@ -60,7 +60,7 @@ export const agenceReferralsApi = {
       .eq('recruiter_agence_id', recruiterAgenceId)
       .order('created_at', { ascending: false })
     if (error) throw error
-    return (data ?? []) as unknown as ReferralCommission[]
+    return (data ?? []) as ReferralCommission[]
   },
 
   async listMyReferred(recruiterAgenceId: string): Promise<ReferredAgence[]> {

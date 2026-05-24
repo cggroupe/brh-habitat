@@ -64,7 +64,7 @@ export const artisansRgeApi = {
 
     const { data, error } = await q
     if (error) throw error
-    return (data ?? []) as unknown as ArtisanRow[]
+    return (data ?? []) as ArtisanRow[]
   },
 
   /**
@@ -101,7 +101,7 @@ export const artisansRgeApi = {
       .eq('id', id)
       .single()
     if (error) throw error
-    return (data as unknown as ArtisanRow) ?? null
+    return (data as ArtisanRow) ?? null
   },
 
   /**
@@ -133,7 +133,7 @@ export const artisansRgeApi = {
       .select('*')
       .single()
     if (error) throw error
-    return data as unknown as ArtisanLeadRow
+    return data as ArtisanLeadRow
   },
 
   /**
@@ -160,6 +160,6 @@ export const artisansRgeApi = {
       .order('created_at', { ascending: false })
       .limit(100)
     if (error) throw error
-    return (data ?? []) as unknown as ArtisanLeadRow[]
+    return (data ?? []) as ArtisanLeadRow[]
   },
 }

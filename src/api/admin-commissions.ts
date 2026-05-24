@@ -73,7 +73,7 @@ export const adminCommissionsApi = {
     return invoices.map((i) => {
       const a = aMap.get(i.artisan_id as string)
       return {
-        ...(i as unknown as CommissionInvoiceRow),
+        ...(i as CommissionInvoiceRow),
         artisan_nom_entreprise: (a?.nom_entreprise as string | null) ?? null,
         artisan_commune: (a?.commune as string | null) ?? null,
         artisan_email: (a?.email as string | null) ?? null,
@@ -134,7 +134,7 @@ export const adminCommissionsApi = {
       .select('*')
       .single()
     if (error) throw error
-    return data as unknown as CommissionInvoiceRow
+    return data as CommissionInvoiceRow
   },
 
   /**

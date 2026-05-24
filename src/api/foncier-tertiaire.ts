@@ -3,6 +3,7 @@
  */
 import { supabase } from '@/lib/supabase'
 import { edgeFunctionUrl } from '@/lib/config'
+import { formatLocalDate } from '@/lib/utils'
 
 /* =========================== BODACC ============================ */
 
@@ -52,7 +53,7 @@ export const foncierBodaccApi = {
     if (filters.code_insee_commune) q = q.eq('code_insee_commune', filters.code_insee_commune)
     if (filters.famille && filters.famille !== 'all') q = q.eq('famille_avis', filters.famille)
     if (filters.days_back) {
-      const since = new Date(Date.now() - filters.days_back * 86_400_000).toISOString().slice(0, 10)
+      const since = formatLocalDate(new Date(Date.now() - filters.days_back * 86_400_000))
       q = q.gte('date_publication', since)
     }
 

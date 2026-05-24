@@ -107,7 +107,7 @@ export const prospectsBretagneApi = {
     const { data, error, count } = await q
     if (error) throw error
     return {
-      rows: (data ?? []) as unknown as ProspectBretagneRow[],
+      rows: (data ?? []) as ProspectBretagneRow[],
       total: count ?? 0,
     }
   },
@@ -122,7 +122,7 @@ export const prospectsBretagneApi = {
       .eq('id', id)
       .single()
     if (error) throw error
-    return (data as unknown as ProspectBretagneRow) ?? null
+    return (data as ProspectBretagneRow) ?? null
   },
 
   /**

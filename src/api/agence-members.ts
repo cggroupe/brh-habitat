@@ -37,7 +37,7 @@ export const agenceMembersApi = {
       .order('member_role', { ascending: true }) // signer en premier
       .order('joined_at', { ascending: true })
     if (error) throw error
-    return (data ?? []) as unknown as AgenceMemberRow[]
+    return (data ?? []) as AgenceMemberRow[]
   },
 
   /**

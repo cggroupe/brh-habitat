@@ -14,6 +14,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ClipboardList, Search } from 'lucide-react'
 import { useFoncierProspectsTable } from '@/hooks/queries/foncier-prospects-table'
+import { formatLocalDate } from '@/lib/utils'
 import type {
   CouleurMpr,
   FoncierProspectRow,
@@ -91,7 +92,7 @@ function exportCsv(rows: FoncierProspectRow[]) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `brh-foncier-prospects-${new Date().toISOString().slice(0, 10)}.csv`
+  a.download = `brh-foncier-prospects-${formatLocalDate()}.csv`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)

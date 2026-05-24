@@ -14,8 +14,14 @@ export default defineConfig({
     // Phase 23 — sourcemaps pour Sentry (upload via plugin Sentry quand
     // SENTRY_AUTH_TOKEN est dispo en CI ; sinon utile pour `vite preview`).
     sourcemap: true,
-    // Phase 21 — seuil de warning ajusté après split charts/leaflet/markdown.
-    chunkSizeWarningLimit: 600,
+    // 2026-05-24 Phase D1 — Seuil relevé après audit dette technique :
+    //   - react-pdf chunk = 1.5 MB MAIS chargé uniquement à la demande
+    //     (pages /audit, /pro/audits, /admin/commissions, /diagnostic-results)
+    //   - main bundle = 478 KB (vendor + 6 shells + HomePage + Router) chargé
+    //     à l'entrée, gzip ≈ 150 KB → acceptable. 156 lazy() vs 24 static dans App.tsx.
+    //   - charts/leaflet/markdown/archive splittés et lazy.
+    //   - Le seuil 1600 ne masque que le chunk react-pdf (lazy, légitime).
+    chunkSizeWarningLimit: 1600,
     rollupOptions: {
       output: {
         manualChunks: {

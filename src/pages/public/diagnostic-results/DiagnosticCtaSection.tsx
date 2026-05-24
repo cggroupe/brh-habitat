@@ -3,6 +3,7 @@ import { CheckCircle2, Calendar, ArrowRight, FileDown, Phone, RefreshCw, Loader2
 import { PDFDownloadLink } from '@react-pdf/renderer'
 import { DiagnosticPdfReport } from '@/components/diagnostic-pdf/DiagnosticPdfReport'
 import type { DiagnosticResult } from '@/lib/diagnostic-engine'
+import { formatLocalDate } from '@/lib/utils'
 
 interface DiagnosticCtaSectionProps {
   onShowContact: () => void
@@ -61,7 +62,7 @@ export function DiagnosticCtaSection({ onShowContact, pdfResult, pdfProperty }: 
         {pdfResult ? (
           <PDFDownloadLink
             document={<DiagnosticPdfReport result={pdfResult} property={pdfProperty ?? {}} />}
-            fileName={`diagnostic-brh-${new Date().toISOString().slice(0, 10)}.pdf`}
+            fileName={`diagnostic-brh-${formatLocalDate()}.pdf`}
             className="inline-flex items-center justify-center gap-2 px-5 py-3 border border-white/30 text-white/80 font-display text-xs rounded-xl hover:bg-white/10 transition-colors"
           >
             {({ loading }) => loading ? (

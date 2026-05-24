@@ -58,7 +58,22 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
     )
   }
 
-  const { dpe, sci, voisinage } = data
+  // Cast unique vers un type étendu — la fiche employé accède à des champs DPE
+  // non remontés par le hook useFicheAdresse de base (overrides terrain stockés
+  // dans la même row brh_dpe_prospects mais pas exposés au type public).
+  // Remplace 8 `(dpe as unknown as ...)` répétés. Voir migration 20260520105000
+  // (brh_dpe_employee_overrides) + RPC brh_dpe_employee_update.
+  type DpeWithEmployeeFields = typeof data.dpe & {
+    surface_habitable?: number | null
+    employee_notes?: string | null
+    travaux_terrain_status?: string | null
+    dpe_terrain_estime?: string | null
+    interet_brh?: string | null
+    contact_disponibilite?: string | null
+    derniere_visite_terrain?: string | null
+  }
+  const dpe = data.dpe as DpeWithEmployeeFields
+  const { sci, voisinage } = data
   const isPersonneMorale = !!dpe.owner_siren
   const ownerLabel = displayName(profile, dpe.owner_name ?? null, isPersonneMorale)
 
@@ -196,8 +211,7 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <Stat label="Classe DPE" value={dpe.etiquette_dpe} accent={['F', 'G'].includes(String(dpe.etiquette_dpe))} />
                 <Stat label="Surface" value={(() => {
-                  const sh = (dpe as unknown as { surface_habitable?: number | null }).surface_habitable
-                  if (sh != null) return `${sh} m²`
+                  if (dpe.surface_habitable != null) return `${dpe.surface_habitable} m²`
                   if (dpe.surface != null) return `${dpe.surface} m²`
                   return null
                 })()} />
@@ -394,12 +408,12 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
               />
               <EmployeeEditPanel
                 initial={{
-                  employee_notes: (dpe as unknown as Record<string, string | null>).employee_notes,
-                  travaux_terrain_status: (dpe as unknown as Record<string, string | null>).travaux_terrain_status,
-                  dpe_terrain_estime: (dpe as unknown as Record<string, string | null>).dpe_terrain_estime,
-                  interet_brh: (dpe as unknown as Record<string, string | null>).interet_brh,
-                  contact_disponibilite: (dpe as unknown as Record<string, string | null>).contact_disponibilite,
-                  derniere_visite_terrain: (dpe as unknown as Record<string, string | null>).derniere_visite_terrain,
+                  employee_notes: dpe.employee_notes,
+                  travaux_terrain_status: dpe.travaux_terrain_status,
+                  dpe_terrain_estime: dpe.dpe_terrain_estime,
+                  interet_brh: dpe.interet_brh,
+                  contact_disponibilite: dpe.contact_disponibilite,
+                  derniere_visite_terrain: dpe.derniere_visite_terrain,
                 }}
                 showContactFields={false}
                 onSave={(patch) => updateMutation.mutateAsync(patch)}

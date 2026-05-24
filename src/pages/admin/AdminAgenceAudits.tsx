@@ -89,7 +89,7 @@ export default function AdminAgenceAudits() {
       if (filterFeedback) q = q.eq('feedback', filterFeedback)
       const { data, error } = await q
       if (error) throw error
-      return (data ?? []) as unknown as Audit[]
+      return (data ?? []) as Audit[]
     },
   })
 

@@ -104,7 +104,7 @@ export const disponibilitesApi = {
           : publisher.profiles
         : undefined
       return {
-        ...(row as unknown as Disponibilite),
+        ...(row as Disponibilite),
         publisher_name: profile?.full_name ?? null,
         publisher_partner_type: publisher?.partner_type ?? null,
       }

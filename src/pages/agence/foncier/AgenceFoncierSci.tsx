@@ -12,6 +12,7 @@ import { useState, useMemo } from 'react'
 import { Search, Building2, Filter, AlertCircle, Loader2, FileSearch } from 'lucide-react'
 import { useSearchSci } from '@/hooks/queries/foncier-sci'
 import SciCard from '@/components/foncier/SciCard'
+import { formatLocalDate } from '@/lib/utils'
 
 const BRETAGNE_DEPTS = [
   { code: '', label: 'Toute la Bretagne' },
@@ -35,7 +36,7 @@ const DECES_PERIODS: Array<{ label: string; months: number | null }> = [
 function monthsAgoIso(months: number): string {
   const d = new Date()
   d.setMonth(d.getMonth() - months)
-  return d.toISOString().slice(0, 10)
+  return formatLocalDate(d)
 }
 
 export default function AgenceFoncierSci() {

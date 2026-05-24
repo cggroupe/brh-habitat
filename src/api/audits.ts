@@ -116,7 +116,7 @@ export const auditsApi = {
     const audit = await auditsApi.get(id)
 
     // Validation des inputs avant calcul
-    const inputs = auditInputsSchema.parse(audit.inputs) as unknown as AuditInputs
+    const inputs = auditInputsSchema.parse(audit.inputs) as AuditInputs
     const result = computeDpe(inputs)
 
     // Persiste les champs principaux + JSON results
@@ -128,7 +128,7 @@ export const auditsApi = {
       etiquette_climat: result.etiquetteClimat,
     })
 
-    return dpeResultSchema.parse(result) as unknown as DpeResult
+    return dpeResultSchema.parse(result) as DpeResult
   },
 
   /**

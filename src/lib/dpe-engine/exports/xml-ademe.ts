@@ -27,6 +27,7 @@
  */
 
 import type { AuditInputs, DpeResult, ParoiInput, OuvertureInput, EtiquetteDpe } from '../types'
+import { formatLocalDate } from '@/lib/utils'
 
 // ============================================================================
 // Helpers d'échappement et formatage
@@ -347,7 +348,7 @@ function buildVueEnsemble(b: BuilderInputs): string {
 function buildExpertiseAuditeur(b: BuilderInputs): string {
   return `  <expertise_auditeur>
     <commentaires>Audit énergétique réglementaire 3CL-DPE 2021 réalisé via le moteur BRH Habitat (v${escapeXml(b.result.hypotheses.moteurVersion)}). Coefficient EP électricité = 2.3 conformément à l'arrêté du 8 octobre 2021.</commentaires>
-    <date_audit>${new Date(b.audit.finalized_at ?? b.audit.created_at).toISOString().slice(0, 10)}</date_audit>
+    <date_audit>${formatLocalDate(new Date(b.audit.finalized_at ?? b.audit.created_at))}</date_audit>
     <moteur_calcul>BRH DPE Engine v${escapeXml(b.result.hypotheses.moteurVersion)}</moteur_calcul>
   </expertise_auditeur>`
 }

@@ -147,7 +147,7 @@ export async function fetchAidesLocales(opts: {
   }
 
   // Filtre par couleur si fournie
-  let aides = (data ?? []) as unknown as AideLocale[]
+  let aides = (data ?? []) as AideLocale[]
   if (opts.couleur) {
     aides = aides.filter(
       (a) => !a.couleurs_eligibles || a.couleurs_eligibles.includes(opts.couleur!),

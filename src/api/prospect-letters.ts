@@ -141,7 +141,7 @@ export const prospectLettersApi = {
       .eq('prospect_id', prospectId)
       .order('created_at', { ascending: false })
     if (error) throw error
-    return (data ?? []) as unknown as ProspectLetterRow[]
+    return (data ?? []) as ProspectLetterRow[]
   },
 
   /**
@@ -154,7 +154,7 @@ export const prospectLettersApi = {
       .eq('id', id)
       .single()
     if (error) throw error
-    return (data as unknown as ProspectLetterRow) ?? null
+    return (data as ProspectLetterRow) ?? null
   },
 
   /**
@@ -178,7 +178,7 @@ export const prospectLettersApi = {
       .select('*')
       .single()
     if (error) throw error
-    return data as unknown as ProspectLetterRow
+    return data as ProspectLetterRow
   },
 
   /**
