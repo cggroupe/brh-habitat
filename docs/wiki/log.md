@@ -5,6 +5,50 @@
 
 ---
 
+## 2026-05-25 — Phase 3 : BDNB Bretagne ingéré + 3 nouvelles règles score V2 (22 → 25)
+
+**Contexte** : Item C3 reporté du handoff 25/05 (recette complète documentée). Découverte : les 4 schémas BDNB sont déjà restaurés sur Docker postgis local (port 5433, db `bdnb`, user `bdnb`) → pas besoin de Phase 3.1 (5-10h économisées).
+
+- **Phase 3.2 — Inspection schéma BDNB** : table cible `batiment_groupe_ffo_bat` (typologie : nb_niveau, annee_construction, mat_mur_txt, mat_toit_txt, nb_log), enrichi avec `batiment_groupe_dpe_representatif_logement` (surface_habitable_logement, type_vitrage, vitrage_vir). Clé de jointure : `batiment_groupe_adresse.cle_interop_adr_principale_ban` (renommé `ban_id` côté BRH).
+
+- **Phase 3.3 — Migration `brh_ext_bdnb_batiments`** : `supabase/migrations/20260525130000_create_brh_ext_bdnb_batiments.sql`. 10 colonnes (batiment_groupe_id PK, ban_id, dept, annee_construction, mat_mur_txt, mat_toit_txt, nb_niveau, nb_log, surface_habitable_logement, type_vitrage, ingested_at). 3 index (ban_id principal, dept, annee partiel). RLS public lecture.
+
+- **Phase 3.4 — Extract CSV + load Supabase** :
+  - Extract local : `psql COPY (SELECT ...) TO STDOUT WITH CSV HEADER` filtré sur `cle_interop_adr_principale_ban IS NOT NULL`. 4 dépts × 2-3s = ~10s total. CSV totalisent 116 MB pour 1.55M rows.
+  - Load Supabase : `scripts/brh-load-bdnb-bretagne.py` (psycopg2 + COPY FROM STDIN via TEMP TABLE + INSERT ... ON CONFLICT). 1.21M rows en 1.3 min initial (11-20k rows/s), puis dept 22 retry 336k en 47s. **Total : 1.55M rows en ~2 min**.
+  - Bug fix en chemin : `surface_habitable_logement` originellement `NUMERIC(8,2)` → overflow sur valeur aberrante 1061927 m² dept 22. ALTER vers `NUMERIC(12,2)` (BDNB peut contenir des bâtiments mal renseignés).
+  - Distribution validée : 280 472 PIERRE pur, 26 830 simple vitrage, ~40k logements >= 150 m².
+
+- **Phase 3.5 — Migration `brh_recalc_score_v2_full` + 3 nouvelles règles** :
+  - `supabase/migrations/20260525140000_score_v2_add_bdnb_rules.sql`
+  - Fonction SECURITY DEFINER `brh_recalc_score_v2_full(p_dept)` paramétrable par dept (anti-timeout).
+  - **+3 règles** (passage 22 → 25) :
+    - `r_vitrage_simple` (+5) : type_vitrage = 'simple vitrage' AND annee < 1990
+    - `r_pierre_ancienne` (+3) : mat_mur_txt ILIKE '%PIERRE%' AND annee < 1900
+    - `r_grand_logement` (+3) : surface >= 150 AND etiquette ∈ (E,F,G)
+  - LEFT JOIN `brh_ext_bdnb_batiments` sur `adresse_ban_id`. Idempotente.
+  - Recalc 5 dépts via Management API (26-59s par dept) :
+    - dept 22 : 31 276 rows, avg 38.61, max 69
+    - dept 29 : 43 174 rows, avg 40.28, max **97**
+    - dept 35 : 39 483 rows, avg 36.04, max 70
+    - dept 44 : 60 456 rows, avg **19.73** (vs 16 avant), max **43** (vs 33 avant) — gain +23% avg, +30% max
+    - dept 56 : 31 863 rows, avg 37.94, max 67
+
+- **Limitation acceptée** : impact 3 règles BDNB limité à ~1700/206k DPE matchables avec BDNB tant que `brh_dpe_prospects.adresse_ban_id` pas finalisé (en cours en background Phase 1.2). Une fois finalisé (~95%), le recalc peut être relancé avec un gain plus visible. Le moteur JS `score-v2.ts` (9-10 règles) reste non aligné — limitation préexistante (le SQL est plus complet, JS uniquement pour portail agence simplifié).
+
+- **Fichiers créés** :
+  - `supabase/migrations/20260525130000_create_brh_ext_bdnb_batiments.sql`
+  - `supabase/migrations/20260525140000_score_v2_add_bdnb_rules.sql`
+  - `scripts/brh-load-bdnb-bretagne.py`
+
+- **Migrations créées** : 2 (`20260525130000`, `20260525140000`)
+- **Pages wiki impactées** : [data-inventory.md](data-inventory.md), [external-data-sources.md](external-data-sources.md), [log.md](log.md)
+- **Risque** : Low. Données référentielles publiques (RLS read-all). Recalc idempotent.
+- **Tests** : 416 OK. `npm run build` ✓ 33.43s.
+- **Status** : ✅ DONE Phase 3. Recalc à re-jouer après finalisation du batch BAN DPE pour observer le gain plein des 3 règles BDNB.
+
+---
+
 ## 2026-05-25 — Phase 2 : feature audit-respond anon proprement (RPC SD)
 
 **Contexte** : Suite Phase 1 du sprint "4 chantiers restants". Le 24/05, la policy RLS `agence_audits_respond_anon` avait été droppée pour vulnérabilité (UPDATE anon sans validation token). Cette phase la remplace proprement par une RPC SECURITY DEFINER + page publique.

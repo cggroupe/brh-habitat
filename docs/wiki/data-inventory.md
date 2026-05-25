@@ -93,7 +93,7 @@ Rowcounts vérifiés **psql direct sur `lygmmvxnmvlgynmrcpny` au 2026-05-21**.
 
 | Dataset | Path VPS | Taille | Statut | Priorité |
 |---|---|--:|---|---|
-| **BDNB Bretagne** (4 départements) | `/opt/stack/bdnb-bretagne/raw/dep{22,29,35,56}.pgdump.zip` | 2.4 GB | ⚫ pg_dump prêt | P3 — typologie bâti FR |
+| **BDNB Bretagne** (4 départements) | `/opt/stack/bdnb-bretagne/raw/dep{22,29,35,56}.pgdump.zip` | 2.4 GB | ✅ ingéré 25/05 dans `brh_ext_bdnb_batiments` (1.55M rows, 10 cols) | livré Phase 3 |
 | **Sirene Étab** complet FR | `/opt/stack/sci-immobilier/data/StockEtablissement_utf8.csv` | 9.1 GB | ⚫ | P4 (partiel via SCI) |
 | **Sirene UniteLegale** | `/opt/stack/sci-immobilier/data/StockUniteLegale_utf8.csv` | 3.9 GB | ⚫ | P4 |
 | **DVF 2019-2023** | `/opt/stack/sci-immobilier/data/dvf_{2019..2023}.csv.gz` | ~500 MB | 🟠 partiel (2024 only) | P3 |
@@ -107,7 +107,7 @@ Rowcounts vérifiés **psql direct sur `lygmmvxnmvlgynmrcpny` au 2026-05-21**.
 |---|---|---|---|---|
 | **P1** | **Pivot dirigeant → autres entreprises** (Sirene + Annuaire-entreprises gratuit) | 17 403 dirigeants propriétaires DPE | Tel/email pro via commerce/artisanat du dirigeant SCI | 0 € (scale gratuit validé D-2 du 21/05) |
 | **P2** | **Permis de construire Sitadel** (en cours) | ~5-10 k/an Bretagne | Adresses avec travaux récemment autorisés → prospect chaud | 0 € |
-| **P3** | **BDNB Bretagne** (2.4 GB pg_dump) | ~1.5 M bâtiments | Typologie bâti exacte (% vitrage, matériaux, étages) — affine score travaux | 0 € |
+| ~~P3~~ ✅ | ~~BDNB Bretagne (2.4 GB pg_dump)~~ → `brh_ext_bdnb_batiments` | 1.55M rows | Typologie bâti BAN-jointable. **+3 règles V2** (vitrage_simple, pierre_ancienne, grand_logement). Livré 25/05. | 0 € |
 | **P3** | **DVF historique 2019-2023** | ~250 k mutations supplémentaires | Élargit fenêtre acquéreurs récents 24m → 60m | 0 € |
 | **P4** | **Registres meublés tourisme** (Loi Le Meur mai 2026) | Limité aux communes contraintes (Saint-Malo, Quiberon, Crozon…) | Identifie loueurs Airbnb → DPE F/G interdits de location nue → prospect travaux URGENT | 0 € |
 | **P4** | **Sous-traitants RGE bretons** (Tinergie, Heol, SOLIHA) | ~150 artisans qualifiés | Partenariats sous-traitance | 0 € |
