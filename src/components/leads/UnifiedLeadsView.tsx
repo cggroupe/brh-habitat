@@ -10,7 +10,7 @@
  * Profils supportés : 'employe' | 'agence' | 'artisan' | 'notaire'
  * Cf. /src/lib/rgpd/lead-visibility.ts pour la matrice RGPD.
  */
-import { lazy, Suspense, useMemo, useState, useCallback } from 'react'
+import { lazy, Suspense, useMemo, useState, useCallback, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Building2, User as UserIcon } from 'lucide-react'
 import {
@@ -169,6 +169,25 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
   const rows: LeadRow[] = data ?? []
   const total = rows[0]?.total_count ?? 0
 
+  // Cutoff DVF recalculé à chaque changement de délai (Date.now() est impur,
+  // on l'isole dans un useEffect + state pour respecter react-hooks/purity).
+  const [dvfCutoffMs, setDvfCutoffMs] = useState(0)
+  useEffect(() => {
+    const months =
+      dvfDelai === 'off'
+        ? 0
+        : dvfDelai === '12m'
+          ? 12
+          : dvfDelai === '24m'
+            ? 24
+            : dvfDelai === '36m'
+              ? 36
+              : 60
+    const value = months === 0 ? 0 : Date.now() - months * 30 * 24 * 60 * 60 * 1000
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDvfCutoffMs(value)
+  }, [dvfDelai])
+
   // Filtres affineurs appliqués côté client (les filtres "lourds" passent au RPC)
   const filteredRows = useMemo(() => {
     return rows.filter((r) => {
@@ -181,15 +200,13 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
       // F4 — filtre délai DVF sélectionnable (12/24/36/60m)
       if (dvfDelai !== 'off') {
         if (!r.dvf_date) return false
-        const months = dvfDelai === '12m' ? 12 : dvfDelai === '24m' ? 24 : dvfDelai === '36m' ? 36 : 60
         const mutationTime = Date.parse(r.dvf_date)
         if (Number.isNaN(mutationTime)) return false
-        const cutoffMs = Date.now() - months * 30 * 24 * 60 * 60 * 1000
-        if (mutationTime < cutoffMs) return false
+        if (mutationTime < dvfCutoffMs) return false
       }
       return true
     })
-  }, [rows, dpeClasses, etiquetteFilter, typeBatiment, dvfDelai])
+  }, [rows, dpeClasses, etiquetteFilter, typeBatiment, dvfDelai, dvfCutoffMs])
 
 
   return (

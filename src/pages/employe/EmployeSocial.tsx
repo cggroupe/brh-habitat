@@ -70,8 +70,12 @@ export default function EmployeSocial() {
   })
 
   const totalPosts = recent.length
+  // cutoff capté au mount via useState initializer (appelé 1× au mount,
+  // donc le résultat est stable pour la durée du composant — acceptable ici
+  // car le stat "posts du mois" n'a pas besoin de précision absolue).
+  const [monthCutoff] = useState(() => Date.now() - 30 * 24 * 60 * 60 * 1000)
   const monthPosts = recent.filter(
-    (r) => new Date(r.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+    (r) => new Date(r.created_at).getTime() > monthCutoff,
   ).length
 
   function copyTemplate(content: string, hashtags: string[] | null) {
@@ -82,7 +86,7 @@ export default function EmployeSocial() {
     })
   }
 
-  function useTemplate(t: SocialPostTemplate) {
+  function applyTemplate(t: SocialPostTemplate) {
     setSelectedTemplate(t)
     const hashtags = t.hashtags ? `\n\n${t.hashtags.join(' ')}` : ''
     setContent(t.content + hashtags)
@@ -230,7 +234,7 @@ export default function EmployeSocial() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => useTemplate(tpl)}
+                    onClick={() => applyTemplate(tpl)}
                     className="flex-1 px-3 py-1.5 rounded-md text-white text-xs font-bold transition hover:opacity-90"
                     style={{ backgroundColor: '#00600a' }}
                   >

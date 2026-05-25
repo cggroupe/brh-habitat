@@ -159,9 +159,12 @@ export default function AgenceShell() {
   const [groupsOpen, setGroupsOpen] = useState(() => computeOpenGroups(location.pathname))
 
   // Quand l'utilisateur change de route, on ouvre automatiquement le groupe actif
-  // sans refermer ceux que l'user a ouverts manuellement.
+  // sans refermer ceux que l'user a ouverts manuellement. Le setState dans
+  // l'effect est volontaire (sync sidebar ↔ route) — l'alternative d'inclure
+  // la logique dans chaque Link onClick serait dispersée et fragile.
   useEffect(() => {
     const computed = computeOpenGroups(location.pathname)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGroupsOpen((prev) => {
       let changed = false
       const next = { ...prev }

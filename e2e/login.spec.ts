@@ -5,7 +5,7 @@
  * Vérifie : login, redirection, logout, erreur mauvais pwd.
  */
 import { test, expect } from '@playwright/test'
-import { E2E_EMAIL, E2E_PASSWORD, HAS_CREDS, loginAsEmployee } from './support/auth'
+import { E2E_EMAIL, HAS_CREDS, loginAsEmployee } from './support/auth'
 
 test.describe('Login flow', () => {
   test.skip(!HAS_CREDS, 'BRH_E2E_EMAIL / BRH_E2E_PASSWORD requis')

@@ -209,10 +209,13 @@ interface Props {
 }
 
 export function DiagnosticPdfReport({ result, property, generatedAt, reportId }: Props) {
-  const date = (generatedAt ?? new Date()).toLocaleDateString('fr-FR', {
+  const now = generatedAt ?? new Date()
+  const date = now.toLocaleDateString('fr-FR', {
     day: '2-digit', month: 'long', year: 'numeric',
   })
-  const ref = reportId ?? `${Date.now().toString(36).slice(-6).toUpperCase()}`
+  // Référence dérivée de generatedAt (param contrôlé par l'appelant) ou
+  // de la date capturée ci-dessus — pur, idempotent pour un mount donné.
+  const ref = reportId ?? `${now.getTime().toString(36).slice(-6).toUpperCase()}`
   const urgency = URGENCY_META[result.urgencyLevel]
 
   // Plan de rénovation : tri par priorité haute → basse, max 8 items
