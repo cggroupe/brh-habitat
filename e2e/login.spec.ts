@@ -38,17 +38,17 @@ test.describe('Login flow', () => {
 test.describe('Session persistence', () => {
   test.skip(!HAS_CREDS, 'BRH_E2E_EMAIL / BRH_E2E_PASSWORD requis')
 
-  test('session persiste après reload de la page', async ({ page, context }) => {
+  test('session persiste après reload de la page', async ({ page }) => {
     await loginAsEmployee(page)
-    const urlAfterLogin = page.url()
 
     await page.reload()
-    // Session doit toujours être active après reload (Supabase persiste dans localStorage)
     await page.waitForLoadState('domcontentloaded')
     expect(page.url()).not.toContain('/connexion')
 
-    // Cookies / localStorage présents
-    const cookies = await context.cookies()
-    expect(cookies.length).toBeGreaterThan(0)
+    // Supabase stocke la session dans localStorage (pas cookies)
+    const hasSupabaseToken = await page.evaluate(() => {
+      return Object.keys(localStorage).some((k) => k.includes('supabase') || k.includes('sb-'))
+    })
+    expect(hasSupabaseToken).toBe(true)
   })
 })

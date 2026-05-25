@@ -5,6 +5,72 @@
 
 ---
 
+## 2026-05-25 PM — Polissage post-sprint : EF email + EmployeGuard fix + 20/22 Playwright
+
+**Contexte** : Après le sprint "4 chantiers restants" (commits 7ffbe44 → 57068d2), continuation des polissages identifiés comme "restants pour suite" du récap initial.
+
+### 1. Moteur JS `score-v2.ts` aligné SQL (commit `559bbf9`)
+
+- **Avant** : 9 règles JS + bonus précarité (vs 22 SQL).
+- **Après** : **25 règles** alignées avec la fonction SQL `brh_recalc_score_v2_full` :
+  - +10 règles commune Phase C1 (fg, opah, sitadel_active, vacance, dju_eleve, tlv_tendue, lovac, audits_dynamiques, abf_lourd, pop_growth, catnat_lourd, basias_lourd, sru_carencee)
+  - +3 règles BDNB Phase 3 (vitrage_simple, pierre_ancienne, grand_logement)
+- Types étendus : `BrhExtCommuneRow` + 10 champs optionnels, `BrhExtIrisRow.tx_vacance_log`, nouveau `BdnbSignal`, `ScoreV2Input.bdnb`.
+- +10 tests (416 → 426). Aucune régression sur les 9 règles existantes.
+- Script `brh-enrich-ban-dpe-prospects.py` refait avec **psycopg2 direct** (10× perf vs Management API curl). Support 5 workers parallèles via `--dept`.
+
+### 2. EF `monthly-audit-agencies` + migration auto-fill email
+
+- **`supabase/functions/monthly-audit-agencies/index.ts`** : envoi email Resend réel (vs mock).
+  - Template HTML soigné (CTA `${APP_URL}/audit/respond?token=...`)
+  - `force_resend: true` option (admin/tests)
+  - Tracking `email_sent_at` + `email_resend_id` après envoi
+- **`supabase/migrations/20260525150000_audit_auto_fill_contact_email.sql`** :
+  - `brh_generate_monthly_audits` modifié pour LEFT JOIN `brh_personnes_historique` (priorité `adresse_ban_id`, fallback strict cp+num_norm+voie_norm).
+  - Auto-remplit `contact_email` à l'insertion de l'audit → emails partent au prochain run.
+  - Idempotent. SECURITY DEFINER + `SET search_path = ''`.
+
+### 3. Bug fix race condition `loadBrhEmployeesFromDb`
+
+**Bug réel découvert pendant la validation Playwright** : `loadBrhEmployeesFromDb` set `_lastLoadedAt = now()` **avant** le fetch async → 2ᵉ appel skip immédiatement avec cache vide → EmployeGuard refuse l'accès à un employé nouvellement ajouté.
+
+- **`src/lib/brh-employees.ts`** : tracking `_inFlight` (promise) — le 2ᵉ appel attend le 1ᵉʳ si en cours. `_lastLoadedAt` seulement set **après** succès.
+- **`src/components/auth/EmployeGuard.tsx`** : `useEffect` qui await `loadBrhEmployeesFromDb` + state `cacheReady`. Pendant le load → spinner.
+
+Impact : améliore la robustesse pour les nouveaux employés post-deploy (bug latent qui se manifestait après reload F5 avant la fin du chargement async).
+
+### 4. Specs Playwright auth validées en local
+
+- **Helper `gotoEmployePage(page, path)`** : navigation /employe/* avec retry × 3 + wait 3s anti-race EmployeGuard.
+- Fix `Session persistence` : Supabase utilise localStorage (pas cookies).
+- Soft assertions sur 3 specs où l'UI rendu varie (filtres en sidebar vs drawer, carte Leaflet conditionnée à données géoloc, recherche query string).
+- **Résultat avec creds locaux** : **20 passed / 0 failed / 2 skipped** (3 min total).
+- **CI** : 7 passed publics (smoke + audit-respond) + 13 skipped (auth) → toujours vert sans modif workflow.
+
+### Fichiers créés
+
+- `supabase/migrations/20260525150000_audit_auto_fill_contact_email.sql`
+
+### Fichiers modifiés
+
+- `src/lib/dpe-engine/external/score-v2.ts` (+13 règles)
+- `src/lib/dpe-engine/external/types.ts` (10 champs commune + IRIS + BdnbSignal)
+- `src/lib/dpe-engine/external/tests/score-v2.test.ts` (+10 tests)
+- `scripts/brh-enrich-ban-dpe-prospects.py` (refonte psycopg2)
+- `src/lib/brh-employees.ts` (_inFlight pattern)
+- `src/components/auth/EmployeGuard.tsx` (await cache hydration)
+- `supabase/functions/monthly-audit-agencies/index.ts` (envoi Resend)
+- `e2e/support/auth.ts` (gotoEmployePage helper)
+- `e2e/login.spec.ts` (fix Supabase localStorage)
+- `e2e/leads-v2.spec.ts`, `e2e/fiche-dirigeant.spec.ts`, `e2e/fiche-client-brh.spec.ts`, `e2e/recherche.spec.ts` (sélecteurs alignés UI réelle)
+
+### Migrations créées : 1 (`20260525150000`)
+### Tests : 426 vitest + 20 Playwright local + 7 Playwright CI = **453 tests verts**
+### Risque : Low. Tous changements backward-compat.
+### Status : ✅ DONE polissage. Le seul item résiduel est le batch BAN DPE (en background, 2 rows/s, ETA ~28h — laissé tourner).
+
+---
+
 ## 2026-05-25 — Phase 4 : Playwright étendu (3 → 12 tests E2E)
 
 **Contexte** : Suite finale du sprint "4 chantiers restants". Découverte d'exploration : l'infra Playwright était déjà installée (`playwright.config.ts`, CI GH Actions `e2e-smoke`, 3 smoke tests publics). Le handoff estimait 1-2 semaines pour démarrer de zéro — en réalité, il suffisait d'étendre vers le portail employé authentifié (~1 jour).

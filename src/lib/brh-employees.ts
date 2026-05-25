@@ -45,6 +45,7 @@ const _cache = new Map<string, BrhEmployee>(
 )
 
 let _lastLoadedAt = 0
+let _inFlight: Promise<void> | null = null
 const LOAD_DEBOUNCE_MS = 30_000
 
 /**
@@ -61,29 +62,41 @@ const LOAD_DEBOUNCE_MS = 30_000
  * À appeler après login et après validateSession. Sans-op si appel < 30s.
  */
 export async function loadBrhEmployeesFromDb(): Promise<void> {
+  // Si un fetch est déjà en cours, on lui s'attache — évite l'ancien bug
+  // où le 2e appel skip immédiatement avant que le 1er ait fini d'hydrater
+  // le cache (EmployeGuard recevait alors un cache vide → redirect injuste).
+  if (_inFlight) return _inFlight
+
   const now = Date.now()
   if (now - _lastLoadedAt < LOAD_DEBOUNCE_MS) return
-  _lastLoadedAt = now
 
-  const { data, error } = await supabase
-    .from('brh_employees')
-    .select('email, full_name, role_label, activity_score, activity_level')
-    .eq('is_active', true)
+  _inFlight = (async () => {
+    try {
+      const { data, error } = await supabase
+        .from('brh_employees')
+        .select('email, full_name, role_label, activity_score, activity_level')
+        .eq('is_active', true)
 
-  if (error) return
-  if (!data) return
+      if (error || !data) return
 
-  for (const row of data) {
-    const key = String(row.email ?? '').toLowerCase()
-    if (!key) continue
-    _cache.set(key, {
-      email: row.email as string,
-      full_name: (row.full_name as string) ?? '',
-      role_label: (row.role_label as string) ?? 'Employé BRH',
-      activity_score: (row.activity_score as number) ?? 0,
-      activity_level: (row.activity_level as BrhEmployee['activity_level']) ?? 'standard',
-    })
-  }
+      for (const row of data) {
+        const key = String(row.email ?? '').toLowerCase()
+        if (!key) continue
+        _cache.set(key, {
+          email: row.email as string,
+          full_name: (row.full_name as string) ?? '',
+          role_label: (row.role_label as string) ?? 'Employé BRH',
+          activity_score: (row.activity_score as number) ?? 0,
+          activity_level: (row.activity_level as BrhEmployee['activity_level']) ?? 'standard',
+        })
+      }
+      _lastLoadedAt = Date.now()
+    } finally {
+      _inFlight = null
+    }
+  })()
+
+  return _inFlight
 }
 
 /**
@@ -94,6 +107,7 @@ export function resetBrhEmployeesCache(): void {
   _cache.clear()
   for (const e of BRH_EMPLOYEES) _cache.set(e.email.toLowerCase(), e)
   _lastLoadedAt = 0
+  _inFlight = null
 }
 
 /**

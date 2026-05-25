@@ -5,7 +5,7 @@
  * (cross-matches DPE/DVF/permis post RPC v3 BAN).
  */
 import { test, expect } from '@playwright/test'
-import { HAS_CREDS, loginAsEmployee } from './support/auth'
+import { HAS_CREDS, loginAsEmployee, gotoEmployePage } from './support/auth'
 
 test.describe('Fiche Client BRH — portail employé', () => {
   test.skip(!HAS_CREDS, 'BRH_E2E_EMAIL / BRH_E2E_PASSWORD requis')
@@ -15,7 +15,7 @@ test.describe('Fiche Client BRH — portail employé', () => {
   })
 
   test('liste /employe/clients-brh se charge', async ({ page }) => {
-    await page.goto('/employe/clients-brh')
+    await gotoEmployePage(page, '/employe/clients-brh')
     await page.waitForLoadState('networkidle', { timeout: 20_000 })
 
     const clientLink = page.locator('a[href*="/employe/clients-brh/"]')
@@ -23,7 +23,7 @@ test.describe('Fiche Client BRH — portail employé', () => {
   })
 
   test('fiche détail affiche identité + section foncier', async ({ page }) => {
-    await page.goto('/employe/clients-brh')
+    await gotoEmployePage(page, '/employe/clients-brh')
     await page.waitForLoadState('networkidle', { timeout: 20_000 })
 
     const firstLink = page.locator('a[href*="/employe/clients-brh/"]').first()

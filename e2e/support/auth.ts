@@ -24,12 +24,11 @@ export function requireCredsOrSkip(): void {
 }
 
 /**
- * Login via la page /connexion. Attend la redirection automatique.
- * Le LoginPage redirige soit direct vers le portail (1 access) soit
- * affiche un workspace switcher (multi-access).
+ * Login via la page /connexion. Attend la redirection automatique puis
+ * navigate explicitement vers le portail employé (l'auto-redirect peut
+ * tomber sur /particulier pour les comptes multi-rôles).
  *
- * Pour notre compte test (admin + employe), on attend le switcher OU
- * le redirect vers /employe ou /admin.
+ * Le compte test a rôle 'admin' avec whitelist email pour EmployeGuard.
  */
 export async function loginAsEmployee(page: Page): Promise<void> {
   await page.goto('/connexion')
@@ -37,26 +36,48 @@ export async function loginAsEmployee(page: Page): Promise<void> {
   await page.locator('input[type="password"]').fill(E2E_PASSWORD)
   await page.locator('button[type="submit"]').click()
 
-  // Attendre soit le workspace switcher soit redirect direct
-  await page.waitForFunction(
-    () =>
-      window.location.pathname !== '/connexion' ||
-      document.body.innerText.match(/Choisir|Console Admin|Espace Employé|Espace Particulier/i) !==
-        null,
-    null,
-    { timeout: 15_000 },
-  )
+  // Attend la sortie de /connexion et le chargement complet (loadBrhEmployeesFromDb
+  // hydrate le cache employé après signInWithPassword — sinon EmployeGuard
+  // refuse Pierre Collard et redirige vers /tableau-de-bord).
+  await page.waitForFunction(() => window.location.pathname !== '/connexion', null, {
+    timeout: 15_000,
+  })
+  await page.waitForLoadState('networkidle', { timeout: 20_000 })
 
-  // Si workspace switcher, choisir le portail employé
-  const employeLink = page.getByRole('link', { name: /Espace Employé|Console BRH/i })
-  if (await employeLink.isVisible().catch(() => false)) {
-    await employeLink.click()
-    await page.waitForURL(/\/employe/, { timeout: 10_000 })
+  // Navigate vers portail employé. Retry une fois si EmployeGuard refuse encore
+  // (race possible si le cache n'est pas encore complètement à jour).
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await page.goto('/employe/leads-v2')
+    await page.waitForLoadState('networkidle', { timeout: 20_000 })
+    if (page.url().includes('/employe/')) return
+    // Refusé → wait + retry
+    await page.waitForTimeout(2000)
   }
 }
 
 /**
- * Navigue vers une route employé, en s'assurant qu'on est loggé.
+ * Navigate vers une route /employe/* en gérant la race condition EmployeGuard
+ * vs loadBrhEmployeesFromDb (cache hydraté en background dans useAuth, pas
+ * forcément prêt au render du Guard → redirect vers /tableau-de-bord).
+ *
+ * Retry jusqu'à 3 fois avec wait. Suppose loginAsEmployee déjà appelé.
+ */
+export async function gotoEmployePage(page: Page, path: string): Promise<void> {
+  if (!path.startsWith('/employe/')) {
+    throw new Error(`gotoEmployePage attend un path /employe/* (reçu: ${path})`)
+  }
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await page.goto(path)
+    await page.waitForLoadState('networkidle', { timeout: 20_000 })
+    if (page.url().includes('/employe/')) return
+    // Refusé par EmployeGuard (cache pas hydraté) → wait + retry
+    await page.waitForTimeout(3000)
+  }
+  throw new Error(`Impossible d'accéder à ${path} : EmployeGuard redirige systématiquement vers ${page.url()}`)
+}
+
+/**
+ * @deprecated utiliser gotoEmployePage à la place pour les routes /employe/*.
  */
 export async function gotoAsEmployee(page: Page, path: string): Promise<void> {
   await loginAsEmployee(page)

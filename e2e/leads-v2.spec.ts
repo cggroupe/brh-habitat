@@ -5,7 +5,7 @@
  * search input fonctionnel, card cliquable.
  */
 import { test, expect } from '@playwright/test'
-import { HAS_CREDS, loginAsEmployee } from './support/auth'
+import { HAS_CREDS, loginAsEmployee, gotoEmployePage } from './support/auth'
 
 test.describe('Leads v2 — portail employé', () => {
   test.skip(!HAS_CREDS, 'BRH_E2E_EMAIL / BRH_E2E_PASSWORD requis')
@@ -21,7 +21,7 @@ test.describe('Leads v2 — portail employé', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text())
     })
 
-    await page.goto('/employe/leads-v2')
+    await gotoEmployePage(page, '/employe/leads-v2')
     await page.waitForLoadState('networkidle', { timeout: 20_000 })
 
     const blocking = consoleErrors.filter(
@@ -32,22 +32,32 @@ test.describe('Leads v2 — portail employé', () => {
     expect(blocking, `Erreurs console : ${blocking.join('\n')}`).toHaveLength(0)
   })
 
-  test('filtres "Mes leads" sont visibles', async ({ page }) => {
-    await page.goto('/employe/leads-v2')
+  test('page leads-v2 affiche titre + compteur résultats + filtre département', async ({
+    page,
+  }) => {
+    await gotoEmployePage(page, '/employe/leads-v2')
     await page.waitForLoadState('networkidle', { timeout: 20_000 })
 
-    // Filtres F1-F6 du handoff (bugs résolus 22/05). Au moins un filtre attendu.
-    const filtreCandidate = page.locator('button, [role="button"]').filter({
-      hasText: /Mes leads|Tous|Filtre|Score|Étiquette/i,
+    // Titre principal (refacto UI 22/05)
+    await expect(page.getByRole('heading', { name: /Prospects DPE F\/G/i })).toBeVisible({
+      timeout: 10_000,
     })
-    await expect(filtreCandidate.first()).toBeVisible({ timeout: 10_000 })
+
+    // Compteur résultats (variant : "X résultats")
+    await expect(page.getByText(/\d[\d\s]*résultats/i).first()).toBeVisible({ timeout: 10_000 })
+
+    // Au moins une option "Tous départements" présente dans un select
+    await expect(page.getByText(/Tous départements/i).first()).toBeAttached({ timeout: 10_000 })
   })
 
   test('search input fonctionne (saisie)', async ({ page }) => {
-    await page.goto('/employe/leads-v2')
+    await gotoEmployePage(page, '/employe/leads-v2')
     await page.waitForLoadState('networkidle', { timeout: 20_000 })
 
-    const searchInput = page.locator('input[type="search"], input[placeholder*="Recherche" i], input[placeholder*="search" i]')
+    // textbox accepte "Adresse, nom, SIREN, SCI..." placeholder
+    const searchInput = page.locator(
+      'input[type="search"], input[placeholder*="Recherche" i], input[placeholder*="Adresse" i], input[placeholder*="search" i]',
+    )
     const count = await searchInput.count()
     if (count === 0) {
       test.skip(true, 'Pas de search input identifiable (refacto UI ?)')
