@@ -315,6 +315,12 @@ async function auditRoute(page: Page, persona: string, route: string): Promise<R
 }
 
 test.describe('Audit Full Tour BRH Habitat', () => {
+  // Skip en CI : ce spec nécessite les 6 comptes audit-* + une DB Supabase
+  // réelle (pas les stubs CI). Lancer manuellement en local après création
+  // des comptes via /tmp/create-audit-accounts.py :
+  //   BRH_E2E_AUDIT=1 npx playwright test e2e/audit-full-tour.spec.ts
+  test.skip(!process.env.BRH_E2E_AUDIT, 'BRH_E2E_AUDIT=1 requis (audit manuel)')
+
   test.setTimeout(20 * 60_000) // 20 min total max par persona
 
   test.beforeAll(() => {
