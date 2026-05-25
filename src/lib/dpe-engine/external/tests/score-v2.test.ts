@@ -148,6 +148,193 @@ describe('score-v2 — breakdown', () => {
   })
 })
 
+describe('score-v2 — règles Phase 3 (alignement SQL 25/05)', () => {
+  it('r_fg — DPE F → +10 pts', () => {
+    const r = computeScoreV2(prospectUltraChaud) // etiquette F
+    const rule = r.rules.find((x) => x.rule === 'fg')
+    expect(rule).toBeDefined()
+    expect(rule?.points).toBe(10)
+  })
+
+  it('r_opah — commune en OPAH active → +8 pts', () => {
+    const r = computeScoreV2(prospectUltraChaud) // communeBrest opah_active=true
+    const rule = r.rules.find((x) => x.rule === 'opah')
+    expect(rule).toBeDefined()
+    expect(rule?.points).toBe(8)
+  })
+
+  it('r_sitadel_active — > 50 DP existants → +5 pts', () => {
+    const r = computeScoreV2(prospectUltraChaud) // communeBrest nb_dp = 145
+    const rule = r.rules.find((x) => x.rule === 'sitadel_active')
+    expect(rule).toBeDefined()
+    expect(rule?.points).toBe(5)
+  })
+
+  it('r_vitrage_simple — BDNB vitrage simple + annee < 1990 → +5 pts', () => {
+    const r = computeScoreV2({
+      prospect: { id: 'p-bdnb-1', etiquette_dpe: 'F', has_pv_36kw: false },
+      iris: null,
+      commune: null,
+      risques: null,
+      dvf: null,
+      enedisAddr: null,
+      bdnb: {
+        annee_construction: 1972,
+        mat_mur_txt: 'AGGLOMERE',
+        type_vitrage: 'simple vitrage',
+        surface_habitable_logement: 85,
+      },
+    })
+    const rule = r.rules.find((x) => x.rule === 'vitrage_simple')
+    expect(rule).toBeDefined()
+    expect(rule?.points).toBe(5)
+  })
+
+  it('r_pierre_ancienne — BDNB mur pierre + annee < 1900 → +3 pts', () => {
+    const r = computeScoreV2({
+      prospect: { id: 'p-bdnb-2', etiquette_dpe: 'F', has_pv_36kw: false },
+      iris: null,
+      commune: null,
+      risques: null,
+      dvf: null,
+      enedisAddr: null,
+      bdnb: {
+        annee_construction: 1865,
+        mat_mur_txt: 'PIERRE',
+        type_vitrage: 'double vitrage',
+        surface_habitable_logement: 120,
+      },
+    })
+    const rule = r.rules.find((x) => x.rule === 'pierre_ancienne')
+    expect(rule).toBeDefined()
+    expect(rule?.points).toBe(3)
+  })
+
+  it('r_pierre_ancienne — mat_mur composé "BRIQUES - PIERRE" : matché aussi', () => {
+    const r = computeScoreV2({
+      prospect: { id: 'p-bdnb-3', etiquette_dpe: 'F', has_pv_36kw: false },
+      iris: null,
+      commune: null,
+      risques: null,
+      dvf: null,
+      enedisAddr: null,
+      bdnb: {
+        annee_construction: 1880,
+        mat_mur_txt: 'BRIQUES - PIERRE',
+        type_vitrage: null,
+        surface_habitable_logement: null,
+      },
+    })
+    const rule = r.rules.find((x) => x.rule === 'pierre_ancienne')
+    expect(rule).toBeDefined()
+  })
+
+  it('r_grand_logement — surface >= 150 m² + E/F/G → +3 pts', () => {
+    const r = computeScoreV2({
+      prospect: { id: 'p-bdnb-4', etiquette_dpe: 'E', has_pv_36kw: false },
+      iris: null,
+      commune: null,
+      risques: null,
+      dvf: null,
+      enedisAddr: null,
+      bdnb: {
+        annee_construction: 2010,
+        mat_mur_txt: 'BETON',
+        type_vitrage: 'double vitrage',
+        surface_habitable_logement: 175,
+      },
+    })
+    const rule = r.rules.find((x) => x.rule === 'grand_logement')
+    expect(rule).toBeDefined()
+    expect(rule?.points).toBe(3)
+  })
+
+  it('r_grand_logement NON déclenché — surface < 150 m²', () => {
+    const r = computeScoreV2({
+      prospect: { id: 'p-bdnb-5', etiquette_dpe: 'F', has_pv_36kw: false },
+      iris: null,
+      commune: null,
+      risques: null,
+      dvf: null,
+      enedisAddr: null,
+      bdnb: {
+        annee_construction: 2010,
+        mat_mur_txt: 'BETON',
+        type_vitrage: 'double vitrage',
+        surface_habitable_logement: 95,
+      },
+    })
+    const rule = r.rules.find((x) => x.rule === 'grand_logement')
+    expect(rule).toBeUndefined()
+  })
+
+  it('r_tlv_tendue — commune zone tendue → +8 pts', () => {
+    const r = computeScoreV2({
+      prospect: { id: 'p-tlv', etiquette_dpe: 'D', has_pv_36kw: false },
+      iris: null,
+      commune: {
+        insee: '29019',
+        radon_categorie: null,
+        rga_alea: null,
+        ppri_present: false,
+        sismique_zone: null,
+        opah_active: false,
+        opah_type: null,
+        opah_operateur: null,
+        opah_fin_validite: null,
+        tx_vacance_struct: null,
+        nb_rge_isolation: null,
+        nb_rge_pac: null,
+        nb_dp_logements_existants_12m: null,
+        station_dju_id: null,
+        dju_18_normal: null,
+        delta_dju_2050: null,
+        tlv_tendue: true,
+        fetched_at: '2026-05-25T10:00:00Z',
+      },
+      risques: null,
+      dvf: null,
+      enedisAddr: null,
+    })
+    const rule = r.rules.find((x) => x.rule === 'tlv_tendue')
+    expect(rule).toBeDefined()
+    expect(rule?.points).toBe(8)
+  })
+
+  it('r_abf_lourd — commune avec >= 5 MH → -5 pts', () => {
+    const r = computeScoreV2({
+      prospect: { id: 'p-abf', etiquette_dpe: 'D', has_pv_36kw: false },
+      iris: null,
+      commune: {
+        insee: '29019',
+        radon_categorie: null,
+        rga_alea: null,
+        ppri_present: false,
+        sismique_zone: null,
+        opah_active: false,
+        opah_type: null,
+        opah_operateur: null,
+        opah_fin_validite: null,
+        tx_vacance_struct: null,
+        nb_rge_isolation: null,
+        nb_rge_pac: null,
+        nb_dp_logements_existants_12m: null,
+        station_dju_id: null,
+        dju_18_normal: null,
+        delta_dju_2050: null,
+        merimee_count: 8,
+        fetched_at: '2026-05-25T10:00:00Z',
+      },
+      risques: null,
+      dvf: null,
+      enedisAddr: null,
+    })
+    const rule = r.rules.find((x) => x.rule === 'abf_lourd')
+    expect(rule).toBeDefined()
+    expect(rule?.points).toBe(-5)
+  })
+})
+
 describe('score-v2 — cas limites', () => {
   it('prospect sans aucune donnée externe → score 0 + cold', () => {
     const r = computeScoreV2({

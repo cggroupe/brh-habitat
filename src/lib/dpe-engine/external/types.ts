@@ -59,6 +59,9 @@ export interface BrhExtIrisRow {
   conso_gaz_mwh_an: number | null
   pdl_gaz_resid: number | null
 
+  // Recensement (vacance) — optionnel pour rétro-compat
+  tx_vacance_log?: number | null
+
   fetched_at: string
 }
 
@@ -103,7 +106,31 @@ export interface BrhExtCommuneRow {
   dvf_last_refresh?: string | null
   sitadel2_last_refresh?: string | null
 
+  // Phase C1 (24/05) — enrichissement dept 44 (toutes optionnelles)
+  tlv_tendue?: boolean | null
+  lovac_tx_vacance_long?: number | null
+  audits_ademe_count?: number | null
+  merimee_count?: number | null
+  abf_ac1_count?: number | null
+  evolution_pop_16_22?: number | null
+  catnat_total?: number | null
+  catnat_inondation?: number | null
+  basias_count?: number | null
+  sru_carencee?: boolean | null
+
   fetched_at: string
+}
+
+/**
+ * Phase 3 (25/05) — Signal BDNB typologie bâti (table brh_ext_bdnb_batiments).
+ * Joint via adresse_ban_id. Alimente règles r_vitrage_simple, r_pierre_ancienne,
+ * r_grand_logement.
+ */
+export interface BdnbSignal {
+  annee_construction: number | null
+  mat_mur_txt: string | null
+  type_vitrage: string | null
+  surface_habitable_logement: number | null
 }
 
 /**
