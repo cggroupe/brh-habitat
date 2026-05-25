@@ -4,7 +4,7 @@ import {
   APPOINTMENT_STATUS_LABELS,
   APPOINTMENT_STATUS_COLORS,
 } from '@/data/constants'
-import type { BrhAppointmentRow, AppointmentType } from '@/types/database'
+import type { BrhAppointmentRow, AppointmentType, AppointmentStatus } from '@/types/database'
 
 const TYPE_COLORS: Record<AppointmentType, string> = {
   diagnostic: 'bg-green-100 text-green-800',
@@ -25,28 +25,30 @@ interface AppointmentCardProps {
 }
 
 export function AppointmentCard({ appt }: AppointmentCardProps) {
-  const requestedDate = new Date(appt.requested_date)
+  const requestedDate = appt.requested_date ? new Date(appt.requested_date) : new Date()
   const confirmedDate = appt.confirmed_date ? new Date(appt.confirmed_date) : null
 
   const displayDate = confirmedDate ?? requestedDate
   const isConfirmed = appt.status === 'confirme'
+  const apptType = (appt.type ?? 'diagnostic') as AppointmentType
+  const apptStatus = (appt.status ?? 'pending') as AppointmentStatus
 
   return (
     <div className="bg-surface rounded-2xl border border-gray-light p-6">
       <div className="flex items-start gap-4">
         {/* Icon */}
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${TYPE_BG[appt.type]}`}>
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${TYPE_BG[apptType]}`}>
           <Calendar size={18} />
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-3 flex-wrap mb-2">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-display ${TYPE_COLORS[appt.type]}`}>
-                {APPOINTMENT_TYPE_LABELS[appt.type]}
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-display ${TYPE_COLORS[apptType]}`}>
+                {APPOINTMENT_TYPE_LABELS[apptType]}
               </span>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-display ${APPOINTMENT_STATUS_COLORS[appt.status]}`}>
-                {APPOINTMENT_STATUS_LABELS[appt.status]}
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-display ${APPOINTMENT_STATUS_COLORS[apptStatus]}`}>
+                {APPOINTMENT_STATUS_LABELS[apptStatus]}
               </span>
             </div>
           </div>

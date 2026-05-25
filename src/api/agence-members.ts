@@ -7,6 +7,7 @@
  */
 import { supabase } from '@/lib/supabase'
 import type { AgenceMemberPermissions } from '@/types/agence-permissions'
+import type { Json } from '@/types/database-generated'
 
 export interface AgenceMemberRow {
   id: string
@@ -37,7 +38,9 @@ export const agenceMembersApi = {
       .order('member_role', { ascending: true }) // signer en premier
       .order('joined_at', { ascending: true })
     if (error) throw error
-    return (data ?? []) as AgenceMemberRow[]
+    // Cast `as unknown as` : ambiguïté multi-FK profiles ↔ brh_agence_members empêche
+    // l'inférence stricte côté types générés, mais le runtime renvoie bien la forme attendue.
+    return (data ?? []) as unknown as AgenceMemberRow[]
   },
 
   /**
@@ -51,7 +54,7 @@ export const agenceMembersApi = {
   ): Promise<string> {
     const { data, error } = await supabase.rpc('brh_agence_invite_employee', {
       p_email: email.trim(),
-      p_permissions: permissions,
+      p_permissions: permissions as unknown as Json,
     })
     if (error) throw mapInviteError(error)
     return data as string
@@ -64,7 +67,7 @@ export const agenceMembersApi = {
   ): Promise<void> {
     const { error } = await supabase.rpc('brh_agence_set_member_permissions', {
       p_member_id: memberId,
-      p_permissions: permissions,
+      p_permissions: permissions as unknown as Json,
     })
     if (error) throw error
   },

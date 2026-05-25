@@ -50,12 +50,12 @@ export function WorkHistoryList({ works, homeId, userId, onCreate, onUpdate, onD
   function startEdit(work: BrhWorkHistoryRow) {
     setEditingId(work.id)
     setForm({
-      domain: work.domain,
+      domain: (work.domain ?? 'autre') as HealthDomain | 'autre',
       title: work.title,
       description: work.description ?? '',
       contractor: work.contractor ?? '',
       cost: work.cost != null ? String(work.cost) : '',
-      status: work.status,
+      status: (work.status ?? 'planifie') as WorkStatus,
       work_date: work.work_date ?? '',
       completed_at: work.completed_at ?? '',
     })
@@ -230,17 +230,19 @@ export function WorkHistoryList({ works, homeId, userId, onCreate, onUpdate, onD
           {filtered.map((work) => {
             if (editingId === work.id) return <div key={work.id}>{renderForm()}</div>
 
-            const domainColor = work.domain !== 'autre' ? HEALTH_DOMAIN_COLORS[work.domain] : { text: 'text-slate-500', bg: 'bg-slate-50' }
+            const workDomain = (work.domain ?? 'autre') as HealthDomain | 'autre'
+            const workStatus = (work.status ?? 'planifie') as WorkStatus
+            const domainColor = workDomain !== 'autre' ? HEALTH_DOMAIN_COLORS[workDomain as HealthDomain] : { text: 'text-slate-500', bg: 'bg-slate-50' }
             return (
               <div key={work.id} className="bg-surface rounded-2xl border border-gray-light p-5 hover:border-primary/30 transition-colors">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-display ${domainColor.bg} ${domainColor.text}`}>
-                        {work.domain === 'autre' ? 'Autre' : HEALTH_DOMAIN_LABELS[work.domain]}
+                        {workDomain === 'autre' ? 'Autre' : HEALTH_DOMAIN_LABELS[workDomain as HealthDomain]}
                       </span>
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-display ${WORK_STATUS_COLORS[work.status]}`}>
-                        {WORK_STATUS_LABELS[work.status]}
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-display ${WORK_STATUS_COLORS[workStatus]}`}>
+                        {WORK_STATUS_LABELS[workStatus]}
                       </span>
                     </div>
                     <p className="font-display text-sm text-text-primary">{work.title}</p>

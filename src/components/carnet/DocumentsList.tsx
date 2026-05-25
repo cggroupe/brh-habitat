@@ -146,7 +146,7 @@ export function DocumentsList({ documents, homeId, userId, onCreate, onUpdate, o
   function startEdit(doc: BrhHomeDocumentRow) {
     setEditingId(doc.id)
     setForm({
-      doc_type: doc.doc_type,
+      doc_type: (doc.doc_type ?? 'autre') as DocumentType,
       title: doc.title,
       issued_at: doc.issued_at ?? '',
       expires_at: doc.expires_at ?? '',
@@ -331,7 +331,7 @@ export function DocumentsList({ documents, homeId, userId, onCreate, onUpdate, o
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-display text-xs text-text-light uppercase tracking-wider">
-                        {DOCUMENT_TYPE_LABELS[doc.doc_type]}
+                        {DOCUMENT_TYPE_LABELS[(doc.doc_type ?? 'autre') as DocumentType]}
                       </span>
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-display ${badge.text}`}>
                         <BadgeIcon size={10} /> {badge.label}

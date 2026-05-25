@@ -375,8 +375,8 @@ export default function ProDashboard() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[p.status]}`}>
-                      {STATUS_LABELS[p.status]}
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[(p.status ?? 'nouveau') as ProspectStatus]}`}>
+                      {STATUS_LABELS[(p.status ?? 'nouveau') as ProspectStatus]}
                     </span>
                     <ChevronRight size={14} className="text-neutral-light group-hover:text-text-light transition-colors" />
                   </div>

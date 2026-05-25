@@ -47,7 +47,7 @@ export default function AdminDossierDetail() {
   useEffect(() => {
     if (!caseData) return
     // eslint-disable-next-line react-hooks/set-state-in-effect -- sync form fields from server data
-    setStatus(caseData.status)
+    setStatus((caseData.status as CaseStatus) ?? 'nouveau')
     setAssignedTo(caseData.assigned_to ?? '')
     setAdminNotes(caseData.admin_notes ?? '')
     setEstimatedBudget(caseData.estimated_budget != null ? String(caseData.estimated_budget) : '')
@@ -128,12 +128,12 @@ export default function AdminDossierDetail() {
           <div>
             <h1 className="font-display text-2xl text-text-primary">{caseData.title}</h1>
             <p className="font-body text-sm text-text-light mt-1">
-              Créé le {new Date(caseData.created_at).toLocaleDateString('fr-FR')} —{' '}
+              Créé le {caseData.created_at ? new Date(caseData.created_at).toLocaleDateString('fr-FR') : '—'} —{' '}
               <span className="text-primary font-medium">{userFullName ?? 'Utilisateur inconnu'}</span>
             </p>
           </div>
-          <span className={`shrink-0 inline-block px-3 py-1.5 rounded-full text-sm font-display border ${CASE_STATUS_COLORS[caseData.status]}`}>
-            {CASE_STATUS_LABELS[caseData.status]}
+          <span className={`shrink-0 inline-block px-3 py-1.5 rounded-full text-sm font-display border ${CASE_STATUS_COLORS[(caseData.status ?? 'nouveau') as CaseStatus]}`}>
+            {CASE_STATUS_LABELS[(caseData.status ?? 'nouveau') as CaseStatus]}
           </span>
         </div>
       </div>
@@ -210,7 +210,7 @@ export default function AdminDossierDetail() {
               <div>
                 <p className="font-display text-xs text-text-light uppercase tracking-wider mb-1">Types de travaux</p>
                 <div className="flex flex-wrap gap-1.5 mt-1">
-                  {caseData.work_types.length > 0 ? caseData.work_types.map((w) => (
+                  {(caseData.work_types?.length ?? 0) > 0 ? (caseData.work_types ?? []).map((w) => (
                     <span key={w} className="inline-block px-2.5 py-1 bg-green-50 text-primary text-xs rounded-full font-body">
                       {w}
                     </span>
@@ -218,10 +218,10 @@ export default function AdminDossierDetail() {
                 </div>
               </div>
 
-              {caseData.documents.length > 0 && (
+              {(caseData.documents?.length ?? 0) > 0 && (
                 <div>
-                  <p className="font-display text-xs text-text-light uppercase tracking-wider mb-1">Documents ({caseData.documents.length})</p>
-                  <p className="font-body text-sm text-text-secondary">{caseData.documents.length} fichier{caseData.documents.length !== 1 ? 's' : ''} attaché{caseData.documents.length !== 1 ? 's' : ''}</p>
+                  <p className="font-display text-xs text-text-light uppercase tracking-wider mb-1">Documents ({caseData.documents?.length ?? 0})</p>
+                  <p className="font-body text-sm text-text-secondary">{caseData.documents?.length ?? 0} fichier{(caseData.documents?.length ?? 0) !== 1 ? 's' : ''} attaché{(caseData.documents?.length ?? 0) !== 1 ? 's' : ''}</p>
                 </div>
               )}
             </div>

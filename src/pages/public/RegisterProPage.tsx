@@ -7,6 +7,7 @@ import { logError } from '@/lib/error'
 import { Building2, ArrowRight, Search, CheckCircle2, AlertCircle, MapPin } from 'lucide-react'
 import { createCompany, updateCompanyRecruiter } from '@/api/companies'
 import { addCompanyMember } from '@/api/company-members'
+import type { UserRole } from '@/types/database'
 
 interface SiretData {
   siret: string
@@ -146,7 +147,7 @@ export default function RegisterProPage() {
       if (profile) {
         setUser({
           id: profile.id, email: profile.email, full_name: profile.full_name ?? '',
-          role: profile.role, avatar_url: profile.avatar_url ?? undefined,
+          role: (profile.role ?? 'pro') as UserRole, avatar_url: profile.avatar_url ?? undefined,
         })
       }
       navigate('/pro', { replace: true })

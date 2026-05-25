@@ -55,15 +55,15 @@ export interface FoncierTableFilters {
 export const foncierProspectsTableApi = {
   async list(filters: FoncierTableFilters = {}): Promise<FoncierProspectRow[]> {
     const { data, error } = await supabase.rpc('brh_foncier_prospects_table', {
-      p_dept: filters.dept ?? null,
+      p_dept: filters.dept ?? undefined,
       p_score_v2_min: filters.scoreV2Min ?? 0,
-      p_segment_v2: filters.segmentV2 ?? null,
+      p_segment_v2: filters.segmentV2 ?? undefined,
       p_opah_only: filters.opahOnly ?? false,
       p_rga_fort_only: filters.rgaFortOnly ?? false,
       p_tlv_tendue_only: filters.tlvTendueOnly ?? false,
       p_audits_dyna_only: filters.auditsDynaOnly ?? false,
-      p_couleur_mpr: filters.couleurMpr ?? null,
-      p_search: filters.search ?? null,
+      p_couleur_mpr: filters.couleurMpr ?? undefined,
+      p_search: filters.search ?? undefined,
       p_limit: Math.min(filters.limit ?? 50, 200),
       p_offset: Math.max(0, filters.offset ?? 0),
     })

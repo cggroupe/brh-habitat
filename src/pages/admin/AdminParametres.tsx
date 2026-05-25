@@ -3,7 +3,7 @@ import { SlidersHorizontal, Save, AlertCircle, CheckCircle2, Loader2 } from 'luc
 import { supabase } from '@/lib/supabase'
 import type { BrhPlatformSettingsRow } from '@/types/partner'
 
-type SettingsState = Omit<BrhPlatformSettingsRow, 'key' | 'updated_at'>
+type SettingsState = Partial<Omit<BrhPlatformSettingsRow, 'key' | 'updated_at'>>
 
 const DEFAULT_SETTINGS: SettingsState = {
   points_per_signed_quote: 100,
@@ -146,7 +146,8 @@ export default function AdminParametres() {
 
   function getDisplayValue(field: FieldConfig): number {
     const raw = settings[field.key]
-    return field.isCentimes ? raw / 100 : raw
+    const num = typeof raw === 'number' ? raw : 0
+    return field.isCentimes ? num / 100 : num
   }
 
   function handleChange(field: FieldConfig, displayValue: number) {

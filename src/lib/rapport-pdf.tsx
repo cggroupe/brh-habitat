@@ -71,11 +71,11 @@ const s = StyleSheet.create({
 export interface RapportProspectLine {
   client_name: string
   work_type: string
-  status: string
+  status: string | null
   signed_amount: number | null // centimes, null si pas signe
   commission_amount: number | null // centimes
   commission_status: string | null
-  created_at: string
+  created_at: string | null
 }
 
 export interface RapportMonthStats {
@@ -324,7 +324,7 @@ export function RapportPDF({ data }: { data: RapportData }) {
                 <View key={i} style={{ ...s.tableRow, ...(i % 2 === 1 ? s.tableRowAlt : {}) }}>
                   <Text style={{ ...s.tableCell, flex: 3 }}>{p.client_name}</Text>
                   <Text style={{ ...s.tableCell, flex: 2 }}>{p.work_type}</Text>
-                  <Text style={{ ...s.tableCell, flex: 2 }}>{PROSPECT_STATUS_LABELS[p.status] ?? p.status}</Text>
+                  <Text style={{ ...s.tableCell, flex: 2 }}>{(p.status ? PROSPECT_STATUS_LABELS[p.status] : null) ?? p.status ?? '—'}</Text>
                   <Text style={{ ...s.tableCellRight, flex: 2 }}>
                     {p.signed_amount !== null ? formatEur(p.signed_amount) : '—'}
                   </Text>

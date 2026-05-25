@@ -5,6 +5,7 @@ import { SUPABASE_ANON_KEY, edgeFunctionUrl } from '@/lib/config'
 import { useAppStore } from '@/stores/appStore'
 import { Users, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react'
 import { logError } from '@/lib/error'
+import type { UserRole } from '@/types/database'
 
 interface InvitationData {
   invitation_id: string
@@ -109,7 +110,7 @@ export default function JoinCompanyPage() {
       if (profile) {
         setUser({
           id: profile.id, email: profile.email, full_name: profile.full_name ?? '',
-          role: profile.role, avatar_url: profile.avatar_url ?? undefined,
+          role: (profile.role ?? 'pro') as UserRole, avatar_url: profile.avatar_url ?? undefined,
         })
       }
       setState('done')

@@ -2,7 +2,8 @@ import { isSafeUrl } from '@/lib/utils'
 import { Share2, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react'
 import type { BrhSocialPostRow, SocialPlatform } from '@/types/partner'
 
-function formatDate(d: string) {
+function formatDate(d: string | null) {
+  if (!d) return '—'
   return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
@@ -12,13 +13,13 @@ const PLATFORM_LABELS: Record<SocialPlatform, string> = {
 }
 
 function StatusBadge({ status }: { status: BrhSocialPostRow['status'] }) {
-  const cfg = {
+  const cfg = (status ? {
     validee:               { label: 'Validee',         cls: 'bg-green-100 text-green-700',   Icon: CheckCircle },
     en_attente:            { label: 'En attente',       cls: 'bg-yellow-100 text-yellow-700', Icon: Clock },
     en_cours_verification: { label: 'En verification',  cls: 'bg-blue-100 text-blue-700',     Icon: Clock },
     refusee:               { label: 'Refusee',          cls: 'bg-red-100 text-red-700',       Icon: XCircle },
     expiree:               { label: 'Expiree',          cls: 'bg-background text-text-light', Icon: AlertCircle },
-  }[status]
+  }[status as 'validee' | 'en_attente' | 'en_cours_verification' | 'refusee' | 'expiree'] : undefined)
 
   if (!cfg) return null
   const { label, cls, Icon } = cfg
@@ -71,7 +72,7 @@ export function SocialPostList({ posts, isLoading }: SocialPostListProps) {
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 <span className="font-bold text-sm text-text-primary uppercase tracking-wide">
-                  {PLATFORM_LABELS[post.platform]}
+                  {PLATFORM_LABELS[post.platform as SocialPlatform] ?? post.platform}
                 </span>
                 <span className="text-text-light/40">·</span>
                 <span className="text-xs text-text-light capitalize">{post.post_type}</span>

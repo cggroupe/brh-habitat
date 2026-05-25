@@ -27,7 +27,7 @@ export async function fetchCompanyMembers(companyId: string): Promise<CompanyMem
     .order('joined_at', { ascending: true })
 
   if (error) throw error
-  return companyMemberWithProfileSchema.array().parse(data ?? []) as CompanyMemberWithProfile[]
+  return companyMemberWithProfileSchema.array().parse(data ?? []) as unknown as CompanyMemberWithProfile[]
 }
 
 export async function inviteMember(_companyId: string, email: string): Promise<void> {

@@ -148,14 +148,14 @@ export default function AdminLogements() {
                       </td>
                       <td className="px-6 py-3">
                         <span className="inline-block px-2.5 py-0.5 bg-green-50 text-primary text-xs rounded-full font-body">
-                          {propertyTypeLabels[home.property_type] ?? home.property_type}
+                          {propertyTypeLabels[home.property_type ?? ''] ?? home.property_type ?? '—'}
                         </span>
                       </td>
                       <td className="px-6 py-3 font-body text-sm text-text-secondary">{home.surface} m²</td>
                       <td className="px-6 py-3 font-body text-sm text-text-secondary">{home.year_built}</td>
                       <td className="px-6 py-3">
                         {home.dpe_rating ? (
-                          <span className={`inline-flex w-7 h-7 rounded-full text-xs font-display items-center justify-center ${dpeDisplayColors[home.dpe_rating]}`}>
+                          <span className={`inline-flex w-7 h-7 rounded-full text-xs font-display items-center justify-center ${dpeDisplayColors[home.dpe_rating as DpeRating]}`}>
                             {home.dpe_rating}
                           </span>
                         ) : (
@@ -166,7 +166,7 @@ export default function AdminLogements() {
                         <span className="text-text-light italic">—</span>
                       </td>
                       <td className="px-6 py-3 font-body text-sm text-text-secondary whitespace-nowrap">
-                        {new Date(home.created_at).toLocaleDateString('fr-FR')}
+                        {home.created_at ? new Date(home.created_at).toLocaleDateString('fr-FR') : '—'}
                       </td>
                     </tr>
                   ))}

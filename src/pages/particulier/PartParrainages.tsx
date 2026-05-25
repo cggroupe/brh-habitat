@@ -24,7 +24,8 @@ const WORK_TYPE_LABELS: Record<string, string> = {
   autre:        'Autre',
 }
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string | null): string {
+  if (!dateString) return '—'
   const d = new Date(dateString)
   return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
 }
@@ -81,7 +82,7 @@ export default function PartParrainages() {
           {/* Mobile : cartes */}
           <div className="md:hidden space-y-4">
             {prospects.map(prospect => {
-              const status = STATUS_CONFIG[prospect.status]
+              const status = STATUS_CONFIG[(prospect.status ?? 'nouveau') as ProspectStatus]
               return (
                 <div key={prospect.id} className="bg-white rounded-2xl p-6 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
                   <div className="flex items-start justify-between mb-3">
@@ -138,7 +139,7 @@ export default function PartParrainages() {
               </thead>
               <tbody>
                 {prospects.map((prospect) => {
-                  const status = STATUS_CONFIG[prospect.status]
+                  const status = STATUS_CONFIG[(prospect.status ?? 'nouveau') as ProspectStatus]
                   return (
                     <tr key={prospect.id} className="hover:bg-background/50 transition-colors">
                       <td className="px-6 py-4">

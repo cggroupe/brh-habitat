@@ -121,10 +121,12 @@ export const adminQuotasApi = {
     customQuota: number | null
     period: QuotaPeriod
   }) {
+    // Note : la fonction SQL accepte NULL (cf migration), mais le type généré
+    // déclare number non-null. On cast pour respecter le runtime correct.
     const { data, error } = await supabase.rpc('brh_admin_set_custom_quota', {
       p_target_type: input.targetType,
       p_target_id: input.targetId,
-      p_custom_quota: input.customQuota,
+      p_custom_quota: input.customQuota as number,
       p_quota_period: input.period,
     })
     if (error) throw error

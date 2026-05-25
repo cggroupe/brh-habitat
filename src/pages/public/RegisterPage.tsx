@@ -5,6 +5,7 @@ import { useAppStore } from '@/stores/appStore'
 import { logError } from '@/lib/error'
 import { ArrowRight, UserPlus } from 'lucide-react'
 import { updateAffiliateRecruiter } from '@/api/affiliates'
+import type { UserRole } from '@/types/database'
 
 const AUTH_ERROR_MAP: Record<string, string> = {
   'User already registered': 'Cet email est deja utilise. Connectez-vous.',
@@ -78,7 +79,7 @@ export default function RegisterPage() {
       if (profile) {
         setUser({
           id: profile.id, email: profile.email, full_name: profile.full_name ?? '',
-          role: profile.role, avatar_url: profile.avatar_url ?? undefined,
+          role: (profile.role ?? 'user') as UserRole, avatar_url: profile.avatar_url ?? undefined,
         })
       }
       navigate('/particulier', { replace: true })

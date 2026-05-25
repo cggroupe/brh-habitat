@@ -60,7 +60,7 @@ export const reseauDiscoverApi = {
       artisanIds.length
         ? supabase
             .from('brh_artisans_rge')
-            .select('id, commune, code_postal, departement, lat, lng, geste_specialites')
+            .select('id, commune, code_postal, departement, latitude, longitude, geste_specialites')
             .in('id', artisanIds)
         : Promise.resolve({ data: [], error: null }),
     ])
@@ -82,15 +82,15 @@ export const reseauDiscoverApi = {
 
     const artisanById = new Map<
       string,
-      { commune: string | null; code_postal: string | null; departement: string | null; lat: number | null; lng: number | null; geste_specialites: string[] | null }
+      { commune: string | null; code_postal: string | null; departement: string | null; latitude: number | null; longitude: number | null; geste_specialites: string[] | null }
     >()
     for (const a of (artisansRes.data ?? []) as Array<{
       id: string
       commune: string | null
       code_postal: string | null
       departement: string | null
-      lat: number | null
-      lng: number | null
+      latitude: number | null
+      longitude: number | null
       geste_specialites: string[] | null
     }>) {
       artisanById.set(a.id, a)
@@ -132,8 +132,8 @@ export const reseauDiscoverApi = {
           city = a.commune
           postalCode = a.code_postal
           dept = a.departement
-          lat = a.lat
-          lng = a.lng
+          lat = a.latitude
+          lng = a.longitude
           metiers = a.geste_specialites ?? []
         }
       }

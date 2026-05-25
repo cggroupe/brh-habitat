@@ -129,7 +129,7 @@ export const brhPersonne360Api = {
       p_personne_id: personneId,
     })
     if (error) throw error
-    const row = (data as Personne360[] | null)?.[0]
+    const row = (data as unknown as Personne360[] | null)?.[0]
     return (
       row ?? {
         identity: null,

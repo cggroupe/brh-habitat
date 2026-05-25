@@ -19,7 +19,8 @@ const TYPE_COLORS: Record<PointsTransactionType, string> = {
   ajustement_admin: 'bg-background text-text-light',
 }
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string | null): string {
+  if (!dateString) return '—'
   const d = new Date(dateString)
   return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
 }
@@ -95,8 +96,8 @@ export default function PartPoints() {
                 <div key={tx.id} className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgba(27,28,28,0.04)] flex items-center gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium ${TYPE_COLORS[tx.type]}`}>
-                        {TYPE_LABELS[tx.type]}
+                      <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium ${TYPE_COLORS[tx.type as PointsTransactionType] ?? ''}`}>
+                        {TYPE_LABELS[tx.type as PointsTransactionType] ?? tx.type}
                       </span>
                     </div>
                     {tx.description && (
@@ -130,8 +131,8 @@ export default function PartPoints() {
                     <tr key={tx.id} className="hover:bg-background/50 transition-colors">
                       <td className="px-6 py-4 text-sm text-text-light">{formatDate(tx.created_at)}</td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium ${TYPE_COLORS[tx.type]}`}>
-                          {TYPE_LABELS[tx.type]}
+                        <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium ${TYPE_COLORS[tx.type as PointsTransactionType] ?? ''}`}>
+                          {TYPE_LABELS[tx.type as PointsTransactionType] ?? tx.type}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-text-secondary">

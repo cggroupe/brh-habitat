@@ -171,7 +171,7 @@ export default function ProfilPage() {
       { id: user.id, payload: { full_name: trimmed } },
       {
         onSuccess: (data) => {
-          setUser({ ...user, full_name: data.full_name })
+          setUser({ ...user, full_name: data.full_name ?? '' })
           setEditingName(false)
           setNameSuccess(true)
           setTimeout(() => setNameSuccess(false), 3000)

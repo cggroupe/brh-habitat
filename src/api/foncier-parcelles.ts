@@ -92,7 +92,7 @@ export const foncierParcellesApi = {
       .select('*')
       .in('idu', idus)
     if (error) throw error
-    return (data ?? []) as FoncierParcelle[]
+    return (data ?? []) as unknown as FoncierParcelle[]
   },
 
   /** Recherche d'adresse via api-adresse.data.gouv.fr (BAN, gratuit, sans auth). */

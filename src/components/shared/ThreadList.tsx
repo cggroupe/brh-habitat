@@ -59,7 +59,7 @@ export function ThreadList({
             )}
           </div>
           <p className="text-xs text-text-light truncate">{t.last_message ?? '...'}</p>
-          <p className="text-[10px] text-text-light/50 mt-1 font-bold uppercase tracking-wider">{timeAgo(t.last_message_at)}</p>
+          <p className="text-[10px] text-text-light/50 mt-1 font-bold uppercase tracking-wider">{timeAgo(t.last_message_at ?? '')}</p>
         </button>
       ))}
     </div>

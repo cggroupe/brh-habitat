@@ -1,8 +1,11 @@
 import { supabase } from '@/lib/supabase'
 import { formatLocalDate } from '@/lib/utils'
 import type { BrhSocialPostRow, SocialPostStatus } from '@/types/partner'
+import type { Database } from '@/types/database-generated'
 import { PAGE_SIZE } from '@/data/constants'
 import { socialPostInsertSchema, brhSocialPostRowSchema, type SocialPostInsert } from './schemas'
+
+type BrhSocialPostsUpdate = Database['public']['Tables']['brh_social_posts']['Update']
 
 export type { SocialPostInsert } from './schemas'
 
@@ -61,7 +64,7 @@ export async function updateSocialPostStatus(
   rejectionReason?: string | null,
   adminNotes?: string | null,
 ): Promise<BrhSocialPostRow> {
-  const payload: Record<string, unknown> = { status }
+  const payload: BrhSocialPostsUpdate = { status }
   if (status === 'validee') {
     payload.validated_at = new Date().toISOString()
     const expiry = new Date()

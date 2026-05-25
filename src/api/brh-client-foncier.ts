@@ -85,7 +85,7 @@ export const brhClientFoncierApi = {
       p_personne_id: personneId,
     })
     if (error) throw error
-    const row = (data as ClientFoncierAtAddress[] | null)?.[0]
+    const row = (data as unknown as ClientFoncierAtAddress[] | null)?.[0]
     return row ?? null
   },
 }

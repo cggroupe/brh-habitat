@@ -46,7 +46,7 @@ export default function AdminUtilisateurs() {
     setLocalRoles((prev) => {
       const next = { ...prev }
       profiles.forEach((p) => {
-        if (!(p.id in next)) next[p.id] = p.role
+        if (!(p.id in next)) next[p.id] = (p.role ?? 'user') as UserRole
       })
       return next
     })
@@ -58,7 +58,7 @@ export default function AdminUtilisateurs() {
 
     // Prevent removing own admin role
     if (currentUser?.id === profile.id) {
-      setLocalRoles((prev) => ({ ...prev, [profile.id]: profile.role }))
+      setLocalRoles((prev) => ({ ...prev, [profile.id]: (profile.role ?? 'user') as UserRole }))
       return
     }
 
@@ -146,7 +146,7 @@ export default function AdminUtilisateurs() {
                               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-display text-sm shrink-0 ${
                                 profile.role === 'admin' ? 'bg-red-500' : 'bg-primary'
                               }`}>
-                                {profile.full_name.charAt(0).toUpperCase()}
+                                {(profile.full_name ?? '?').charAt(0).toUpperCase()}
                               </div>
                               <div>
                                 <p className="font-body text-sm text-text-primary font-medium flex items-center gap-1.5">
@@ -204,7 +204,7 @@ export default function AdminUtilisateurs() {
 
                           {/* Joined */}
                           <td className="px-6 py-3 font-body text-sm text-text-secondary whitespace-nowrap">
-                            {new Date(profile.created_at).toLocaleDateString('fr-FR')}
+                            {profile.created_at ? new Date(profile.created_at).toLocaleDateString('fr-FR') : '—'}
                           </td>
 
                           {/* Save action */}

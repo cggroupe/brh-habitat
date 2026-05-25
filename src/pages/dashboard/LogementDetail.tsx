@@ -68,13 +68,13 @@ function DeleteModal({ onConfirm, onCancel, deleting }: DeleteModalProps) {
 
 function homeToForm(home: BrhHomeRow): EditFormValues {
   return {
-    address: home.address,
-    city: home.city,
-    postal_code: home.postal_code,
-    property_type: home.property_type,
-    surface: String(home.surface),
-    year_built: String(home.year_built),
-    floors: String(home.floors),
+    address: home.address ?? '',
+    city: home.city ?? '',
+    postal_code: home.postal_code ?? '',
+    property_type: home.property_type ?? '',
+    surface: home.surface != null ? String(home.surface) : '',
+    year_built: home.year_built != null ? String(home.year_built) : '',
+    floors: home.floors != null ? String(home.floors) : '',
     heating_type: home.heating_type ?? '',
     insulation_type: home.insulation_type ?? '',
     dpe_rating: home.dpe_rating ?? '',
@@ -204,9 +204,9 @@ export default function LogementDetail() {
       </Link>
 
       <LogementHeader
-        address={home.address}
-        postalCode={home.postal_code}
-        city={home.city}
+        address={home.address ?? ''}
+        postalCode={home.postal_code ?? ''}
+        city={home.city ?? ''}
         editing={editing}
         saving={updateMutation.isPending}
         onStartEditing={startEditing}

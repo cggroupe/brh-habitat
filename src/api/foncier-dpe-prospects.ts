@@ -72,12 +72,12 @@ export const foncierDpeProspectsApi = {
       p_max_lng: filters.bbox.maxLng,
       p_ratings: ratings,
       p_score_v2_min: filters.scoreV2Min ?? 0,
-      p_segment_v2: filters.segmentV2 ?? null,
+      p_segment_v2: filters.segmentV2 ?? undefined,
       p_opah_only: filters.opahOnly ?? false,
       p_rga_fort_only: filters.rgaFortOnly ?? false,
       p_tlv_tendue_only: filters.tlvTendueOnly ?? false,
       p_audits_dyna_only: filters.auditsDynaOnly ?? false,
-      p_dept: filters.departement ?? null,
+      p_dept: filters.departement ?? undefined,
       p_limit: Math.min(filters.limit ?? 500, 2000),
     })
     if (error) throw error

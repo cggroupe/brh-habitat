@@ -117,7 +117,7 @@ export default function ProEquipe() {
 
                   <div className="flex items-center gap-3">
                     <p className="text-xs text-text-light hidden sm:block">
-                      Depuis le {new Date(member.joined_at).toLocaleDateString('fr-FR')}
+                      Depuis le {member.joined_at ? new Date(member.joined_at).toLocaleDateString('fr-FR') : '—'}
                     </p>
                     {!isCurrentUser && !isOwner && (
                       confirmRemoveId === member.id ? (

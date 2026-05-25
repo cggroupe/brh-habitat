@@ -8,12 +8,16 @@
 import { supabase } from '@/lib/supabase'
 import { computeDpe } from '@/lib/dpe-engine'
 import type { AuditInputs, DpeResult } from '@/lib/dpe-engine/types'
+import type { Database, Json } from '@/types/database-generated'
 import {
   auditInputsSchema,
   auditRowSchema,
   dpeResultSchema,
   type AuditRow,
 } from './schemas'
+
+type BrhAuditsInsert = Database['public']['Tables']['brh_audits']['Insert']
+type BrhAuditsUpdate = Database['public']['Tables']['brh_audits']['Update']
 
 export const auditsApi = {
   /**
@@ -51,14 +55,15 @@ export const auditsApi = {
     if (userErr) throw userErr
     if (!userData.user) throw new Error('Non authentifié')
 
+    const insertRow: BrhAuditsInsert = {
+      inputs: inputs as unknown as Json,
+      results: {},
+      pro_user_id: userData.user.id,
+      status: 'draft',
+    }
     const { data, error } = await supabase
       .from('brh_audits')
-      .insert({
-        inputs: inputs as unknown as Record<string, unknown>,
-        results: {},
-        pro_user_id: userData.user.id,
-        status: 'draft',
-      })
+      .insert(insertRow)
       .select()
       .single()
     if (error) throw error
@@ -77,15 +82,16 @@ export const auditsApi = {
     if (userErr) throw userErr
     if (!userData.user) throw new Error('Non authentifié')
 
+    const insertRow: BrhAuditsInsert = {
+      inputs: inputs as unknown as Json,
+      results: (results ?? {}) as unknown as Json,
+      user_id: userData.user.id,
+      pro_user_id: null,
+      status: 'submitted',
+    }
     const { data, error } = await supabase
       .from('brh_audits')
-      .insert({
-        inputs: inputs as unknown as Record<string, unknown>,
-        results: (results ?? {}) as unknown as Record<string, unknown>,
-        user_id: userData.user.id,
-        pro_user_id: null,
-        status: 'submitted',
-      })
+      .insert(insertRow)
       .select()
       .single()
     if (error) throw error
@@ -96,9 +102,10 @@ export const auditsApi = {
    * Mise à jour partielle d'un audit (uniquement si status=draft via RLS).
    */
   async update(id: string, partial: Partial<AuditRow>): Promise<AuditRow> {
+    const updateRow = partial as unknown as BrhAuditsUpdate
     const { data, error } = await supabase
       .from('brh_audits')
-      .update(partial)
+      .update(updateRow)
       .eq('id', id)
       .select()
       .single()

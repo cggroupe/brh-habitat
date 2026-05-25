@@ -42,7 +42,7 @@ export const agenceLeaderboardApi = {
 
   async mlmTree(agenceId?: string): Promise<MlmTreeNode[]> {
     const { data, error } = await supabase.rpc('brh_agence_mlm_tree', {
-      p_agence_id: agenceId ?? null,
+      p_agence_id: agenceId ?? undefined,
     })
     if (error) throw error
     return (data ?? []) as MlmTreeNode[]

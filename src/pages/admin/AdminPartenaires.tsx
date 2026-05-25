@@ -167,18 +167,18 @@ export default function AdminPartenaires() {
                         )}
                       </td>
                       <td className="px-5 py-3 font-body text-sm text-slate-600">
-                        {company.profession ? PROFESSION_LABELS[company.profession] : <span className="text-slate-300">—</span>}
+                        {company.profession ? PROFESSION_LABELS[company.profession as CompanyProfession] ?? company.profession : <span className="text-slate-300">—</span>}
                       </td>
                       <td className="px-5 py-3">
-                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-display ${LEVEL_COLORS[company.level]}`}>
-                          {LEVEL_LABELS[company.level]}
+                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-display ${LEVEL_COLORS[(company.level ?? 'bronze') as CompanyLevel]}`}>
+                          {LEVEL_LABELS[(company.level ?? 'bronze') as CompanyLevel]}
                         </span>
                       </td>
                       <td className="px-5 py-3 font-body text-sm text-slate-700">
                         {company.commission_rate_percent} %
                       </td>
                       <td className="px-5 py-3 font-body text-sm text-slate-700">
-                        {(company.total_ca_apporte / 100).toLocaleString('fr-FR')} EUR
+                        {((company.total_ca_apporte ?? 0) / 100).toLocaleString('fr-FR')} EUR
                       </td>
                       <td className="px-5 py-3">
                         <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-display ${

@@ -22,10 +22,11 @@ function formatEurDisplay(cents: number): string {
   return (cents / 100).toLocaleString('fr-FR') + ' EUR'
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status }: { status: string | null }) {
+  const safe = status ?? 'nouveau'
   return (
-    <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${PROSPECT_STATUS_BADGE[status] ?? 'bg-background text-text-light'}`}>
-      {PROSPECT_STATUS_LABELS[status] ?? status}
+    <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${PROSPECT_STATUS_BADGE[safe] ?? 'bg-background text-text-light'}`}>
+      {PROSPECT_STATUS_LABELS[safe] ?? safe}
     </span>
   )
 }

@@ -22,6 +22,7 @@ import {
   LogIn,
 } from 'lucide-react'
 import { logError } from '@/lib/error'
+import type { UserRole } from '@/types/database'
 import { isBrhEmployee, loadBrhEmployeesFromDb } from '@/lib/brh-employees'
 
 const AUTH_ERROR_MAP: Record<string, string> = {
@@ -205,11 +206,12 @@ export default function LoginPage() {
         return
       }
 
+      const role = (profile.role ?? 'user') as UserRole
       setUser({
         id: profile.id,
         email: profile.email,
         full_name: profile.full_name ?? '',
-        role: profile.role,
+        role,
         avatar_url: profile.avatar_url ?? undefined,
       })
 
@@ -218,7 +220,7 @@ export default function LoginPage() {
       // dans le seed statique. Cf audit-ux-2026-05-12 bug #1 (employé pas reconnu).
       await loadBrhEmployeesFromDb()
 
-      const accessible = await listAccessiblePortals(profile.id, profile.role, profile.email)
+      const accessible = await listAccessiblePortals(profile.id, role, profile.email)
 
       // 1 seul portail → redirect direct (comportement historique).
       if (accessible.length === 1) {

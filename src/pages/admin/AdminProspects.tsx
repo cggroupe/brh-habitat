@@ -153,24 +153,24 @@ export default function AdminProspects() {
                         </span>
                       </td>
                       <td className="px-5 py-3">
-                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-display ${STATUS_COLORS[p.status]}`}>
-                          {STATUS_LABELS[p.status]}
+                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-display ${STATUS_COLORS[(p.status ?? 'nouveau') as ProspectStatus]}`}>
+                          {STATUS_LABELS[(p.status ?? 'nouveau') as ProspectStatus]}
                         </span>
                       </td>
                       <td className="px-5 py-3">
                         <span className="font-body text-sm text-slate-700 font-semibold">
-                          {p.lead_score}
+                          {p.lead_score ?? 0}
                         </span>
                       </td>
                       <td className="px-5 py-3 font-body text-sm text-slate-600">
                         {p.urgency ? URGENCY_LABELS[p.urgency] ?? p.urgency : <span className="text-slate-300">—</span>}
                       </td>
                       <td className="px-5 py-3 font-body text-sm text-slate-500 whitespace-nowrap">
-                        {new Date(p.created_at).toLocaleDateString('fr-FR')}
+                        {p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR') : '—'}
                       </td>
                       <td className="px-5 py-3">
                         <select
-                          value={p.status}
+                          value={p.status ?? 'nouveau'}
                           onChange={(e) => handleStatusChange(p.id, e.target.value as ProspectStatus)}
                           className="border border-slate-200 rounded-lg px-2 py-1 font-body text-xs text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
                         >

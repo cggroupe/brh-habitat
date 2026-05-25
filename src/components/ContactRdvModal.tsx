@@ -169,9 +169,9 @@ export function ContactRdvModal({
         p_contact_email: form.email.trim().toLowerCase(),
         p_preferred_slot: dispoText,
         p_notes: notes,
-        p_referral_code: referralCode || null,
-        p_diagnostic_id: diagnosticId && diagnosticId !== 'local' ? diagnosticId : null,
-        p_assigned_employee_id: selectedEmployeeId,
+        p_referral_code: referralCode || undefined,
+        p_diagnostic_id: diagnosticId && diagnosticId !== 'local' ? diagnosticId : undefined,
+        p_assigned_employee_id: selectedEmployeeId ?? undefined,
         p_requested_date: requestedDate,
       })
 

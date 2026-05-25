@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useMyCompany, useCompanyDashboardStats } from '@/hooks/queries'
 import { supabase } from '@/lib/supabase'
-import type { BrhQuoteRow } from '@/types/partner'
+import type { BrhQuoteRow, CommissionStatus } from '@/types/partner'
 
 interface QuoteWithProspect extends BrhQuoteRow {
   prospect_name: string
@@ -44,6 +44,7 @@ export default function ProCommissions() {
       setError(null)
 
       try {
+        if (!companyId) return
         const { data: prospects, error: prospectError } = await supabase
           .from('brh_prospects')
           .select('id, client_first_name, client_last_name, client_city')
@@ -197,12 +198,12 @@ export default function ProCommissions() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${COMMISSION_STATUS_BADGE[q.commission_status] ?? 'bg-background text-text-light'}`}>
-                        {COMMISSION_STATUS_LABELS[q.commission_status] ?? q.commission_status}
+                      <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${COMMISSION_STATUS_BADGE[(q.commission_status ?? 'en_attente') as CommissionStatus] ?? 'bg-background text-text-light'}`}>
+                        {COMMISSION_STATUS_LABELS[(q.commission_status ?? 'en_attente') as CommissionStatus] ?? q.commission_status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-xs text-text-light hidden md:table-cell">
-                      {new Date(q.signed_at).toLocaleDateString('fr-FR')}
+                      {q.signed_at ? new Date(q.signed_at).toLocaleDateString('fr-FR') : '—'}
                     </td>
                   </tr>
                 ))}

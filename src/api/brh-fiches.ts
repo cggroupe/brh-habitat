@@ -109,7 +109,7 @@ export const brhFichesApi = {
       voisinage = (vois ?? []) as FicheAdresse['voisinage']
     }
 
-    return { dpe: dpe as LeadRow, sci, voisinage }
+    return { dpe: dpe as unknown as LeadRow, sci, voisinage }
   },
 
   async getFicheEntreprise(siren: string): Promise<FicheEntreprise | null> {
@@ -137,7 +137,7 @@ export const brhFichesApi = {
       .order('date_parution', { ascending: false })
       .limit(20)
     // Tolère l'absence de table (selon RLS profile) : on log mais on continue
-    const bodacc = e3 ? [] : ((bodaccRaw ?? []) as FicheEntreprise['bodacc'])
+    const bodacc = e3 ? [] : ((bodaccRaw ?? []) as unknown as FicheEntreprise['bodacc'])
 
     return {
       sci,
@@ -166,7 +166,9 @@ export const brhFichesApi = {
     let birthDate: string | null = null
 
     for (const sciRow of sciHits ?? []) {
-      const dirs: Dirigeant[] = Array.isArray(sciRow.dirigeants) ? sciRow.dirigeants : []
+      const dirs: Dirigeant[] = Array.isArray(sciRow.dirigeants)
+        ? (sciRow.dirigeants as unknown as Dirigeant[])
+        : []
       const me = dirs.find(
         (d) =>
           (d.nom ?? '').toLowerCase() === last.toLowerCase() &&

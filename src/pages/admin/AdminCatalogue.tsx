@@ -150,7 +150,7 @@ function RewardForm({ initial, onClose, onSave, isPending, isError }: RewardForm
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
-              checked={form.is_active}
+              checked={form.is_active ?? false}
               onChange={(e) => set('is_active', e.target.checked)}
               className="rounded border-slate-300 text-primary focus:ring-primary/30"
             />
@@ -280,7 +280,7 @@ export default function AdminCatalogue() {
               </div>
 
               <p className="font-body text-xs text-slate-500 mb-3 line-clamp-2">
-                {reward.description ?? REWARD_TYPE_LABELS[reward.type]}
+                {reward.description ?? REWARD_TYPE_LABELS[(reward.type ?? 'produit_physique') as RewardType]}
               </p>
 
               <div className="flex items-center justify-between text-xs font-body text-slate-600 mb-3">

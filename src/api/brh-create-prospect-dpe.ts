@@ -22,8 +22,8 @@ export const brhCreateProspectDpeApi = {
       p_dpe_id: input.dpe_id,
       p_nom: input.nom,
       p_prenom: input.prenom,
-      p_telephone: input.telephone ?? null,
-      p_email: input.email ?? null,
+      p_telephone: input.telephone ?? undefined,
+      p_email: input.email ?? undefined,
     })
     if (error) throw error
     return data as string

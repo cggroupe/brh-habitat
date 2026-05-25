@@ -39,9 +39,9 @@ export function useMyMembership() {
       if (!data || !data.company_id) return null
       return {
         companyId: data.company_id,
-        memberRole: data.member_role,
+        memberRole: (data.member_role ?? 'member') as MemberRole,
         permissions: (data.permissions ?? {}) as MemberPermissions,
-        joinedAt: data.joined_at,
+        joinedAt: data.joined_at ?? new Date().toISOString(),
       }
     },
     enabled: !!user?.id,

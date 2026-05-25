@@ -88,15 +88,15 @@ export interface ClientsBrhFilters {
 export const brhClientsHistoriqueApi = {
   async search(filters: ClientsBrhFilters = {}): Promise<ClientBrhHit[]> {
     const { data, error } = await supabase.rpc('brh_personnes_search', {
-      p_query: filters.query ?? null,
-      p_statut: filters.statut ?? null,
-      p_dept: filters.dept ?? null,
+      p_query: filters.query ?? undefined,
+      p_statut: filters.statut ?? undefined,
+      p_dept: filters.dept ?? undefined,
       p_with_tel: filters.with_tel ?? false,
       p_with_email: filters.with_email ?? false,
       p_with_ca: filters.with_ca ?? false,
       p_with_rdv: filters.with_rdv ?? false,
       p_with_dpe_link: filters.with_dpe_link ?? false,
-      p_tier: filters.tier ?? null,
+      p_tier: filters.tier ?? undefined,
       p_limit: Math.min(filters.limit ?? 50, 200),
       p_offset: Math.max(0, filters.offset ?? 0),
     })

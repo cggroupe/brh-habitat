@@ -49,7 +49,7 @@ export default function PartDashboard() {
 
   const nbTotal  = prospects.length
   const nbSigne  = prospects.filter(p => p.status === 'signe' || p.status === 'termine').length
-  const nbEnCours = prospects.filter(p => ['nouveau', 'etude', 'devis_envoye'].includes(p.status)).length
+  const nbEnCours = prospects.filter(p => ['nouveau', 'etude', 'devis_envoye'].includes(p.status ?? '')).length
 
   const balance    = affiliate?.points_balance ?? 0
   const nextReward = rewards
@@ -58,7 +58,7 @@ export default function PartDashboard() {
   const pointsNeeded = nextReward ? nextReward.points_required - balance : 0
   const progressPct  = nextReward ? Math.min(100, (balance / nextReward.points_required) * 100) : 100
 
-  const levelCfg   = affiliate ? LEVEL_CONFIG[affiliate.level] : LEVEL_CONFIG.standard
+  const levelCfg   = affiliate ? LEVEL_CONFIG[(affiliate.level ?? 'standard') as AffiliateLevel] : LEVEL_CONFIG.standard
   const firstName  = user?.full_name?.split(' ')[0] ?? 'vous'
 
   // ── Loading ────────────────────────────────────────────────────────────────

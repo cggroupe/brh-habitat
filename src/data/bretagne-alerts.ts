@@ -26,7 +26,7 @@ const ALERT_RULES: AlertRule[] = [
     title: 'Murs en granit et humidite',
     message: 'Les maisons bretonnes en pierre/granit anterieures a 1950 sont particulierement sensibles aux remontees capillaires et a l\'humidite. Un diagnostic humidite est recommande.',
     relatedDomain: 'humidite',
-    condition: (home) => home.year_built < 1950 && home.property_type?.toLowerCase().includes('maison'),
+    condition: (home) => (home.year_built ?? 9999) < 1950 && (home.property_type?.toLowerCase().includes('maison') ?? false),
   },
   {
     id: 'climat_oceanique',
@@ -47,7 +47,7 @@ const ALERT_RULES: AlertRule[] = [
     relatedDomain: 'toiture',
     condition: (_home, records) => {
       const rec = records.find((r) => r.domain === 'toiture')
-      return !!rec && rec.symptoms.some((s) => s.toLowerCase().includes('ardoise'))
+      return !!rec && (rec.symptoms ?? []).some((s) => s.toLowerCase().includes('ardoise'))
     },
   },
   {
@@ -79,7 +79,7 @@ const ALERT_RULES: AlertRule[] = [
     relatedDomain: 'electricite',
     condition: (home, records) => {
       const rec = records.find((r) => r.domain === 'electricite')
-      return home.year_built < 1990 && !!rec && (rec.score ?? 0) >= 40
+      return (home.year_built ?? 9999) < 1990 && !!rec && (rec.score ?? 0) >= 40
     },
   },
   {
@@ -88,7 +88,7 @@ const ALERT_RULES: AlertRule[] = [
     title: 'Isolation potentiellement insuffisante',
     message: 'Les maisons construites avant 1975 (premiere reglementation thermique) sont souvent mal isolees. L\'isolation des combles est le geste le plus rentable avec un retour sur investissement de 3 a 5 ans.',
     relatedDomain: 'isolation',
-    condition: (home) => home.year_built < 1975,
+    condition: (home) => (home.year_built ?? 9999) < 1975,
   },
 ]
 

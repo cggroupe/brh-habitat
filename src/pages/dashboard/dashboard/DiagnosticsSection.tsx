@@ -6,11 +6,11 @@ function DiagnosticCard({ diag }: { diag: BrhDiagnosticRow }) {
   const results = diag.results as Record<string, unknown> | null
   const score = results?.overallScore as number | undefined
   const urgency = results?.urgencyLevel as string | undefined
-  const date = new Date(diag.created_at).toLocaleDateString('fr-FR', {
+  const date = diag.created_at ? new Date(diag.created_at).toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-  })
+  }) : '—'
 
   const urgencyColor = urgency === 'critique' ? 'bg-red-100 text-red-700'
     : urgency === 'eleve' ? 'bg-orange-100 text-orange-700'

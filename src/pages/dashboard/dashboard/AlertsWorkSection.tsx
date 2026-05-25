@@ -8,7 +8,7 @@ interface WorkItem {
   title: string
   domain: string
   cost: number | null
-  status: string
+  status: string | null
 }
 
 interface DocumentItem {
@@ -60,8 +60,8 @@ export function AlertsWorkSection({ home, healthRecords, plannedWorks, expiredDo
                     {w.cost != null && ` — ${w.cost.toLocaleString('fr-FR')} EUR`}
                   </p>
                 </div>
-                <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-display ${WORK_STATUS_COLORS[w.status as keyof typeof WORK_STATUS_COLORS]}`}>
-                  {WORK_STATUS_LABELS[w.status as keyof typeof WORK_STATUS_LABELS]}
+                <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-display ${WORK_STATUS_COLORS[(w.status ?? 'planifie') as keyof typeof WORK_STATUS_COLORS]}`}>
+                  {WORK_STATUS_LABELS[(w.status ?? 'planifie') as keyof typeof WORK_STATUS_LABELS]}
                 </span>
               </div>
             ))}

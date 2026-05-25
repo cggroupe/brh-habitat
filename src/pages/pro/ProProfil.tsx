@@ -116,7 +116,7 @@ export default function ProProfil() {
     )
   }
 
-  const levelConfig = LEVEL_COLORS[company.level]
+  const levelConfig = LEVEL_COLORS[(company.level ?? 'bronze') as CompanyLevel]
 
   return (
     <div className="p-8 lg:p-10">

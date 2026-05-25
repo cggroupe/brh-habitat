@@ -30,7 +30,7 @@ export default function ChiffragesList({ partnerType, newChiffrageUrl }: Chiffra
     try {
       const { pdf } = await import('@react-pdf/renderer')
       const { ChiffragePDF } = await import('@/lib/chiffrage-pdf')
-      const lignes = Array.isArray(row.lignes) ? (row.lignes as ChiffrageLineItem[]) : []
+      const lignes = Array.isArray(row.lignes) ? (row.lignes as unknown as ChiffrageLineItem[]) : []
       const chiffrageData: ChiffrageData = {
         client_name: row.client_name,
         client_address: row.client_address ?? undefined,
@@ -45,7 +45,7 @@ export default function ChiffragesList({ partnerType, newChiffrageUrl }: Chiffra
         total_tva: row.total_tva,
         total_ttc: row.total_ttc,
         notes: row.notes ?? undefined,
-        date: formatDate(row.created_at),
+        date: formatDate(row.created_at ?? ''),
         reference: row.reference,
       }
       const blob = await pdf(<ChiffragePDF data={chiffrageData} />).toBlob()
@@ -134,7 +134,7 @@ export default function ChiffragesList({ partnerType, newChiffrageUrl }: Chiffra
                     <td className="px-6 py-4 text-right font-display text-sm font-bold text-text-primary">
                       {formatEur(row.total_ttc)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-text-light">{formatDate(row.created_at)}</td>
+                    <td className="px-6 py-4 text-sm text-text-light">{formatDate(row.created_at ?? '')}</td>
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => void handleDownload(row)}
@@ -161,7 +161,7 @@ export default function ChiffragesList({ partnerType, newChiffrageUrl }: Chiffra
                   <span className="text-[10px] bg-primary/10 text-primary px-3 py-1.5 rounded-full font-bold uppercase tracking-wider">
                     {row.reference}
                   </span>
-                  <span className="text-xs text-text-light">{formatDate(row.created_at)}</span>
+                  <span className="text-xs text-text-light">{formatDate(row.created_at ?? '')}</span>
                 </div>
                 <p className="font-bold text-sm text-text-primary mb-0.5">{row.client_name}</p>
                 <p className="text-xs text-text-light mb-4">{row.projet_titre}</p>

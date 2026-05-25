@@ -157,8 +157,8 @@ export const artisanPortalApi = {
     const { data, error } = await supabase.rpc('brh_artisan_respond_lead', {
       p_lead_id: input.leadId,
       p_action: input.action,
-      p_reason: input.reason ?? null,
-      p_actual_chantier_eur: input.actualChantierEur ?? null,
+      p_reason: input.reason ?? undefined,
+      p_actual_chantier_eur: input.actualChantierEur ?? undefined,
     })
     if (error) throw error
     const row = (data as Array<{ success: boolean; new_status: string | null; message: string }>)?.[0]

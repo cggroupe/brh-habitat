@@ -82,7 +82,7 @@ export async function fetchMyCompany(userId: string): Promise<BrhCompanyRow | nu
     .maybeSingle()
 
   if (memberError) throw memberError
-  if (!membership) return null
+  if (!membership || !membership.company_id) return null
 
   const { data, error } = await supabase
     .from('brh_companies')

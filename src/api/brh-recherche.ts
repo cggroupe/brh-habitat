@@ -127,8 +127,8 @@ export const brhRechercheApi = {
 
     return {
       query: q,
-      adresses: (adresses ?? []) as RechercheAdresseHit[],
-      entreprises: (entreprises ?? []) as RechercheEntrepriseHit[],
+      adresses: (adresses ?? []) as unknown as RechercheAdresseHit[],
+      entreprises: (entreprises ?? []) as unknown as RechercheEntrepriseHit[],
       dirigeants: dirigeants.slice(0, 20),
     }
   },

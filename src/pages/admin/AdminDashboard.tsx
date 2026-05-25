@@ -15,6 +15,7 @@ import {
   DIAGNOSTIC_STATUS_LABELS,
   DIAGNOSTIC_STATUS_COLORS,
 } from '@/data/constants'
+import type { DiagnosticStatus } from '@/types/database'
 
 interface StatCard {
   label: string
@@ -160,11 +161,11 @@ export default function AdminDashboard() {
                         </div>
                       </td>
                       <td className="px-6 py-3 font-body text-sm text-text-secondary whitespace-nowrap">
-                        {new Date(d.created_at).toLocaleDateString('fr-FR')}
+                        {d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR') : '—'}
                       </td>
                       <td className="px-6 py-3">
-                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-display ${DIAGNOSTIC_STATUS_COLORS[d.status]}`}>
-                          {DIAGNOSTIC_STATUS_LABELS[d.status]}
+                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-display ${DIAGNOSTIC_STATUS_COLORS[(d.status ?? 'pending') as DiagnosticStatus]}`}>
+                          {DIAGNOSTIC_STATUS_LABELS[(d.status ?? 'pending') as DiagnosticStatus]}
                         </span>
                       </td>
                     </tr>

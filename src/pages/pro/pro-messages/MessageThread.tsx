@@ -98,7 +98,7 @@ export function MessageThread({
                   <AttachmentPreview url={msg.attachment_url} name={msg.attachment_name} />
                 )}
                 <div className={`flex items-center justify-end gap-1 mt-1.5 ${isMe ? 'text-white/60' : 'text-text-light'}`}>
-                  <span className="text-[10px] font-medium">{timeAgo(msg.created_at)}</span>
+                  <span className="text-[10px] font-medium">{timeAgo(msg.created_at ?? '')}</span>
                   {isMe && msg.is_read && (
                     <CheckCheck size={11} className="text-white/80" />
                   )}

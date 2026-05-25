@@ -62,7 +62,8 @@ export default function ProProspectDetail() {
     )
   }
 
-  const statusClass = STATUS_BADGE[prospect.status]
+  const prospectStatus = (prospect.status ?? 'nouveau') as ProspectStatus
+  const statusClass = STATUS_BADGE[prospectStatus]
 
   return (
     <div className="p-8 lg:p-10">
@@ -82,11 +83,11 @@ export default function ProProspectDetail() {
             {prospect.client_first_name} {prospect.client_last_name}
           </h1>
           <p className="text-sm text-text-light mt-1">
-            Cree le {new Date(prospect.created_at).toLocaleDateString('fr-FR')}
+            Cree le {prospect.created_at ? new Date(prospect.created_at).toLocaleDateString('fr-FR') : '—'}
           </p>
         </div>
         <span className={`inline-flex items-center rounded-full px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider ${statusClass}`}>
-          {STATUS_LABELS[prospect.status]}
+          {STATUS_LABELS[prospectStatus]}
         </span>
       </div>
 
@@ -221,13 +222,13 @@ export default function ProProspectDetail() {
               <p className="text-[10px] uppercase tracking-widest font-bold text-text-light">Score du lead</p>
             </div>
             <div className="flex items-end gap-2 mb-3">
-              <span className="font-display text-2xl text-text-primary font-bold">{prospect.lead_score}</span>
+              <span className="font-display text-2xl text-text-primary font-bold">{prospect.lead_score ?? 0}</span>
               <span className="text-sm text-text-light mb-0.5">/ 100</span>
             </div>
             <div className="w-full bg-background rounded-full h-2">
               <div
                 className="h-2 rounded-full bg-gradient-to-r from-primary to-primary-dark transition-all"
-                style={{ width: `${Math.min(prospect.lead_score, 100)}%` }}
+                style={{ width: `${Math.min(prospect.lead_score ?? 0, 100)}%` }}
               />
             </div>
           </div>
@@ -243,9 +244,9 @@ export default function ProProspectDetail() {
                 <div>
                   <p className="text-[10px] uppercase tracking-wider font-bold text-text-light mb-0.5">Cree le</p>
                   <p className="text-sm font-medium text-text-primary">
-                    {new Date(prospect.created_at).toLocaleDateString('fr-FR', {
+                    {prospect.created_at ? new Date(prospect.created_at).toLocaleDateString('fr-FR', {
                       day: 'numeric', month: 'long', year: 'numeric'
-                    })}
+                    }) : '—'}
                   </p>
                 </div>
               </div>
@@ -254,9 +255,9 @@ export default function ProProspectDetail() {
                 <div>
                   <p className="text-[10px] uppercase tracking-wider font-bold text-text-light mb-0.5">Statut mis a jour le</p>
                   <p className="text-sm font-medium text-text-primary">
-                    {new Date(prospect.status_updated_at).toLocaleDateString('fr-FR', {
+                    {prospect.status_updated_at ? new Date(prospect.status_updated_at).toLocaleDateString('fr-FR', {
                       day: 'numeric', month: 'long', year: 'numeric'
-                    })}
+                    }) : '—'}
                   </p>
                 </div>
               </div>

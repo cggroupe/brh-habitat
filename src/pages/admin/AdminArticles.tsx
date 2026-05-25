@@ -92,16 +92,16 @@ export default function AdminArticles() {
     setForm({
       slug: article.slug,
       title: article.title,
-      excerpt: article.excerpt,
+      excerpt: article.excerpt ?? '',
       content: article.content,
-      category: article.category,
-      tags: article.tags.join(', '),
-      author: article.author,
+      category: article.category ?? '',
+      tags: (article.tags ?? []).join(', '),
+      author: article.author ?? '',
       cover_image: article.cover_image ?? '',
       seo_title: article.seo_title ?? '',
       seo_description: article.seo_description ?? '',
       read_time: article.read_time != null ? String(article.read_time) : '',
-      published: article.published,
+      published: article.published ?? false,
     })
     setFormError(null)
     setShowModal(true)
@@ -248,7 +248,7 @@ export default function AdminArticles() {
                         {article.read_time ? `${article.read_time} min` : '—'}
                       </td>
                       <td className="px-6 py-3 font-body text-sm text-text-secondary whitespace-nowrap">
-                        {new Date(article.created_at).toLocaleDateString('fr-FR')}
+                        {article.created_at ? new Date(article.created_at).toLocaleDateString('fr-FR') : '—'}
                       </td>
                       <td className="px-6 py-3">
                         <button

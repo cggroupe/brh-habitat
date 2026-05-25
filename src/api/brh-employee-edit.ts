@@ -4,6 +4,7 @@
  * 2 RPC SECURITY DEFINER avec whitelist stricte des champs + audit log.
  */
 import { supabase } from '@/lib/supabase'
+import type { Json } from '@/types/database-generated'
 
 export interface EmployeeEditPatch {
   telephone?: string | null
@@ -23,7 +24,7 @@ export const brhEmployeeEditApi = {
   async updatePersonne(id: string, patch: EmployeeEditPatch): Promise<{ ok: boolean; changes: number }> {
     const { data, error } = await supabase.rpc('brh_personne_update_employee', {
       p_id: id,
-      p_patch: patch,
+      p_patch: patch as unknown as Json,
     })
     if (error) throw error
     return data as { ok: boolean; changes: number }
@@ -32,7 +33,7 @@ export const brhEmployeeEditApi = {
   async updateDpe(dpeId: number, patch: EmployeeEditPatch): Promise<{ ok: boolean; changes: number }> {
     const { data, error } = await supabase.rpc('brh_dpe_update_employee', {
       p_dpe_id: dpeId,
-      p_patch: patch,
+      p_patch: patch as unknown as Json,
     })
     if (error) throw error
     return data as { ok: boolean; changes: number }
@@ -44,10 +45,10 @@ export const brhEmployeeEditApi = {
   ): Promise<Record<string, DpePosteOverride>> {
     const { data, error } = await supabase.rpc('brh_dpe_employee_update', {
       p_dpe_id: dpeId,
-      p_overrides: overrides,
+      p_overrides: overrides as unknown as Json,
     })
     if (error) throw error
-    return (data ?? {}) as Record<string, DpePosteOverride>
+    return (data ?? {}) as unknown as Record<string, DpePosteOverride>
   },
 }
 

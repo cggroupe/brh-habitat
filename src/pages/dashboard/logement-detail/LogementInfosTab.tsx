@@ -77,7 +77,7 @@ export function LogementInfosTab({
             <InfoRow label="Adresse" value={home.address} />
             <InfoRow label="Ville" value={home.city} />
             <InfoRow label="Code postal" value={home.postal_code} />
-            <InfoRow label="Type de bien" value={typeLabel[home.property_type] ?? home.property_type} />
+            <InfoRow label="Type de bien" value={typeLabel[home.property_type ?? ''] ?? home.property_type ?? '—'} />
           </>
         ) : (
           form && (
@@ -132,7 +132,7 @@ export function LogementInfosTab({
             <InfoRow label="Type d'isolation" value={home.insulation_type ?? <span className="text-text-light">Non renseigné</span>} />
             <div className="flex items-start justify-between py-3">
               <span className="font-body text-sm text-text-light shrink-0 w-40">Note DPE</span>
-              <DpeBadge rating={home.dpe_rating} />
+              <DpeBadge rating={(home.dpe_rating as DpeRating | null) ?? null} />
             </div>
           </>
         ) : (

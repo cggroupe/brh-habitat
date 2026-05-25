@@ -53,7 +53,7 @@ export default function AdminRdv() {
       if (!(r.id in editStates)) {
         hasNew = true
         newStates[r.id] = {
-          status: r.status,
+          status: (r.status ?? 'pending') as AppointmentStatus,
           confirmedDate: r.confirmed_date ? r.confirmed_date.slice(0, 10) : '',
           dirty: false,
           saved: false,
@@ -209,8 +209,8 @@ export default function AdminRdv() {
                     return (
                       <tr key={rdv.id} className={`border-b border-gray-light last:border-0 transition-colors ${edit.dirty ? 'bg-amber-50' : 'hover:bg-background'}`}>
                         <td className="px-4 py-3">
-                          <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-display ${appointmentTypeColors[rdv.type]}`}>
-                            {APPOINTMENT_TYPE_LABELS[rdv.type]}
+                          <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-display ${appointmentTypeColors[(rdv.type ?? 'diagnostic') as AppointmentType]}`}>
+                            {APPOINTMENT_TYPE_LABELS[(rdv.type ?? 'diagnostic') as AppointmentType]}
                           </span>
                         </td>
                         <td className="px-4 py-3 font-body text-sm text-text-primary">
@@ -224,7 +224,7 @@ export default function AdminRdv() {
                           </div>
                         </td>
                         <td className="px-4 py-3 font-body text-sm text-text-secondary whitespace-nowrap">
-                          {new Date(rdv.requested_date).toLocaleDateString('fr-FR')}
+                          {rdv.requested_date ? new Date(rdv.requested_date).toLocaleDateString('fr-FR') : '—'}
                         </td>
                         <td className="px-4 py-3">
                           <input

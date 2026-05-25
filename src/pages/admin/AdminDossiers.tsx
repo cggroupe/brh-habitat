@@ -107,19 +107,19 @@ export default function AdminDossiers() {
                         <span className="italic text-text-light">—</span>
                       </td>
                       <td className="px-6 py-3">
-                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-display ${CASE_STATUS_COLORS[c.status]}`}>
-                          {CASE_STATUS_LABELS[c.status]}
+                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-display ${CASE_STATUS_COLORS[(c.status ?? 'nouveau') as CaseStatus]}`}>
+                          {CASE_STATUS_LABELS[(c.status ?? 'nouveau') as CaseStatus]}
                         </span>
                       </td>
                       <td className="px-6 py-3">
                         <div className="flex flex-wrap gap-1">
-                          {c.work_types.slice(0, 2).map((w) => (
+                          {(c.work_types ?? []).slice(0, 2).map((w) => (
                             <span key={w} className="inline-block px-2 py-0.5 bg-gray-100 text-text-secondary text-xs rounded-full font-body">
                               {w}
                             </span>
                           ))}
-                          {c.work_types.length > 2 && (
-                            <span className="text-xs text-text-light font-body">+{c.work_types.length - 2}</span>
+                          {(c.work_types?.length ?? 0) > 2 && (
+                            <span className="text-xs text-text-light font-body">+{(c.work_types?.length ?? 0) - 2}</span>
                           )}
                         </div>
                       </td>
@@ -132,7 +132,7 @@ export default function AdminDossiers() {
                         {c.assigned_to ?? <span className="text-text-light italic">Non assigné</span>}
                       </td>
                       <td className="px-6 py-3 font-body text-sm text-text-secondary whitespace-nowrap">
-                        {new Date(c.created_at).toLocaleDateString('fr-FR')}
+                        {c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : '—'}
                       </td>
                       <td className="px-6 py-3">
                         <ArrowRight size={15} className="text-text-light opacity-0 group-hover:opacity-100 transition-opacity" />

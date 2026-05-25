@@ -1,7 +1,10 @@
 import { supabase } from '@/lib/supabase'
 import type { BrhMessageThreadRow, BrhMessageRow } from '@/types/partner'
+import type { Database } from '@/types/database-generated'
 import { createThreadSchema, sendMessageSchema, brhMessageRowSchema, brhMessageThreadRowSchema } from './schemas'
 import { logError } from '@/lib/error'
+
+type BrhMessagesInsert = Database['public']['Tables']['brh_messages']['Insert']
 
 export interface ThreadWithLastMessage extends BrhMessageThreadRow {
   last_message?: string
@@ -80,7 +83,7 @@ export async function sendMessage(
 ): Promise<BrhMessageRow> {
   const validated = sendMessageSchema.parse({ threadId, senderId, body, attachmentUrl, attachmentName })
 
-  const dbPayload: Record<string, unknown> = {
+  const dbPayload: BrhMessagesInsert = {
     thread_id: validated.threadId,
     sender_id: validated.senderId,
     body: validated.body,

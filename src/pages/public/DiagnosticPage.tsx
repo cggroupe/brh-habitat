@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDiagnosticStore, type DiagnosticType } from '@/stores/diagnosticStore'
 import { analyzeDiagnostic } from '@/lib/diagnostic-engine'
 import { upsertDraftDiagnostic } from '@/api/diagnostics'
+import type { Json } from '@/types/database-generated'
 import { useAuth } from '@/hooks/useAuth'
 
 import { HorizontalStepper } from './diagnostic/HorizontalStepper'
@@ -98,8 +99,8 @@ export default function DiagnosticPage() {
         property_surface: property.surface ?? 0,
         property_year: property.year ?? 0,
         property_floors: property.floors ?? 0,
-        equipment: equipment as Record<string, unknown>,
-        symptoms: symptoms as Record<string, string[]>,
+        equipment: equipment as unknown as Json,
+        symptoms: symptoms as unknown as Json,
         current_step: nextStepValue ?? step,
         status: 'draft' as const,
       })
@@ -170,10 +171,10 @@ export default function DiagnosticPage() {
             property_surface: property.surface ?? 0,
             property_year: property.year ?? 0,
             property_floors: property.floors ?? 0,
-            equipment: equipment as Record<string, unknown>,
-            symptoms: symptoms as Record<string, string[]>,
+            equipment: equipment as unknown as Json,
+            symptoms: symptoms as unknown as Json,
             current_step: 5,
-            results: JSON.parse(JSON.stringify(results)) as Record<string, unknown>,
+            results: JSON.parse(JSON.stringify(results)) as Json,
             status: 'pending' as const,
             referral_code: referralCode ?? undefined,
           })
@@ -195,14 +196,14 @@ export default function DiagnosticPage() {
         property_surface: property.surface ?? 0,
         property_year: property.year ?? 0,
         property_floors: property.floors ?? 0,
-        symptoms: symptoms as Record<string, string[]>,
-        equipment: equipment as Record<string, unknown>,
+        symptoms: symptoms as unknown as Json,
+        equipment: equipment as unknown as Json,
         current_step: 5,
         photos: [] as string[],
         contact_name: '',
         contact_phone: '',
         contact_email: '',
-        results: JSON.parse(JSON.stringify(results)) as Record<string, unknown>,
+        results: JSON.parse(JSON.stringify(results)) as Json,
         status: 'pending' as const,
         admin_notes: null,
         referral_code: referralCode ?? null,

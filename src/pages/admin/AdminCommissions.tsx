@@ -150,7 +150,7 @@ export default function AdminCommissions() {
   const prospectNames = useProspectNames(prospectIds)
 
   function handleAdvanceStatus(quote: BrhQuoteRow) {
-    const next = NEXT_STATUS[quote.commission_status]
+    const next = NEXT_STATUS[(quote.commission_status ?? 'en_attente') as CommissionStatus]
     if (!next) return
     if (next === 'versee') {
       setPaidAtQuote(quote)
@@ -265,12 +265,12 @@ export default function AdminCommissions() {
                         {q.commission_rate_percent != null ? `${q.commission_rate_percent} %` : '—'}
                       </td>
                       <td className="px-5 py-3">
-                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-display ${COMMISSION_STATUS_COLORS[q.commission_status]}`}>
-                          {COMMISSION_STATUS_LABELS[q.commission_status]}
+                        <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-display ${COMMISSION_STATUS_COLORS[(q.commission_status ?? 'en_attente') as CommissionStatus]}`}>
+                          {COMMISSION_STATUS_LABELS[(q.commission_status ?? 'en_attente') as CommissionStatus]}
                         </span>
                       </td>
                       <td className="px-5 py-3 font-body text-sm text-slate-500 whitespace-nowrap">
-                        {new Date(q.signed_at).toLocaleDateString('fr-FR')}
+                        {q.signed_at ? new Date(q.signed_at).toLocaleDateString('fr-FR') : '—'}
                         {q.commission_paid_at && (
                           <p className="text-xs text-green-600">
                             Versé le {new Date(q.commission_paid_at).toLocaleDateString('fr-FR')}
@@ -278,13 +278,13 @@ export default function AdminCommissions() {
                         )}
                       </td>
                       <td className="px-5 py-3">
-                        {NEXT_STATUS[q.commission_status] && (
+                        {NEXT_STATUS[(q.commission_status ?? 'en_attente') as CommissionStatus] && (
                           <button
                             onClick={() => handleAdvanceStatus(q)}
                             disabled={updateStatus.isPending}
                             className="px-3 py-1.5 bg-primary text-white font-display text-xs rounded-lg hover:bg-primary-dark transition-colors uppercase tracking-wide disabled:opacity-60 whitespace-nowrap"
                           >
-                            {NEXT_STATUS_LABELS[q.commission_status]}
+                            {NEXT_STATUS_LABELS[(q.commission_status ?? 'en_attente') as CommissionStatus]}
                           </button>
                         )}
                       </td>

@@ -54,13 +54,15 @@ export async function fetchNetworkStats(recruiterId: string): Promise<NetworkSta
   const { data, error } = await supabase.rpc('get_network_stats', { p_recruiter_id: recruiterId })
   if (error) throw error
 
-  const row = Array.isArray(data) ? data[0] : data
+  // Le type généré ne contient que 4 colonnes mais la fonction SQL renvoie
+  // aussi total_levels + total_commission_earned : on relâche le type localement.
+  const row = (Array.isArray(data) ? data[0] : data) as Record<string, unknown> | null | undefined
   return {
     total_recruits: Number(row?.total_recruits ?? 0),
     total_levels: Number(row?.total_levels ?? 0),
     total_prospects: Number(row?.total_prospects ?? 0),
     total_signed: Number(row?.total_signed ?? 0),
-    total_commission_earned: Number(row?.total_commission_earned ?? 0),
+    total_commission_earned: Number(row?.total_commission_earned ?? row?.total_commission ?? 0),
   }
 }
 
@@ -74,7 +76,7 @@ export async function fetchMyRecruitmentCommissions(recruiterId: string): Promis
   if (error) throw error
 
   const recruits = data ?? []
-  const recruitedIds = [...new Set(recruits.map((r) => r.recruited_id).filter(Boolean))]
+  const recruitedIds = [...new Set(recruits.map((r) => r.recruited_id).filter((id): id is string => Boolean(id)))]
 
   let nameMap: Record<string, string> = {}
   if (recruitedIds.length > 0) {

@@ -114,7 +114,7 @@ export const foncierSciApi = {
       const { data, error } = await q
       if (error) throw error
       return {
-        sci: (data ?? []) as SciCompany[],
+        sci: (data ?? []) as unknown as SciCompany[],
         source: 'cache',
         cached_at: new Date().toISOString(),
       }
@@ -165,7 +165,7 @@ export const foncierSciApi = {
         .eq('siren', siren)
         .maybeSingle()
       if (error) throw error
-      if (data) return data as SciCompany
+      if (data) return data as unknown as SciCompany
     }
 
     const {

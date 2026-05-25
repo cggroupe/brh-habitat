@@ -26,10 +26,11 @@ const STATUS_DESCRIPTIONS: Record<CaseStatus, string> = {
   termine: 'Vos travaux sont terminés. Dossier clôturé.',
 }
 
-function StatusBadge({ status }: { status: CaseStatus }) {
+function StatusBadge({ status }: { status: CaseStatus | string | null }) {
+  const safe = (status ?? 'nouveau') as CaseStatus
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-display ${CASE_STATUS_COLORS[status]}`}>
-      {CASE_STATUS_LABELS[status]}
+    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-display ${CASE_STATUS_COLORS[safe]}`}>
+      {CASE_STATUS_LABELS[safe]}
     </span>
   )
 }
@@ -117,9 +118,9 @@ export default function DossierDetail() {
       {/* Timeline */}
       <div className="bg-surface rounded-2xl border border-gray-light p-6 mb-6">
         <h2 className="font-display text-base text-text-primary mb-6">Avancement du dossier</h2>
-        <StatusTimeline currentStatus={caseRow.status} />
+        <StatusTimeline currentStatus={(caseRow.status ?? 'nouveau') as CaseStatus} />
         <p className="font-body text-sm text-text-secondary mt-6 text-center">
-          {STATUS_DESCRIPTIONS[caseRow.status]}
+          {STATUS_DESCRIPTIONS[(caseRow.status ?? 'nouveau') as CaseStatus]}
         </p>
       </div>
 
@@ -161,14 +162,14 @@ export default function DossierDetail() {
           </div>
 
           {/* Types de travaux */}
-          {caseRow.work_types.length > 0 && (
+          {(caseRow.work_types?.length ?? 0) > 0 && (
             <div className="bg-surface rounded-2xl border border-gray-light p-6">
               <h2 className="font-display text-lg text-text-primary mb-4 flex items-center gap-2">
                 <Wrench size={16} className="text-primary" />
                 Types de travaux
               </h2>
               <div className="flex flex-wrap gap-2">
-                {caseRow.work_types.map(wt => (
+                {(caseRow.work_types ?? []).map(wt => (
                   <span
                     key={wt}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-background border border-gray-light rounded-xl text-sm font-body text-text-primary"
@@ -187,11 +188,11 @@ export default function DossierDetail() {
               <FileText size={16} className="text-primary" />
               Documents
             </h2>
-            {caseRow.documents.length === 0 ? (
+            {(caseRow.documents?.length ?? 0) === 0 ? (
               <p className="font-body text-sm text-text-light">Aucun document disponible pour ce dossier.</p>
             ) : (
               <div className="space-y-2">
-                {caseRow.documents.map((doc, idx) => (
+                {(caseRow.documents ?? []).map((doc, idx) => (
                   <a
                     key={idx}
                     href={doc}

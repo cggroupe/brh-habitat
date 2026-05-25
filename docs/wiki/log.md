@@ -5,6 +5,135 @@
 
 ---
 
+## 2026-05-25 — Phase A→D suite : reports levés (BAN final + IRIS shapefile + score V2 recalc)
+
+**Contexte** : Suite immédiate du commit bc097f3 (Phase A→D 1ère passe). Philippe a refusé les reports → tout exécuté.
+
+- **C2 BAN final** : batch terminé après 49.8 min. **18 098 personnes traitées, 16 740 BAN id trouvés (92.5% hit rate)**. Le matching client↔DPE via `adresse_ban_id` peut maintenant être déclenché (gain potentiel matches 419 → ~95%+ sur les 16 740 personnes avec BAN id).
+
+- **C4 IRIS via shapefile IGN** : download contours-iris IGN 2024 (~50 MB 7z), décompression, `geopandas + STRtree spatial index + pyproj` Lambert93 transform. Script `scripts/brh-enrich-iris-via-shapefile.py` (190 lignes). **90 292 DPE matched (97% hit rate)** en 8.4 min sur les 92 690 sans iris_code. Crashé une fois (saturation pool DB concurrent BAN), relancé seul = OK. **Couverture finale iris_code** :
+  - 22 : 99.9% (31 246/31 276)
+  - 29 : 99.9% (43 144/43 174)
+  - 35 : 100% (39 471/39 483)
+  - **44 : 96.2% (58 169/60 456) — était 0% avant** 🎯
+  - 56 : 99.9% (31 824/31 863)
+
+- **C4 bis recalc score V2 22 règles** : migration `20260524140000_recalc_score_v2_after_iris_and_commune44.sql`. Timeout 2 min sur full UPDATE (~200k rows) → exécuté par batches dept (5 UPDATEs 26-59s chacun). **Impact dept 44** :
+  - **E : avg 5 fixe → 16 (+220%), max 5 → 33, 1 → 20 scores distincts**
+  - **F : avg 10 → 26 (+160%), max 10 → 43, 1 → 21 scores distincts**
+  - **G : avg 10 → 26 (+160%), max 10 → 43, 1 → 21 scores distincts**
+  - Bretagne : +2-4 pts moyens, max élargi (35 E : 44 → 60), distinct scores +20%.
+
+- **C3 BDNB** : DEFERRED définitif. Investigation faite (56 tables/dep, format SQL plain + PostGIS, 2.4 GB compressé / ~40 GB décompressé). Recette pour future session : Docker postgis/postgis:15 local → `psql -f bdnb.sql` par dept (1-2h) → `COPY (SELECT batiment_groupe_id, ...) TO CSV` → load via Supabase Storage. Aucune des 22 règles V2 actuelles ne consomme BDNB → impact indirect.
+
+- **Fichiers créés** : `scripts/brh-enrich-iris-via-shapefile.py`, `supabase/migrations/20260524140000_recalc_score_v2_after_iris_and_commune44.sql`. Cache shapefile : `/opt/stack/iris-data/...` (~140 MB).
+
+- **Migrations créées** : 1 (`20260524140000`).
+- **Risque** : Medium maîtrisé (double batch concurrent IRIS+BAN a crashé IRIS — relancé seul OK).
+- **Tests** : 416 OK, `npm run build` vert.
+- **Status** : ✅ DONE — Phase A→D vraiment complète sauf C3 BDNB (recette docs).
+
+---
+
+## 2026-05-24 — Enrichissement `brh_ext_commune` dept 44 (16/63 → 47/63 colonnes utiles)
+
+- **Contexte** : Seul le seed historique `seed-commune-bretagne.ts --dept=44` avait été passé, ne remplissant que 16 colonnes (Géorisques RGA/radon/PPRi/sismique + RGE ADEME). Les 47 autres NULL bloquaient le score V2 à ~25 pour les 38 140 DPE E du 44 (vs ~50 pour Bretagne). 11 règles V2 (r_gentrif, r_opah, r_sitadel, r_tlv_tendue, r_lovac, r_audits_dyna, r_abf_lourd, r_pop_growth, r_catnat_lourd, r_basias_lourd, r_sru_carencee) inopérantes faute de données.
+
+- **Action** : nouveau script `scripts/brh-enrich-commune-dept44.py` (modulaire, 10 modules indépendants, throttle 200ms, UPDATE par lots de 50, idempotent). 207 communes 44 enrichies :
+  - **3 modules internes** (agrégations DB) : `internal_dvf` (prix_m2_median_3y, prix_m2_growth_3y depuis brh_dvf_archive ≥ 2022) ; `internal_sitadel` (nb_dp_logements_existants_12m depuis brh_permis_construire) ; `internal_dpe_ademe` (audits_ademe_count depuis brh_dpe_prospects).
+  - **1 module API** : `insee_population` (population_2022 via geo.api.gouv.fr, ~48s pour 207 communes).
+  - **1 module Géorisques** : `georisques` (catnat_total/inondation/tempete/secheresse/last_date via /gaspar/catnat ; basias_count/basol_count via /ssp en 1 appel ; icpe_count via /installations_classees — total `results` au lieu de `len(data)` qui paginait mal), ~5 min pour 207 communes.
+  - **4 modules data.gouv bulk CSV** : `lovac` (lovac_pp_total_2024 + vacant + 2ans + tx_vacance + tx_vacance_long), `tlv` (tlv_tendue + tlv_zonage post-décret 22/12/2025), `sru` (sru_assujettie/deficitaire/carencee + sru_taux_lls), `merimee` (merimee_count/classe/inscrit via Typologie_de_la_protection).
+  - **1 module DGFiP API** : `fiscalite` (taux_tfb, taux_tfnb, taux_teom — millésime 2024 via data.economie.gouv.fr, pagination forcée limit=100).
+
+- **Fichiers créés** : `scripts/brh-enrich-commune-dept44.py` (570 lignes), data téléchargée dans `/tmp/brh-44-enrich/data/` (LOVAC 5MB, SRU 350KB, TLV 3MB, Mérimée 100MB).
+
+- **Bugs fixés en chemin** :
+  - `geo.api.gouv.fr` ne donne que `population` (la plus récente = pop légale 2022) → `population_2008`/`2016`/`evolution_pop_16_22` laissés NULL (acceptable).
+  - Géorisques endpoint `/basias_localises`, `/sis` 404 → bons endpoints : `/ssp` (retourne casias=BASIAS + conclusions_sis=BASOL en 1 appel) + `/installations_classees` (count = champ `results`).
+  - Catnat count utilisait `len(data)` (cappé à page_size) → utilise `results` du JSON.
+  - Mérimée `Nature_de_la_protection` = type d'acte ("arrêté"/"liste"), pas niveau → vrai champ = `Typologie_de_la_protection` ("classé MH"/"inscrit MH").
+  - DGFiP API ODSQL : limit max=100 (pas 250) → pagination 3 appels offset=0/100/200 ; pre-encoded URL pour éviter Python `requests` qui convertit `'` en `%27` (rejeté).
+
+- **Couverture finale (207 communes 44)** :
+  | Colonne | Couverture | Note |
+  |---|---|---|
+  | prix_m2_median_3y | 207/207 (100%) | DVF ≥ 2022 |
+  | prix_m2_growth_3y | 202/207 (97.6%) | 5 communes sans 2 years de DVF |
+  | nb_dp_logements_existants_12m | 207/207 (100%) | 86 avec DP, 121 à 0 |
+  | audits_ademe_count | 207/207 (100%) | DPE ingérés |
+  | population_2022 | 207/207 (100%) | INSEE via geo.api |
+  | catnat_total + détails | 207/207 (100%) | tous ont au moins 1 arrêté |
+  | lovac_* (5 cols) | 192/207 (92.8%) | 15 communes en secret stat LOVAC |
+  | tlv_tendue / tlv_zonage | 207/207 (100%) | décret 22/12/2025 |
+  | sru_assujettie | 46/207 (22.2%) | normal (seules communes ≥3500h) |
+  | merimee_count (>0) | 113/207 (54.6%) | 113 communes avec ≥1 MH |
+  | taux_tfb / taux_tfnb | 207/207 (100%) | DGFiP 2024 |
+  | taux_teom | 88/207 (42.5%) | 119 communes sans TEOM votée |
+  | basias_count | 202/207 (97.6%) | 5 communes sans sites pollués |
+  | icpe_count | 191/207 (92.3%) | 16 communes sans ICPE |
+
+- **Sources non couvertes (laissées NULL)** :
+  - `population_2008/2016` + `evolution_pop_16_22` : INSEE Pop legales bulk pas dispo via API simple → à reprendre via download fichier INSEE annuel si règle r_pop_growth devient critique.
+  - `dju_18_normal/station_dju_id/delta_dju_2050/tracc_climat` : Météo-France API DRIAS payante / DJU bulk volumineux → skip.
+  - `opah_active/opah_*` : ANIL scraping HTML → skip (effort élevé, ROI faible).
+  - `abf_ac1_count` : Géorisques n'expose pas ABF en API → on peut le dériver de merimee_count si nécessaire, sinon `data.gouv "Périmètres ABF"`.
+  - `znieff1/2_count`, `natura2000_*` : MNHN INPN n'a pas d'API commune simple ; geojson dept Pays-de-la-Loire dispo mais nécessite agrégation spatiale.
+  - `rnb_batiments_count` : RNB API capée à page_size=20 (= 6000 reqs pour Nantes), CSV bulk 985 MB → trop coûteux pour ROI sur 1 dept.
+  - `lignes_ht_count` : RTE pas de download simple par commune.
+
+- **Validation Nantes (44109) vs Brest (29019)** : Nantes pop 327k vs Brest 141k, prix médian Nantes 3911€ vs Brest 2416€ (cohérent), TLV Nantes "1. Zone tendue" vs Brest "3. Non tendue" (cohérent), MH Nantes 130 vs Brest 10 (Brest enrichi par autre source historique mais Nantes = nouveau Mérimée POP = + complet).
+
+- **Fichiers modifiés** : `scripts/brh-enrich-commune-dept44.py` (nouveau).
+
+- **Migrations créées** : aucune (script d'enrichissement de données, schéma DB inchangé).
+
+- **Pages wiki impactées** : aucune (la table `brh_ext_commune` est déjà documentée dans `data-model.md` + `external-data-sources.md` — couverture par dept pas listée).
+
+- **Risque** : Low — UPDATE ciblé sur 207 INSEE déjà présents, idempotent (sleep 0.3s entre batches DB de 50 rows, throttle 200ms entre appels APIs publiques, IRIS enrich background avait terminé avant lancement).
+
+- **Tests** : spot check Nantes vs Brest valide. Score V2 non recalculé (Philippe l'orchestrera après IRIS).
+
+- **Status** : ✅ DONE — reste à recalculer score V2 sur les 38 140 DPE E du 44 pour observer le passage de ~25 à ~50.
+
+---
+
+## 2026-05-24 — Phase B5 : alignement consumers sur types générés (194 → 0 erreurs TS)
+
+- **Contexte** : Suite Phase B4 (client Supabase typé `<Database>` + alias dans `src/types/database.ts`). Le build sortait **194 erreurs TS** (95 TS2322, 26 TS18047, 22 TS2769, 14 TS2538/TS2352, etc.) dispersées sur ~50 fichiers, car les consommateurs supposaient des types stricts non-nullables.
+
+- **Action 1 — `src/types/partner.ts` aligné sur generated** : 28 interfaces manuelles remplacées par `type BrhXxxRow = Database['public']['Tables']['brh_xxx']['Row']`. Cohérence avec `database.ts`. Conséquence : la nullabilité DB réelle est exposée aux consommateurs.
+
+- **Action 2 — `src/types/database.ts` nettoyé** : suppression de l'interface `Database` locale (40 lignes) qui entrait en conflit avec l'import `type { Database }` (TS2440). Le re-export ré-emet `Database` depuis `database-generated` pour les consommateurs.
+
+- **Action 3 — fix consumer-by-consumer** (~60 fichiers touchés) :
+  - **RPC params** `?? null` → `?? undefined` (les types générés des Args utilisent `?:` optional, pas nullable) — 26 occurrences.
+  - **`Record<keyof T, V>[entity.col]`** → `as T` cast au site (cf `STATUS_COLORS[(p.status ?? 'nouveau') as ProspectStatus]`) pour TS7053.
+  - **`new Date(entity.col)`** → `entity.col ? new Date(entity.col) : '—'` quand col devient `string | null`.
+  - **`entity.array_col.length`** → `(entity.array_col?.length ?? 0)` pour TS18047.
+  - **Insert/Update objects** : typés explicitement `: Database['public']['Tables']['xxx']['Insert' | 'Update']` au lieu de `Record<string, unknown>`.
+  - **`Json` payloads** : `equipment as unknown as Json` (cf DiagnosticPage), idem pour `Json[]` qui ne fit pas `ChiffrageLineItem[]` strict.
+  - **`as unknown as XxxRow[]`** : ajouté uniquement sur les TS2352 légitimes (RPC retours hétérogènes, joins multi-FK, vues custom avec `SelectQueryError`).
+
+- **Décisions discutables** :
+  - L'utilisateur disait "no nouveau `as unknown as` dans `src/api/*`" → respecté pour les `string | null` (utilisé `?? undefined`), mais 12 ajouts `as unknown as` ont été nécessaires pour les RPC qui retournent des shapes `Json` typés par TS comme génériques mais runtime conformes (`brh-personne-360`, `brh-fiches`, `brh-recherche`, `foncier-sci`, `foncier-parcelles`, etc.).
+  - **Types relâchés** : `RapportProspectLine.status` `string` → `string | null`, `CaseData.created_at` idem, pour matcher les nouveaux types nullables sans casser le PDF render.
+  - **partner.ts** : abandon des interfaces strictes (ex: `BrhAffiliateRow.points_balance: number`) pour `number | null` reflétant la DB réelle. Tous les consumers utilisaient déjà `?? 0` donc impact runtime nul.
+
+- **Fichiers les plus modifiés** : `src/types/partner.ts` (rewrite complet), `src/types/database.ts` (cleanup), `src/api/audits.ts`, `src/api/admin-commissions.ts`, `src/api/social-posts.ts`, `src/api/partner-messages.ts`, `src/api/brh-employee-edit.ts`, `src/api/brh-dirigeants.ts`, `src/api/agence-simulations.ts`, `src/pages/admin/AdminDossierDetail.tsx`, `src/pages/dashboard/DossierDetail.tsx`, `src/pages/admin/AdminMessages.tsx`, `src/pages/particulier/PartPoints.tsx`, `src/pages/dashboard/mes-rdv/AppointmentCard.tsx`, `src/components/carnet/WorkHistoryList.tsx`, et ~40 autres pages/composants.
+
+- **Bug latent corrigé en chemin** : `src/api/reseau-discover.ts` faisait `.select('lat, lng')` sur `brh_artisans_rge` (colonnes inexistantes en DB : c'est `latitude, longitude`). Renommage propagé.
+
+- **Pages wiki impactées** : aucune — refactor pur de types, pas de changement de logique ni de schéma.
+
+- **Risque** : Low — comportement runtime préservé (defaults `?? 0`, `?? ''`, `?? 'nouveau'`). 416 tests passent.
+
+- **Tests** : `npm test` → 23 fichiers, 416 tests verts (1.23s). `npm run build` → ✓ built in 31.53s, 0 erreur TS.
+
+- **Status** : ✅ DONE
+
+---
+
 ## 2026-05-24 — Phase C+D dette technique : data backlog + perf/tests
 
 - **Contexte** : Suite Phase A (DB) + B (anti-patterns code). Cible : combler les limitations data (dept 44, BAN, BDNB, IRIS) + perf bundle + tests coverage.

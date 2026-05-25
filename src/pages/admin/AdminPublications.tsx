@@ -146,8 +146,8 @@ export default function AdminPublications() {
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {posts.map((post) => {
-                  const platformCfg = PLATFORM_CONFIG[post.platform] ?? { label: post.platform, icon: null }
-                  const statusCfg = STATUS_CONFIG[post.status] ?? STATUS_CONFIG.en_attente
+                  const platformCfg = PLATFORM_CONFIG[post.platform as SocialPlatform] ?? { label: post.platform, icon: null }
+                  const statusCfg = STATUS_CONFIG[(post.status ?? 'en_attente') as SocialPostStatus] ?? STATUS_CONFIG.en_attente
                   const isRejecting = rejectingId === post.id
                   const screenshotUrl = post.screenshot_path ? getPublicScreenshotUrl(post.screenshot_path) : null
 
@@ -212,7 +212,7 @@ export default function AdminPublications() {
 
                         {/* Date */}
                         <td className="px-4 py-3 font-body text-xs text-slate-400 hidden lg:table-cell">
-                          {new Date(post.created_at).toLocaleDateString('fr-FR')}
+                          {post.created_at ? new Date(post.created_at).toLocaleDateString('fr-FR') : '—'}
                         </td>
 
                         {/* Actions */}

@@ -107,7 +107,7 @@ export default function NotificationBell() {
                       {notif.body && (
                         <p className="font-body text-xs text-slate-400 mt-0.5 truncate">{notif.body}</p>
                       )}
-                      <p className="font-body text-xs text-slate-300 mt-1">{timeAgo(notif.created_at)}</p>
+                      <p className="font-body text-xs text-slate-300 mt-1">{timeAgo(notif.created_at ?? '')}</p>
                     </div>
                     {!notif.is_read && (
                       <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-2" />

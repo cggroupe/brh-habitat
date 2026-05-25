@@ -142,7 +142,7 @@ export default function ProProspects() {
                             </span>
                           ))}
                           {(p.work_type ?? []).length > 2 && (
-                            <span className="text-xs text-text-light">+{p.work_type.length - 2}</span>
+                            <span className="text-xs text-text-light">+{(p.work_type ?? []).length - 2}</span>
                           )}
                         </div>
                       </td>
@@ -150,8 +150,8 @@ export default function ProProspects() {
                         {p.urgency ? URGENCY_LABELS[p.urgency] ?? p.urgency : '—'}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[p.status]}`}>
-                          {STATUS_LABELS[p.status]}
+                        <span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[(p.status ?? 'nouveau') as ProspectStatus]}`}>
+                          {STATUS_LABELS[(p.status ?? 'nouveau') as ProspectStatus]}
                         </span>
                       </td>
                       <td className="px-6 py-4 hidden sm:table-cell">
@@ -159,14 +159,14 @@ export default function ProProspects() {
                           <div className="w-16 bg-background rounded-full h-1.5">
                             <div
                               className="h-1.5 rounded-full bg-primary"
-                              style={{ width: `${Math.min(p.lead_score, 100)}%` }}
+                              style={{ width: `${Math.min(p.lead_score ?? 0, 100)}%` }}
                             />
                           </div>
-                          <span className="text-xs text-text-light font-bold">{p.lead_score}</span>
+                          <span className="text-xs text-text-light font-bold">{p.lead_score ?? 0}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-xs text-text-light hidden md:table-cell">
-                        {new Date(p.created_at).toLocaleDateString('fr-FR')}
+                        {p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR') : '—'}
                       </td>
                     </tr>
                   ))}

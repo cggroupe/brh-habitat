@@ -68,7 +68,7 @@ export const brhPersonneSignalsApi = {
       p_personne_id: personneId,
     })
     if (error) throw error
-    const row = (data as PersonneSignalsExternes[] | null)?.[0]
+    const row = (data as unknown as PersonneSignalsExternes[] | null)?.[0]
     return row ?? { dvf_mutations: [], sci_deces_matches: [], bodacc_alerts: [] }
   },
 }

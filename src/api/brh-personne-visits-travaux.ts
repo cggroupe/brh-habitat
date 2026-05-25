@@ -8,6 +8,7 @@
  *    avec l'entreprise réalisatrice et la date.
  */
 import { supabase } from '@/lib/supabase'
+import type { Json } from '@/types/database-generated'
 
 export interface PersonneVisit {
   id: string
@@ -63,7 +64,7 @@ export const brhVisitsApi = {
     const { data, error } = await supabase.rpc('brh_personne_mark_seen', {
       p_personne_id: personneId,
       p_visit_type: visitType,
-      p_note: note,
+      p_note: note ?? undefined,
     })
     if (error) throw error
     return data as { ok: boolean; visit_id: string }
@@ -91,7 +92,7 @@ export const brhTravauxApi = {
     const { data, error } = await supabase.rpc('brh_personne_travaux_upsert', {
       p_personne_id: personneId,
       p_poste: poste,
-      p_patch: patch,
+      p_patch: patch as unknown as Json,
     })
     if (error) throw error
     return data as { ok: boolean; travaux_id: string }

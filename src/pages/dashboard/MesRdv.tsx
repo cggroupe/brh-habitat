@@ -21,11 +21,11 @@ export default function MesRdv() {
   // Separate upcoming vs past
   const now = new Date()
   const upcoming = appointments.filter(a => {
-    const d = a.confirmed_date ? new Date(a.confirmed_date) : new Date(a.requested_date)
+    const d = a.confirmed_date ? new Date(a.confirmed_date) : (a.requested_date ? new Date(a.requested_date) : new Date())
     return d >= now && a.status !== 'annule' && a.status !== 'termine'
   })
   const past = appointments.filter(a => {
-    const d = a.confirmed_date ? new Date(a.confirmed_date) : new Date(a.requested_date)
+    const d = a.confirmed_date ? new Date(a.confirmed_date) : (a.requested_date ? new Date(a.requested_date) : new Date())
     return d < now || a.status === 'annule' || a.status === 'termine'
   })
 

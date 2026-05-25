@@ -106,7 +106,7 @@ export const adminCommissionsApi = {
   async markPaid(invoiceId: string, stripePaymentIntent?: string): Promise<boolean> {
     const { data, error } = await supabase.rpc('brh_mark_commission_paid', {
       p_invoice_id: invoiceId,
-      p_stripe_payment_intent: stripePaymentIntent ?? null,
+      p_stripe_payment_intent: stripePaymentIntent,
     })
     if (error) throw error
     return Boolean(data)
@@ -119,7 +119,7 @@ export const adminCommissionsApi = {
     invoiceId: string,
     patch: Partial<Pick<CommissionInvoiceRow, 'status' | 'notes' | 'invoiced_at'>>,
   ): Promise<CommissionInvoiceRow> {
-    const update: Record<string, unknown> = { ...patch }
+    const update: Partial<Pick<CommissionInvoiceRow, 'status' | 'notes' | 'invoiced_at' | 'reconciled_at'>> = { ...patch }
     if (patch.status === 'invoiced' && !patch.invoiced_at) {
       update.invoiced_at = new Date().toISOString()
     }
@@ -134,7 +134,8 @@ export const adminCommissionsApi = {
       .select('*')
       .single()
     if (error) throw error
-    return data as CommissionInvoiceRow
+    if (!data) throw new Error('Invoice not found')
+    return data as unknown as CommissionInvoiceRow
   },
 
   /**

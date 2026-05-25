@@ -37,7 +37,7 @@ function CaseCard({ caseRow, onClick }: { caseRow: BrhCaseRow; onClick: () => vo
         <h3 className="font-display text-base text-text-primary leading-tight group-hover:text-primary transition-colors">
           {caseRow.title}
         </h3>
-        <StatusBadge status={caseRow.status} />
+        <StatusBadge status={(caseRow.status ?? 'nouveau') as CaseStatus} />
       </div>
 
       {caseRow.description && (
@@ -47,9 +47,9 @@ function CaseCard({ caseRow, onClick }: { caseRow: BrhCaseRow; onClick: () => vo
       )}
 
       {/* Work types tags */}
-      {caseRow.work_types.length > 0 && (
+      {(caseRow.work_types?.length ?? 0) > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-4">
-          {caseRow.work_types.map(wt => (
+          {(caseRow.work_types ?? []).map(wt => (
             <span key={wt} className="inline-flex items-center gap-1 px-2 py-0.5 bg-background rounded-full text-[11px] font-body text-text-secondary border border-gray-light">
               <Wrench size={9} />
               {wt}

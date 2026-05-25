@@ -164,7 +164,7 @@ export const prospectLettersApi = {
     id: string,
     patch: Partial<Pick<ProspectLetterRow, 'subject' | 'body_md' | 'greeting' | 'signature' | 'status' | 'sent_via'>>,
   ): Promise<ProspectLetterRow> {
-    const update: Record<string, unknown> = { ...patch }
+    const update: Partial<ProspectLetterRow> = { ...patch }
     if (patch.status === 'sent' && !('sent_at' in patch)) {
       update.sent_at = new Date().toISOString()
     }

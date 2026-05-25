@@ -20,7 +20,7 @@ export async function fetchMyInvitations(): Promise<CompanyInvitationRow[]> {
     .select('*')
     .order('created_at', { ascending: false })
   if (error) throw error
-  return data ?? []
+  return (data ?? []) as unknown as CompanyInvitationRow[]
 }
 
 export async function createInvitation(email: string, memberRole: 'member' | 'owner' = 'member'): Promise<{ ok: boolean; email_sent: boolean; link?: string }> {

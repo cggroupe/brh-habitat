@@ -24,7 +24,7 @@ export const brhPartnerSearchApi = {
   async search(audience: PartnerAudience, query: string, limit = 30): Promise<PartnerHit[]> {
     const { data, error } = await supabase.rpc('brh_partner_search', {
       p_audience: audience,
-      p_query: query.trim() || null,
+      p_query: query.trim() || undefined,
       p_limit: limit,
     })
     if (error) throw error

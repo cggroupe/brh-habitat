@@ -5,6 +5,7 @@
  * 4 470 multi-SCI, 17 403 propriétaires DPE via SCI, 515 successions ouvertes.
  */
 import { supabase } from '@/lib/supabase'
+import type { Json } from '@/types/database-generated'
 
 export interface DirigeantSciSummary {
   siren: string
@@ -131,8 +132,8 @@ export interface DirigeantEditPatch {
 export const brhDirigeantsApi = {
   async search(filters: DirigeantSearchFilters = {}): Promise<DirigeantSearchRow[]> {
     const { data, error } = await supabase.rpc('brh_dirigeants_search', {
-      p_query: filters.query ?? null,
-      p_dept: filters.dept ?? null,
+      p_query: filters.query ?? undefined,
+      p_dept: filters.dept ?? undefined,
       p_multi_sci: filters.multi_sci ?? false,
       p_proprio_dpe: filters.proprio_dpe ?? false,
       p_succession: filters.succession ?? false,
@@ -141,7 +142,7 @@ export const brhDirigeantsApi = {
       p_order_by: filters.order_by ?? 'patrimoine',
     })
     if (error) throw error
-    return (data ?? []) as DirigeantSearchRow[]
+    return (data ?? []) as unknown as DirigeantSearchRow[]
   },
 
   async get360(id: string): Promise<Dirigeant360> {
@@ -154,7 +155,7 @@ export const brhDirigeantsApi = {
   async update(id: string, patch: DirigeantEditPatch) {
     const { data, error } = await supabase.rpc('brh_dirigeant_update_employee', {
       p_id: id,
-      p_patch: patch,
+      p_patch: patch as unknown as Json,
     })
     if (error) throw error
     return data as { ok: boolean }

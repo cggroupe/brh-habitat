@@ -129,7 +129,7 @@ export default function AdminMessages() {
 
                   {/* Date */}
                   <p className="font-body text-xs text-text-light shrink-0 hidden sm:block">
-                    {new Date(d.created_at).toLocaleDateString('fr-FR')}
+                    {d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR') : '—'}
                   </p>
 
                   {/* Status selector */}
@@ -177,11 +177,11 @@ export default function AdminMessages() {
                       </div>
 
                       {/* Symptoms */}
-                      {Object.keys(d.symptoms).length > 0 && (
+                      {d.symptoms && Object.keys(d.symptoms).length > 0 && (
                         <div>
                           <h3 className="font-display text-xs text-text-light uppercase tracking-wider mb-2">Symptômes</h3>
                           <div className="space-y-2">
-                            {Object.entries(d.symptoms).map(([category, items]) => (
+                            {Object.entries(d.symptoms as Record<string, string[]>).map(([category, items]) => (
                               <div key={category}>
                                 <p className="font-body text-xs text-text-secondary font-semibold mb-1">{category}</p>
                                 <div className="flex flex-wrap gap-1">
@@ -201,7 +201,7 @@ export default function AdminMessages() {
                       <div>
                         <h3 className="font-display text-xs text-text-light uppercase tracking-wider mb-2">Compléments</h3>
                         <p className="font-body text-sm text-text-secondary">
-                          {d.photos.length > 0 ? `${d.photos.length} photo${d.photos.length !== 1 ? 's' : ''} jointe${d.photos.length !== 1 ? 's' : ''}` : 'Aucune photo'}
+                          {(d.photos?.length ?? 0) > 0 ? `${d.photos?.length ?? 0} photo${(d.photos?.length ?? 0) !== 1 ? 's' : ''} jointe${(d.photos?.length ?? 0) !== 1 ? 's' : ''}` : 'Aucune photo'}
                         </p>
                         {d.admin_notes && (
                           <div className="mt-2 p-2.5 bg-surface rounded-lg border border-gray-light">
@@ -211,7 +211,7 @@ export default function AdminMessages() {
                         )}
                         <p className="font-body text-xs text-text-light mt-2">ID: {d.id.slice(0, 8)}…</p>
                         <p className="font-body text-xs text-text-light">
-                          Reçu le {new Date(d.created_at).toLocaleDateString('fr-FR')}
+                          Reçu le {d.created_at ? new Date(d.created_at).toLocaleDateString('fr-FR') : '—'}
                         </p>
                       </div>
                     </div>

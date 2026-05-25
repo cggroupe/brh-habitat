@@ -46,7 +46,7 @@ export const brhFavorisApi = {
       p_entity_type: params.entity_type,
       p_entity_id: params.entity_id,
       p_label: params.label,
-      p_sublabel: params.sublabel ?? null,
+      p_sublabel: params.sublabel ?? undefined,
     })
     if (error) throw error
     return Boolean(data)

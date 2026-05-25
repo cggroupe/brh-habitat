@@ -1,6 +1,6 @@
 import { Home, MapPin, Ruler, CalendarDays } from 'lucide-react'
 import { DpeBadge } from './DpeBadge'
-import type { BrhHomeRow } from '@/types/database'
+import type { BrhHomeRow, DpeRating } from '@/types/database'
 
 interface HomeCardProps {
   home: BrhHomeRow
@@ -25,7 +25,7 @@ export function HomeCard({ home, onClick }: HomeCardProps) {
         <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
           <Home size={18} />
         </div>
-        <DpeBadge rating={home.dpe_rating} />
+        <DpeBadge rating={(home.dpe_rating as DpeRating | null) ?? null} />
       </div>
 
       <h3 className="font-display text-base text-text-primary leading-tight mb-1 group-hover:text-primary transition-colors">
@@ -47,7 +47,7 @@ export function HomeCard({ home, onClick }: HomeCardProps) {
           {home.year_built}
         </span>
         <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-[11px]">
-          {typeLabel[home.property_type] ?? home.property_type}
+          {typeLabel[home.property_type ?? ''] ?? home.property_type ?? '—'}
         </span>
       </div>
     </button>

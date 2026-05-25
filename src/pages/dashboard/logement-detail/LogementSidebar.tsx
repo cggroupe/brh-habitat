@@ -75,17 +75,17 @@ export function LogementSidebar({ home, healthRecords }: LogementSidebarProps) {
           <div>
             <p className="text-xs font-body text-text-light">Ajouté le</p>
             <p className="text-sm font-body text-text-primary">
-              {new Date(home.created_at).toLocaleDateString('fr-FR', {
+              {home.created_at ? new Date(home.created_at).toLocaleDateString('fr-FR', {
                 day: 'numeric', month: 'long', year: 'numeric',
-              })}
+              }) : '—'}
             </p>
           </div>
           <div>
             <p className="text-xs font-body text-text-light">Dernière modification</p>
             <p className="text-sm font-body text-text-primary">
-              {new Date(home.updated_at).toLocaleDateString('fr-FR', {
+              {home.updated_at ? new Date(home.updated_at).toLocaleDateString('fr-FR', {
                 day: 'numeric', month: 'long', year: 'numeric',
-              })}
+              }) : '—'}
             </p>
           </div>
         </div>

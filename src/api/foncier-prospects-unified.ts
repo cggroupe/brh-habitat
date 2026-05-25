@@ -27,13 +27,13 @@ export interface FoncierUnifiedFilters {
 export const foncierProspectsUnifiedApi = {
   async list(filters: FoncierUnifiedFilters = {}): Promise<LeadRow[]> {
     const { data, error } = await supabase.rpc('brh_foncier_prospects_unified', {
-      p_dept: filters.dept ?? null,
+      p_dept: filters.dept ?? undefined,
       p_score_v2_min: filters.scoreV2Min ?? 0,
-      p_segment_v2: filters.segmentV2 ?? null,
+      p_segment_v2: filters.segmentV2 ?? undefined,
       p_filter_fioul: filters.filterFioul ?? false,
       p_filter_avec_sci: filters.filterAvecSci ?? false,
       p_filter_succession: filters.filterSuccession ?? false,
-      p_search: filters.search ?? null,
+      p_search: filters.search ?? undefined,
       p_limit: Math.min(filters.limit ?? 50, 200),
       p_offset: Math.max(0, filters.offset ?? 0),
       p_filter_particulier: filters.filterParticulier ?? false,

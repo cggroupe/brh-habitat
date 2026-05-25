@@ -10,6 +10,7 @@
  */
 import { supabase } from '@/lib/supabase'
 import type { BlurZone } from '@/lib/reseau/blur-canvas'
+import type { Json } from '@/types/database-generated'
 
 export type FeedPostType =
   | 'photo_chantier'
@@ -206,7 +207,7 @@ export const reseauPostsApi = {
       .from('brh_feed_posts')
       .update({
         media_urls: publicPaths,
-        media_blur_zones: blurZones as unknown as Record<string, unknown>[],
+        media_blur_zones: blurZones as unknown as Json,
       })
       .eq('id', postId)
       .select()

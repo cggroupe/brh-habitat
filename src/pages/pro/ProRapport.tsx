@@ -65,7 +65,7 @@ async function fetchMonthStats(
     prospect_id: string | null
     amount: number
     commission_amount: number | null
-    commission_status: string
+    commission_status: string | null
     commission_rate_percent: number | null
   }> = []
 

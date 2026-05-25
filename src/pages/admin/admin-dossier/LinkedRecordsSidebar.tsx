@@ -8,12 +8,12 @@ interface DiagnosticData {
 }
 
 interface CaseData {
-  user_id: string
+  user_id: string | null
   estimated_budget: number | null
   start_date: string | null
   end_date: string | null
-  created_at: string
-  updated_at: string
+  created_at: string | null
+  updated_at: string | null
 }
 
 interface LinkedRecordsSidebarProps {
@@ -32,7 +32,7 @@ export function LinkedRecordsSidebar({ caseData, userFullName, homeData, diagnos
           <User size={14} className="text-primary" /> Client
         </h3>
         <p className="font-body text-sm text-text-primary font-medium">{userFullName ?? '—'}</p>
-        <p className="font-body text-xs text-text-light mt-1">ID: {caseData.user_id.slice(0, 8)}…</p>
+        <p className="font-body text-xs text-text-light mt-1">ID: {caseData.user_id ? `${caseData.user_id.slice(0, 8)}…` : '—'}</p>
       </div>
 
       {/* Budget */}
@@ -104,11 +104,11 @@ export function LinkedRecordsSidebar({ caseData, userFullName, homeData, diagnos
         <div className="space-y-2">
           <div>
             <p className="font-display text-xs text-text-light uppercase tracking-wider">Créé le</p>
-            <p className="font-body text-sm text-text-primary">{new Date(caseData.created_at).toLocaleDateString('fr-FR')}</p>
+            <p className="font-body text-sm text-text-primary">{caseData.created_at ? new Date(caseData.created_at).toLocaleDateString('fr-FR') : '—'}</p>
           </div>
           <div>
             <p className="font-display text-xs text-text-light uppercase tracking-wider">Mis à jour le</p>
-            <p className="font-body text-sm text-text-primary">{new Date(caseData.updated_at).toLocaleDateString('fr-FR')}</p>
+            <p className="font-body text-sm text-text-primary">{caseData.updated_at ? new Date(caseData.updated_at).toLocaleDateString('fr-FR') : '—'}</p>
           </div>
         </div>
       </div>

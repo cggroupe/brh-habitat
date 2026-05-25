@@ -50,7 +50,7 @@ export default function PartBadges() {
         .select('*')
         .order('sort_order')
       if (error) throw error
-      return (data ?? []) as Badge[]
+      return (data ?? []) as unknown as Badge[]
     },
   })
 
@@ -70,7 +70,7 @@ export default function PartBadges() {
   // Compute stats
   const parrainages_total = prospects.length
   const parrainages_signes = prospects.filter(
-    (p: { status?: string }) => p.status === 'signe' || p.status === 'termine'
+    (p: { status?: string | null }) => p.status === 'signe' || p.status === 'termine'
   ).length
   const points_earned = affiliate?.total_points_earned ?? 0
   const recruits_total = recruits.length

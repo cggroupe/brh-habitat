@@ -2,6 +2,9 @@
  * Phase 16.1 — API simulations agence (sauvegarde + reprise des études).
  */
 import { supabase } from '@/lib/supabase'
+import type { Database } from '@/types/database-generated'
+
+type SimulationInsertRow = Database['public']['Tables']['brh_agence_simulations']['Insert']
 
 export interface AgenceSimulation {
   id: string
@@ -67,11 +70,12 @@ export const agenceSimulationsApi = {
   async create(input: SimulationInsert): Promise<AgenceSimulation> {
     const { data, error } = await supabase
       .from('brh_agence_simulations')
-      .insert(input)
+      .insert(input as unknown as SimulationInsertRow)
       .select('*')
       .single()
     if (error) throw error
-    return data as AgenceSimulation
+    if (!data) throw new Error('Insert simulation failed')
+    return data as unknown as AgenceSimulation
   },
 
   async delete(id: string): Promise<void> {

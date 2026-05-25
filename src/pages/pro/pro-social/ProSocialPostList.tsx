@@ -25,11 +25,11 @@ function formatEur(cents: number): string {
 
 interface ProSocialPost {
   id: string
-  platform: SocialPlatform
+  platform: SocialPlatform | string
   post_url: string
-  status: SocialPostStatus
+  status: SocialPostStatus | string | null
   reward_amount_cents: number | null
-  created_at: string
+  created_at: string | null
   rejection_reason?: string | null
 }
 
@@ -61,7 +61,7 @@ export function ProSocialPostList({ posts, isLoading }: ProSocialPostListProps) 
   return (
     <div className="space-y-3">
       {posts.map((post) => {
-        const cfg = STATUS_CONFIG[post.status] ?? STATUS_CONFIG.en_attente
+        const cfg = STATUS_CONFIG[(post.status ?? 'en_attente') as SocialPostStatus] ?? STATUS_CONFIG.en_attente
         const platformCfg = PLATFORMS_CONFIG.find((p) => p.value === post.platform)
         return (
           <div key={post.id} className="bg-white rounded-2xl p-5 shadow-[0_8px_30px_rgba(27,28,28,0.04)]">
@@ -88,7 +88,7 @@ export function ProSocialPostList({ posts, isLoading }: ProSocialPostListProps) 
             </div>
             <div className="mt-3 flex items-center justify-between">
               <span className="text-xs text-text-light">
-                {new Date(post.created_at).toLocaleDateString('fr-FR')}
+                {post.created_at ? new Date(post.created_at).toLocaleDateString('fr-FR') : '—'}
               </span>
               {post.reward_amount_cents != null && (
                 <span className="text-xs font-bold text-primary">

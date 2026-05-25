@@ -9,7 +9,7 @@ interface CaseRow {
   estimated_budget: number | null
   start_date: string | null
   end_date: string | null
-  status: CaseStatus
+  status: CaseStatus | string | null
 }
 
 function formatDate(dateStr: string | null): string {
