@@ -5,6 +5,59 @@
 
 ---
 
+## 2026-05-25 — Phase 1 finalisation : matching client↔DPE via BAN id (RPC v3)
+
+**Contexte** : Première phase du sprint "4 chantiers restants" (cf [handoff-2026-05-25.md](handoff-2026-05-25.md) suggestion #1). Le chantier BAN finalisé hier (16 740 personnes avec ban_id) restait inexploité : la RPC `brh_client_foncier_at_address` matchait uniquement via (code_postal, numero_norm, voie_norm) → 419 matches stricts plafond.
+
+**Découverte d'exploration** : `brh_dpe_prospects` a `adresse_ban` TEXT (label) mais PAS `adresse_ban_id` structuré. Pré-requis : enrichir les 206 252 DPE avec ban_id avant de pouvoir JOIN.
+
+- **Phase 1.1 — Migration colonnes BAN sur `brh_dpe_prospects`** :
+  - `supabase/migrations/20260525100000_add_adresse_ban_id_to_dpe_prospects.sql`
+  - 3 colonnes : `adresse_ban_id TEXT`, `adresse_ban_score NUMERIC(4,3)`, `adresse_ban_enriched_at TIMESTAMPTZ`
+  - 2 index partiels : `brh_dpe_prospects_adresse_ban_id_idx` (matching futur) + `brh_dpe_prospects_to_enrich_ban_idx` (script enrich)
+  - Volontairement, on ne duplique pas `lat/lon/label` (déjà présents via `latitude/longitude` + `adresse_ban`).
+
+- **Phase 1.2 — Script enrich BAN DPE** :
+  - `scripts/brh-enrich-ban-dpe-prospects.py` (228 lignes) calqué sur `brh-enrich-ban-personnes.py`. Adapté pour DPE (id INTEGER vs UUID, UPDATE 3 cols vs 6, query construite depuis `numero_norm + voie_norm`).
+  - Dry-run validé : 5/5 hits, scores 0.58-0.97.
+  - Lancement en background (PID 2709073). Premier batch : **891/1000 hits (89.1% hit rate)**. Rate effectif ~2 rows/s, ETA ~28h sur 1 worker — laissé tourner, gain progressif observable au fil du temps.
+
+- **Phase 1.3 — RPC v3 `brh_client_foncier_at_address_v3`** :
+  - `supabase/migrations/20260525110000_rpc_brh_client_foncier_at_address_v3.sql` (drop-in, v1 conservée pour rollback)
+  - CTE `dpe_raw` avec `DISTINCT ON (d.id)` qui matche **legacy strict OR ban_id**.
+  - Détection "locataire SCI" élargie au match BAN id.
+  - `client_address` retourne maintenant `adresse_ban_id`.
+  - SECURITY DEFINER + `SET search_path = ''` (règle anti-bug #12).
+  - Impact attendu : 419 matches v1 → 5 000-15 000 v3 sur 16 740 clients avec ban_id (gain conditionné à la couverture BAN DPE en cours).
+
+- **Phase 1.4 — Switch frontend** :
+  - `src/api/brh-client-foncier.ts` : `supabase.rpc('brh_client_foncier_at_address')` → `..._v3`.
+  - `ClientFoncierAddress` ajoute `adresse_ban_id: string | null`.
+  - Régénération `src/types/database-generated.ts` via `supabase gen types typescript --project-id lygmmvxnmvlgynmrcpny` (+40 lignes : nouvelle RPC + 3 colonnes DPE). Nettoyé le warning CLI absorbé en fin de fichier.
+
+- **Phase 1.5 — Validation** :
+  - `npm run build` : ✓ built in 31.95s, 0 erreur TS.
+  - `npm test` : 416 tests passants (23 fichiers, 1.42s).
+  - Migrations alignées : 161 + 2 = 163 (trackées via Management API `INSERT INTO supabase_migrations.schema_migrations`).
+
+- **Fichiers créés** :
+  - `supabase/migrations/20260525100000_add_adresse_ban_id_to_dpe_prospects.sql`
+  - `supabase/migrations/20260525110000_rpc_brh_client_foncier_at_address_v3.sql`
+  - `scripts/brh-enrich-ban-dpe-prospects.py`
+
+- **Fichiers modifiés** :
+  - `src/api/brh-client-foncier.ts`
+  - `src/types/database-generated.ts` (regen)
+  - `docs/wiki/hub-client-brh.md` (section RPC mise à jour)
+
+- **Migrations créées** : 2 (`20260525100000`, `20260525110000`)
+- **Pages wiki impactées** : [hub-client-brh.md](hub-client-brh.md) (§4 RPC v3), [log.md](log.md) (cette entrée)
+- **Risque** : Low. v1 conservée pour rollback. Backward compat 100%.
+- **Tests** : 416 OK. `npm run build` vert.
+- **Status** : ✅ DONE phase 1 (matching activé). Enrichissement BAN DPE en cours en background — gain matches progressif.
+
+---
+
 ## 2026-05-25 — Phase A→D suite : reports levés (BAN final + IRIS shapefile + score V2 recalc)
 
 **Contexte** : Suite immédiate du commit bc097f3 (Phase A→D 1ère passe). Philippe a refusé les reports → tout exécuté.

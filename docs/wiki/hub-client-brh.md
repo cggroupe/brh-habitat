@@ -53,24 +53,28 @@ Demande Philippe 21/05 (vocal) :
 
 ---
 
-## 4. RPC livrée Phase 3 ✅
+## 4. RPC livrée Phase 3 ✅ — v3 actif (25/05) avec match BAN id
 
-**[supabase/migrations/20260521160000_rpc_brh_client_foncier_at_address.sql](../../supabase/migrations/20260521160000_rpc_brh_client_foncier_at_address.sql)**
+**v3 (actif)** : [supabase/migrations/20260525110000_rpc_brh_client_foncier_at_address_v3.sql](../../supabase/migrations/20260525110000_rpc_brh_client_foncier_at_address_v3.sql)
+**v1 (conservée pour rollback)** : [supabase/migrations/20260521160000_rpc_brh_client_foncier_at_address.sql](../../supabase/migrations/20260521160000_rpc_brh_client_foncier_at_address.sql)
 
-Signature : `brh_client_foncier_at_address(p_personne_id uuid)`
+Signature : `brh_client_foncier_at_address_v3(p_personne_id uuid)` (identique à v1, drop-in)
 
 Retour (TABLE) :
-- `client_address jsonb` : adresse brute + clé normalisée `(numero_norm, voie_norm)`
-- `dpe_matches jsonb[]` : DPE F/G strictement matchés à l'adresse client + `role` calculé (`proprietaire_particulier` / `dirigeant_sci` / `locataire_sci`)
+- `client_address jsonb` : adresse brute + clé normalisée + **`adresse_ban_id`** (nouveau v3)
+- `dpe_matches jsonb[]` : DPE F/G matchés (legacy strict OR via ban_id, DISTINCT sur dpe_id) + `role`
 - `dvf_matches jsonb[]` : 20 dernières mutations DVF à la voie (`usable_for_brh = TRUE`)
-- `permis_matches jsonb[]` : permis Sitadel — array vide tant que `brh_permis_construire` non populée
-- `is_tenant_of_sci boolean` : flag cas Bodard
+- `permis_matches jsonb[]` : permis Sitadel à la voie stricte
+- `is_tenant_of_sci boolean` : flag cas Bodard (matching élargi v3)
 - `sci_proprietaire jsonb | null` : `{name, siren}` si is_tenant_of_sci
 
-Algorithme matching :
-1. Match exact `(code_postal, numero_norm, voie_norm)` si numero présent
-2. Match lieu-dit (voie only) sinon
-3. Pour chaque DPE matché avec `owner_siren NOT NULL` : vérifier via `brh_entity_links` si le client est dirigeant SCI → sinon = locataire
+Algorithme matching DPE (v3) :
+1. **Legacy strict** : `(code_postal, numero_norm, voie_norm)` exact, ou lieu-dit (voie only)
+2. **OR BAN id** : `adresse_ban_id = client.adresse_ban_id` (clé immune aux variations d'écriture)
+3. `DISTINCT ON (d.id)` pour dé-doublonner
+4. Pour chaque DPE matché avec `owner_siren NOT NULL` : `brh_entity_links` → dirigeant SCI / locataire SCI / particulier
+
+Impact attendu : 419 matches v1 → 5 000-15 000 v3 sur les 16 740 clients avec ban_id (gain conditionné à la couverture BAN du côté DPE — enrichissement Phase 1.2 finalise ~95% de couverture).
 
 SECURITY DEFINER + access guard `profiles.role ∈ (admin, pro, employe)` + `SET search_path = ''` (règle anti-bug #12).
 

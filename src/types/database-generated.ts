@@ -4214,6 +4214,9 @@ export type Database = {
           abf_required: boolean
           adresse: string | null
           adresse_ban: string | null
+          adresse_ban_enriched_at: string | null
+          adresse_ban_id: string | null
+          adresse_ban_score: number | null
           adresse_norm: string | null
           aides_barem_date: string | null
           aides_detail: Json | null
@@ -4321,6 +4324,9 @@ export type Database = {
           abf_required?: boolean
           adresse?: string | null
           adresse_ban?: string | null
+          adresse_ban_enriched_at?: string | null
+          adresse_ban_id?: string | null
+          adresse_ban_score?: number | null
           adresse_norm?: string | null
           aides_barem_date?: string | null
           aides_detail?: Json | null
@@ -4428,6 +4434,9 @@ export type Database = {
           abf_required?: boolean
           adresse?: string | null
           adresse_ban?: string | null
+          adresse_ban_enriched_at?: string | null
+          adresse_ban_id?: string | null
+          adresse_ban_score?: number | null
           adresse_norm?: string | null
           aides_barem_date?: string | null
           aides_detail?: Json | null
@@ -7856,6 +7865,12 @@ export type Database = {
       brh_personnes_historique: {
         Row: {
           adresse: string | null
+          adresse_ban_enriched_at: string | null
+          adresse_ban_id: string | null
+          adresse_ban_label: string | null
+          adresse_ban_lat: number | null
+          adresse_ban_lon: number | null
+          adresse_ban_score: number | null
           adresse_norm: string | null
           ca_total_eur: number | null
           categorie: string | null
@@ -7904,6 +7919,12 @@ export type Database = {
         }
         Insert: {
           adresse?: string | null
+          adresse_ban_enriched_at?: string | null
+          adresse_ban_id?: string | null
+          adresse_ban_label?: string | null
+          adresse_ban_lat?: number | null
+          adresse_ban_lon?: number | null
+          adresse_ban_score?: number | null
           adresse_norm?: string | null
           ca_total_eur?: number | null
           categorie?: string | null
@@ -7952,6 +7973,12 @@ export type Database = {
         }
         Update: {
           adresse?: string | null
+          adresse_ban_enriched_at?: string | null
+          adresse_ban_id?: string | null
+          adresse_ban_label?: string | null
+          adresse_ban_lat?: number | null
+          adresse_ban_lon?: number | null
+          adresse_ban_score?: number | null
           adresse_norm?: string | null
           ca_total_eur?: number | null
           categorie?: string | null
@@ -9948,6 +9975,17 @@ export type Database = {
         }[]
       }
       brh_client_foncier_at_address: {
+        Args: { p_personne_id: string }
+        Returns: {
+          client_address: Json
+          dpe_matches: Json
+          dvf_matches: Json
+          is_tenant_of_sci: boolean
+          permis_matches: Json
+          sci_proprietaire: Json
+        }[]
+      }
+      brh_client_foncier_at_address_v3: {
         Args: { p_personne_id: string }
         Returns: {
           client_address: Json

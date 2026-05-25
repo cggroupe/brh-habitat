@@ -1,10 +1,11 @@
 /**
  * brh-client-foncier — Phase 3 : foncier à l'adresse d'un client BRH.
  *
- * Cross DPE + DVF + permis + détection locataire SCI via matching strict
- * Phase 2A (code_postal + numero_norm + voie_norm).
+ * Cross DPE + DVF + permis + détection locataire SCI.
+ * Matching élargi v3 (25/05) : legacy strict (cp+num_norm+voie_norm)
+ * UNION match adresse_ban_id (clé exacte BAN).
  *
- * Source : RPC brh_client_foncier_at_address (migration 20260521160000).
+ * Source : RPC brh_client_foncier_at_address_v3 (migration 20260525110000).
  */
 import { supabase } from '@/lib/supabase'
 
@@ -14,6 +15,7 @@ export interface ClientFoncierAddress {
   ville: string | null
   numero_norm: string | null
   voie_norm: string | null
+  adresse_ban_id: string | null
 }
 
 export type ClientFoncierDpeRole =
@@ -81,7 +83,7 @@ export interface ClientFoncierAtAddress {
 
 export const brhClientFoncierApi = {
   async getFoncier(personneId: string): Promise<ClientFoncierAtAddress | null> {
-    const { data, error } = await supabase.rpc('brh_client_foncier_at_address', {
+    const { data, error } = await supabase.rpc('brh_client_foncier_at_address_v3', {
       p_personne_id: personneId,
     })
     if (error) throw error
