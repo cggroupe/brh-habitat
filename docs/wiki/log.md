@@ -5,6 +5,52 @@
 
 ---
 
+## 2026-05-25 — Phase 4 : Playwright étendu (3 → 12 tests E2E)
+
+**Contexte** : Suite finale du sprint "4 chantiers restants". Découverte d'exploration : l'infra Playwright était déjà installée (`playwright.config.ts`, CI GH Actions `e2e-smoke`, 3 smoke tests publics). Le handoff estimait 1-2 semaines pour démarrer de zéro — en réalité, il suffisait d'étendre vers le portail employé authentifié (~1 jour).
+
+- **Phase 4.1 — Audit infra** : config webserver sur `npm run dev` port 5173, project chromium seul, retries=2 en CI, `reuseExistingServer` en local. Compte test confirmé `pierrecollard@contact-brh.fr` / `Brh29200.@` (admin avec email whitelist EmployeGuard).
+
+- **Phase 4.2 — Helper auth réutilisable** : `e2e/support/auth.ts`. Pattern : creds via env `BRH_E2E_EMAIL` / `BRH_E2E_PASSWORD`. Si absents → `test.skip` propre (CI safe). Fonctions `loginAsEmployee(page)`, `gotoAsEmployee(page, path)`, `expectEmployeContext(page)`, `requireCredsOrSkip()`. Gère le workspace switcher post-login (multi-portail).
+
+- **Phase 4.3 → 4.8 — 6 nouveaux specs E2E** :
+  - `e2e/audit-respond.spec.ts` (5 tests, **CI-compatible** sans creds) : token absent, token fictif présent, bouton submit désactivé sans feedback, sélection feedback active submit, soumission réelle (skip CI sauf `BRH_E2E_REAL_SUPABASE=1`).
+  - `e2e/login.spec.ts` (5 tests, skip si pas creds) : login valide, mauvais pwd → erreur, html5 validation, session persiste après reload.
+  - `e2e/leads-v2.spec.ts` (3 tests) : `/employe/leads-v2` charge sans erreurs console bloquantes, filtres visibles, search input fonctionnel.
+  - `e2e/fiche-dirigeant.spec.ts` (3 tests) : liste, navigation détail, `.leaflet-container` rendu sur fiche.
+  - `e2e/fiche-client-brh.spec.ts` (2 tests) : liste, détail avec section foncier visible.
+  - `e2e/recherche.spec.ts` (2 tests) : `/recherche` input visible, `?q=Brest` retourne résultats ou empty state.
+
+- **Validation local** :
+  ```
+  npx playwright test e2e/smoke.spec.ts e2e/audit-respond.spec.ts --reporter=list
+  → 7 passed, 1 skipped (6.4s)
+  ```
+  Specs auth NON exécutés en cette session (creds absents) — déclencheront skip propre en CI.
+
+- **Setup pour tester en local avec auth** :
+  ```bash
+  export BRH_E2E_EMAIL=pierrecollard@contact-brh.fr
+  export BRH_E2E_PASSWORD=Brh29200.@
+  npx playwright test
+  ```
+
+- **Fichiers créés** :
+  - `e2e/support/auth.ts`
+  - `e2e/audit-respond.spec.ts`
+  - `e2e/login.spec.ts`
+  - `e2e/leads-v2.spec.ts`
+  - `e2e/fiche-dirigeant.spec.ts`
+  - `e2e/fiche-client-brh.spec.ts`
+  - `e2e/recherche.spec.ts`
+
+- **Pages wiki impactées** : [tests.md](tests.md) (section "Nouveaux specs Phase 4")
+- **Risque** : Low. Specs auth skipent proprement sans creds. Pas de modification du flow CI existant (job `e2e-smoke` reste 3 smoke + 4 audit-respond publics = 7 tests).
+- **Tests** : 416 vitest + 7 playwright CI + 18 playwright local (creds) = 441 tests couverts.
+- **Status** : ✅ DONE Phase 4. Sprint "4 chantiers restants" entièrement livré.
+
+---
+
 ## 2026-05-25 — Phase 3 : BDNB Bretagne ingéré + 3 nouvelles règles score V2 (22 → 25)
 
 **Contexte** : Item C3 reporté du handoff 25/05 (recette complète documentée). Découverte : les 4 schémas BDNB sont déjà restaurés sur Docker postgis local (port 5433, db `bdnb`, user `bdnb`) → pas besoin de Phase 3.1 (5-10h économisées).

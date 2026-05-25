@@ -3,10 +3,32 @@
 > Source : `package.json` + inspection `src/test/` (si existe) + audit ARCHITECTURE.md.
 > **Dernière mesure** : 2026-04-23.
 
-## État actuel (2026-05-03 — Phase 22)
+## État actuel (2026-05-25 — Sprint "4 chantiers")
 
-**Vitest (unitaires + intégration)** : ✅ **298 tests passants** (17 fichiers).
-**Playwright (E2E)** : ✅ **infra installée + 3 smoke tests + CI GH Actions** (Phase 19 + 20).
+**Vitest (unitaires + intégration)** : ✅ **416 tests passants** (23 fichiers, 1.4s).
+**Playwright (E2E)** : ✅ **infra installée + 12 tests E2E (3 smoke + 9 nouveaux Phase 4)** + CI GH Actions.
+
+### Nouveaux specs Phase 4 (25/05)
+
+| Spec | Sujet | CI-compatible |
+|------|-------|---------------|
+| `e2e/audit-respond.spec.ts` | Page publique `/audit/respond` : token absent/présent, 5 cards radio, bouton désactivé, sélection feedback | ✅ oui (4 tests) + 1 skip si pas `BRH_E2E_REAL_SUPABASE` |
+| `e2e/login.spec.ts` | Login valide, mauvais pwd, html5 validation, session persistence reload | ⚠️ skip si pas `BRH_E2E_EMAIL` / `BRH_E2E_PASSWORD` |
+| `e2e/leads-v2.spec.ts` | Page leads-v2 : charge sans erreur console, filtres visibles, search input | ⚠️ skip si pas creds |
+| `e2e/fiche-dirigeant.spec.ts` | Liste + détail dirigeant + mini-carte Leaflet rendue | ⚠️ skip si pas creds |
+| `e2e/fiche-client-brh.spec.ts` | Liste + détail client BRH + section foncier visible | ⚠️ skip si pas creds |
+| `e2e/recherche.spec.ts` | `/recherche` input + `?q=Brest` renvoie résultats ou empty state | ⚠️ skip si pas creds |
+| `e2e/support/auth.ts` | Helper `loginAsEmployee()`, `requireCredsOrSkip()`, `gotoAsEmployee()` | — |
+
+**Setup local pour tests auth** :
+```bash
+export BRH_E2E_EMAIL=pierrecollard@contact-brh.fr
+export BRH_E2E_PASSWORD=Brh29200.@
+npx playwright test
+```
+
+**Setup CI** : aucun changement requis (`BRH_E2E_*` absent → skip propre, seulement smoke + audit-respond publics tournent).
+
 **RLS / triggers / EFs auth-flow** : ❌ pas encore couverts (roadmap Phase 1-5 ci-dessous).
 
 ### Ce qui est couvert
