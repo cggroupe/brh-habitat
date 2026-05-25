@@ -5,6 +5,46 @@
 
 ---
 
+## 2026-05-25 — Phase 2 : feature audit-respond anon proprement (RPC SD)
+
+**Contexte** : Suite Phase 1 du sprint "4 chantiers restants". Le 24/05, la policy RLS `agence_audits_respond_anon` avait été droppée pour vulnérabilité (UPDATE anon sans validation token). Cette phase la remplace proprement par une RPC SECURITY DEFINER + page publique.
+
+- **Phase 2.1 — RPC `brh_audit_respond`** : migration `supabase/migrations/20260525120000_rpc_brh_audit_respond.sql`. Signature `(p_token TEXT, p_feedback TEXT, p_feedback_message TEXT) RETURNS TABLE(success BOOLEAN, message TEXT)`. SECURITY DEFINER + `SET search_path = ''` (règle anti-bug #12). Validation atomique : enum feedback (5 valeurs CHECK), longueur message ≤ 2000, SELECT FOR UPDATE pour atomicité, vérif `response_at IS NULL` (one-shot). GRANT EXECUTE TO anon, authenticated. Pattern calqué sur `brh_artisan_invite_accept` (20260625100000:70-125).
+
+- **Phase 2.2 — API + hook** : `src/api/audit-respond.ts` avec Zod schemas (input + output), 5 constantes `AUDIT_FEEDBACK_OPTIONS`. `src/hooks/queries/useRespondAudit.ts` mutation simple sans cache invalidation (page anon).
+
+- **Phase 2.3 — Page publique** : `src/pages/public/AuditRespondPage.tsx`. Pattern OptOutPage.tsx (form + success + error states). 5 cards radio avec labels FR explicites + descriptions + placeholders contextuels (selon feedback choisi). UseSearchParams pour `?token=xxx`. Sans token → message "Lien invalide". Counter 0/2000 char message.
+
+- **Phase 2.4 — Route App.tsx** : lazy `AuditRespondPage` + `<Route path="/audit/respond" element={<AuditRespondPage />} />` à côté de `/opt-out`.
+
+- **Phase 2.6 — Validation E2E manuel via Management API** :
+  1. Token invalide → `{success: false, message: 'Lien invalide ou expiré'}` ✓
+  2. Feedback enum invalide → `{success: false, message: 'Choix de réponse invalide'}` ✓
+  3. Happy path (audit factice inséré, RPC appelée) → `{success: true, message: 'Merci pour votre réponse'}` ✓
+  4. UPDATE effectif : `feedback='correct'`, `feedback_message` stocké, `status='responded'`, `response_at IS NOT NULL` ✓
+  5. Replay (re-soumettre même token) → `{success: false, message: 'Vous avez déjà répondu à cet audit'}` ✓
+  6. Cleanup audit factice ✓
+
+- **Fichiers créés** :
+  - `supabase/migrations/20260525120000_rpc_brh_audit_respond.sql`
+  - `src/api/audit-respond.ts`
+  - `src/hooks/queries/useRespondAudit.ts`
+  - `src/pages/public/AuditRespondPage.tsx`
+
+- **Fichiers modifiés** :
+  - `src/App.tsx` (lazy import + route publique)
+  - `src/types/database-generated.ts` (regen avec nouvelle RPC)
+  - `docs/wiki/bugs-ouverts.md` (vuln B2 marqué résolu)
+  - `docs/wiki/log.md` (cette entrée)
+
+- **Migrations créées** : 1 (`20260525120000`)
+- **Pages wiki impactées** : [bugs-ouverts.md](bugs-ouverts.md) (vuln B2 résolu)
+- **Risque** : Low. Pas de fuite données (return TEXT générique). Token UNIQUE 64 hex = brute-force impossible.
+- **Tests** : 416 vitest OK. `npm run build` ✓ 20.96s.
+- **Status** : ✅ DONE Phase 2. EF `monthly-audit-agencies` envoi email reste à compléter (séparé, bloqué par `brh_proprietaires` non existante).
+
+---
+
 ## 2026-05-25 — Phase 1 finalisation : matching client↔DPE via BAN id (RPC v3)
 
 **Contexte** : Première phase du sprint "4 chantiers restants" (cf [handoff-2026-05-25.md](handoff-2026-05-25.md) suggestion #1). Le chantier BAN finalisé hier (16 740 personnes avec ban_id) restait inexploité : la RPC `brh_client_foncier_at_address` matchait uniquement via (code_postal, numero_norm, voie_norm) → 419 matches stricts plafond.

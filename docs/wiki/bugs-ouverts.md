@@ -37,7 +37,7 @@
 | B1 | `as unknown as` (règle #4) | 53 occurrences | 26 légitimes (-51%) | ✅ batch + refactor FicheAdresseView |
 | B2 | `USING (true)` (règle #8) — audit prod | 60+ policies, 1 vuln | vuln droppée, ~60 légitimes documentées | ✅ migration `20260524110000` |
 
-**Vulnérabilité B2 détaillée** : `brh_agence_audits.agence_audits_respond_anon` permettait UPDATE anon avec `qual=true AND with_check=true` sans validation `response_token`. Aucune route frontend → policy inutilisée → DROP. À reconstruire en RPC SECURITY DEFINER `brh_audit_respond` quand page `/audit/respond?token=xxx` sera livrée.
+**Vulnérabilité B2 détaillée** : `brh_agence_audits.agence_audits_respond_anon` permettait UPDATE anon avec `qual=true AND with_check=true` sans validation `response_token`. Aucune route frontend → policy inutilisée → DROP. **Résolu 25/05 (Phase 2)** : RPC SECURITY DEFINER `brh_audit_respond(p_token, p_feedback, p_feedback_message)` (migration `20260525120000`) + page publique `/audit/respond?token=xxx` ([src/pages/public/AuditRespondPage.tsx](../../src/pages/public/AuditRespondPage.tsx)) avec validation atomique (FOR UPDATE), enum feedback (5 valeurs), message max 2000 chars. GRANT EXECUTE TO anon. Test E2E happy path + replay + token invalide + feedback invalide tous passants.
 
 ---
 

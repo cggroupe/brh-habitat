@@ -9964,6 +9964,17 @@ export type Database = {
           success: boolean
         }[]
       }
+      brh_audit_respond: {
+        Args: {
+          p_feedback: string
+          p_feedback_message: string
+          p_token: string
+        }
+        Returns: {
+          message: string
+          success: boolean
+        }[]
+      }
       brh_available_employees_for_slot: {
         Args: { p_day_of_week: number; p_limit?: number; p_period: string }
         Returns: {

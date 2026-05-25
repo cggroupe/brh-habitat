@@ -52,6 +52,7 @@ const PartenairesPage = lazy(() => import('@/pages/public/PartenairesPage'))
 const AssistantPage = lazy(() => import('@/pages/public/AssistantPage'))
 const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'))
 const OptOutPage = lazy(() => import('@/pages/public/OptOutPage'))
+const AuditRespondPage = lazy(() => import('@/pages/public/AuditRespondPage'))
 const InscriptionAgencePage = lazy(() => import('@/pages/public/InscriptionAgencePage'))
 const PublicProAnnuaire = lazy(() => import('@/pages/public/PublicProAnnuaire'))
 
@@ -278,6 +279,7 @@ export default function App() {
               <Route path="/mentions-legales" element={<MentionsLegalesPage />} />
               <Route path="/politique-de-confidentialite" element={<PolitiqueConfidentialitePage />} />
               <Route path="/opt-out" element={<OptOutPage />} />
+              <Route path="/audit/respond" element={<AuditRespondPage />} />
               <Route path="/inscription/agence" element={<InscriptionAgencePage />} />
               {/* Phase 18.11 — Annuaire SEO publique : 75 combos dept × métier */}
               <Route path="/pros/:dept/:metier" element={<PublicProAnnuaire />} />
