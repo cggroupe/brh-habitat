@@ -85,7 +85,11 @@ export const prospectsBretagneApi = {
          iris_code, score_v2, score_v2_segment, score_v2_calculated_at,
          enedis_kwh_logt, dvf_mutation_24m, abf_required,
          mpr_bleu_total, mpr_jaune_total, mpr_violet_total, cee_total`,
-        { count: 'exact' },
+        // 25/05 PM — 'planned' au lieu de 'exact' : count exact sur 200k+ rows
+        // → statement timeout PostgREST anon (3s). 'planned' utilise les stats
+        // Postgres (instantané, approximatif à 1-5% près). Bug audit Playwright
+        // /employe/prospection/bretagne HTTP 500.
+        { count: 'planned' },
       )
 
     if (filters.segment) q = q.eq('score_v2_segment', filters.segment)
@@ -153,7 +157,10 @@ export const prospectsBretagneApi = {
     if (filters.departement) q = q.eq('departement', filters.departement)
     if (filters.scoreMin != null) q = q.gte('score_v2', filters.scoreMin)
 
-    q = q.order('score_v2', { ascending: false, nullsFirst: false }).limit(filters.limit ?? 5000)
+    // 25/05 PM — limit réduit 5000 → 2000 (statement_timeout PostgREST 8s
+    // sur SELECT ordonné desc sur 200k rows). 2000 markers carte = suffisant
+    // UX (au-delà la carte est illisible). Audit Playwright /employe/prospection/carte fix.
+    q = q.order('score_v2', { ascending: false, nullsFirst: false }).limit(filters.limit ?? 2000)
 
     const { data, error } = await q
     if (error) throw error
@@ -184,9 +191,11 @@ export const prospectsBretagneApi = {
     }
     await Promise.all(
       segments.map(async (seg) => {
+        // 25/05 PM — 'planned' au lieu de 'exact' (cf commentaire ligne 88).
+        // 5 counts en parallèle × 'exact' sur 200k rows = timeout PostgREST.
         let q = supabase
           .from('brh_dpe_prospects')
-          .select('id', { count: 'exact', head: true })
+          .select('id', { count: 'planned', head: true })
           .eq('score_v2_segment', seg)
         if (filters.departement) q = q.eq('departement', filters.departement)
         const { count } = await q

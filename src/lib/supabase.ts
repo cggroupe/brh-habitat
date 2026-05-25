@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, processLock } from '@supabase/supabase-js'
 import type { Database } from '@/types/database-generated'
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config'
 
@@ -6,6 +6,14 @@ const authOptions = {
   persistSession: true,
   autoRefreshToken: true,
   detectSessionInUrl: true,
+  // 25/05 PM — fix audit Playwright : remplace navigatorLock (défaut) par
+  // processLock pour éviter le bug "Lock broken by another request with the
+  // 'steal' option." qui rendait le portail /agence inutilisable (22/22 routes
+  // crash en dev ET en prod Vercel). navigatorLock (Web Locks API) sature
+  // quand l'app fait beaucoup de queries auth concurrentes (sidebar + 8
+  // hooks agence-* + notifications + leads count). processLock est un lock
+  // in-process simple, suffisant pour usage single-tab business.
+  lock: processLock,
 }
 
 // Client Supabase typé avec Database auto-généré depuis Supabase (B01 résolu 2026-05-24 Phase B4 complet).

@@ -51,7 +51,13 @@ export function useAuth() {
   const setUser = useAppStore((s) => s.setUser)
   const queryClient = useQueryClient()
   const initRef = useRef(false)
-  const [isInitialized, setIsInitialized] = useState(() => !!useAppStore.getState().user)
+  // 25/05 PM — fix audit Playwright : isInitialized initial à false force le
+  // spinner pendant validateSession async. Sans ça, l'hydratation appStore
+  // depuis localStorage donne role='user' (fallback car role pas persisté
+  // pour anti-XSS), les Guards évaluent isAdmin/isParticulier=false et
+  // redirigent vers /tableau-de-bord avant que le vrai role soit chargé.
+  // Trade-off : bref spinner au mount, mais évite le cascade redirect bug.
+  const [isInitialized, setIsInitialized] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
 
   useEffect(() => {

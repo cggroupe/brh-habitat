@@ -77,23 +77,26 @@ export const proAnalyticsApi = {
       cold: 0,
     }
 
+    // 25/05 PM — 'planned' au lieu de 'exact' sur brh_dpe_prospects (200k+ rows).
+    // Count exact → statement_timeout PostgREST 3s. 'planned' = stats Postgres,
+    // approximatif à 1-5% près mais instantané. Bug audit Playwright fix.
     const [scoredRes, irisRes, dvfRes, ...segRes] = await Promise.all([
       supabase
         .from('brh_dpe_prospects')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'planned', head: true })
         .not('score_v2', 'is', null),
       supabase
         .from('brh_dpe_prospects')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'planned', head: true })
         .not('iris_code', 'is', null),
       supabase
         .from('brh_dpe_prospects')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'planned', head: true })
         .eq('dvf_mutation_24m', true),
       ...segments.map((seg) =>
         supabase
           .from('brh_dpe_prospects')
-          .select('id', { count: 'exact', head: true })
+          .select('id', { count: 'planned', head: true })
           .eq('score_v2_segment', seg),
       ),
     ])
