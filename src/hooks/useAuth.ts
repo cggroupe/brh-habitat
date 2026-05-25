@@ -139,7 +139,13 @@ export function useAuth() {
     resetBrhEmployeesCache()
   }
 
-  const loading = !user && !isInitialized
+  // 25/05 PM — loading = !isInitialized (pas !user && !isInitialized).
+  // Cause : appStore persiste user avec role='user' fallback (anti-XSS),
+  // donc user n'est jamais null au mount initial. La logique précédente
+  // donnait loading=false → guards évaluaient un faux role → cascade redirects.
+  // Fix : loading reste true tant que validateSession async n'a pas chargé le
+  // vrai role depuis profiles.
+  const loading = !isInitialized
 
   return {
     user,
