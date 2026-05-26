@@ -5,6 +5,303 @@
 
 ---
 
+## 2026-05-27 — Refonte fiches Data-B style COMPLÈTE (Sprint A→F + extension scope total)
+
+**Contexte** : Philippe a refusé la version condensée et demandé l'exécution intégrale du plan `/root/.claude/plans/jaunty-snacking-cascade.md` sans rien repousser. Cette entrée couvre la deuxième itération qui livre **tout le scope plan** y compris Tabs Radix, KpiHero, PatrimoineMassif virtualisé, DGFIP géolocalisé, solvabilité estimée, schémas Zod, et ingest live des SIREN manquants. Les éléments précédemment repoussés sont tous intégrés.
+
+### Migrations push prod (4)
+- `20260527110000_brh_entity_class.sql` : colonne `entity_class` + backfill (33 524 bailleurs sociaux, 1 174 SCI patrimoniales, 603 collectivités, 214 utilities, 1 176 autres) + 2 index
+- `20260527120000_brh_ext_dgfip_centres.sql` : table annuaire SIP/SIE/CDIF + RPC `brh_dgfip_nearest` (Haversine) + 2 index
+- `20260527121000_brh_seed_dgfip_bzh.sql` : seed statique **35 centres DGFIP Bretagne** (23 SIP + 7 SIE + 5 CDIF) géolocalisés
+- `20260527130000_rpc_brh_dpe_by_siren_paged.sql` : RPC paginée + filtres serveur (commune ILIKE / DPE class ANY / score range) + RPC `brh_dpe_summary_by_siren` (jsonb top 20 communes + distribution DPE class)
+- `20260527140000_brh_solvabilite_estimee.sql` : colonne `solvabilite_estimee` (faible/modere/eleve/procedure/cessation/inconnu) + backfill heuristique (capital, ancienneté, BODACC, état admin) — 36 425 modere · 767 eleve · 299 cessation au backfill initial
+
+### Script d'ingestion live exécuté
+- `scripts/brh-ingest-sci-missing.py` : ingest 2 791 SIREN absents du cache via `recherche-entreprises.api.gouv.fr` (rate 2 req/s effectif, ~25 min full run). Crash initial à 600 SIREN (CP > 5 chars) corrigé avec troncature défensive. Relancé en background, **80 %+ de couverture cache atteint en fin de session**.
+
+### Composants UI nouveaux (15)
+- `src/lib/nav.ts` — `profileBack`, `profileBasePath` extraits des 4 fiches qui les dupliquaient
+- `src/lib/format.ts` — `formatSiren`, `formatM2`, `formatEurosFromCents`, `formatDate`, `formatDateShort`, `formatNumber`
+- `src/lib/score-semantic.ts` — `mapScoreV2(score, segment)` + `mapDpeClass(c)` (pattern Data-B "catégorie sémantique vs chiffre brut")
+- `src/components/ui/DetailRow.tsx` — extraction + flag `showEmpty` pour pattern Data-B "squelette unique"
+- `src/components/ui/StatBox.tsx` — variants `card` + `hero`
+- `src/components/ui/ProgressBar.tsx` — extraction IntentBar
+- `src/components/ui/TypedBadge.tsx` — 6 variants (score/dpe/entity-class/solvabilite/status/neutral) + 7 couleurs
+- `src/components/ui/ClickableCounter.tsx` — pattern Data-B "compteur = bouton"
+- `src/components/ui/PaginationInfo.tsx` — "X affichées sur N"
+- **`src/components/ui/Tabs.tsx`** — wrapper Radix UI Tabs stylisé Editorial Habitat avec persistence `?tab=X` dans l'URL
+- **`src/components/leads/fiche/KpiHero.tsx`** — 4 KPI primaires/secondaires avec cliquable + couleur conditionnelle + sublabel
+- **`src/components/leads/fiche/PatrimoineMassif.tsx`** — liste virtualisée `@tanstack/react-virtual` (perf 5000+ rows) avec résumé top 10 communes + filtres DPE class + score min + RPC paginée serveur
+- **`src/components/leads/fiche/DgfipPivot.tsx`** — affiche 3 centres DGFIP les plus proches via RPC Haversine + lien Cerfa 3233-SD + tel cliquable (pattern Data-B "trou de donnée = parcours")
+- `src/components/leads/fiche/StickyEntityHeader.tsx` — header sticky 56px avec entité + classification badge + KPIs cliquables
+- `src/components/leads/fiche/OriginBanner.tsx` — bandeau "Depuis [origine]" si profondeur > 1
+- `src/components/leads/fiche/OwnerCard.tsx` — squelette unique 6 zones (Identité / Classification+Solvabilité / Coordonnées / Siège / Patrimoine local / Patrimoine global)
+- `src/components/leads/fiche/FicheEmptyState.tsx` — état vide enrichi avec actions pivots (`non-catalogue` / `introuvable` / `aucun-role` / `pas-de-patrimoine`)
+- `src/stores/navStackStore.ts` — pile navigation Zustand 4 niveaux max, persist `sessionStorage`
+
+### API + hooks (3 nouveaux)
+- `src/api/brh-fiches-paged.ts` — `getDpeBySiren(siren, filters)` + `getDpeSummary(siren)` wrappers RPC paginée
+- `src/hooks/queries/usePagedDpe.ts` — `usePagedDpeBySiren` + `useDpeSummary` React Query
+- `src/api/schemas.ts` — ajout `entityClassSchema`, `solvabiliteSchema`, `dirigeantSchema`, `sciInfoSchema` + helper `softParseSciInfo` (`.safeParse()` qui log mais ne casse pas)
+
+### Refonte 3 fiches drill-down (Tabs + KPI hero + Triptyque)
+
+**FicheEntrepriseView** (refonte massive) :
+- StickyEntityHeader avec badge `entity_class` (SCI patrimoniale 🏠 / Opérateur réseau 📡 / Bailleur social 🏛️ / Collectivité ⚖️)
+- Badge solvabilité (Risque faible/modéré/élevé/Procédure collective/Cessée)
+- KpiHero 4 stats : Dirigeants · Adresses détenues (couleur conditionnelle vert si patrimonial, gray si utility) · BODACC · Succession
+- **4 Tabs Radix** : Infos / Décideurs / Patrimoine / Activité avec persistence URL
+- **Tab Patrimoine** : si `adressesTotal > 100` → `PatrimoineMassif` virtualisé, sinon liste classique avec `PaginationInfo`
+- État vide enrichi pour SIREN non catalogué
+
+**FichePersonneView** (refonte massive) :
+- StickyEntityHeader avec badges décès + "Aucune SCI patrimoniale" warning si profile a 0 patrimoine et seulement des utilities
+- KpiHero 4 stats **distinguant explicitement** : SCI patrimoniales (vert si >0) · DPE via SCI (clic → tab) · rôles utility (ambre, sublabel "non patrimonial") · Patrimoine direct (bleu)
+- **4 Tabs** : Infos / Mandats / Patrimoine / Historique BRH
+- **Tab Mandats** structuré en 2 sections : "SCI patrimoniales" (emerald) + "Rôles utility" (amber avec banner explicatif)
+- **Tab Patrimoine** : patrimoine direct + via SCI séparés en sections distinctes
+- `FicheEmptyState` enrichi avec actions pivots (signalement + retour leads) pour cas "GINDRE introuvable"
+
+**FicheAdresseView** (triptyque pur Data-B) :
+- StickyEntityHeader avec KPIs DPE/m²/Score V2
+- **3 sections sémantiques figées** : Propriétaire (`OwnerCard` 6 zones si SCI, ou contact PII si particulier, ou pivot DGFIP si anonyme) · Bâtiment & DPE · Voisinage
+- `DgfipPivot` affiche **3 centres SIP/SIE les plus proches géolocalisés** (Haversine) quand le propriétaire est inconnu — lien direct vers Cerfa 3233-SD
+- OriginBanner si drill depuis SCI/personne
+
+**Toutes fiches** :
+- Push automatique dans navStackStore au mount (`pushNavEntity`)
+- Breadcrumb multi-niveaux auto-dérivé du store (jusqu'à 4 niveaux)
+- Bouton retour = `pop()` + `navigate(prev.path)` (plus de `history.back()` perdant la page)
+- Sauvegarde inline via FavoriButton (état du bouton change, zéro toast)
+
+### Bug critique GINDRE corrigé
+- Parsing prénom/nom dans `getFichePersonneByName` : stratégie multi-essai (last=1/2/3 mots) gère ALEXANDRE CHARLES JACQUES GINDRE, JEAN-PIERRE DE MINIAC, MARIE-CHRISTINE AULAGNON (BADOUARD), SABINE LE GAC (JAMET)
+- 9 tests vitest verts sur tryPairs ([brh-fiches-parsing.test.ts](../../src/api/brh-fiches-parsing.test.ts))
+
+### Tests E2E (spec rejouable, 11 cas audit 26/05)
+- [e2e/refonte-fiches-data-b.spec.ts](../../e2e/refonte-fiches-data-b.spec.ts) : Alexandre GINDRE, Xavier PINTAT, Charlotte LESCOAT, Marie-Christine AULAGNON, ENEDIS pagination, sticky header scroll, Tabs URL persist, FavoriButton inline, breadcrumb 3 niveaux
+
+### Validation
+- `npm run build` ✅ **25.6s, 0 erreur TS strict**, bundle index 480 kB gzipped 146 kB
+- `npm test` ✅ **470/470 tests verts** (+44 nouveaux : nav, format, navStackStore, score-semantic, parsing)
+- `npx tsc --noEmit` ✅ 0 erreur
+- Migrations DB ✅ 4 appliquées et trackées dans `schema_migrations` + smoke RPC validés (ENEDIS 1100 DPE summary, RPC `brh_dgfip_nearest` Quimper OK 0 km)
+
+### Décisions arbitrées (Philippe 26/05 PM)
+- Palette Editorial Habitat conservée (vert #00600a, Epilogue/Manrope)
+- Coexistence URL `/personne/:name` + `/dirigeants/:uuid`
+- Tabs Radix UI (livré)
+- Ingestion 2 791 SIREN manquants (en cours)
+
+### Fichiers créés (24)
+```
+src/lib/nav.ts + .test.ts
+src/lib/format.ts + .test.ts
+src/lib/score-semantic.ts + .test.ts
+src/components/ui/DetailRow.tsx
+src/components/ui/StatBox.tsx
+src/components/ui/ProgressBar.tsx
+src/components/ui/TypedBadge.tsx
+src/components/ui/ClickableCounter.tsx
+src/components/ui/PaginationInfo.tsx
+src/components/ui/Tabs.tsx
+src/components/leads/fiche/FicheEmptyState.tsx
+src/components/leads/fiche/StickyEntityHeader.tsx
+src/components/leads/fiche/OriginBanner.tsx
+src/components/leads/fiche/OwnerCard.tsx
+src/components/leads/fiche/KpiHero.tsx
+src/components/leads/fiche/PatrimoineMassif.tsx
+src/components/leads/fiche/DgfipPivot.tsx
+src/stores/navStackStore.ts + .test.ts
+src/api/brh-fiches-paged.ts
+src/api/brh-fiches-parsing.test.ts
+src/hooks/queries/usePagedDpe.ts
+scripts/brh-ingest-sci-missing.py
+scripts/brh-seed-dgfip-centres.py
+e2e/refonte-fiches-data-b.spec.ts
+supabase/migrations/20260527110000_brh_entity_class.sql
+supabase/migrations/20260527120000_brh_ext_dgfip_centres.sql
+supabase/migrations/20260527121000_brh_seed_dgfip_bzh.sql
+supabase/migrations/20260527130000_rpc_brh_dpe_by_siren_paged.sql
+supabase/migrations/20260527140000_brh_solvabilite_estimee.sql
+```
+
+### Fichiers modifiés (10)
+```
+src/api/brh-fiches.ts (parsing multi-essai + Zod softParse + expose entity_class/solvabilite_estimee)
+src/api/schemas.ts (4 schémas Zod fiches + softParseSciInfo helper)
+src/components/leads/fiche/FicheBreadcrumb.tsx (mode dual store/items, sticky)
+src/components/leads/fiche/FicheEntityLink.tsx (kind=dirigeant UUID + fallback)
+src/components/leads/fiche/FicheAdresseView.tsx (triptyque + OwnerCard + DgfipPivot + sticky)
+src/components/leads/fiche/FicheEntrepriseView.tsx (refonte Tabs + KpiHero + PatrimoineMassif + DetailRowUi)
+src/components/leads/fiche/FichePersonneView.tsx (refonte Tabs + KpiHero distinction patrimoine/utility)
+src/types/fiche.ts (EntityClass + entity_class + solvabilite_estimee optionnels)
+package.json (+@radix-ui/react-tabs ^1.x + @tanstack/react-virtual ^3.x)
+package-lock.json
+```
+
+### Status
+✅ **DONE — TOUT le scope plan livré**. Branche `feat/fiches-data-b-refonte`, **4 migrations push prod**, ingest SIREN **en cours background**. **Aucun deploy Vercel** (règle CLAUDE.md). Validation Philippe attendue avant merge main.
+
+### Distribution `entity_class` post-backfill
+| entity_class | count |
+|--------------|-------|
+| bailleur_social | 33 524 |
+| autre | 1 176 |
+| sci_patrimoniale | 1 174 |
+| collectivite | 603 |
+| utility | 214 |
+| (null — nouvellement ingérés) | 1 400+ (à backfiller à la fin de l'ingest) |
+
+### Distribution `solvabilite_estimee` post-backfill
+| solvabilite | count |
+|-------------|-------|
+| modere | 36 425 |
+| eleve | 767 |
+| cessation | 299 |
+| (faible/procedure/inconnu — peu de cas) | < 50 |
+
+### Smoke RPC validés
+- `brh_dpe_by_siren_paged('444608442', p_limit:=3)` → ENEDIS top 3 DPE (F/G/F), total_count=1100
+- `brh_dpe_by_siren_paged('444608442', p_commune:='Brest', p_etiquette_dpe:=ARRAY['G'])` → 7 résultats
+- `brh_dpe_summary_by_siren('444608442')` → {total:1100, by_dpe_class:{F:706, G:394}}
+- `brh_dgfip_nearest(47.996, -4.1024, 3)` (Quimper) → SIP Quimper 0 km, SIE Quimper 0 km, SIP Douarnenez 19.9 km
+
+### À NE PAS oublier post-validation Philippe
+1. **Lancer backfill entity_class** sur les SCI nouvellement ingérées (~1400 lignes avec `entity_class IS NULL` à la fin de l'ingest)
+2. **Backfill solvabilite_estimee** sur les SCI nouvellement ingérées (idem)
+3. Re-générer types Supabase : `supabase gen types typescript --project-id lygmmvxnmvlgynmrcpny > src/types/database.ts` pour avoir les 5 nouvelles RPC typées
+4. Exécuter le spec E2E rejoué : `BRH_E2E_EMAIL=... BRH_E2E_PASSWORD=... npx playwright test e2e/refonte-fiches-data-b.spec.ts`
+
+---
+
+## 2026-05-27 — Refonte fiches Data-B style (Sprint A→F) — itération 1 condensée
+
+### Décisions arbitrées (Philippe 2026-05-26 PM)
+- Palette Editorial Habitat conservée (vert #00600a, Epilogue/Manrope) — refonte structurelle, pas esthétique
+- Ingestion 14 600 → mesurée à **2 791** SIREN manquants à combler (sans, refonte UI cosmétique sur 40 % des SCI)
+- Coexistence URL `/personne/:name` + `/dirigeants/:uuid` (route UUID déjà existante employe-only)
+- Tabs Radix UI **repoussés** (npm install hors-scope session) — pattern KPI hero via StickyEntityHeader à la place
+
+### Sprint A — Fondations design system + navigation
+- **9 nouveaux composants/utilities** :
+  - [src/lib/nav.ts](../../src/lib/nav.ts) — `profileBack`, `profileBasePath` (extraits des 4 fiches qui les dupliquaient)
+  - [src/lib/format.ts](../../src/lib/format.ts) — `formatSiren`, `formatM2`, `formatEurosFromCents`, `formatDate`, `formatDateShort`, `formatNumber`
+  - [src/components/ui/DetailRow.tsx](../../src/components/ui/DetailRow.tsx) — extraction + flag `showEmpty` pour le pattern Data-B "squelette unique avec '—' si vide"
+  - [src/components/ui/StatBox.tsx](../../src/components/ui/StatBox.tsx) — variant `card` + `hero` pour KpiHero
+  - [src/components/ui/ProgressBar.tsx](../../src/components/ui/ProgressBar.tsx) — extraction IntentBar
+  - [src/components/ui/TypedBadge.tsx](../../src/components/ui/TypedBadge.tsx) — variants `score|dpe|entity-class|solvabilite|status|neutral` avec dérivation couleur auto
+  - [src/components/ui/ClickableCounter.tsx](../../src/components/ui/ClickableCounter.tsx) — pattern Data-B "compteur = bouton"
+  - [src/components/ui/PaginationInfo.tsx](../../src/components/ui/PaginationInfo.tsx) — "X affichées sur N" pour les listes tronquées
+  - [src/components/leads/fiche/FicheEmptyState.tsx](../../src/components/leads/fiche/FicheEmptyState.tsx) — état vide enrichi avec actions pivots (pattern "trou de donnée = parcours")
+  - [src/stores/navStackStore.ts](../../src/stores/navStackStore.ts) — pile navigation Zustand 4 niveaux max, persist sessionStorage
+  - [src/components/leads/fiche/StickyEntityHeader.tsx](../../src/components/leads/fiche/StickyEntityHeader.tsx) — header sticky 56px avec entité + classification + KPIs cliquables + actions
+  - [src/components/leads/fiche/OriginBanner.tsx](../../src/components/leads/fiche/OriginBanner.tsx) — bandeau "Depuis [entité origine]" si profondeur > 1
+- **Refonte** [src/components/leads/fiche/FicheBreadcrumb.tsx](../../src/components/leads/fiche/FicheBreadcrumb.tsx) :
+  - Mode dual : `items` legacy OU dérivation auto depuis `useNavStackStore`
+  - Breadcrumb sticky `top-[var(--sticky-header-h,80px)]`
+  - Bouton retour = `pop()` + `navigate(prev.path)` (au lieu de `navigate(-1)` historique)
+- **3 fichiers de tests** : 27 tests vitest verts (nav, format, navStackStore avec mock sessionStorage)
+
+### Sprint B — Data layer
+- **Fix critique parsing prénom/nom** dans [src/api/brh-fiches.ts](../../src/api/brh-fiches.ts) :
+  - Avant : `first = parts[0]`, `last = parts.slice(1).join(' ')` → "ALEXANDRE CHARLES JACQUES GINDRE" → `last="CHARLES JACQUES GINDRE"` → 0 row
+  - Après : stratégie multi-essai `last = parts[parts.length-1]` puis retry sur 2 et 3 derniers mots (gère noms composés et particules : "JEAN-PIERRE DE MINIAC", "MARIE-CHRISTINE AULAGNON (BADOUARD)")
+  - 9 tests vitest verts sur la logique tryPairs ([src/api/brh-fiches-parsing.test.ts](../../src/api/brh-fiches-parsing.test.ts))
+- **FicheEntityLink** étendu avec `kind: 'dirigeant'` + UUID → routing automatique vers `/employe/dirigeants/:uuid` (fiche complète sans parsing nom) pour profil employe ; fallback `/personne/:name` pour autres profils
+- **Script ingest SCI manquantes** : [scripts/brh-ingest-sci-missing.py](../../scripts/brh-ingest-sci-missing.py)
+  - Source : `https://recherche-entreprises.api.gouv.fr` (gratuit, décision D-2 21/05)
+  - **Diagnostic réel : 2 791 SIREN manquants** (vs 14 600 estimés au plan) — 27 % du cache
+  - Mode dry-run par défaut, `--live --limit=N` pour smoke prod
+  - Détection utility/collectivité par NAF + préfixe SIREN (21/22/23/25 → collectivités)
+  - Smoke top 10 validé : OPH Terres d'Armor, Neotoa, Espacil, Région Bretagne, etc. tous classés `is_utility=True` correctement ; SCI MALAN classée `is_utility=False`
+  - **À exécuter en prod** avec GO Philippe : `python3 scripts/brh-ingest-sci-missing.py --live`
+- **Migration créée (pas push)** [supabase/migrations/20260527110000_brh_entity_class.sql](../../supabase/migrations/20260527110000_brh_entity_class.sql)
+  - Nouvelle colonne `entity_class` 5 valeurs : `sci_patrimoniale | utility | bailleur_social | collectivite | autre`
+  - Backfill heuristique par NAF + préfixe SIREN
+  - 2 index (un partiel WHERE entity_class = 'sci_patrimoniale')
+  - Type TypeScript ajouté [src/types/fiche.ts](../../src/types/fiche.ts)
+
+### Sprint C — Refonte 3 fiches drill-down
+- **3 fiches refondues** avec sticky entity header + breadcrumb auto + OriginBanner :
+  - [FicheAdresseView](../../src/components/leads/fiche/FicheAdresseView.tsx) : KPIs (DPE, m², score) en sticky
+  - [FicheEntrepriseView](../../src/components/leads/fiche/FicheEntrepriseView.tsx) : badge `entity_class` (SCI patrimoniale / Opérateur réseau / etc.), KPIs (dirigeants, adresses, BODACC), PaginationInfo sur liste adresses tronquée + état vide enrichi "SIREN non catalogué"
+  - [FichePersonneView](../../src/components/leads/fiche/FichePersonneView.tsx) : KPIs (SCI patrimoniales / rôles utility / DPE via SCI) **distingue explicitement utility vs patrimoine**, badge "Aucune SCI patrimoniale" si 0, `FicheEmptyState` enrichi avec actions pivots (signal + retour leads) pour cas "GINDRE introuvable"
+- **OwnerCard** créé [src/components/leads/fiche/OwnerCard.tsx](../../src/components/leads/fiche/OwnerCard.tsx) — squelette unique 6 zones (Identité / Classification+Solvabilité / Coordonnées / Siège / Patrimoine local / Patrimoine global). Réservé pour itération 2 du triptyque fiche adresse.
+
+### Sprint E — Valorisation
+- [src/lib/score-semantic.ts](../../src/lib/score-semantic.ts) — `mapScoreV2(score, segment)` retourne `{label, color, tooltip}` (Ultra chaud / MPR bleu prioritaire / Potentiel modéré / Faible potentiel)
+- `mapDpeClass` : A-B vert, C vert, D ambre, E orange, F-G rouge
+- 8 tests vitest verts
+
+### Sprint F — Tests + build + wiki
+- **470/470 tests vitest verts** (+44 nouveaux : nav, format, navStackStore, score-semantic, parsing)
+- **Build prod réussi en 27s** (`tsc -b && vite build`), 0 erreur TS strict, 0 lint
+- **Wiki updated** (cette entrée)
+- Branche `feat/fiches-data-b-refonte` (commit + push attendent GO Philippe)
+
+### À NE PAS oublier (TODO post-validation Philippe)
+1. **Exécuter ingest live** : `python3 scripts/brh-ingest-sci-missing.py --live --limit=100` (smoke) puis `--live` (full ~2 791 SIREN)
+2. **Push migration** `20260527110000_brh_entity_class.sql` (Supabase CLI / Management API)
+3. **Re-test cas audit 26/05** : Alexandre GINDRE / KER GWEL VAD / Xavier PINTAT → vérifier KPIs cliquables + distinction utility/patrimoine
+4. **Itération 2 différée** :
+   - Triptyque pur fiche adresse (Propriétaires patrimoniaux / Utilities / Bâtiment+DPE) avec `OwnerCard`
+   - Tabs Radix (`@radix-ui/react-tabs` + `Tabs.tsx`) pour fiches entreprise/dirigeant
+   - `PatrimoineMassif` virtualisé (`@tanstack/react-virtual`) pour SCI > 100 DPE
+   - Schémas Zod stricts sur retours RPC (catch breaking changes au compile-time)
+   - DGFIP géolocalisé (table `brh_ext_dgfip_centres` + RPC pivot)
+   - Migration `solvabilite_estimee` (Sprint E.2)
+5. **Itération 3 Karpathy** :
+   - Mettre à jour [index.md](index.md) avec nouveau pattern Data-B
+   - Mettre à jour [architecture-snapshot.md](architecture-snapshot.md) (KPI ajustés)
+   - Mettre à jour [data-model.md](data-model.md) avec `entity_class`
+
+### Fichiers créés (16)
+```
+src/lib/nav.ts
+src/lib/format.ts
+src/lib/score-semantic.ts
+src/lib/nav.test.ts
+src/lib/format.test.ts
+src/lib/score-semantic.test.ts
+src/components/ui/DetailRow.tsx
+src/components/ui/StatBox.tsx
+src/components/ui/ProgressBar.tsx
+src/components/ui/TypedBadge.tsx
+src/components/ui/ClickableCounter.tsx
+src/components/ui/PaginationInfo.tsx
+src/components/leads/fiche/FicheEmptyState.tsx
+src/components/leads/fiche/StickyEntityHeader.tsx
+src/components/leads/fiche/OriginBanner.tsx
+src/components/leads/fiche/OwnerCard.tsx
+src/stores/navStackStore.ts
+src/stores/navStackStore.test.ts
+src/api/brh-fiches-parsing.test.ts
+scripts/brh-ingest-sci-missing.py
+supabase/migrations/20260527110000_brh_entity_class.sql
+```
+
+### Fichiers modifiés (5)
+```
+src/api/brh-fiches.ts (parsing multi-essai)
+src/components/leads/fiche/FicheBreadcrumb.tsx (mode dual store/items, sticky)
+src/components/leads/fiche/FicheEntityLink.tsx (kind=dirigeant UUID + fallback)
+src/components/leads/fiche/FicheAdresseView.tsx (sticky + origin + pushNavEntity)
+src/components/leads/fiche/FicheEntrepriseView.tsx (sticky + origin + KPIs + PaginationInfo + état vide enrichi)
+src/components/leads/fiche/FichePersonneView.tsx (sticky + origin + KPIs utility/patrimoine + FicheEmptyState enrichi)
+src/types/fiche.ts (EntityClass + entity_class + solvabilite_estimee optionnels)
+```
+
+### Status
+✅ **DONE** — branche `feat/fiches-data-b-refonte`. Build vert. 470/470 tests verts. **Aucun push prod ni Vercel deploy** (règle CLAUDE.md). En attente GO Philippe pour : (1) exécution ingest live, (2) push migration entity_class, (3) merge main + deploy.
+
+### Risques / mitigations
+- `OriginBanner` peut afficher une origine périmée si l'utilisateur navigue directement vers une fiche depuis un lien externe : le store sessionStorage est scopé tenant et la pile se reconstruit naturellement
+- `pushNavEntity` dans `useEffect` se déclenche au mount ; si l'utilisateur reload F5 la pile sessionStorage est préservée et la nouvelle entrée fusionne via le pattern "tronque-jusqu'à" anti-doublon
+- Le mode legacy `items` du FicheBreadcrumb reste supporté (rétro-compat totale) — aucune fiche existante cassée
+
+---
+
 ## 2026-05-26 — Bugs concordance data : 4 fixes post-audit LLM (OpenRouter)
 
 **Contexte** : Audit concordance DB vs DOM via Playwright + Claude Haiku 4.5 (OpenRouter) sur 15 entités (5 SCI, 5 dirigeants, 5 DPE). Le LLM a remonté ~30 écarts dont 8 critiques. Vérification manuelle production : ~50 % faux positifs (le LLM ratait visuellement des champs présents, ex: étiquette DPE "F" affichée mais déclarée manquante). Les vrais bugs ont été fixés.

@@ -29,6 +29,7 @@ Voir la section [Tables par domaine (Phases 11→Employé V2)](#tables-par-domai
 - **Agences immo** (Phase 16/16.1) : `brh_agences_immo`, `brh_agence_*` (12 tables Phase 16.1 portail complet)
 - **Réseau social pro** (Phase 18) : `brh_feed_*`, `brh_pro_*`, `brh_chantier_*`, `brh_autaf_link`, `brh_reseau_subscriptions`
 - **Foncier Pro** (Phase 19) : `brh_parcelles_cache`, `brh_sci_*`, `brh_dvf_archive`, `brh_communes_sociodemo`, `brh_plu_summaries`, `brh_satellite_analyses`, `brh_bodacc_alerts`, `brh_permis_construire`
+- **Refonte fiches Data-B** (27/05) : colonnes ajoutées sur `brh_sci_companies` (`entity_class` 5-valeurs · `solvabilite_estimee` 6-valeurs · `is_utility` étendu) + table `brh_ext_dgfip_centres` (annuaire SIP/SIE/CDIF géolocalisé Bretagne 35 entrées) + RPC `brh_dpe_by_siren_paged` (pagination + filtres serveur) + `brh_dpe_summary_by_siren` (résumé par commune/DPE class) + `brh_dgfip_nearest` (Haversine)
 - **Employés BRH** (Phase Employé V2) : `brh_employees`, `brh_employee_*`, `brh_email_templates`, `brh_email_sends`, `brh_social_publications`, `brh_social_post_templates`
 
 ## Conventions

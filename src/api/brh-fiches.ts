@@ -8,6 +8,7 @@
 import { supabase } from '@/lib/supabase'
 import type { LeadRow } from '@/types/lead'
 import type { FicheAdresse, FicheEntreprise, FichePersonne, SciInfo, Dirigeant } from '@/types/fiche'
+import { softParseSciInfo } from './schemas'
 
 /**
  * Normalise un nom comme la colonne `brh_dirigeants.nom_norm` (migration 20260519240000) :
@@ -24,7 +25,7 @@ function normalizeSci(row: Record<string, unknown>): SciInfo {
   const dirigeants: Dirigeant[] = Array.isArray(dirigeantsRaw)
     ? (dirigeantsRaw as Dirigeant[])
     : []
-  return {
+  const raw = {
     siren: String(row.siren),
     denomination: String(row.denomination ?? ''),
     forme_juridique: (row.forme_juridique as string) ?? null,
@@ -44,7 +45,12 @@ function normalizeSci(row: Record<string, unknown>): SciInfo {
     dirigeants,
     has_deceased_dirigeant: row.has_deceased_dirigeant === true,
     succession_probable_score: (row.succession_probable_score as number) ?? 0,
+    // 27/05 — exposition entity_class + solvabilite_estimee (mig 20260527110000 + 140000)
+    entity_class: (row.entity_class as SciInfo['entity_class']) ?? null,
+    solvabilite_estimee: (row.solvabilite_estimee as string) ?? null,
   }
+  // Validation soft (Zod safe-parse — log mais ne casse pas l'UI)
+  return softParseSciInfo(raw) as SciInfo
 }
 
 export const brhFichesApi = {
@@ -175,57 +181,85 @@ export const brhFichesApi = {
    * JSONB + brh_dpe_prospects.particulier_name. À enrichir avec entity-hub via tunnel.
    */
   async getFichePersonneByName(fullName: string): Promise<FichePersonne | null> {
-    // 26/05 — Parsing FR : URL = `prenom nom` (ex: "MARIE-CHRISTINE AULAGNON (BADOUARD)").
-    // Le premier mot est toujours le prénom (joint en `${prenom} ${nom}` au build URL).
-    // Le reste = nom complet, qui peut contenir espaces/parenthèses ("AULAGNON (BADOUARD)").
-    // La normalisation côté DB (brh_dirigeants.nom_norm) = lower + strip non-alpha,
-    // donc on compare via la même règle (cf normalizeNameDb ci-dessous).
+    // 27/05 — Parsing FR robuste (bug GINDRE corrigé).
+    // URL = `prenom nom` mais le prénom peut être composé multi-mots :
+    //   "ALEXANDRE CHARLES JACQUES GINDRE" → last="GINDRE", first="ALEXANDRE CHARLES JACQUES"
+    //   "MARYLENE FAURE"                   → last="FAURE", first="MARYLENE"
+    //   "JEAN-PIERRE DE MINIAC"            → ess.1 last="MINIAC"; si 0 match, ess.2 last="DE MINIAC"
+    //   "MARIE-CHRISTINE AULAGNON (BADOUARD)" → ess.1 last="(BADOUARD)" (RPC v3 strip parens),
+    //                                            si 0 match ess.2 last="AULAGNON (BADOUARD)"
+    // Stratégie multi-essai : 1 → 2 → 3 derniers mots concaténés.
     const parts = fullName.split(/\s+/).filter(Boolean)
     if (parts.length === 0) return null
-    const first = parts[0]
-    const last = parts.length > 1 ? parts.slice(1).join(' ') : parts[0]
 
-    // Recherche via RPC dédiée (PostgREST ne sait pas caster jsonb→text dans .ilike).
-    // La RPC v3 (mig 20260526100000) normalise p_name côté SQL pour matcher nom_norm.
-    const { data: sciHits, error: e1 } = await supabase.rpc('brh_sci_search_dirigeant', {
-      p_name: last,
-      p_limit: 30,
-    })
-    if (e1) throw e1
+    // Génère les couples (first, last) à tester dans l'ordre de priorité.
+    const tryPairs: Array<{ first: string; last: string }> = []
+    for (let lastWords = 1; lastWords <= Math.min(3, parts.length); lastWords++) {
+      const last = parts.slice(-lastWords).join(' ')
+      const first = parts.slice(0, -lastWords).join(' ')
+      tryPairs.push({ first, last })
+    }
+    // Filet de sécurité : si on n'a qu'un seul mot, essayer aussi le mot complet en `last`.
+    if (parts.length === 1) tryPairs.push({ first: '', last: parts[0] })
 
-    const roles: FichePersonne['roles'] = []
-    const utilitySirens = new Set<string>()
+    let roles: FichePersonne['roles'] = []
     let deathDate: string | null = null
     let birthDate: string | null = null
+    let matchedFirst = ''
+    let matchedLast = parts[parts.length - 1] // fallback identitaire
 
-    for (const sciHit of sciHits ?? []) {
-      // RPC v4 ajoute is_utility, pas encore dans le type généré.
-      const sciRow = sciHit as typeof sciHit & { is_utility?: boolean }
-      const dirs: Dirigeant[] = Array.isArray(sciRow.dirigeants)
-        ? (sciRow.dirigeants as unknown as Dirigeant[])
-        : []
-      const me = dirs.find(
-        (d) =>
-          normalizeNameDb(d.nom ?? '') === normalizeNameDb(last) &&
-          (!first || normalizeNameDb(d.prenom ?? '').includes(normalizeNameDb(first))),
-      )
-      if (!me) continue
-      const siren = String(sciRow.siren)
-      const isUtility = sciRow.is_utility === true
-      if (isUtility) utilitySirens.add(siren)
-      roles.push({
-        siren,
-        denomination: String(sciRow.denomination ?? ''),
-        qualite: me.qualite ?? null,
-        is_active: sciRow.is_active !== false,
-        has_deceased_dirigeant: sciRow.has_deceased_dirigeant,
-        is_utility: isUtility,
+    for (const { first, last } of tryPairs) {
+      // Recherche via RPC dédiée (PostgREST ne sait pas caster jsonb→text dans .ilike).
+      // La RPC v3 (mig 20260526100000) normalise p_name côté SQL pour matcher nom_norm.
+      const { data: sciHits, error: e1 } = await supabase.rpc('brh_sci_search_dirigeant', {
+        p_name: last,
+        p_limit: 30,
       })
-      if (me.est_decede && me.deces_date) deathDate = me.deces_date
-      if (me.date_naissance) birthDate = me.date_naissance
+      if (e1) throw e1
+
+      const tryRoles: FichePersonne['roles'] = []
+      let tryDeath: string | null = null
+      let tryBirth: string | null = null
+
+      for (const sciHit of sciHits ?? []) {
+        // RPC v4 ajoute is_utility, pas encore dans le type généré.
+        const sciRow = sciHit as typeof sciHit & { is_utility?: boolean }
+        const dirs: Dirigeant[] = Array.isArray(sciRow.dirigeants)
+          ? (sciRow.dirigeants as unknown as Dirigeant[])
+          : []
+        const me = dirs.find(
+          (d) =>
+            normalizeNameDb(d.nom ?? '') === normalizeNameDb(last) &&
+            (!first || normalizeNameDb(d.prenom ?? '').includes(normalizeNameDb(first))),
+        )
+        if (!me) continue
+        const siren = String(sciRow.siren)
+        const isUtility = sciRow.is_utility === true
+        tryRoles.push({
+          siren,
+          denomination: String(sciRow.denomination ?? ''),
+          qualite: me.qualite ?? null,
+          is_active: sciRow.is_active !== false,
+          has_deceased_dirigeant: sciRow.has_deceased_dirigeant,
+          is_utility: isUtility,
+        })
+        if (me.est_decede && me.deces_date) tryDeath = me.deces_date
+        if (me.date_naissance) tryBirth = me.date_naissance
+      }
+
+      if (tryRoles.length > 0) {
+        roles = tryRoles
+        deathDate = tryDeath
+        birthDate = tryBirth
+        matchedFirst = first
+        matchedLast = last
+        break
+      }
     }
 
     if (roles.length === 0) return null
+    const first = matchedFirst
+    const last = matchedLast
 
     // 26/05 PM — Bug audit Opus : ENEDIS/ORANGE/SNCF flagués is_utility en DB.
     // Ces sociétés ne détiennent PAS de patrimoine (faux match owner_siren).
