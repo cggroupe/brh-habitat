@@ -124,11 +124,13 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                     key={r.siren}
                     kind="entreprise"
                     id={r.siren}
-                    label={r.denomination}
+                    label={r.denomination + (r.is_utility ? ' (utility — pas un patrimoine)' : '')}
                     sublabel={[
                       r.qualite,
                       r.is_active ? 'Société active' : 'Société radiée',
-                      r.nb_dpe ? `${r.nb_dpe} DPE détenus` : null,
+                      // Pas de "X DPE détenus" pour les utilities : les DPE sous owner_siren=ENEDIS
+                      // ne sont pas son patrimoine, juste des bâtiments raccordés.
+                      !r.is_utility && r.nb_dpe ? `${r.nb_dpe} DPE détenus` : null,
                     ]
                       .filter(Boolean)
                       .join(' · ')}

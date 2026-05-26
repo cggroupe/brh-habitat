@@ -154,6 +154,7 @@ export const brhFichesApi = {
 
     return {
       sci,
+      is_utility: (sciRow as Record<string, unknown>).is_utility === true,
       adresses: (adr ?? []) as FicheEntreprise['adresses'],
       adresses_total: adressesTotal ?? (adr?.length ?? 0),
       bodacc,
@@ -184,10 +185,13 @@ export const brhFichesApi = {
     if (e1) throw e1
 
     const roles: FichePersonne['roles'] = []
+    const utilitySirens = new Set<string>()
     let deathDate: string | null = null
     let birthDate: string | null = null
 
-    for (const sciRow of sciHits ?? []) {
+    for (const sciHit of sciHits ?? []) {
+      // RPC v4 ajoute is_utility, pas encore dans le type généré.
+      const sciRow = sciHit as typeof sciHit & { is_utility?: boolean }
       const dirs: Dirigeant[] = Array.isArray(sciRow.dirigeants)
         ? (sciRow.dirigeants as unknown as Dirigeant[])
         : []
@@ -197,12 +201,16 @@ export const brhFichesApi = {
           (!first || normalizeNameDb(d.prenom ?? '').includes(normalizeNameDb(first))),
       )
       if (!me) continue
+      const siren = String(sciRow.siren)
+      const isUtility = sciRow.is_utility === true
+      if (isUtility) utilitySirens.add(siren)
       roles.push({
-        siren: String(sciRow.siren),
+        siren,
         denomination: String(sciRow.denomination ?? ''),
         qualite: me.qualite ?? null,
         is_active: sciRow.is_active !== false,
         has_deceased_dirigeant: sciRow.has_deceased_dirigeant,
+        is_utility: isUtility,
       })
       if (me.est_decede && me.deces_date) deathDate = me.deces_date
       if (me.date_naissance) birthDate = me.date_naissance
@@ -210,11 +218,10 @@ export const brhFichesApi = {
 
     if (roles.length === 0) return null
 
-    // 26/05 — fetch patrimoine via SCI (DPE owner_siren ∈ rôles).
-    // Audit Philippe : ENEDIS a 1100 DPE en DB, mais PostgREST cap par défaut
-    // à 1000 rows max → on affichait 1000/1100. Solution : count exact pour
-    // afficher le total même quand le retour est plafonné.
-    const sirens = roles.map((r) => r.siren).filter(Boolean)
+    // 26/05 PM — Bug audit Opus : ENEDIS/ORANGE/SNCF flagués is_utility en DB.
+    // Ces sociétés ne détiennent PAS de patrimoine (faux match owner_siren).
+    // → patrimoine via SCI EXCLUT les utilities ; rôles les conservent (info publique vraie).
+    const sirens = roles.filter((r) => !r.is_utility).map((r) => r.siren).filter(Boolean)
     let patrimoineViaSci: NonNullable<FichePersonne['patrimoine_via_sci']> = []
     const rolesNbDpe = new Map<string, number>()
     const rolesNbDpeTotal = new Map<string, number>()

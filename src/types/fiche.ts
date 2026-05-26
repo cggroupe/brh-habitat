@@ -56,6 +56,9 @@ export interface FicheAdresse {
 export interface FicheEntreprise {
   /** Identité SCI/société */
   sci: SciInfo
+  /** true si l'entité est un utility (ENEDIS, ORANGE, SNCF...). Affiche un banner :
+   *  les DPE listés correspondent au titulaire du compteur, pas au propriétaire foncier. */
+  is_utility: boolean
   /** Adresses détenues par cette société (DPE) */
   adresses: Array<{
     id: number
@@ -98,6 +101,9 @@ export interface FichePersonne {
     has_deceased_dirigeant?: boolean
     /** Nombre de DPE détenus par cette SCI (count `brh_dpe_prospects.owner_siren = siren`). */
     nb_dpe?: number
+    /** true si l'entité est un utility (ENEDIS, ORANGE, SNCF...). Le rôle reste affiché
+     *  (info publique vraie) mais le patrimoine via SCI est exclu (faux match owner_siren). */
+    is_utility?: boolean
   }>
   /** Adresses détenues directement (propriétaire particulier dans brh_dpe_prospects) */
   patrimoine_direct: Array<{

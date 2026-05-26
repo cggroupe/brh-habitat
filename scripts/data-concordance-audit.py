@@ -55,9 +55,10 @@ OUT_DIR.mkdir(exist_ok=True)
 SCREENSHOT_DIR = OUT_DIR / "concordance-screenshots"
 SCREENSHOT_DIR.mkdir(exist_ok=True)
 
-# OpenRouter (proxy compatible OpenAI SDK) — claude-haiku-4.5
+# OpenRouter (proxy compatible OpenAI SDK).
+# Surchargable via env var BRH_AUDIT_MODEL (ex: anthropic/claude-opus-4.7).
 claude = OpenAI(api_key=OPENROUTER_KEY, base_url="https://openrouter.ai/api/v1")
-LLM_MODEL = "anthropic/claude-haiku-4.5"
+LLM_MODEL = os.environ.get("BRH_AUDIT_MODEL", "anthropic/claude-haiku-4.5")
 
 
 def load_db_url() -> str:
@@ -150,11 +151,15 @@ def login(page: Page) -> bool:
     return True
 
 
-def extract_dom_text(page: Page, max_chars: int = 4000) -> str:
-    """Récupère le texte visible utile (filtré pour économiser tokens)."""
+def extract_dom_text(page: Page, max_chars: int = 6000) -> str:
+    """Récupère le texte visible utile (filtré pour économiser tokens).
+
+    26/05 — fix : NE PAS filtrer les lignes d'1 char. Étiquettes DPE 'F', 'G',
+    'E' = 1 char → l'ancien `> 1` les supprimait, le LLM concluait à tort
+    "classe DPE vide" (~50 % des faux positifs de l'audit Haiku & Opus).
+    """
     text = page.locator("main, [role='main']").first.inner_text(timeout=5_000)
-    # Filtre lignes trop courtes/répétées
-    lines = [l.strip() for l in text.split("\n") if len(l.strip()) > 1]
+    lines = [l.strip() for l in text.split("\n") if l.strip()]
     return "\n".join(lines)[:max_chars]
 
 

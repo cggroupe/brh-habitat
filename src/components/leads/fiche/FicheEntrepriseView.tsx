@@ -46,6 +46,7 @@ export default function FicheEntrepriseView({ siren, profile }: Props) {
 
   const { sci, adresses, bodacc } = data
   const adressesTotal = data.adresses_total ?? adresses.length
+  const isUtility = data.is_utility === true
   const dirigeantsDecedes = sci.dirigeants.filter((d) => d.est_decede)
 
   return (
@@ -56,6 +57,21 @@ export default function FicheEntrepriseView({ siren, profile }: Props) {
 
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-4xl space-y-4 p-6">
+          {/* Banner utility — DPE listés ≠ patrimoine immobilier */}
+          {isUtility && (
+            <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+              <div className="font-semibold flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                Société utility — adresses non-représentatives du patrimoine
+              </div>
+              <p className="mt-1 text-amber-800">
+                Cette société (distributeur énergie/télécom/eau) est listée comme owner_siren sur les DPE
+                car titulaire du compteur. Les {adressesTotal.toLocaleString('fr-FR')} adresses ne représentent
+                <strong> pas un patrimoine immobilier</strong> et ne doivent pas servir de cible de prospection.
+              </p>
+            </div>
+          )}
+
           {/* Identité société */}
           <header className="rounded-lg border border-slate-200 bg-white p-5">
             <div className="flex items-start justify-between gap-4">
