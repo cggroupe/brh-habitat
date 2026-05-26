@@ -79,7 +79,12 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
 
   const crumbs = [
     { label: 'Leads', to: profileBack(profile) },
-    { label: dpe.adresse_ban ?? dpe.adresse ?? `DPE #${dpe.id}` },
+    {
+      label:
+        (dpe.adresse_ban && (dpe.adresse_ban_score ?? 0) >= 0.8)
+          ? dpe.adresse_ban
+          : (dpe.adresse ?? `DPE #${dpe.id}`),
+    },
   ]
 
   return (
