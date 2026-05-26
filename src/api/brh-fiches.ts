@@ -196,6 +196,38 @@ export const brhFichesApi = {
 
     if (roles.length === 0) return null
 
+    // 25/05 PM — fetch patrimoine via SCI (DPE owner_siren ∈ rôles)
+    // Le `patrimoine_direct` reste vide pour MVP (cas particulier sans SCI :
+    // nécessite match dans brh_dpe_prospects.owner_name='X Y' qui est rare).
+    const sirens = roles.map((r) => r.siren).filter(Boolean)
+    let patrimoineViaSci: NonNullable<FichePersonne['patrimoine_via_sci']> = []
+    const rolesNbDpe = new Map<string, number>()
+    if (sirens.length > 0) {
+      const { data: dpeData, error: dpeErr } = await supabase
+        .from('brh_dpe_prospects')
+        .select('id, adresse, code_postal, commune, etiquette_dpe, surface_habitable, annee_construction, owner_siren, owner_name')
+        .in('owner_siren', sirens)
+        .order('etiquette_dpe', { ascending: false })
+        .limit(200)
+      if (dpeErr) throw dpeErr
+      const sciDenominationBySiren = new Map(roles.map((r) => [r.siren, r.denomination]))
+      patrimoineViaSci = (dpeData ?? []).map((d) => ({
+        id: d.id as number,
+        adresse: d.adresse as string | null,
+        code_postal: d.code_postal as string | null,
+        commune: d.commune as string | null,
+        etiquette_dpe: d.etiquette_dpe as string | null,
+        surface_habitable: d.surface_habitable as number | null,
+        annee_construction: d.annee_construction as number | null,
+        via_sci_siren: String(d.owner_siren),
+        via_sci_denomination: sciDenominationBySiren.get(String(d.owner_siren)) ?? String(d.owner_name ?? ''),
+      }))
+      // Compte par SCI pour annoter chaque rôle
+      for (const p of patrimoineViaSci) {
+        rolesNbDpe.set(p.via_sci_siren, (rolesNbDpe.get(p.via_sci_siren) ?? 0) + 1)
+      }
+    }
+
     return {
       identity: {
         entity_id: null,
@@ -206,8 +238,9 @@ export const brhFichesApi = {
         death_date: deathDate,
         city: null,
       },
-      roles,
+      roles: roles.map((r) => ({ ...r, nb_dpe: rolesNbDpe.get(r.siren) ?? 0 })),
       patrimoine_direct: [],
+      patrimoine_via_sci: patrimoineViaSci,
       brh_historique: null,
     }
   },

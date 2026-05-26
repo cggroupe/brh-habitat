@@ -126,7 +126,7 @@ export default function RechercheView({ profile, initialQuery = '' }: Props) {
                     <FicheEntityLink
                       key={`${d.name}-${d.siren}-${i}`}
                       kind="personne"
-                      id={encodeURIComponent(d.name)}
+                      id={d.name}
                       label={d.name + (d.est_decede ? ' †' : '')}
                       sublabel={`${d.qualite ?? 'Dirigeant'} · ${d.denomination}`}
                       profile={profile}

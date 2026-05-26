@@ -124,7 +124,9 @@ export default function FicheEntrepriseView({ siren, profile }: Props) {
                       <FicheEntityLink
                         key={`${name}-${i}`}
                         kind="personne"
-                        id={encodeURIComponent(name)}
+                        // 25/05 PM — fix bug double encoding : FicheEntityLink fait déjà
+                        // encodeURIComponent. Passer le name brut évite "%2520" dans l'URL.
+                        id={name}
                         label={name + (d.est_decede ? ' †' : '')}
                         sublabel={[d.qualite, d.date_naissance ? `né(e) ${d.date_naissance}` : null]
                           .filter(Boolean)

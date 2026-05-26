@@ -4,7 +4,7 @@
  * MVP : assemblé depuis brh_sci_companies.dirigeants JSONB + brh_dpe_prospects.particulier_name.
  * À enrichir Sprint 3 avec entity-hub (core.person, core.contact, core.event, signaux).
  */
-import { User, Building2, AlertTriangle, Calendar, Briefcase } from 'lucide-react'
+import { User, Building2, AlertTriangle, Calendar, Briefcase, Home } from 'lucide-react'
 import FicheBreadcrumb from './FicheBreadcrumb'
 import FicheSection from './FicheSection'
 import FicheEntityLink from './FicheEntityLink'
@@ -63,6 +63,7 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
   }
 
   const { identity, roles, patrimoine_direct, brh_historique } = data
+  const patrimoine_via_sci = data.patrimoine_via_sci ?? []
   const isDeceased = !!identity.death_date
 
   return (
@@ -123,13 +124,54 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                     kind="entreprise"
                     id={r.siren}
                     label={r.denomination}
-                    sublabel={[r.qualite, r.is_active ? 'Société active' : 'Société radiée']
+                    sublabel={[
+                      r.qualite,
+                      r.is_active ? 'Société active' : 'Société radiée',
+                      r.nb_dpe ? `${r.nb_dpe} DPE détenus` : null,
+                    ]
                       .filter(Boolean)
                       .join(' · ')}
                     profile={profile}
                     variant="row"
                   />
                 ))}
+              </div>
+            </FicheSection>
+          )}
+
+          {/* Patrimoine via SCI — 25/05 PM, fix bug "Aucun patrimoine" */}
+          {patrimoine_via_sci.length > 0 && (
+            <FicheSection
+              title="Patrimoine via SCI"
+              icon={<Home className="h-4 w-4" />}
+              count={patrimoine_via_sci.length}
+              defaultOpen
+            >
+              <div className="space-y-1.5">
+                {patrimoine_via_sci.slice(0, 100).map((a) => (
+                  <FicheEntityLink
+                    key={`${a.id}-${a.via_sci_siren}`}
+                    kind="adresse"
+                    id={a.id}
+                    label={a.adresse ?? `DPE #${a.id}`}
+                    sublabel={[
+                      `${a.code_postal ?? ''} ${a.commune ?? ''}`.trim(),
+                      a.etiquette_dpe ? `DPE ${a.etiquette_dpe}` : null,
+                      a.surface_habitable ? `${a.surface_habitable} m²` : null,
+                      a.annee_construction ? `construit ${a.annee_construction}` : null,
+                      `via ${a.via_sci_denomination}`,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                    profile={profile}
+                    variant="row"
+                  />
+                ))}
+                {patrimoine_via_sci.length > 100 && (
+                  <p className="px-3 py-2 text-xs text-slate-500">
+                    + {patrimoine_via_sci.length - 100} autres DPE (limite affichage)
+                  </p>
+                )}
               </div>
             </FicheSection>
           )}

@@ -94,6 +94,8 @@ export interface FichePersonne {
     qualite: string | null
     is_active: boolean
     has_deceased_dirigeant?: boolean
+    /** Nombre de DPE détenus par cette SCI (count `brh_dpe_prospects.owner_siren = siren`). */
+    nb_dpe?: number
   }>
   /** Adresses détenues directement (propriétaire particulier dans brh_dpe_prospects) */
   patrimoine_direct: Array<{
@@ -102,6 +104,18 @@ export interface FichePersonne {
     code_postal: string | null
     commune: string | null
     etiquette_dpe: string | null
+  }>
+  /** Adresses détenues via les SCI dont la personne est dirigeante (owner_siren matches). */
+  patrimoine_via_sci?: Array<{
+    id: number
+    adresse: string | null
+    code_postal: string | null
+    commune: string | null
+    etiquette_dpe: string | null
+    surface_habitable: number | null
+    annee_construction: number | null
+    via_sci_siren: string
+    via_sci_denomination: string
   }>
   /** Historique BRH si la personne est cliente/prospect */
   brh_historique: {

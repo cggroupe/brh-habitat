@@ -142,7 +142,7 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
               <div className="space-y-2">
                 <FicheEntityLink
                   kind="personne"
-                  id={encodeURIComponent(dpe.pii_full_name)}
+                  id={dpe.pii_full_name}
                   label={dpe.pii_full_name}
                   sublabel={
                     dpe.pii_source === 'brh_clients_v2'
@@ -182,7 +182,7 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
             ) : dpe.owner_name ? (
               <FicheEntityLink
                 kind="personne"
-                id={encodeURIComponent(dpe.owner_name)}
+                id={dpe.owner_name}
                 label={ownerLabel}
                 sublabel="Propriétaire particulier"
                 profile={profile}
@@ -259,7 +259,7 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
                         <FicheEntityLink
                           key={`${name}-${i}`}
                           kind="personne"
-                          id={encodeURIComponent(name)}
+                          id={name}
                           label={name + (d.est_decede ? ' †' : '')}
                           profile={profile}
                           variant="chip"
