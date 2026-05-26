@@ -31,6 +31,17 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
   const fullName = decodeURIComponent(nameOrId)
   const { data, isLoading, error } = useFichePersonneByName(fullName)
 
+  // 2026-05-27 — Push pile navigation. Hook AVANT les early returns (règles React).
+  useEffect(() => {
+    if (!data?.identity?.full_name) return
+    pushNavEntity({
+      type: 'personne',
+      id: data.identity.full_name,
+      label: data.identity.full_name,
+      path: `${profileBasePath(profile)}/personne/${encodeURIComponent(data.identity.full_name)}`,
+    })
+  }, [data?.identity?.full_name, profile])
+
   if (isLoading) {
     return (
       <div className="flex h-screen flex-col bg-slate-50">
@@ -90,18 +101,6 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
   const isDeceased = !!identity.death_date
   const sciPatrimoniales = roles.filter((r) => !r.is_utility)
   const rolesUtility = roles.filter((r) => r.is_utility)
-
-  // 2026-05-27 — Push pile navigation pour breadcrumb multi-niveaux.
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    pushNavEntity({
-      type: 'personne',
-      id: identity.full_name,
-      label: identity.full_name,
-      path: `${profileBasePath(profile)}/personne/${encodeURIComponent(identity.full_name)}`,
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [identity.full_name])
 
   return (
     <div className="flex h-screen flex-col bg-slate-50">

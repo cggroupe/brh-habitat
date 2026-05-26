@@ -36,6 +36,23 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
   const overridesMutation = useUpdateDpeOverrides(dpeId)
   const [showCreateProspect, setShowCreateProspect] = useState(false)
 
+  // 2026-05-27 — Push pile navigation. Hook AVANT les early returns (règles React).
+  useEffect(() => {
+    if (!data?.dpe?.id) return
+    const dpe = data.dpe
+    const displayAddress =
+      (dpe.adresse_ban && (dpe.adresse_ban_score ?? 0) >= 0.8)
+        ? dpe.adresse_ban
+        : (dpe.adresse || `DPE #${dpe.id}`)
+    pushNavEntity({
+      type: 'adresse',
+      id: String(dpe.id),
+      label: displayAddress,
+      sublabel: `${dpe.code_postal ?? ''} ${dpe.commune ?? ''}`.trim() || undefined,
+      path: `${profileBasePath(profile)}/adresse/${dpe.id}`,
+    })
+  }, [data?.dpe?.id, data?.dpe?.adresse, data?.dpe?.adresse_ban, data?.dpe?.adresse_ban_score, data?.dpe?.code_postal, data?.dpe?.commune, profile])
+
   if (isLoading) {
     return (
       <div className="flex h-screen flex-col bg-slate-50">
@@ -87,19 +104,6 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
     (dpe.adresse_ban && (dpe.adresse_ban_score ?? 0) >= 0.8)
       ? dpe.adresse_ban
       : (dpe.adresse || `DPE #${dpe.id}`)
-
-  // 2026-05-27 — Sprint A.4 : pousse l'entité dans la pile de navigation pour
-  // le breadcrumb multi-niveaux + l'OriginBanner.
-  useEffect(() => {
-    pushNavEntity({
-      type: 'adresse',
-      id: String(dpe.id),
-      label: displayAddress,
-      sublabel: `${dpe.code_postal ?? ''} ${dpe.commune ?? ''}`.trim() || undefined,
-      path: `${profileBasePath(profile)}/adresse/${dpe.id}`,
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dpe.id])
 
   return (
     <div className="flex h-screen flex-col bg-slate-50">

@@ -31,6 +31,18 @@ interface Props {
 export default function FicheEntrepriseView({ siren, profile }: Props) {
   const { data, isLoading, error } = useFicheEntreprise(siren)
 
+  // 2026-05-27 — Push pile navigation. Hook AVANT les early returns (règles React).
+  useEffect(() => {
+    if (!data?.sci?.siren) return
+    pushNavEntity({
+      type: 'entreprise',
+      id: data.sci.siren,
+      label: data.sci.denomination,
+      sublabel: `SIREN ${formatSiren(data.sci.siren)}`,
+      path: `${profileBasePath(profile)}/entreprise/${data.sci.siren}`,
+    })
+  }, [data?.sci?.siren, data?.sci?.denomination, profile])
+
   if (isLoading) {
     return (
       <div className="flex h-screen flex-col bg-slate-50">
@@ -76,19 +88,6 @@ export default function FicheEntrepriseView({ siren, profile }: Props) {
     collectivite: 'Collectivité',
     autre: 'Société',
   }[entityClass]
-
-  // 2026-05-27 — Push pile navigation pour breadcrumb multi-niveaux.
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    pushNavEntity({
-      type: 'entreprise',
-      id: sci.siren,
-      label: sci.denomination,
-      sublabel: `SIREN ${formatSiren(sci.siren)}`,
-      path: `${profileBasePath(profile)}/entreprise/${sci.siren}`,
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sci.siren])
 
   return (
     <div className="flex h-screen flex-col bg-slate-50">
