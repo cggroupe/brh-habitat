@@ -28,9 +28,10 @@ interface TypedBadgeProps {
 }
 
 /**
- * Badge typé pour les fiches BRH — distingue visuellement les rôles, scores,
- * statuts. Reproduit le pattern Data-B "score = catégorie sémantique" et
- * "distinction utility vs patrimoine".
+ * Badge typé pour les fiches BRH — palette Editorial Habitat tonée.
+ * Vert utilisé avec parcimonie : uniquement pour signaler positivement
+ * un atout (SCI patrimoniale, risque faible). Les autres badges utilisent
+ * stone (neutres beige) ou amber/red sobres.
  */
 export default function TypedBadge({
   variant,
@@ -73,7 +74,7 @@ function deriveColor(variant: BadgeVariant, label: string): BadgeColor {
   }
   if (variant === 'solvabilite') {
     if (v.includes('faible')) return 'green'
-    if (v.includes('modér')) return 'amber'
+    if (v.includes('modér')) return 'gray'
     if (v.includes('élevé')) return 'orange'
     if (v.includes('procédure') || v.includes('cessation')) return 'red'
     return 'gray'
@@ -87,22 +88,28 @@ function deriveColor(variant: BadgeVariant, label: string): BadgeColor {
   return 'gray'
 }
 
+/**
+ * Palette tonée Editorial Habitat (vert #00600a / neutres stone).
+ * Vert réservé aux signaux positifs (patrimoine, atout). Les autres signaux
+ * utilisent stone/amber/red sans saturation excessive.
+ */
 function colorClasses(c: BadgeColor): string {
   switch (c) {
     case 'green':
-      return 'bg-emerald-100 text-emerald-800 ring-1 ring-inset ring-emerald-200'
+      // Vert sombre Editorial Habitat — accent uniquement, pas de bright bg
+      return 'bg-stone-50 text-[#00600a] ring-1 ring-inset ring-stone-300'
     case 'amber':
-      return 'bg-amber-100 text-amber-800 ring-1 ring-inset ring-amber-200'
+      return 'bg-stone-50 text-amber-900 ring-1 ring-inset ring-amber-300'
     case 'orange':
-      return 'bg-orange-100 text-orange-800 ring-1 ring-inset ring-orange-200'
+      return 'bg-stone-50 text-orange-900 ring-1 ring-inset ring-orange-300'
     case 'red':
-      return 'bg-red-100 text-red-800 ring-1 ring-inset ring-red-200'
+      return 'bg-stone-50 text-red-900 ring-1 ring-inset ring-red-300'
     case 'blue':
-      return 'bg-blue-100 text-blue-800 ring-1 ring-inset ring-blue-200'
+      return 'bg-stone-50 text-blue-900 ring-1 ring-inset ring-blue-300'
     case 'purple':
-      return 'bg-purple-100 text-purple-800 ring-1 ring-inset ring-purple-200'
+      return 'bg-stone-50 text-purple-900 ring-1 ring-inset ring-purple-300'
     case 'gray':
     default:
-      return 'bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200'
+      return 'bg-stone-50 text-stone-700 ring-1 ring-inset ring-stone-300'
   }
 }

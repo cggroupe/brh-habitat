@@ -126,7 +126,7 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
   const effectiveLimit = view === 'map' ? 200 : PAGE_SIZE
   const effectiveOffset = view === 'map' ? 0 : page * PAGE_SIZE
 
-  const { data, isLoading, isFetching } = useFoncierProspectsUnified({
+  const { data, isLoading, isFetching, error } = useFoncierProspectsUnified({
     dept: applied.dept || undefined,
     segmentV2: applied.segment || undefined,
     scoreV2Min: applied.scoreMin || undefined,
@@ -592,10 +592,13 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
             <ListView
               rows={filteredRows}
               isLoading={isLoading}
+              isFetching={isFetching}
+              error={error}
               profile={profile}
               page={page}
               setPage={setPage}
               total={total}
+              hasFilters={filtersAreDirty || applied.dept !== '' || applied.segment !== '' || applied.scoreMin > 0 || applied.filterFioul || applied.filterSCI || applied.filterParticulier || applied.filterSuccession || applied.search !== ''}
               onSelect={openFicheAdresse}
             />
           ) : (
@@ -628,27 +631,65 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
 // Sub-component : ListView
 // ─────────────────────────────────────────────────────────────────────────────
 function ListView({
-  rows, isLoading, profile, page, setPage, total, onSelect,
+  rows, isLoading, isFetching, error, profile, page, setPage, total, hasFilters, onSelect,
 }: {
   rows: LeadRow[]
   isLoading: boolean
+  isFetching: boolean
+  error: Error | null | undefined
   profile: LeadProfile
   page: number
   setPage: (n: number) => void
   total: number
+  hasFilters: boolean
   onSelect: (r: LeadRow) => void
 }) {
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+      <div className="flex h-full flex-col items-center justify-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-stone-400" />
+        <div className="text-sm text-stone-600">Chargement des prospects…</div>
+        <div className="text-xs text-stone-500">Plusieurs secondes nécessaires sur les premières requêtes.</div>
+      </div>
+    )
+  }
+  if (error) {
+    const msg = (error as Error).message ?? ''
+    const isAccess = msg.toLowerCase().includes('access denied') || msg.toLowerCase().includes('permission')
+    return (
+      <div className="mx-auto flex h-full max-w-xl flex-col items-center justify-center gap-3 px-6 text-center">
+        <div className="text-2xl">⚠️</div>
+        <h3 className="font-display text-base font-semibold text-stone-900">
+          {isAccess ? 'Accès non autorisé' : 'Erreur lors du chargement'}
+        </h3>
+        <p className="text-sm text-stone-600">
+          {isAccess
+            ? "Votre compte n'a pas (encore) accès à la base de prospects. Contactez BRH Habitat pour activer votre contrat agence."
+            : msg}
+        </p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="rounded-md bg-[#00600a] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#004807]"
+        >
+          Recharger la page
+        </button>
       </div>
     )
   }
   if (rows.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-slate-500">
-        Aucun résultat. Élargissez les filtres.
+      <div className="mx-auto flex h-full max-w-xl flex-col items-center justify-center gap-3 px-6 text-center">
+        <div className="text-2xl">🔍</div>
+        <h3 className="font-display text-base font-semibold text-stone-900">
+          {hasFilters ? 'Aucun résultat avec ces filtres' : 'Aucun prospect disponible'}
+        </h3>
+        <p className="text-sm text-stone-600">
+          {hasFilters
+            ? 'Élargissez la zone, le segment ou le score minimum dans la sidebar.'
+            : "Aucune donnée n'est encore visible pour votre profil. Si vous venez d'activer votre contrat, attendez quelques minutes ou rechargez la page."}
+        </p>
+        {isFetching && <Loader2 className="h-5 w-5 animate-spin text-stone-400" />}
       </div>
     )
   }

@@ -47,7 +47,7 @@ export default function DgfipPivot({ lat, lng }: DgfipPivotProps) {
 
   if (!centres || centres.length === 0) {
     return (
-      <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 p-3 text-xs text-slate-600">
+      <div className="rounded-md border border-dashed border-stone-300 bg-stone-50 p-3 text-xs text-slate-600">
         Aucun centre DGFIP géolocalisé disponible pour cette adresse.
       </div>
     )
@@ -61,7 +61,7 @@ export default function DgfipPivot({ lat, lng }: DgfipPivotProps) {
           href="https://www.formulaires.service-public.fr/gf/cerfa_3233.do"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium text-emerald-700 underline-offset-2 hover:underline"
+          className="font-medium text-[#00600a] underline-offset-2 hover:underline"
         >
           Cerfa 3233-SD <ExternalLink className="ml-0.5 inline h-3 w-3" />
         </a>{' '}
@@ -71,16 +71,16 @@ export default function DgfipPivot({ lat, lng }: DgfipPivotProps) {
         {centres.map((c) => (
           <div
             key={c.id}
-            className="flex items-start gap-3 rounded-md border border-slate-200 bg-white p-3 text-xs"
+            className="flex items-start gap-3 rounded-md border border-stone-200 bg-white p-3 text-xs"
           >
-            <Building2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
+            <Building2 className="mt-0.5 h-4 w-4 shrink-0 text-[#00600a]" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <span className="rounded-sm bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800">
+                <span className="rounded-sm bg-stone-100 px-1.5 py-0.5 text-[10px] font-semibold text-[#00600a]">
                   {c.type_centre}
                 </span>
-                <span className="font-medium text-slate-900">{c.nom}</span>
-                <span className="text-slate-500">
+                <span className="font-medium text-stone-900">{c.nom}</span>
+                <span className="text-stone-500">
                   · {c.distance_km.toFixed(1)} km
                 </span>
               </div>
@@ -93,7 +93,7 @@ export default function DgfipPivot({ lat, lng }: DgfipPivotProps) {
               {c.telephone && (
                 <a
                   href={`tel:${c.telephone.replace(/\D/g, '')}`}
-                  className="mt-0.5 inline-flex items-center gap-1 font-mono text-emerald-700 hover:underline"
+                  className="mt-0.5 inline-flex items-center gap-1 font-mono text-[#00600a] hover:underline"
                 >
                   <Phone className="h-3 w-3" />
                   {c.telephone}

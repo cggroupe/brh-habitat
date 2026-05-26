@@ -21,12 +21,10 @@ export type EmptyStateEntity = 'adresse' | 'entreprise' | 'personne' | 'dirigean
 
 export interface EmptyAction {
   label: string
-  /** Lien interne (Link) ou externe (a href). Préfère `to` pour interne. */
   to?: string
   href?: string
   onClick?: () => void
   icon?: ReactNode
-  /** Variante visuelle */
   variant?: 'primary' | 'secondary' | 'ghost'
 }
 
@@ -34,19 +32,16 @@ interface FicheEmptyStateProps {
   kind: EmptyStateKind
   entity: EmptyStateEntity
   entityLabel: string
-  /** Texte supplémentaire pour préciser le contexte. */
   description?: ReactNode
-  /** Actions pivots pour ne pas laisser l'utilisateur dans un cul-de-sac. */
   actions?: EmptyAction[]
-  /** Bloc supplémentaire (ex: liste DGFIP, voisins). */
   children?: ReactNode
 }
 
 const ENTITY_ICON: Record<EmptyStateEntity, ReactNode> = {
-  adresse: <MapPin className="h-10 w-10 text-slate-300" />,
-  entreprise: <Building2 className="h-10 w-10 text-slate-300" />,
-  personne: <User className="h-10 w-10 text-slate-300" />,
-  dirigeant: <User className="h-10 w-10 text-slate-300" />,
+  adresse: <MapPin className="h-10 w-10 text-stone-300" />,
+  entreprise: <Building2 className="h-10 w-10 text-stone-300" />,
+  personne: <User className="h-10 w-10 text-stone-300" />,
+  dirigeant: <User className="h-10 w-10 text-stone-300" />,
 }
 
 const KIND_TITLE: Record<EmptyStateKind, string> = {
@@ -57,13 +52,7 @@ const KIND_TITLE: Record<EmptyStateKind, string> = {
 }
 
 /**
- * État vide enrichi — pattern Data-B "trou de donnée = parcours, pas cul-de-sac".
- *
- * Toujours afficher :
- * - une icône typée selon l'entité
- * - un titre clair selon le `kind`
- * - une description contextuelle
- * - 1 à 3 actions pivots (jamais zéro)
+ * État vide enrichi — palette Editorial Habitat sobre.
  */
 export default function FicheEmptyState({
   kind,
@@ -77,11 +66,11 @@ export default function FicheEmptyState({
     <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-12 text-center">
       {ENTITY_ICON[entity]}
       <div>
-        <h2 className="font-display text-xl font-semibold text-slate-900">
+        <h2 className="font-display text-xl font-semibold text-stone-900">
           {KIND_TITLE[kind]}
         </h2>
-        <p className="mt-1 max-w-md text-sm text-slate-600">
-          <span className="font-medium text-slate-900">{entityLabel}</span>
+        <p className="mt-1 max-w-md text-sm text-stone-600">
+          <span className="font-medium text-stone-900">{entityLabel}</span>
           {description ? <> — {description}</> : null}
         </p>
       </div>
@@ -103,10 +92,10 @@ function ActionButton({ action }: { action: EmptyAction }) {
     'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition'
   const styleCls =
     variant === 'primary'
-      ? 'bg-emerald-700 text-white hover:bg-emerald-800'
+      ? 'bg-[#00600a] text-white hover:bg-[#004807]'
       : variant === 'secondary'
-        ? 'border border-slate-300 bg-white text-slate-900 hover:bg-slate-50'
-        : 'text-emerald-700 hover:bg-emerald-50'
+        ? 'border border-stone-300 bg-white text-stone-900 hover:bg-stone-50'
+        : 'text-[#00600a] hover:bg-stone-100'
   const cls = `${baseCls} ${styleCls}`
   const icon = action.icon ?? <ArrowRight className="h-4 w-4" />
 
@@ -135,10 +124,6 @@ function ActionButton({ action }: { action: EmptyAction }) {
   )
 }
 
-/**
- * Helpers pour générer des actions standardisées selon le kind.
- * Utiliser dans les fiches pour rester cohérent.
- */
 export function defaultActionsFor(
   kind: EmptyStateKind,
   ctx: {

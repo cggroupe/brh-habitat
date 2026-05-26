@@ -71,8 +71,8 @@ export default function PatrimoineMassif({ siren, profile }: PatrimoineMassifPro
     <section className="space-y-4">
       {/* Résumé top */}
       {summary && summary.total > 0 && (
-        <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-          <h3 className="font-display text-sm font-semibold text-slate-900">
+        <div className="space-y-3 rounded-lg border border-stone-200 bg-white p-4">
+          <h3 className="font-display text-sm font-semibold text-stone-900">
             Résumé patrimoine — {formatNumber(summary.total)} DPE
           </h3>
           {/* Distribution DPE class */}
@@ -101,7 +101,7 @@ export default function PatrimoineMassif({ siren, profile }: PatrimoineMassifPro
           {/* Top communes */}
           {topCommunes.length > 0 && (
             <div className="space-y-1.5">
-              <div className="text-[10px] uppercase tracking-wider text-slate-500">
+              <div className="text-[10px] uppercase tracking-wider text-stone-500">
                 Top communes (cliquez pour filtrer)
               </div>
               <div className="flex flex-wrap gap-1.5">
@@ -112,8 +112,8 @@ export default function PatrimoineMassif({ siren, profile }: PatrimoineMassifPro
                     onClick={() => setCommune(commune === c ? '' : c)}
                     className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs ring-1 transition ${
                       commune === c
-                        ? 'bg-emerald-100 text-emerald-800 ring-emerald-300'
-                        : 'bg-slate-50 text-slate-700 ring-slate-200 hover:bg-emerald-50'
+                        ? 'bg-stone-100 text-[#00600a] ring-stone-400'
+                        : 'bg-stone-50 text-slate-700 ring-slate-200 hover:bg-stone-50'
                     }`}
                   >
                     <MapPin className="h-3 w-3" />
@@ -127,8 +127,8 @@ export default function PatrimoineMassif({ siren, profile }: PatrimoineMassifPro
       )}
 
       {/* Filtres actifs + score range */}
-      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 bg-white p-3">
-        <span className="text-xs text-slate-500">Score V2 min :</span>
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-stone-200 bg-white p-3">
+        <span className="text-xs text-stone-500">Score V2 min :</span>
         <input
           type="number"
           min={0}
@@ -136,7 +136,7 @@ export default function PatrimoineMassif({ siren, profile }: PatrimoineMassifPro
           step={5}
           value={scoreMin ?? ''}
           onChange={(e) => setScoreMin(e.target.value ? Number(e.target.value) : null)}
-          className="w-20 rounded-md border border-slate-300 px-2 py-1 text-sm"
+          className="w-20 rounded-md border border-stone-300 px-2 py-1 text-sm"
           placeholder="—"
         />
         {(commune || dpeFilters.length > 0 || scoreMin != null) && (
@@ -147,7 +147,7 @@ export default function PatrimoineMassif({ siren, profile }: PatrimoineMassifPro
               setDpeFilters([])
               setScoreMin(null)
             }}
-            className="rounded-md px-2 py-1 text-xs text-slate-600 hover:bg-slate-100"
+            className="rounded-md px-2 py-1 text-xs text-slate-600 hover:bg-stone-100"
           >
             Réinitialiser
           </button>
@@ -163,15 +163,15 @@ export default function PatrimoineMassif({ siren, profile }: PatrimoineMassifPro
       {/* Liste virtualisée */}
       <div
         ref={parentRef}
-        className="rounded-lg border border-slate-200 bg-white"
+        className="rounded-lg border border-stone-200 bg-white"
         style={{ height: '600px', overflowY: 'auto' }}
       >
         {isLoading ? (
-          <div className="flex h-full items-center justify-center text-sm text-slate-500">
+          <div className="flex h-full items-center justify-center text-sm text-stone-500">
             Chargement…
           </div>
         ) : rows.length === 0 ? (
-          <div className="flex h-full items-center justify-center text-sm text-slate-500">
+          <div className="flex h-full items-center justify-center text-sm text-stone-500">
             Aucun DPE ne correspond aux filtres actifs.
           </div>
         ) : (
@@ -189,17 +189,17 @@ export default function PatrimoineMassif({ siren, profile }: PatrimoineMassifPro
                 <Link
                   key={r.id}
                   to={`${profileBasePath(profile)}/adresse/${r.id}`}
-                  className="absolute left-0 top-0 grid w-full grid-cols-[1fr_auto_auto] items-center gap-3 border-b border-slate-100 px-4 hover:bg-slate-50"
+                  className="absolute left-0 top-0 grid w-full grid-cols-[1fr_auto_auto] items-center gap-3 border-b border-stone-100 px-4 hover:bg-stone-50"
                   style={{
                     transform: `translateY(${vi.start}px)`,
                     height: `${vi.size}px`,
                   }}
                 >
                   <div className="min-w-0">
-                    <div className="truncate text-sm text-slate-900">
+                    <div className="truncate text-sm text-stone-900">
                       {r.adresse ?? `DPE #${r.id}`}
                     </div>
-                    <div className="truncate text-xs text-slate-500">
+                    <div className="truncate text-xs text-stone-500">
                       {r.code_postal} {r.commune}
                       {r.surface_habitable ? ` · ${formatM2(r.surface_habitable)}` : ''}
                       {r.annee_construction ? ` · ${r.annee_construction}` : ''}

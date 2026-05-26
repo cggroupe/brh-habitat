@@ -216,7 +216,7 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                       <>
                         {sciPatrimoniales.length > 0 && (
                           <section>
-                            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-emerald-800">
+                            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#00600a]">
                               SCI patrimoniales ({sciPatrimoniales.length})
                             </h3>
                             <div className="space-y-1.5">
@@ -306,7 +306,7 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                         )}
                         {patrimoineTotal > 0 && (
                           <section>
-                            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-emerald-800">
+                            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#00600a]">
                               Patrimoine via SCI ({formatNumber(patrimoineTotal)} DPE)
                             </h3>
                             <div className="space-y-1.5">

@@ -152,7 +152,22 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
               <OwnerCard
                 siren={dpe.owner_siren}
                 denomination={ownerLabel}
-                entityClass={null}
+                formeJuridique={sci?.forme_juridique ?? null}
+                entityClass={sci?.entity_class ?? null}
+                solvabilite={sci?.solvabilite_estimee ? (
+                  {
+                    faible: 'Risque faible',
+                    modere: 'Risque modéré',
+                    eleve: 'Risque élevé',
+                    procedure: 'Procédure collective',
+                    cessation: 'Cessée',
+                    inconnu: '',
+                  } as Record<string, string>
+                )[sci.solvabilite_estimee] || null : null}
+                siegeAdresse={
+                  sci?.adresse_complete
+                    ?? (sci?.commune ? `${sci.code_postal ?? ''} ${sci.commune}` : null)
+                }
                 lotsIci={1}
                 actions={
                   <FicheEntityLink
@@ -181,10 +196,10 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
                 {canSee(profile, 'particulier_phone') === true && dpe.pii_telephone && (
                   <a
                     href={`tel:${dpe.pii_telephone}`}
-                    className="block rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs"
+                    className="block rounded-md border border-stone-300 bg-stone-50 px-3 py-1.5 text-xs"
                   >
                     <span className="text-slate-500">Téléphone : </span>
-                    <span className="font-mono font-semibold text-emerald-800">{dpe.pii_telephone}</span>
+                    <span className="font-mono font-semibold text-[#00600a]">{dpe.pii_telephone}</span>
                   </a>
                 )}
                 {canSee(profile, 'particulier_email') === true && dpe.pii_email && (
@@ -220,7 +235,7 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
                 <button
                   type="button"
                   onClick={() => setShowCreateProspect(true)}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-emerald-700 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-800"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-[#00600a] px-3 py-1 text-xs font-medium text-white hover:bg-[#004807]"
                 >
                   <UserPlus className="h-3 w-3" />
                   Enregistrer le propriétaire
@@ -392,7 +407,7 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
                     <DetailRow
                       label="Téléphone"
                       value={
-                        <a href={`tel:${dpe.telephone}`} className="font-mono text-emerald-700 hover:underline">
+                        <a href={`tel:${dpe.telephone}`} className="font-mono text-[#00600a] hover:underline">
                           {dpe.telephone}
                         </a>
                       }
@@ -533,8 +548,8 @@ function IntentBar({
   breakdown?: Record<string, unknown> | null
 }) {
   const pct = Math.max(0, Math.min(100, score))
-  const bg = color === 'orange' ? 'bg-orange-500' : 'bg-emerald-500'
-  const txt = color === 'orange' ? 'text-orange-700' : 'text-emerald-700'
+  const bg = color === 'orange' ? 'bg-orange-500' : 'bg-stone-500'
+  const txt = color === 'orange' ? 'text-orange-700' : 'text-[#00600a]'
   const detail =
     breakdown && typeof breakdown === 'object'
       ? Object.entries(breakdown)

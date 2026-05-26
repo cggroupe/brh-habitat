@@ -5,15 +5,11 @@ import { formatNumber } from '../../../lib/format'
 export interface KpiItem {
   label: string
   value: number | string | null | undefined
-  /** Icône optionnelle à gauche du label. */
   icon?: ReactNode
-  /** Texte sous la valeur (ex: "France entière"). */
   sublabel?: string
-  /** Couleur accent (vert/ambre/rouge/gris) ou auto-derived. */
+  /** Auto-derived si non précisé selon valeur (>0 = green pour KPI patrimonial, gray sinon). */
   color?: 'green' | 'amber' | 'red' | 'gray' | 'blue'
-  /** Cliquable → scroll vers tab/section ou drill-down. */
   onClick?: () => void
-  /** Variante visuelle pour distinguer KPI primaire (gros) vs secondaire (compact). */
   emphasis?: 'primary' | 'secondary'
 }
 
@@ -21,31 +17,26 @@ interface KpiHeroProps {
   items: KpiItem[]
 }
 
+// Palette Editorial Habitat tonée — fond neutre stone, accent texte uniquement
 const COLOR_BG: Record<NonNullable<KpiItem['color']>, string> = {
-  green: 'border-emerald-200 bg-emerald-50',
-  amber: 'border-amber-200 bg-amber-50',
-  red: 'border-red-200 bg-red-50',
-  blue: 'border-blue-200 bg-blue-50',
-  gray: 'border-slate-200 bg-white',
+  green: 'border-stone-300 bg-white',
+  amber: 'border-stone-300 bg-white',
+  red: 'border-red-200 bg-white',
+  blue: 'border-stone-300 bg-white',
+  gray: 'border-stone-200 bg-stone-50',
 }
 
 const COLOR_TEXT: Record<NonNullable<KpiItem['color']>, string> = {
-  green: 'text-emerald-800',
+  green: 'text-[#00600a]',
   amber: 'text-amber-800',
   red: 'text-red-800',
-  blue: 'text-blue-800',
-  gray: 'text-slate-900',
+  blue: 'text-blue-900',
+  gray: 'text-stone-900',
 }
 
 /**
- * Hero KPI 3-5 stats en grille horizontale — pattern Data-B "fiche entité avec
- * KPI hero qui résume le potentiel métier en un coup d'œil".
- *
- * Sur fiche SCI : Dirigeants · DPE détenus · m² total · Mutations DVF 5 ans
- * Sur fiche Dirigeant : SCI patrimoniales · DPE via SCI · m² total · Mandats actifs
- *
- * Toujours rendu, même si vide (les KPIs à 0 sont affichés en gris pour
- * différencier "vide" de "manquant").
+ * Hero KPI 3-5 stats — palette Editorial Habitat sobre.
+ * Pas de bg-emerald-50 fluorescent : fond stone neutre, accent texte vert sombre.
  */
 export default function KpiHero({ items }: KpiHeroProps) {
   if (items.length === 0) return null
@@ -70,11 +61,11 @@ function KpiCard({ kpi }: { kpi: KpiItem }) {
   const inner = (
     <>
       <div className="flex items-center justify-between gap-2">
-        <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-slate-500">
+        <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-stone-500">
           {kpi.icon}
           {kpi.label}
         </span>
-        {isActionable && <ChevronRight className="h-3.5 w-3.5 text-slate-400" />}
+        {isActionable && <ChevronRight className="h-3.5 w-3.5 text-stone-400" />}
       </div>
       <span
         className={`font-display ${emphasis === 'primary' ? 'text-3xl' : 'text-xl'} font-semibold leading-none ${COLOR_TEXT[color]}`}
@@ -82,7 +73,7 @@ function KpiCard({ kpi }: { kpi: KpiItem }) {
         {valueDisplay}
       </span>
       {kpi.sublabel && (
-        <span className="text-[11px] text-slate-500">{kpi.sublabel}</span>
+        <span className="text-[11px] text-stone-500">{kpi.sublabel}</span>
       )}
     </>
   )
@@ -92,7 +83,7 @@ function KpiCard({ kpi }: { kpi: KpiItem }) {
       <button
         type="button"
         onClick={kpi.onClick}
-        className={`${baseCls} text-left hover:border-emerald-300 hover:shadow-sm`}
+        className={`${baseCls} text-left hover:border-stone-400 hover:shadow-sm`}
       >
         {inner}
       </button>
