@@ -208,7 +208,9 @@ export const brhFichesApi = {
         .select('id, adresse, code_postal, commune, etiquette_dpe, surface_habitable, annee_construction, owner_siren, owner_name')
         .in('owner_siren', sirens)
         .order('etiquette_dpe', { ascending: false })
-        .limit(200)
+        // 25/05 PM — 2000 max (acceptable network/render ; cas Veronique Lacour
+        // a 1100 DPE via ENEDIS, on coupait à 200 = troncation gênante).
+        .limit(2000)
       if (dpeErr) throw dpeErr
       const sciDenominationBySiren = new Map(roles.map((r) => [r.siren, r.denomination]))
       patrimoineViaSci = (dpeData ?? []).map((d) => ({
