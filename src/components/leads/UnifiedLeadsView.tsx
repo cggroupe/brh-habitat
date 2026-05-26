@@ -545,19 +545,8 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
             </div>
           </div>
 
-          {/* Profile badge */}
-          <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs">
-            <div className="mb-1 font-semibold text-slate-700">Mode d'affichage</div>
-            <div className="text-slate-600">
-              Profil : <span className="font-mono font-bold">{profile}</span>
-            </div>
-            <div className="mt-1 text-[10px] text-slate-500">
-              {profile === 'employe' && 'Toutes les données accessibles (BRH interne)'}
-              {profile === 'agence' && 'Vue conforme RGPD — sans PII particulier'}
-              {profile === 'artisan' && 'Vue technique RGE — DPE+isolation+ventilation'}
-              {profile === 'notaire' && 'Vue spécialisée succession'}
-            </div>
-          </div>
+          {/* Badge "Mode d'affichage" supprimé 25/05 PM (feedback Philippe) :
+              les users finaux n'ont pas besoin de voir leur profil RGPD/mode. */}
           </div>
 
           {/* Footer sticky : bouton Rechercher */}

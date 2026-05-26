@@ -151,8 +151,16 @@ export const brhFichesApi = {
    * JSONB + brh_dpe_prospects.particulier_name. À enrichir avec entity-hub via tunnel.
    */
   async getFichePersonneByName(fullName: string): Promise<FichePersonne | null> {
-    const [last, ...rest] = fullName.split(/\s+/).filter(Boolean)
-    const first = rest.join(' ')
+    // 25/05 PM — fix bug parsing (feedback Philippe) : la convention française
+    // = "Prénom Nom" (ex: "Jean-Michel Hamel"). L'ancien parsing
+    // `[last, ...rest] = split(...)` prenait Jean-Michel comme last et Hamel
+    // comme first → recherche sur prénom au lieu du nom → "Aucun rôle ou
+    // patrimoine BRH connu" pour tous les dirigeants en convention FR.
+    // Fix : dernier mot = nom, premier mot = prénom (cas commun FR).
+    const parts = fullName.split(/\s+/).filter(Boolean)
+    if (parts.length === 0) return null
+    const last = parts[parts.length - 1]
+    const first = parts.length > 1 ? parts[0] : ''
 
     // Recherche via RPC dédiée (PostgREST ne sait pas caster jsonb→text dans .ilike)
     const { data: sciHits, error: e1 } = await supabase.rpc('brh_sci_search_dirigeant', {

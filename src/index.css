@@ -180,3 +180,16 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Leaflet tiles fix (25/05 PM — feedback Philippe) :
+ * Tailwind v4 applique `max-width: 100%` à tous les <img>, ce qui rétrécit
+ * les tiles Leaflet (256×256 fixes) et casse l'affichage du fond carte —
+ * les markers s'affichaient mais les tiles restaient blanches.
+ * Fix : restaure max-width: none sur les éléments img de leaflet. */
+.leaflet-container img,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+  max-width: none !important;
+  height: auto;
+}
