@@ -151,36 +151,54 @@ def search_dirigeant(nom: str, prenom: str, date_naissance: str | None) -> dict[
     }
 
 
-def fetch_priority_dirigeants(conn, limit: int, sample: bool) -> list[dict]:
-    """Récupère les dirigeants à enrichir — ciblage SCI familiales.
+def fetch_priority_dirigeants(conn, limit: int, sample: bool, full_bzh: bool = False) -> list[dict]:
+    """Récupère les dirigeants à enrichir.
 
-    Filtres :
-      - 1 ≤ nb_sci_dirigees ≤ 5 : exclut les corporate (utilities ENEDIS/RTE
-        qui ont >100 mandataires apparents) tout en gardant les SCI familiales
-        multi-biens raisonnables (1-5 SCI).
-      - 1 ≤ nb_dpe_total ≤ 30 : exclut les dirigeants qui détiennent des
-        centaines de DPE (gestionnaires immobiliers, syndics).
-      - Non décédés, en Bretagne (via brh_dirigeant_sci.departement ∈ 22/29/35/56)
+    Mode prio (par défaut) :
+      - 1 ≤ nb_sci_dirigees ≤ 5 : exclut corporate (ENEDIS/RTE) tout en
+        gardant SCI familiales multi-biens.
+      - 1 ≤ nb_dpe_total ≤ 30 : exclut gestionnaires immobiliers / syndics.
+
+    Mode --full-bzh : tous les dirigeants bretons non encore traités, sans
+    plafond. Plus de couverture mais ratisse aussi les anciens / sans patrimoine.
     """
     with conn.cursor() as cur:
-        cur.execute("""
-            SELECT d.id, d.nom, d.prenom, d.date_naissance,
-                   d.nb_sci_dirigees, d.nb_dpe_total
-              FROM public.brh_dirigeants d
-             WHERE d.autres_entreprises_enriched_at IS NULL
-               AND d.nb_dpe_total BETWEEN 1 AND 30
-               AND d.nb_sci_dirigees BETWEEN 1 AND 5
-               AND d.nom IS NOT NULL AND d.nom <> ''
-               AND d.prenom IS NOT NULL AND d.prenom <> ''
-               AND NOT d.est_decede
-               AND EXISTS (
-                 SELECT 1 FROM public.brh_dirigeant_sci ds
-                  WHERE ds.dirigeant_id = d.id
-                    AND ds.departement IN ('22','29','35','56')
-               )
-          ORDER BY d.nb_dpe_total DESC, d.nb_sci_dirigees DESC
-             LIMIT %s
-        """, (limit,))
+        if full_bzh:
+            cur.execute("""
+                SELECT d.id, d.nom, d.prenom, d.date_naissance,
+                       d.nb_sci_dirigees, d.nb_dpe_total
+                  FROM public.brh_dirigeants d
+                 WHERE d.autres_entreprises_enriched_at IS NULL
+                   AND d.nom IS NOT NULL AND d.nom <> ''
+                   AND d.prenom IS NOT NULL AND d.prenom <> ''
+                   AND NOT d.est_decede
+                   AND EXISTS (
+                     SELECT 1 FROM public.brh_dirigeant_sci ds
+                      WHERE ds.dirigeant_id = d.id
+                        AND ds.departement IN ('22','29','35','56','44')
+                   )
+              ORDER BY d.nb_dpe_total DESC NULLS LAST, d.nb_sci_dirigees DESC NULLS LAST
+                 LIMIT %s
+            """, (limit,))
+        else:
+            cur.execute("""
+                SELECT d.id, d.nom, d.prenom, d.date_naissance,
+                       d.nb_sci_dirigees, d.nb_dpe_total
+                  FROM public.brh_dirigeants d
+                 WHERE d.autres_entreprises_enriched_at IS NULL
+                   AND d.nb_dpe_total BETWEEN 1 AND 30
+                   AND d.nb_sci_dirigees BETWEEN 1 AND 5
+                   AND d.nom IS NOT NULL AND d.nom <> ''
+                   AND d.prenom IS NOT NULL AND d.prenom <> ''
+                   AND NOT d.est_decede
+                   AND EXISTS (
+                     SELECT 1 FROM public.brh_dirigeant_sci ds
+                      WHERE ds.dirigeant_id = d.id
+                        AND ds.departement IN ('22','29','35','56')
+                   )
+              ORDER BY d.nb_dpe_total DESC, d.nb_sci_dirigees DESC
+                 LIMIT %s
+            """, (limit,))
         cols = [c.name for c in cur.description]
         return [dict(zip(cols, row)) for row in cur.fetchall()]
 
@@ -214,14 +232,17 @@ def main():
                         help="Mode sample : log détaillé chaque dirigeant")
     parser.add_argument("--dry-run", action="store_true",
                         help="N'écrit pas en DB, affiche seulement")
+    parser.add_argument("--full-bzh", action="store_true",
+                        help="Filtres élargis : tous dirigeants bretons non traités (sans plafond nb_dpe/nb_sci)")
     args = parser.parse_args()
 
     t0 = time.time()
     log(f"Connexion DB...")
     conn = psycopg.connect(SUPA_DSN, autocommit=False)
 
-    log(f"Fetch top {args.limit} dirigeants prio (nb_dpe_total > 0)...")
-    dirigeants = fetch_priority_dirigeants(conn, args.limit, args.sample)
+    mode = "FULL BZH (filtres élargis)" if args.full_bzh else "prio (DPE 1-30, SCI 1-5)"
+    log(f"Fetch top {args.limit} dirigeants — mode {mode}")
+    dirigeants = fetch_priority_dirigeants(conn, args.limit, args.sample, full_bzh=args.full_bzh)
     log(f"  → {len(dirigeants)} dirigeants à enrichir")
 
     stats = {"enriched": 0, "with_hits": 0, "errors": 0, "total_hits": 0,

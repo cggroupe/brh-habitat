@@ -43,6 +43,11 @@ APIFY_ACTOR = "apify~google-search-scraper"
 PHONE_RE = re.compile(r"\b0[1-9](?:[\s.\-]?\d{2}){4}\b")
 # +33 X XX XX XX XX
 PHONE_INTL_RE = re.compile(r"\+33[\s.\-]?[1-9](?:[\s.\-]?\d{2}){4}")
+# Email (RFC simplifié — corps@domaine.tld) — case-insensitive
+EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
+# Domaines à exclure (noise)
+EMAIL_BLACKLIST = ("example.com", "domain.com", "email.com", "test.com", "domaine.fr",
+                   "votre-domaine", "mail.fr", "site.fr")
 
 
 def log(msg: str) -> None:
@@ -115,6 +120,23 @@ def extract_phones(text: str) -> list[str]:
     return sorted(phones)
 
 
+def extract_emails(text: str) -> list[str]:
+    """Extrait les emails d'un texte (filtre blacklist domaines noise)."""
+    if not text:
+        return []
+    emails = set()
+    for m in EMAIL_RE.finditer(text):
+        e = m.group().lower()
+        # Skip noise
+        if any(bad in e for bad in EMAIL_BLACKLIST):
+            continue
+        # Skip si extension trop courte ou bizarre
+        if e.endswith(('.png', '.jpg', '.svg', '.pdf', '.html')):
+            continue
+        emails.add(e)
+    return sorted(emails)
+
+
 def format_phone_fr(num: str) -> str:
     """0683533275 → 06 83 53 32 75"""
     if len(num) == 10:
@@ -122,24 +144,30 @@ def format_phone_fr(num: str) -> str:
     return num
 
 
-def update_dirigeant_tel(conn, dirigeant_id: str, siren: str, tel: str) -> None:
-    """Update brh_dirigeants.tel_pro_via_entreprise + flag autres_entreprises[].telephone_found."""
+def update_dirigeant_contacts(conn, dirigeant_id: str, siren: str, tel: str | None, email: str | None) -> None:
+    """Update brh_dirigeants.tel_pro_via_entreprise + email_pro_via_entreprise + flag autres_entreprises[]."""
     try:
         with conn.cursor() as cur:
+            # On ne touche aux champs que si on a une valeur (COALESCE pour ne pas écraser)
             cur.execute("""
                 UPDATE public.brh_dirigeants
-                   SET tel_pro_via_entreprise = %s::text,
+                   SET tel_pro_via_entreprise = COALESCE(tel_pro_via_entreprise, %s::text),
+                       email_pro_via_entreprise = COALESCE(email_pro_via_entreprise, %s::text),
                        autres_entreprises = (
                          SELECT jsonb_agg(
                            CASE
-                             WHEN e->>'siren' = %s::text THEN e || jsonb_build_object('telephone_found', %s::text)
+                             WHEN e->>'siren' = %s::text THEN
+                               e || jsonb_build_object(
+                                 'telephone_found', %s::text,
+                                 'email_found', %s::text
+                               )
                              ELSE e
                            END
                          )
                          FROM jsonb_array_elements(autres_entreprises) AS e
                        )
                  WHERE id = %s::uuid
-            """, (tel, siren, tel, dirigeant_id))
+            """, (tel, email, siren, tel, email, dirigeant_id))
     except Exception:
         conn.rollback()
         raise
@@ -160,21 +188,19 @@ def main():
     companies = fetch_companies_to_enrich(conn, args.limit)
     log(f"  → {len(companies)} entreprises distinctes")
 
-    stats = {"queried": 0, "with_tel": 0, "updated": 0, "errors": 0}
+    stats = {"queried": 0, "with_tel": 0, "with_email": 0, "updated": 0, "errors": 0}
 
     # Batch en lots de batch_size pour optim Apify
     for batch_start in range(0, len(companies), args.batch_size):
         batch = companies[batch_start:batch_start + args.batch_size]
         queries = [
-            f'"{c["denomination"]}" {c.get("siege_commune") or ""} téléphone'.strip()
+            f'"{c["denomination"]}" {c.get("siege_commune") or ""} téléphone email'.strip()
             for c in batch
         ]
         log(f"  Batch {batch_start+1}-{batch_start+len(batch)} : {len(queries)} queries...")
         results = apify_google_search(queries)
         stats["queried"] += len(batch)
 
-        # Apify retourne 1 entrée par query, avec organicResults[]
-        # Mapping query→company via index séquentiel
         for i, item in enumerate(results):
             if i >= len(batch):
                 break
@@ -184,22 +210,27 @@ def main():
                 for r in item.get("organicResults", [])
             )
             phones = extract_phones(snippets_concat)
-            if not phones:
+            emails = extract_emails(snippets_concat)
+            if not phones and not emails:
                 if args.sample:
-                    log(f"    [{i+1}/{len(batch)}] {company['denomination'][:30]} → 0 tel")
+                    log(f"    [{i+1}/{len(batch)}] {company['denomination'][:30]} → 0 tel / 0 email")
                 continue
 
-            stats["with_tel"] += 1
-            tel = format_phone_fr(phones[0])
+            tel = format_phone_fr(phones[0]) if phones else None
+            email = emails[0] if emails else None
+            if tel:
+                stats["with_tel"] += 1
+            if email:
+                stats["with_email"] += 1
             try:
-                update_dirigeant_tel(conn, company["dirigeant_id"], company["siren"], tel)
+                update_dirigeant_contacts(conn, company["dirigeant_id"], company["siren"], tel, email)
                 stats["updated"] += 1
                 if args.sample:
-                    log(f"    [{i+1}/{len(batch)}] ✅ {company['denomination'][:30]} → {tel}")
+                    log(f"    [{i+1}/{len(batch)}] OK {company['denomination'][:30]} → tel={tel} email={email}")
             except Exception as e:
                 stats["errors"] += 1
                 if args.sample:
-                    log(f"    [{i+1}/{len(batch)}] ❌ DB err: {str(e)[:80]}")
+                    log(f"    [{i+1}/{len(batch)}] DB err: {str(e)[:80]}")
 
         conn.commit()
 
@@ -209,6 +240,7 @@ def main():
     log("═══════════════ STATS ═══════════════")
     log(f"  Entreprises queried : {stats['queried']}")
     log(f"  Avec tel trouvé     : {stats['with_tel']} ({stats['with_tel']*100/max(stats['queried'],1):.1f}%)")
+    log(f"  Avec email trouvé   : {stats['with_email']} ({stats['with_email']*100/max(stats['queried'],1):.1f}%)")
     log(f"  DB updates          : {stats['updated']}")
     log(f"  Erreurs             : {stats['errors']}")
     log(f"  Durée               : {elapsed:.1f}s")
