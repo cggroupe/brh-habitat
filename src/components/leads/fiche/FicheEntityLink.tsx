@@ -1,12 +1,17 @@
 /**
- * Chip / lien cliquable vers une autre fiche du graphe (adresse / entreprise / personne).
+ * Chip / lien cliquable vers une autre fiche du graphe (adresse / entreprise / personne / dirigeant).
  * Sert d'arête visuelle dans la navigation drill-down.
+ *
+ * Si `kind: 'dirigeant'` + `id` UUID est fourni, lien vers la fiche dirigeant UUID
+ * (/employe/dirigeants/:uuid, fiable, sans parsing nom). Pour les autres profils
+ * la fiche dirigeant UUID n'est pas encore exposée → fallback `/personne/:name`.
  */
 import { Link } from 'react-router-dom'
 import { Building2, MapPin, User, ChevronRight } from 'lucide-react'
 import type { LeadProfile } from '@/lib/rgpd/lead-visibility'
+import { profileBasePath } from '@/lib/nav'
 
-type Kind = 'adresse' | 'entreprise' | 'personne'
+type Kind = 'adresse' | 'entreprise' | 'personne' | 'dirigeant'
 
 interface Props {
   kind: Kind
@@ -17,23 +22,20 @@ interface Props {
   variant?: 'chip' | 'row'
 }
 
-function profileBasePath(profile: LeadProfile): string {
-  switch (profile) {
-    case 'employe':
-      return '/employe/leads'
-    case 'artisan':
-      return '/artisan/leads'
-    case 'notaire':
-      return '/notaire/leads'
-    case 'agence':
-    default:
-      return '/agence/leads'
-  }
-}
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export default function FicheEntityLink({ kind, id, label, sublabel, profile, variant = 'chip' }: Props) {
   const base = profileBasePath(profile)
-  const to = `${base}/${kind}/${encodeURIComponent(String(id))}`
+  // Route fiche dirigeant UUID-based (employe-only pour l'instant — /personne/:name pour les autres).
+  let to: string
+  if (kind === 'dirigeant' && UUID_RE.test(String(id)) && profile === 'employe') {
+    to = `/employe/dirigeants/${id}`
+  } else if (kind === 'dirigeant') {
+    // Fallback : route /personne/:name (legacy) en attendant les routes UUID pour /agence et /artisan
+    to = `${base}/personne/${encodeURIComponent(String(label))}`
+  } else {
+    to = `${base}/${kind}/${encodeURIComponent(String(id))}`
+  }
   const Icon = kind === 'adresse' ? MapPin : kind === 'entreprise' ? Building2 : User
 
   if (variant === 'row') {

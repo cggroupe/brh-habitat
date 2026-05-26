@@ -3,12 +3,14 @@
  * Affiche DPE + propriétaire (cliquable) + voisinage (cliquable) + sections lazy.
  * RGPD-aware via lead-visibility.ts.
  */
-import { useState, lazy, Suspense } from 'react'
-import { Home, FileText, Building2, AlertTriangle, Wallet, Phone, Users, Flame, TrendingUp, Hammer, UserPlus } from 'lucide-react'
+import { useState, useEffect, lazy, Suspense } from 'react'
+import { Home, FileText, Building2, AlertTriangle, Wallet, Phone, TrendingUp, Hammer, UserPlus } from 'lucide-react'
 
 const CreateProspectFromDpeModal = lazy(() => import('../CreateProspectFromDpeModal'))
 import FicheBreadcrumb from './FicheBreadcrumb'
 import FicheSection from './FicheSection'
+import StickyEntityHeader from './StickyEntityHeader'
+import OriginBanner from './OriginBanner'
 import { EntityLinksPanel } from '../EntityLinksPanel'
 import { EmployeeEditPanel } from '../EmployeeEditPanel'
 import FicheEntityLink from './FicheEntityLink'
@@ -18,6 +20,10 @@ import { useUpdateDpe, useUpdateDpeOverrides } from '@/hooks/queries/useEmployee
 import { canSee, displayName, type LeadProfile } from '@/lib/rgpd/lead-visibility'
 import type { Dirigeant } from '@/types/fiche'
 import { DpePostesEmployeePanel } from '../DpePostesEmployeePanel'
+import { pushNavEntity } from '@/stores/navStackStore'
+import { profileBasePath } from '@/lib/nav'
+import OwnerCard from './OwnerCard'
+import DgfipPivot from './DgfipPivot'
 
 interface Props {
   dpeId: number
@@ -51,6 +57,7 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
     return (
       <div className="flex h-screen flex-col bg-slate-50">
         <FicheBreadcrumb items={[{ label: 'Leads', to: profileBack(profile) }, { label: 'Adresse introuvable' }]} />
+        <OriginBanner />
         <div className="flex flex-1 items-center justify-center text-sm text-slate-600">
           {error ? `Erreur : ${(error as Error).message}` : 'Cette adresse n’a pas été trouvée.'}
         </div>
@@ -76,75 +83,82 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
   const { sci, voisinage } = data
   const isPersonneMorale = !!dpe.owner_siren
   const ownerLabel = displayName(profile, dpe.owner_name ?? null, isPersonneMorale)
+  const displayAddress =
+    (dpe.adresse_ban && (dpe.adresse_ban_score ?? 0) >= 0.8)
+      ? dpe.adresse_ban
+      : (dpe.adresse || `DPE #${dpe.id}`)
 
-  const crumbs = [
-    { label: 'Leads', to: profileBack(profile) },
-    {
-      label:
-        (dpe.adresse_ban && (dpe.adresse_ban_score ?? 0) >= 0.8)
-          ? dpe.adresse_ban
-          : (dpe.adresse ?? `DPE #${dpe.id}`),
-    },
-  ]
+  // 2026-05-27 — Sprint A.4 : pousse l'entité dans la pile de navigation pour
+  // le breadcrumb multi-niveaux + l'OriginBanner.
+  useEffect(() => {
+    pushNavEntity({
+      type: 'adresse',
+      id: String(dpe.id),
+      label: displayAddress,
+      sublabel: `${dpe.code_postal ?? ''} ${dpe.commune ?? ''}`.trim() || undefined,
+      path: `${profileBasePath(profile)}/adresse/${dpe.id}`,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dpe.id])
 
   return (
     <div className="flex h-screen flex-col bg-slate-50">
-      <FicheBreadcrumb items={crumbs} />
+      <StickyEntityHeader
+        type="adresse"
+        title={displayAddress}
+        sublabel={
+          <>
+            {dpe.code_postal} {dpe.commune}
+            {dpe.departement ? ` · ${dpe.departement}` : ''}
+          </>
+        }
+        kpis={[
+          ...(dpe.etiquette_dpe
+            ? [{ label: 'DPE', value: dpe.etiquette_dpe }]
+            : []),
+          ...(dpe.surface_habitable
+            ? [{ label: 'm²', value: dpe.surface_habitable }]
+            : []),
+          ...(dpe.score_v2 != null
+            ? [{ label: 'Score', value: `${dpe.score_v2}/100` }]
+            : []),
+        ]}
+        actions={
+          <FavoriButton
+            entity_type="adresse"
+            entity_id={String(dpe.id)}
+            label={dpe.adresse ?? `DPE #${dpe.id}`}
+            sublabel={`${dpe.code_postal ?? ''} ${dpe.commune ?? ''}`.trim() || null}
+          />
+        }
+      />
+      <FicheBreadcrumb leadsBackUrl={profileBack(profile)} />
+      <OriginBanner />
 
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-4xl space-y-4 p-6">
-          {/* En-tête identité adresse */}
-          <header className="rounded-lg border border-slate-200 bg-white p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-slate-500">
-                  <Home className="h-3.5 w-3.5" />
-                  Adresse
-                </div>
-                <h1 className="mt-1 text-lg font-semibold text-slate-900">
-                  {/* 26/05 — n'utilise adresse_ban que si confiance ≥ 0.8.
-                      Score 0.577 sur "Château de Kervoazec" → BAN renvoyait
-                      "Cité de Kervoazec" (faux match). Fallback adresse brute. */}
-                  {(dpe.adresse_ban && (dpe.adresse_ban_score ?? 0) >= 0.8)
-                    ? dpe.adresse_ban
-                    : (dpe.adresse || `DPE #${dpe.id}`)}
-                </h1>
-                <p className="text-sm text-slate-600">
-                  {dpe.code_postal} {dpe.commune}
-                  {dpe.departement ? ` · ${dpe.departement}` : ''}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <FavoriButton
-                  entity_type="adresse"
-                  entity_id={String(dpe.id)}
-                  label={dpe.adresse ?? `DPE #${dpe.id}`}
-                  sublabel={`${dpe.code_postal ?? ''} ${dpe.commune ?? ''}`.trim() || null}
-                />
-                {dpe.score_v2 != null && (
-                  <div className="flex items-center gap-1.5 rounded-md border border-orange-200 bg-orange-50 px-3 py-1.5 text-sm font-semibold text-orange-800">
-                    <Flame className="h-4 w-4" />
-                    Score {dpe.score_v2}/100
-                  </div>
-                )}
-              </div>
-            </div>
-          </header>
-
-          {/* Propriétaire — chip cliquable */}
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900">
-              <Users className="h-4 w-4" />
+          {/* ═══════════════════════════════════════════════════════════════
+              BLOC 1 — PROPRIÉTAIRE (pattern Data-B : zone identité + classification)
+              ═══════════════════════════════════════════════════════════════ */}
+          <section>
+            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
               Propriétaire
-            </div>
+            </h2>
             {isPersonneMorale && dpe.owner_siren ? (
-              <FicheEntityLink
-                kind="entreprise"
-                id={dpe.owner_siren}
-                label={ownerLabel}
-                sublabel={`SIREN ${dpe.owner_siren} · personne morale`}
-                profile={profile}
-                variant="row"
+              <OwnerCard
+                siren={dpe.owner_siren}
+                denomination={ownerLabel}
+                entityClass={null}
+                lotsIci={1}
+                actions={
+                  <FicheEntityLink
+                    kind="entreprise"
+                    id={dpe.owner_siren}
+                    label="Voir fiche complète"
+                    profile={profile}
+                    variant="chip"
+                  />
+                }
               />
             ) : dpe.pii_full_name ? (
               <div className="space-y-2">
@@ -209,10 +223,22 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
                 </button>
               </div>
             ) : (
-              <div className="text-sm text-slate-500">Propriétaire inconnu</div>
+              <div className="space-y-3">
+                <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 p-3 text-sm text-slate-700">
+                  <p className="font-medium text-slate-900">Propriétaire inconnu — DPE anonyme</p>
+                  <p className="mt-1 text-xs text-slate-600">
+                    La donnée propriétaire personne physique est protégée par le secret fiscal (loi
+                    BOFiP). Elle est obtenue via demande au centre des impôts compétent.
+                  </p>
+                </div>
+                <DgfipPivot lat={dpe.latitude} lng={dpe.longitude} />
+              </div>
             )}
-          </div>
+          </section>
 
+          {/* ═══════════════════════════════════════════════════════════════
+              BLOC 2 — BÂTIMENT & DPE (caractéristiques techniques)
+              ═══════════════════════════════════════════════════════════════ */}
           {/* DPE — section toujours ouverte */}
           {canSee(profile, 'dpe_basic') && (
             <FicheSection title="DPE" icon={<FileText className="h-4 w-4" />} defaultOpen>
@@ -382,12 +408,15 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
               </FicheSection>
             )}
 
-          {/* Voisinage (lazy) */}
+          {/* ═══════════════════════════════════════════════════════════════
+              BLOC 3 — VOISINAGE (autres DPE même CP, drill-down)
+              ═══════════════════════════════════════════════════════════════ */}
           {voisinage.length > 0 && (
             <FicheSection
               title="Voisinage proche (même code postal)"
               icon={<Home className="h-4 w-4" />}
               count={voisinage.length}
+              defaultOpen
             >
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {voisinage.map((v) => (

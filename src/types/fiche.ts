@@ -16,6 +16,20 @@ export interface Dirigeant {
   deces_match_score?: number | null
 }
 
+/**
+ * Classification métier d'une entité juridique pour différencier visuellement
+ * un patrimoine immobilier ciblable BRH (sci_patrimoniale) d'une utility ou
+ * collectivité qui ne porte pas de patrimoine prospectable.
+ *
+ * Migration : 20260527110000_brh_entity_class.sql
+ */
+export type EntityClass =
+  | 'sci_patrimoniale'
+  | 'utility'
+  | 'bailleur_social'
+  | 'collectivite'
+  | 'autre'
+
 export interface SciInfo {
   siren: string
   denomination: string
@@ -36,6 +50,10 @@ export interface SciInfo {
   dirigeants: Dirigeant[]
   has_deceased_dirigeant: boolean
   succession_probable_score: number
+  /** Classification métier (migration 20260527110000). Optional pendant la transition. */
+  entity_class?: EntityClass | null
+  /** Solvabilité estimée (migration 20260527140000 — Sprint E). */
+  solvabilite_estimee?: string | null
 }
 
 export interface FicheAdresse {

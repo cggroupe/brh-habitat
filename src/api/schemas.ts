@@ -8,6 +8,79 @@ const optionalUuid = z.string().uuid().nullable().optional()
 const optionalString = z.string().nullable().optional()
 
 // ---------------------------------------------------------------------------
+// Schémas fiches drill-down — Sprint refonte Data-B 27/05
+// ---------------------------------------------------------------------------
+
+export const entityClassSchema = z.enum([
+  'sci_patrimoniale',
+  'utility',
+  'bailleur_social',
+  'collectivite',
+  'autre',
+])
+
+export const solvabiliteSchema = z.enum([
+  'faible',
+  'modere',
+  'eleve',
+  'procedure',
+  'cessation',
+  'inconnu',
+])
+
+export const dirigeantSchema = z
+  .object({
+    nom: z.string().nullable().optional(),
+    prenom: z.string().nullable().optional(),
+    qualite: z.string().nullable().optional(),
+    date_naissance: z.string().nullable().optional(),
+    est_decede: z.boolean().nullable().optional(),
+    deces_date: z.string().nullable().optional(),
+    deces_match_score: z.number().nullable().optional(),
+  })
+  .passthrough()
+
+export const sciInfoSchema = z
+  .object({
+    siren: z.string(),
+    denomination: z.string(),
+    forme_juridique: z.string().nullable().optional(),
+    date_creation: z.string().nullable().optional(),
+    date_radiation: z.string().nullable().optional(),
+    is_active: z.boolean(),
+    adresse_complete: z.string().nullable().optional(),
+    code_postal: z.string().nullable().optional(),
+    commune: z.string().nullable().optional(),
+    departement: z.string().nullable().optional(),
+    lat: z.number().nullable().optional(),
+    lng: z.number().nullable().optional(),
+    activite_principale: z.string().nullable().optional(),
+    activite_libelle: z.string().nullable().optional(),
+    capital_social_cents: z.number().nullable().optional(),
+    effectif: z.string().nullable().optional(),
+    dirigeants: z.array(dirigeantSchema),
+    has_deceased_dirigeant: z.boolean(),
+    succession_probable_score: z.number(),
+    entity_class: entityClassSchema.nullable().optional(),
+    solvabilite_estimee: solvabiliteSchema.nullable().optional(),
+  })
+  .passthrough()
+
+/**
+ * Wrap `.safeParse()` plutôt que `.parse()` pour ne PAS casser l'UI si la DB
+ * renvoie un payload incomplet — on log côté console et on retourne quand
+ * même les données brutes (CLAUDE.md règle anti-bug n°4).
+ */
+export function softParseSciInfo(data: unknown): z.infer<typeof sciInfoSchema> {
+  const result = sciInfoSchema.safeParse(data)
+  if (!result.success) {
+    console.warn('[Zod] sciInfoSchema fallback :', result.error.issues.slice(0, 3))
+    return data as z.infer<typeof sciInfoSchema>
+  }
+  return result.data
+}
+
+// ---------------------------------------------------------------------------
 // Row schemas — utilisés pour valider les retours Supabase avec JOINs
 // ---------------------------------------------------------------------------
 
