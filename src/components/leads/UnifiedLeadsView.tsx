@@ -225,23 +225,42 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
   }, [rows, dpeClasses, etiquetteFilter, typeBatiment, dvfDelai, dvfCutoffMs])
 
 
+  // Compteurs KPI par segment (sur les rows actuellement chargées)
+  const kpiUltra = filteredRows.filter((r) => r.score_v2_segment === 'ultra_chaud').length
+  const kpiMpr = filteredRows.filter((r) => r.score_v2_segment === 'mpr_bleu_prio').length
+  const kpiStd = filteredRows.filter((r) => r.score_v2_segment === 'standard').length
+
   return (
     <div className="flex h-screen flex-col bg-canvas">
-      {/* Header Editorial Habitat — Epilogue display, surface neutre */}
-      <header className="border-b border-border-strong/30 bg-surface px-6 py-5">
-        <div className="mx-auto flex max-w-[1280px] flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div>
-            <h1 className="font-display text-2xl font-bold text-text leading-tight tracking-tight">
-              {title}
-            </h1>
-            {subtitle && (
-              <p className="mt-0.5 text-sm text-text-muted">{subtitle}</p>
-            )}
+      {/* Header Editorial Habitat — Epilogue large, KPI cards top, layout 1280 */}
+      <header className="border-b border-border-strong/30 bg-canvas px-6 pt-8 pb-6">
+        <div className="mx-auto max-w-[1280px]">
+          <div className="flex items-end justify-between gap-3 flex-wrap mb-6">
+            <div>
+              <p className="text-[11px] uppercase tracking-widest text-text-muted font-medium">
+                Prospects foncier — Bretagne
+              </p>
+              <h1 className="font-display text-[36px] font-bold text-text leading-tight tracking-tight mt-1">
+                {title}
+              </h1>
+              {subtitle && (
+                <p className="mt-1 text-sm text-text-muted max-w-2xl">{subtitle}</p>
+              )}
+            </div>
+            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-surface px-3 py-1.5 text-xs font-medium text-text-muted ring-1 ring-border-strong/30">
+              {isFetching && <Loader2 className="h-3 w-3 animate-spin" />}
+              <span className="tabular-nums font-semibold text-text">{total.toLocaleString('fr-FR')}</span>
+              résultats
+            </span>
           </div>
-          <span className="inline-flex w-fit items-center gap-2 rounded-full bg-surface-low px-3 py-1 text-xs font-medium text-text-muted">
-            {isFetching && <Loader2 className="h-3 w-3 animate-spin" />}
-            {total.toLocaleString('fr-FR')} résultats
-          </span>
+
+          {/* 4 KPI cards — matched dashboard agence */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+            <KpiSmallCard label="Total prospects" value={total.toLocaleString('fr-FR')} icon="📊" />
+            <KpiSmallCard label="Ultra chauds" value={kpiUltra} icon="🔥" />
+            <KpiSmallCard label="MPR Bleu prio" value={kpiMpr} icon="💧" />
+            <KpiSmallCard label="Standard" value={kpiStd} icon="🏠" />
+          </div>
         </div>
 
         {/* Barre d'actions secondaire — recherche + view toggle */}
@@ -887,6 +906,22 @@ function LeadCard({
         )}
         <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-slate-700" />
       </div>
+    </div>
+  )
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sub-component : KpiSmallCard (matched dashboard agence)
+// ─────────────────────────────────────────────────────────────────────────────
+function KpiSmallCard({ label, value, icon }: { label: string; value: string | number; icon: string }) {
+  return (
+    <div className="rounded-2xl bg-surface px-4 py-3 ring-1 ring-border-strong/20">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[10px] uppercase tracking-widest text-text-muted font-bold">{label}</p>
+        <span className="text-base opacity-60">{icon}</span>
+      </div>
+      <p className="mt-1 font-display text-2xl font-bold text-text leading-none tabular-nums">{value}</p>
     </div>
   )
 }
