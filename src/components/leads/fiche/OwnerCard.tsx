@@ -47,11 +47,11 @@ export interface OwnerCardProps {
 }
 
 const CLASS_LABEL: Record<EntityClass, { label: string; icon: ReactNode }> = {
-  sci_patrimoniale: { label: 'SCI patrimoniale', icon: <span>🏠</span> },
-  utility: { label: 'Opérateur réseau', icon: <span>📡</span> },
-  bailleur_social: { label: 'Bailleur social', icon: <span>🏛️</span> },
-  collectivite: { label: 'Collectivité', icon: <span>⚖️</span> },
-  autre: { label: 'Société', icon: <span>🏢</span> },
+  sci_patrimoniale: { label: 'SCI patrimoniale', icon: null },
+  utility: { label: 'Opérateur réseau', icon: null },
+  bailleur_social: { label: 'Bailleur social', icon: null },
+  collectivite: { label: 'Collectivité', icon: null },
+  autre: { label: 'Société', icon: null },
 }
 
 export default function OwnerCard({

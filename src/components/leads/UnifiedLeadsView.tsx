@@ -14,8 +14,7 @@ import { lazy, Suspense, useMemo, useState, useCallback, useEffect } from 'react
 import { Link, useNavigate } from 'react-router-dom'
 import { Building2, User as UserIcon } from 'lucide-react'
 import {
-  Search, Filter, List, Map as MapIcon, ChevronRight, Loader2,
-  Flame, Phone, Mail, X,
+  Search, Filter, List, Map as MapIcon, ChevronRight, Loader2, X,
 } from 'lucide-react'
 import { useFoncierProspectsUnified } from '@/hooks/queries/foncier-prospects-unified'
 import type { ScoreV2Segment } from '@/api/foncier-prospects-table'
@@ -254,12 +253,12 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
             </span>
           </div>
 
-          {/* 4 KPI cards — matched dashboard agence */}
+          {/* 4 KPI cards — matched dashboard agence, sans émojis */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-            <KpiSmallCard label="Total prospects" value={total.toLocaleString('fr-FR')} icon="📊" />
-            <KpiSmallCard label="Ultra chauds" value={kpiUltra} icon="🔥" />
-            <KpiSmallCard label="MPR Bleu prio" value={kpiMpr} icon="💧" />
-            <KpiSmallCard label="Standard" value={kpiStd} icon="🏠" />
+            <KpiSmallCard label="Total prospects" value={total.toLocaleString('fr-FR')} />
+            <KpiSmallCard label="Ultra chauds" value={kpiUltra} accent="red" />
+            <KpiSmallCard label="MPR Bleu prio" value={kpiMpr} accent="blue" />
+            <KpiSmallCard label="Standard" value={kpiStd} accent="amber" />
           </div>
         </div>
 
@@ -324,8 +323,8 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
         )}
 
         {/* Colonne filtres — drawer mobile / sidebar desktop */}
-        <aside className={`${mobileFiltersOpen ? 'fixed inset-y-0 left-0 z-50 flex w-80 max-w-[85vw]' : 'hidden md:flex md:w-80 md:shrink-0'} flex-col border-r border-border-strong/30 bg-surface`}>
-          <div className="overflow-y-auto p-5 space-y-5">
+        <aside className={`${mobileFiltersOpen ? 'fixed inset-y-0 left-0 z-50 flex w-80 max-w-[85vw]' : 'hidden md:flex md:w-80 md:shrink-0'} h-full flex-col border-r border-border-strong/30 bg-surface`}>
+          <div className="h-full flex-1 overflow-y-auto p-5 space-y-5">
           <div className="flex items-center justify-between gap-2">
             <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-text-muted">
               <Filter className="h-3.5 w-3.5" />
@@ -741,37 +740,54 @@ function ListView({
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-2">
-          {rows.map((row) => (
-            <LeadCard
-              key={row.id}
-              lead={row}
-              profile={profile}
-              onClick={() => onSelect(row)}
-            />
-          ))}
+        {/* TABLE Stitch — colonnes plutôt que cards empilées */}
+        <div className="overflow-hidden rounded-2xl bg-surface ring-1 ring-border-strong/20">
+          <table className="min-w-full divide-y divide-border-strong/20">
+            <thead className="bg-surface-low">
+              <tr>
+                <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-text-muted">DPE</th>
+                <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-text-muted">Adresse</th>
+                <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-text-muted">Ville</th>
+                <th className="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-text-muted">Surface</th>
+                <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-text-muted">Propriétaire</th>
+                <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-text-muted">Segment</th>
+                <th className="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-text-muted">Score</th>
+                <th className="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border-strong/10">
+              {rows.map((row) => (
+                <LeadRowItem
+                  key={row.id}
+                  lead={row}
+                  profile={profile}
+                  onClick={() => onSelect(row)}
+                />
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between border-t border-slate-200 bg-white px-4 py-2 text-sm">
-        <div className="text-slate-600">
-          Page {page + 1} / {totalPages || 1}
+      <div className="flex items-center justify-between border-t border-border-strong/20 bg-surface px-4 py-3 text-sm">
+        <div className="text-text-muted">
+          Page <span className="tabular-nums font-medium text-text">{page + 1}</span> / <span className="tabular-nums">{totalPages || 1}</span>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setPage(Math.max(0, page - 1))}
             disabled={page === 0}
-            className="rounded-md border border-slate-300 px-3 py-1 hover:bg-slate-50 disabled:opacity-50"
+            className="rounded-xl border border-border-strong/30 px-4 py-1.5 text-sm font-medium hover:bg-surface-low disabled:opacity-50"
           >
-            ← Préc
+            ← Précédent
           </button>
           <button
             onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
             disabled={page >= totalPages - 1}
-            className="rounded-md border border-slate-300 px-3 py-1 hover:bg-slate-50 disabled:opacity-50"
+            className="rounded-xl border border-border-strong/30 px-4 py-1.5 text-sm font-medium hover:bg-surface-low disabled:opacity-50"
           >
-            Suiv →
+            Suivant →
           </button>
         </div>
       </div>
@@ -779,10 +795,36 @@ function ListView({
   )
 }
 
+
+
 // ─────────────────────────────────────────────────────────────────────────────
-// Sub-component : LeadCard (carte par lead dans la liste)
+// Sub-component : KpiSmallCard (matched dashboard agence)
 // ─────────────────────────────────────────────────────────────────────────────
-function LeadCard({
+function KpiSmallCard({ label, value, accent }: { label: string; value: string | number; accent?: 'red' | 'blue' | 'amber' | 'green' }) {
+  const dotCls = accent === 'red'
+    ? 'bg-red-500'
+    : accent === 'blue'
+      ? 'bg-blue-500'
+      : accent === 'amber'
+        ? 'bg-amber-500'
+        : accent === 'green'
+          ? 'bg-[#00600a]'
+          : 'bg-stone-400'
+  return (
+    <div className="rounded-2xl bg-surface px-4 py-3 ring-1 ring-border-strong/20">
+      <div className="flex items-center gap-1.5">
+        <span className={`h-1.5 w-1.5 rounded-full ${dotCls}`} />
+        <p className="text-[10px] uppercase tracking-widest text-text-muted font-bold">{label}</p>
+      </div>
+      <p className="mt-1 font-display text-2xl font-bold text-text leading-none tabular-nums">{value}</p>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sub-component : LeadRowItem — ligne TABLE matched Stitch liste-leads-v2
+// ─────────────────────────────────────────────────────────────────────────────
+function LeadRowItem({
   lead, profile, onClick,
 }: {
   lead: LeadRow
@@ -790,11 +832,14 @@ function LeadCard({
   onClick: () => void
 }) {
   const segCfg = SEGMENTS.find((s) => s.v === lead.score_v2_segment)
-  const showPhone = canSee(profile, 'particulier_phone') === true
-  const showEmail = canSee(profile, 'particulier_email') === true
+  const dpeColor = ['F', 'G'].includes(String(lead.etiquette_dpe))
+    ? 'bg-red-100 text-red-800'
+    : ['D', 'E'].includes(String(lead.etiquette_dpe))
+      ? 'bg-orange-100 text-orange-800'
+      : 'bg-stone-100 text-stone-600'
 
   return (
-    <div
+    <tr
       onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -804,124 +849,74 @@ function LeadCard({
       }}
       role="button"
       tabIndex={0}
-      className="group flex w-full cursor-pointer items-start gap-4 rounded-2xl border border-border-strong/30 bg-surface p-4 text-left transition hover:border-text-muted hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[#00600a]/20"
+      className="cursor-pointer transition hover:bg-surface-low focus:outline-none focus:ring-2 focus:ring-[#00600a]/20"
     >
-      {/* DPE badge */}
-      <div className="flex w-10 flex-col items-center">
-        <div
-          className={`flex h-10 w-10 items-center justify-center rounded-xl text-base font-bold ${
-            ['F', 'G'].includes(String(lead.etiquette_dpe))
-              ? 'bg-red-100 text-red-800'
-              : ['D', 'E'].includes(String(lead.etiquette_dpe))
-                ? 'bg-orange-100 text-orange-800'
-                : 'bg-stone-100 text-stone-600'
-          }`}
-        >
+      <td className="px-4 py-3">
+        <span className={`inline-flex h-7 w-7 items-center justify-center rounded-md text-xs font-bold ${dpeColor}`}>
           {lead.etiquette_dpe ?? '?'}
+        </span>
+      </td>
+      <td className="px-4 py-3">
+        <div className="font-display text-sm font-semibold text-text leading-tight">
+          {lead.adresse_ban || lead.adresse || 'Adresse inconnue'}
         </div>
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-2">
-          <span className="truncate font-display text-sm font-semibold text-text">
-            {lead.adresse_ban || lead.adresse || 'Adresse inconnue'}
-          </span>
-          {!lead.adresse_ban && (
-            <span className="text-xs text-text-muted">
-              {lead.code_postal} {lead.commune}
-            </span>
-          )}
-        </div>
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-text-muted">
-          {lead.surface && <span>{lead.surface}m²</span>}
-          {lead.annee_construction && <span>·{lead.annee_construction}</span>}
-          {lead.type_batiment && <span>·{lead.type_batiment}</span>}
-          {segCfg && segCfg.v && (
-            <span className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-medium ${segCfg.cls}`}>
-              <span className={`h-1.5 w-1.5 rounded-full ${segCfg.dot}`} />
-              {segCfg.l}
-            </span>
-          )}
-          {lead.owner_siren ? (
-            <Link
-              to={`${profileBasePath(profile)}/entreprise/${lead.owner_siren}`}
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1 rounded-full border border-violet-300 bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-800 hover:bg-violet-100"
-              title={`Voir la fiche entreprise ${lead.owner_name ?? lead.owner_siren}`}
-            >
-              <Building2 className="h-3 w-3" />
-              {lead.owner_name ?? lead.owner_siren}
-            </Link>
-          ) : lead.pii_full_name ? (
-            <Link
-              to={`${profileBasePath(profile)}/personne/${encodeURIComponent(lead.pii_full_name)}`}
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-800 hover:bg-emerald-100"
-              title="Voir la fiche personne (client BRH enrichi)"
-            >
-              <UserIcon className="h-3 w-3" />
-              {lead.pii_full_name}
-            </Link>
-          ) : lead.owner_name ? (
-            <Link
-              to={`${profileBasePath(profile)}/personne/${encodeURIComponent(lead.owner_name)}`}
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-800 hover:bg-emerald-100"
-              title="Voir la fiche personne"
-            >
-              <UserIcon className="h-3 w-3" />
-              {lead.owner_name}
-            </Link>
-          ) : null}
-          {lead.pii_source === 'brh_clients_v2' && lead.pii_ca_total_eur != null && (
-            <span
-              className="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-800"
-              title="Client BRH avec historique CA"
-            >
-              Client BRH · {(lead.pii_ca_total_eur / 1000).toFixed(0)} k€
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Right: scores + contacts */}
-      <div className="flex shrink-0 flex-col items-end gap-1 text-xs">
-        {lead.score_v2 != null && (
-          <div className="flex items-center gap-1 text-slate-700">
-            <Flame className="h-3.5 w-3.5 text-orange-500" />
-            <span className="font-bold">{lead.score_v2}</span>
+        {lead.annee_construction && (
+          <div className="text-[11px] text-text-muted leading-tight mt-0.5">
+            Construit {lead.annee_construction}
+            {lead.type_batiment ? ` · ${lead.type_batiment}` : ''}
           </div>
         )}
-        {showPhone && (lead.pii_telephone || lead.telephone) && (
-          <span className="flex items-center gap-1 text-emerald-600">
-            <Phone className="h-3 w-3" />
-            <span className="font-mono">{lead.pii_telephone ?? lead.telephone}</span>
+      </td>
+      <td className="px-4 py-3 text-sm text-text-muted whitespace-nowrap">
+        {lead.commune ?? '—'} {lead.code_postal && <span className="text-text-light">({lead.code_postal})</span>}
+      </td>
+      <td className="px-4 py-3 text-right text-sm tabular-nums text-text-muted whitespace-nowrap">
+        {lead.surface ? `${lead.surface} m²` : '—'}
+      </td>
+      <td className="px-4 py-3">
+        {lead.owner_siren ? (
+          <Link
+            to={`${profileBasePath(profile)}/entreprise/${lead.owner_siren}`}
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-text hover:bg-stone-200"
+            title={`Fiche entreprise ${lead.owner_name ?? lead.owner_siren}`}
+          >
+            <Building2 className="h-3 w-3" />
+            <span className="truncate max-w-[140px]">{lead.owner_name ?? lead.owner_siren}</span>
+          </Link>
+        ) : lead.pii_full_name ? (
+          <Link
+            to={`${profileBasePath(profile)}/personne/${encodeURIComponent(lead.pii_full_name)}`}
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-text hover:bg-stone-200"
+            title="Client BRH enrichi"
+          >
+            <UserIcon className="h-3 w-3" />
+            <span className="truncate max-w-[140px]">{lead.pii_full_name}</span>
+          </Link>
+        ) : (
+          <span className="inline-flex items-center gap-1 rounded-full bg-stone-50 px-2 py-0.5 text-[11px] text-text-muted ring-1 ring-stone-200">
+            <UserIcon className="h-3 w-3" />
+            Particulier anonyme
           </span>
         )}
-        {showEmail && (lead.pii_email || lead.email) && (
-          <span className="flex items-center gap-1 text-sky-600">
-            <Mail className="h-3 w-3" />
-            <span className="truncate max-w-[150px]">{lead.pii_email ?? lead.email}</span>
+      </td>
+      <td className="px-4 py-3">
+        {segCfg && segCfg.v && (
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-text">
+            <span className={`h-1.5 w-1.5 rounded-full ${segCfg.dot}`} />
+            {segCfg.l}
           </span>
         )}
-        <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-slate-700" />
-      </div>
-    </div>
-  )
-}
-
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Sub-component : KpiSmallCard (matched dashboard agence)
-// ─────────────────────────────────────────────────────────────────────────────
-function KpiSmallCard({ label, value, icon }: { label: string; value: string | number; icon: string }) {
-  return (
-    <div className="rounded-2xl bg-surface px-4 py-3 ring-1 ring-border-strong/20">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[10px] uppercase tracking-widest text-text-muted font-bold">{label}</p>
-        <span className="text-base opacity-60">{icon}</span>
-      </div>
-      <p className="mt-1 font-display text-2xl font-bold text-text leading-none tabular-nums">{value}</p>
-    </div>
+      </td>
+      <td className="px-4 py-3 text-right tabular-nums">
+        {lead.score_v2 != null && (
+          <span className="font-display text-sm font-bold text-text">{lead.score_v2}</span>
+        )}
+      </td>
+      <td className="px-2 py-3 text-right">
+        <ChevronRight className="inline h-4 w-4 text-text-light" />
+      </td>
+    </tr>
   )
 }
