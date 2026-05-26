@@ -132,16 +132,25 @@ export const brhFichesApi = {
     if (!sciRow) return null
     const sci = normalizeSci(sciRow as Record<string, unknown>)
 
-    // 26/05 — Limite 500 (vs 50 avant) + count exact pour afficher total.
-    // ENEDIS a 1100 DPE en DB, 50 affichés = troncation gênante audit Philippe.
-    // count: 'planned' utilise les stats Postgres (rapide) au lieu de full scan.
-    const { data: adr, error: e2, count: adressesTotal } = await supabase
-      .from('brh_dpe_prospects')
-      .select('id, adresse, code_postal, commune, etiquette_dpe, surface_habitable, annee_construction, score_v2', { count: 'exact', head: false })
-      .eq('owner_siren', siren)
-      .order('score_v2', { ascending: false, nullsFirst: false })
-      .limit(500)
-    if (e2) throw e2
+    // 26/05 PM — count séparé (head: true) + select limit 500 séparés.
+    // Tentative count: 'exact' combiné au select faisait HTTP 500 sur grosses SCI
+    // (ENEDIS 1100, SCI INTERFEDERALE 579) → PostgREST timeout. Pattern 2 queries OK.
+    const [countRes, adrRes] = await Promise.all([
+      supabase
+        .from('brh_dpe_prospects')
+        .select('id', { count: 'exact', head: true })
+        .eq('owner_siren', siren),
+      supabase
+        .from('brh_dpe_prospects')
+        .select('id, adresse, code_postal, commune, etiquette_dpe, surface_habitable, annee_construction, score_v2')
+        .eq('owner_siren', siren)
+        .order('score_v2', { ascending: false, nullsFirst: false })
+        .limit(500),
+    ])
+    if (countRes.error) throw countRes.error
+    if (adrRes.error) throw adrRes.error
+    const adressesTotal = countRes.count ?? (adrRes.data?.length ?? 0)
+    const adr = adrRes.data
 
     const { data: bodaccRaw, error: e3 } = await supabase
       .from('brh_bodacc_alerts')
