@@ -74,16 +74,16 @@ export default function OwnerCard({
   const classMeta = CLASS_LABEL[klass]
 
   return (
-    <article className="rounded-lg border border-stone-200 bg-white p-4 transition hover:border-stone-300 hover:shadow-sm">
+    <article className="rounded-2xl bg-surface ring-1 ring-border-strong/20 p-6 transition hover:ring-text-muted/40">
       {/* Zone 1 — Identité */}
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 text-xs text-stone-500">
+          <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-text-muted font-bold">
             <Building2 className="h-3.5 w-3.5" />
             <span className="font-mono">{formatSiren(siren)}</span>
             {formeJuridique && <span>· {formeJuridique}</span>}
           </div>
-          <h3 className="mt-0.5 truncate font-display text-base font-semibold text-stone-900">
+          <h3 className="mt-1 truncate font-display text-xl font-bold text-text">
             {denomination}
           </h3>
           {/* Zone 2 — Classification + solvabilité */}
@@ -101,10 +101,10 @@ export default function OwnerCard({
         {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}
       </div>
 
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+      <div className="mt-5 grid gap-5 sm:grid-cols-2">
         {/* Zone 3 — Coordonnées */}
-        <div className="space-y-1">
-          <div className="text-[10px] uppercase tracking-wide text-stone-400">Coordonnées</div>
+        <div className="space-y-1.5">
+          <div className="text-[10px] uppercase tracking-widest text-text-muted font-bold">Coordonnées</div>
           <DetailRow
             label={
               <span className="flex items-center gap-1">
@@ -126,10 +126,10 @@ export default function OwnerCard({
         </div>
 
         {/* Zone 4 — Adresse siège SCI (différente de l'adresse du bien détenu) */}
-        <div className="space-y-1">
-          <div className="text-[10px] uppercase tracking-wide text-stone-400">
-            Siège de la société{' '}
-            <span className="text-stone-400 normal-case">(≠ adresse du bien)</span>
+        <div className="space-y-1.5">
+          <div className="text-[10px] uppercase tracking-widest text-text-muted font-bold">
+            Siège de la société
+            <span className="ml-1 normal-case font-normal text-text-light">(≠ adresse du bien)</span>
           </div>
           <DetailRow
             label={
@@ -144,7 +144,7 @@ export default function OwnerCard({
       </div>
 
       {/* Zones 5 + 6 — Patrimoine local + global */}
-      <div className="mt-3 grid gap-2 border-t border-stone-100 pt-3 sm:grid-cols-2">
+      <div className="mt-5 grid gap-3 border-t border-border-strong/20 pt-5 sm:grid-cols-2">
         <ClickableCounter
           variant="card"
           count={lotsIci ?? 0}

@@ -24,30 +24,30 @@ export default function FicheSection({ title, count, icon, defaultOpen = false, 
   }
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white">
+    <section className="rounded-2xl bg-surface ring-1 ring-border-strong/20">
       <button
         type="button"
         onClick={handleToggle}
-        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-slate-50"
+        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left hover:bg-surface-low rounded-2xl"
         aria-expanded={open}
       >
-        <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+        <div className="flex items-center gap-2 font-display text-base font-semibold text-text">
           {icon}
           {title}
           {count != null && count > 0 && (
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+            <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-bold tabular-nums text-text-muted">
               {count}
             </span>
           )}
         </div>
         {open ? (
-          <ChevronDown className="h-4 w-4 text-slate-400" />
+          <ChevronDown className="h-4 w-4 text-text-light" />
         ) : (
-          <ChevronRight className="h-4 w-4 text-slate-400" />
+          <ChevronRight className="h-4 w-4 text-text-light" />
         )}
       </button>
       {hasRendered && (
-        <div className={open ? 'border-t border-slate-100 px-4 py-3' : 'hidden'}>
+        <div className={open ? 'border-t border-border-strong/20 px-5 py-4' : 'hidden'}>
           {children}
         </div>
       )}
