@@ -41,3 +41,4 @@ playwright/.cache/
 
 # Audit Playwright outputs (générés par e2e/audit-full-tour.spec.ts)
 audit-output/
+scripts/__pycache__/
