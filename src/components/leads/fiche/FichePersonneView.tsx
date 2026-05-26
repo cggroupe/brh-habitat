@@ -64,6 +64,7 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
 
   const { identity, roles, patrimoine_direct, brh_historique } = data
   const patrimoine_via_sci = data.patrimoine_via_sci ?? []
+  const patrimoineTotal = data.patrimoine_via_sci_total ?? patrimoine_via_sci.length
   const isDeceased = !!identity.death_date
 
   return (
@@ -139,12 +140,12 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
             </FicheSection>
           )}
 
-          {/* Patrimoine via SCI — 25/05 PM, fix bug "Aucun patrimoine" */}
-          {patrimoine_via_sci.length > 0 && (
+          {/* Patrimoine via SCI — 26/05, fix pagination 1000/1100 */}
+          {patrimoineTotal > 0 && (
             <FicheSection
               title="Patrimoine via SCI"
               icon={<Home className="h-4 w-4" />}
-              count={patrimoine_via_sci.length}
+              count={patrimoineTotal}
               defaultOpen
             >
               <div className="space-y-1.5">
@@ -167,9 +168,9 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                     variant="row"
                   />
                 ))}
-                {patrimoine_via_sci.length > 100 && (
+                {patrimoineTotal > 100 && (
                   <p className="px-3 py-2 text-xs text-slate-500">
-                    + {patrimoine_via_sci.length - 100} autres DPE (limite affichage)
+                    100 affichés sur {patrimoineTotal.toLocaleString('fr-FR')} (les plus pertinents par classe DPE).
                   </p>
                 )}
               </div>

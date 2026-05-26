@@ -45,6 +45,7 @@ export default function FicheEntrepriseView({ siren, profile }: Props) {
   }
 
   const { sci, adresses, bodacc } = data
+  const adressesTotal = data.adresses_total ?? adresses.length
   const dirigeantsDecedes = sci.dirigeants.filter((d) => d.est_decede)
 
   return (
@@ -150,7 +151,7 @@ export default function FicheEntrepriseView({ siren, profile }: Props) {
           <FicheSection
             title="Adresses détenues"
             icon={<Home className="h-4 w-4" />}
-            count={adresses.length}
+            count={adressesTotal}
             defaultOpen
           >
             {adresses.length === 0 ? (
@@ -170,6 +171,11 @@ export default function FicheEntrepriseView({ siren, profile }: Props) {
                     variant="row"
                   />
                 ))}
+                {adressesTotal > adresses.length && (
+                  <p className="px-3 py-2 text-xs text-slate-500">
+                    {adresses.length} affichées sur {adressesTotal.toLocaleString('fr-FR')} (les plus pertinentes selon score V2).
+                  </p>
+                )}
               </div>
             )}
           </FicheSection>

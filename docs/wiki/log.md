@@ -5,6 +5,45 @@
 
 ---
 
+## 2026-05-26 — Bugs concordance data : 4 fixes post-audit LLM (OpenRouter)
+
+**Contexte** : Audit concordance DB vs DOM via Playwright + Claude Haiku 4.5 (OpenRouter) sur 15 entités (5 SCI, 5 dirigeants, 5 DPE). Le LLM a remonté ~30 écarts dont 8 critiques. Vérification manuelle production : ~50 % faux positifs (le LLM ratait visuellement des champs présents, ex: étiquette DPE "F" affichée mais déclarée manquante). Les vrais bugs ont été fixés.
+
+### Bugs réels fixés
+- **R2 — Personne avec parenthèses dans le nom** (`MARIE-CHRISTINE AULAGNON (BADOUARD)` → "Aucun rôle ou patrimoine BRH connu") : (1) parsing URL prenait `(BADOUARD)` comme nom, (2) RPC `brh_sci_search_dirigeant` faisait `nom_norm = LOWER(p_name)` qui ne strippait pas les parens alors que `nom_norm` stocké est `lower(regexp_replace(nom, '[^a-zA-ZÀ-ÿ]', '', 'g'))` (= `aulagnonbadouard`).
+- **R3 — Adresse BAN faux match** (DPE 3 "Château de Kervoazec" → DOM "Cité de Kervoazec") : score BAN à 0.577 sur ce DPE, on affichait quand même. Seuil ≥ 0.8 introduit pour préférer `adresse` brute.
+- **R4 — Pagination tronquée SCI** (ENEDIS : 1100 DPE en DB → 50 affichés sans indicateur) : `getFicheEntreprise` limit 50 → 500 + `count: 'exact'` ; `getFichePersonneByName` ajoute pré-compte exact par SIREN (contourne le cap PostgREST max-rows=1000).
+
+### Faux positifs LLM identifiés (NON corrigés car non bugs)
+- "Étiquette DPE F manquante" (DPE 2, 3, 8, 10, 12) : vérifié production, la box "Classe DPE" affiche bien "F". Le LLM (Haiku 4.5) ratait visuellement.
+
+### Fichiers modifiés
+- [src/api/brh-fiches.ts](../../src/api/brh-fiches.ts) : `normalizeNameDb()` helper + parsing `first/last` revu + `getFicheEntreprise` count exact + `getFichePersonneByName` pré-comptes SIREN.
+- [src/components/leads/fiche/FicheAdresseView.tsx](../../src/components/leads/fiche/FicheAdresseView.tsx) : seuil `adresse_ban_score >= 0.8`.
+- [src/components/leads/fiche/FicheEntrepriseView.tsx](../../src/components/leads/fiche/FicheEntrepriseView.tsx) : `count={adressesTotal}` + indicateur "X affichées sur N".
+- [src/components/leads/fiche/FichePersonneView.tsx](../../src/components/leads/fiche/FichePersonneView.tsx) : idem patrimoine via SCI.
+- [src/types/fiche.ts](../../src/types/fiche.ts) : `adresses_total`, `patrimoine_via_sci_total`.
+- [src/types/lead.ts](../../src/types/lead.ts) : `adresse_ban_score`.
+
+### Migration créée
+- `supabase/migrations/20260526100000_brh_sci_search_dirigeant_v3_normalize.sql` — RPC v3 normalise `p_name` côté SQL.
+- **Status** : appliquée sur prod (`schema_migrations` ↑). Tests SQL : `AULAGNON (BADOUARD)` → ENEDIS ✓, `Hamel` → 5 SCI ✓.
+
+### Tests
+- `npm run build` ✓ (0 erreur TS strict)
+- `npm test` ✓ (426/426 verts)
+
+### Risque
+- **Low** : changements UI cosmétiques + 1 helper + 1 RPC strictement plus permissive (sur-match impossible vu strip identique des 2 côtés).
+
+### Leçon clé
+- L'audit LLM Haiku 4.5 a un taux de faux positifs notable sur la lecture DOM (~50 %). Recommandation : prochain run, utiliser **Sonnet 4.6** pour les pages visuellement denses ou les Stat-boxes empilées.
+
+### Status
+- DONE — Prêt commit + push.
+
+---
+
 ## 2026-05-25 PM (16h) — Audit Playwright exhaustif 6 personas + 3 bugs critiques fixés
 
 **Contexte** : Demande Philippe avant lancement avec l'équipe demain matin : audit complet de tous les portails par persona. 6 comptes audit créés via Supabase Auth admin API (mdp commun `AuditBrh2026.@`), 92 routes testées avec screenshots full-page + console errors capture.

@@ -32,19 +32,22 @@ from pathlib import Path
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from playwright.sync_api import sync_playwright, Page
-from anthropic import Anthropic
+from openai import OpenAI
 
 # ─── Config ───────────────────────────────────────────────────────────────
 BASE_URL = os.environ.get("BRH_AUDIT_URL", "https://brh-habitat.vercel.app")
 EMAIL = os.environ.get("BRH_E2E_EMAIL", "")
 PASSWORD = os.environ.get("BRH_E2E_PASSWORD", "")
-ANTHROPIC_KEY = ""
+OPENROUTER_KEY = ""
 for line in Path("/opt/stack/.env").read_text().splitlines():
-    if line.startswith("ANTHROPIC_API_KEY="):
-        ANTHROPIC_KEY = line.split("=", 1)[1].strip().strip("\"'")
+    if line.startswith("OPENROUTER_API_KEY="):
+        OPENROUTER_KEY = line.split("=", 1)[1].strip().strip("\"'")
 
 if not EMAIL or not PASSWORD:
     print("ERROR: BRH_E2E_EMAIL et BRH_E2E_PASSWORD requis (compte employé)", file=sys.stderr)
+    sys.exit(1)
+if not OPENROUTER_KEY:
+    print("ERROR: OPENROUTER_API_KEY manquant dans /opt/stack/.env", file=sys.stderr)
     sys.exit(1)
 
 OUT_DIR = Path(__file__).parent.parent / "audit-output"
@@ -52,7 +55,9 @@ OUT_DIR.mkdir(exist_ok=True)
 SCREENSHOT_DIR = OUT_DIR / "concordance-screenshots"
 SCREENSHOT_DIR.mkdir(exist_ok=True)
 
-claude = Anthropic(api_key=ANTHROPIC_KEY)
+# OpenRouter (proxy compatible OpenAI SDK) — claude-haiku-4.5
+claude = OpenAI(api_key=OPENROUTER_KEY, base_url="https://openrouter.ai/api/v1")
+LLM_MODEL = "anthropic/claude-haiku-4.5"
 
 
 def load_db_url() -> str:
@@ -182,12 +187,16 @@ Réponds UNIQUEMENT en JSON valide :
 
 Ne mets PAS de markdown autour du JSON. Sois bref."""
 
-    msg = claude.messages.create(
-        model="claude-haiku-4-5-20251001",
+    msg = claude.chat.completions.create(
+        model=LLM_MODEL,
         max_tokens=800,
         messages=[{"role": "user", "content": prompt}],
+        extra_headers={
+            "HTTP-Referer": "https://brh-habitat.vercel.app",
+            "X-Title": "BRH Data Concordance Audit",
+        },
     )
-    raw = msg.content[0].text.strip()
+    raw = (msg.choices[0].message.content or "").strip()
     # Strip markdown si présent
     if raw.startswith("```"):
         raw = raw.strip("`")

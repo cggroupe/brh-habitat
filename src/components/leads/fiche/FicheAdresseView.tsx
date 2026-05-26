@@ -97,14 +97,17 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
                   Adresse
                 </div>
                 <h1 className="mt-1 text-lg font-semibold text-slate-900">
-                  {dpe.adresse_ban || dpe.adresse || `DPE #${dpe.id}`}
+                  {/* 26/05 — n'utilise adresse_ban que si confiance ≥ 0.8.
+                      Score 0.577 sur "Château de Kervoazec" → BAN renvoyait
+                      "Cité de Kervoazec" (faux match). Fallback adresse brute. */}
+                  {(dpe.adresse_ban && (dpe.adresse_ban_score ?? 0) >= 0.8)
+                    ? dpe.adresse_ban
+                    : (dpe.adresse || `DPE #${dpe.id}`)}
                 </h1>
-                {!dpe.adresse_ban && (
-                  <p className="text-sm text-slate-600">
-                    {dpe.code_postal} {dpe.commune}
-                    {dpe.departement ? ` · ${dpe.departement}` : ''}
-                  </p>
-                )}
+                <p className="text-sm text-slate-600">
+                  {dpe.code_postal} {dpe.commune}
+                  {dpe.departement ? ` · ${dpe.departement}` : ''}
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <FavoriButton

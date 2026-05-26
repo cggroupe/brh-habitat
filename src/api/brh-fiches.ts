@@ -9,6 +9,16 @@ import { supabase } from '@/lib/supabase'
 import type { LeadRow } from '@/types/lead'
 import type { FicheAdresse, FicheEntreprise, FichePersonne, SciInfo, Dirigeant } from '@/types/fiche'
 
+/**
+ * Normalise un nom comme la colonne `brh_dirigeants.nom_norm` (migration 20260519240000) :
+ * `lower(regexp_replace(nom, '[^a-zA-ZÀ-ÿ]', '', 'g'))` — supprime espaces, parenthèses,
+ * tirets, chiffres. Conserve les lettres accentuées. Permet de matcher "AULAGNON (BADOUARD)"
+ * stocké comme "aulagnonbadouard" depuis l'URL "MARIE-CHRISTINE AULAGNON (BADOUARD)".
+ */
+function normalizeNameDb(s: string): string {
+  return s.toLowerCase().replace(/[^a-zà-ÿ]/g, '')
+}
+
 function normalizeSci(row: Record<string, unknown>): SciInfo {
   const dirigeantsRaw = row.dirigeants
   const dirigeants: Dirigeant[] = Array.isArray(dirigeantsRaw)
@@ -122,12 +132,15 @@ export const brhFichesApi = {
     if (!sciRow) return null
     const sci = normalizeSci(sciRow as Record<string, unknown>)
 
-    const { data: adr, error: e2 } = await supabase
+    // 26/05 — Limite 500 (vs 50 avant) + count exact pour afficher total.
+    // ENEDIS a 1100 DPE en DB, 50 affichés = troncation gênante audit Philippe.
+    // count: 'planned' utilise les stats Postgres (rapide) au lieu de full scan.
+    const { data: adr, error: e2, count: adressesTotal } = await supabase
       .from('brh_dpe_prospects')
-      .select('id, adresse, code_postal, commune, etiquette_dpe, surface_habitable, annee_construction, score_v2')
+      .select('id, adresse, code_postal, commune, etiquette_dpe, surface_habitable, annee_construction, score_v2', { count: 'exact', head: false })
       .eq('owner_siren', siren)
       .order('score_v2', { ascending: false, nullsFirst: false })
-      .limit(50)
+      .limit(500)
     if (e2) throw e2
 
     const { data: bodaccRaw, error: e3 } = await supabase
@@ -142,6 +155,7 @@ export const brhFichesApi = {
     return {
       sci,
       adresses: (adr ?? []) as FicheEntreprise['adresses'],
+      adresses_total: adressesTotal ?? (adr?.length ?? 0),
       bodacc,
     }
   },
@@ -151,18 +165,18 @@ export const brhFichesApi = {
    * JSONB + brh_dpe_prospects.particulier_name. À enrichir avec entity-hub via tunnel.
    */
   async getFichePersonneByName(fullName: string): Promise<FichePersonne | null> {
-    // 25/05 PM — fix bug parsing (feedback Philippe) : la convention française
-    // = "Prénom Nom" (ex: "Jean-Michel Hamel"). L'ancien parsing
-    // `[last, ...rest] = split(...)` prenait Jean-Michel comme last et Hamel
-    // comme first → recherche sur prénom au lieu du nom → "Aucun rôle ou
-    // patrimoine BRH connu" pour tous les dirigeants en convention FR.
-    // Fix : dernier mot = nom, premier mot = prénom (cas commun FR).
+    // 26/05 — Parsing FR : URL = `prenom nom` (ex: "MARIE-CHRISTINE AULAGNON (BADOUARD)").
+    // Le premier mot est toujours le prénom (joint en `${prenom} ${nom}` au build URL).
+    // Le reste = nom complet, qui peut contenir espaces/parenthèses ("AULAGNON (BADOUARD)").
+    // La normalisation côté DB (brh_dirigeants.nom_norm) = lower + strip non-alpha,
+    // donc on compare via la même règle (cf normalizeNameDb ci-dessous).
     const parts = fullName.split(/\s+/).filter(Boolean)
     if (parts.length === 0) return null
-    const last = parts[parts.length - 1]
-    const first = parts.length > 1 ? parts[0] : ''
+    const first = parts[0]
+    const last = parts.length > 1 ? parts.slice(1).join(' ') : parts[0]
 
-    // Recherche via RPC dédiée (PostgREST ne sait pas caster jsonb→text dans .ilike)
+    // Recherche via RPC dédiée (PostgREST ne sait pas caster jsonb→text dans .ilike).
+    // La RPC v3 (mig 20260526100000) normalise p_name côté SQL pour matcher nom_norm.
     const { data: sciHits, error: e1 } = await supabase.rpc('brh_sci_search_dirigeant', {
       p_name: last,
       p_limit: 30,
@@ -179,8 +193,8 @@ export const brhFichesApi = {
         : []
       const me = dirs.find(
         (d) =>
-          (d.nom ?? '').toLowerCase() === last.toLowerCase() &&
-          (!first || (d.prenom ?? '').toLowerCase().includes(first.toLowerCase())),
+          normalizeNameDb(d.nom ?? '') === normalizeNameDb(last) &&
+          (!first || normalizeNameDb(d.prenom ?? '').includes(normalizeNameDb(first))),
       )
       if (!me) continue
       roles.push({
@@ -196,20 +210,32 @@ export const brhFichesApi = {
 
     if (roles.length === 0) return null
 
-    // 25/05 PM — fetch patrimoine via SCI (DPE owner_siren ∈ rôles)
-    // Le `patrimoine_direct` reste vide pour MVP (cas particulier sans SCI :
-    // nécessite match dans brh_dpe_prospects.owner_name='X Y' qui est rare).
+    // 26/05 — fetch patrimoine via SCI (DPE owner_siren ∈ rôles).
+    // Audit Philippe : ENEDIS a 1100 DPE en DB, mais PostgREST cap par défaut
+    // à 1000 rows max → on affichait 1000/1100. Solution : count exact pour
+    // afficher le total même quand le retour est plafonné.
     const sirens = roles.map((r) => r.siren).filter(Boolean)
     let patrimoineViaSci: NonNullable<FichePersonne['patrimoine_via_sci']> = []
     const rolesNbDpe = new Map<string, number>()
+    const rolesNbDpeTotal = new Map<string, number>()
     if (sirens.length > 0) {
+      // Pré-comptes par SCI (total réel, non plafonné).
+      const counts = await Promise.all(
+        sirens.map(async (siren) => {
+          const { count } = await supabase
+            .from('brh_dpe_prospects')
+            .select('id', { count: 'exact', head: true })
+            .eq('owner_siren', siren)
+          return [siren, count ?? 0] as const
+        }),
+      )
+      for (const [siren, total] of counts) rolesNbDpeTotal.set(siren, total)
+
       const { data: dpeData, error: dpeErr } = await supabase
         .from('brh_dpe_prospects')
         .select('id, adresse, code_postal, commune, etiquette_dpe, surface_habitable, annee_construction, owner_siren, owner_name')
         .in('owner_siren', sirens)
         .order('etiquette_dpe', { ascending: false })
-        // 25/05 PM — 2000 max (acceptable network/render ; cas Veronique Lacour
-        // a 1100 DPE via ENEDIS, on coupait à 200 = troncation gênante).
         .limit(2000)
       if (dpeErr) throw dpeErr
       const sciDenominationBySiren = new Map(roles.map((r) => [r.siren, r.denomination]))
@@ -224,7 +250,7 @@ export const brhFichesApi = {
         via_sci_siren: String(d.owner_siren),
         via_sci_denomination: sciDenominationBySiren.get(String(d.owner_siren)) ?? String(d.owner_name ?? ''),
       }))
-      // Compte par SCI pour annoter chaque rôle
+      // Compte par SCI pour annoter chaque rôle (ce qui est visible dans la liste).
       for (const p of patrimoineViaSci) {
         rolesNbDpe.set(p.via_sci_siren, (rolesNbDpe.get(p.via_sci_siren) ?? 0) + 1)
       }
@@ -240,9 +266,11 @@ export const brhFichesApi = {
         death_date: deathDate,
         city: null,
       },
-      roles: roles.map((r) => ({ ...r, nb_dpe: rolesNbDpe.get(r.siren) ?? 0 })),
+      // nb_dpe = total réel en DB (non plafonné), pas seulement les éléments listés.
+      roles: roles.map((r) => ({ ...r, nb_dpe: rolesNbDpeTotal.get(r.siren) ?? rolesNbDpe.get(r.siren) ?? 0 })),
       patrimoine_direct: [],
       patrimoine_via_sci: patrimoineViaSci,
+      patrimoine_via_sci_total: Array.from(rolesNbDpeTotal.values()).reduce((a, b) => a + b, 0),
       brh_historique: null,
     }
   },

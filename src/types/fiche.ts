@@ -67,6 +67,8 @@ export interface FicheEntreprise {
     annee_construction: number | null
     score_v2: number | null
   }>
+  /** Total DPE détenus en DB (peut dépasser `adresses.length` plafonné à 500 pour l'UI). */
+  adresses_total: number
   /** Alertes BODACC (procédure collective, cession, etc.) */
   bodacc: Array<{
     id: number | string
@@ -117,6 +119,8 @@ export interface FichePersonne {
     via_sci_siren: string
     via_sci_denomination: string
   }>
+  /** Total DPE via SCI en DB (somme par SIREN, non plafonné par PostgREST max-rows=1000). */
+  patrimoine_via_sci_total?: number
   /** Historique BRH si la personne est cliente/prospect */
   brh_historique: {
     is_client: boolean
