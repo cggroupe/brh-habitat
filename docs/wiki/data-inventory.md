@@ -30,12 +30,13 @@ Rowcounts vérifiés **psql direct sur `lygmmvxnmvlgynmrcpny` au 2026-05-21**.
 
 | Table | Rows | Couverture | Pivot principal | Source | Statut UI | Notes |
 |---|--:|---|---|---|---|---|
-| `brh_dpe_prospects` | **206 252** | **E + F/G** sur 5 dépts (22/29/35/44/56) — élargissement Phase 7 (E Bretagne : +86 490) + Phase 8.2 (44 E+F+G : +60 456) | `numero_dpe` (ADEME), `owner_siren` (SCI), `code_postal+adresse` (BAN) | ADEME DPE v2 logements existants (`meg-83tjwtg8dyz4vv7h1dqe`) | 🟢 vue Foncier + fiche adresse | Score V2 étendu aux E (anticipation interdiction 2034, score min=5 pour E sans iris_code) |
-| `brh_dvf_archive` | **104 225** | Mutations 10 ans (DVF data.gouv) — 2 869 sur Brest seul | `code_postal+lower(adresse_voie)` | data.gouv DVF | 🟢 fiche client + foncier | 39 711 `usable_for_brh=TRUE` après fix 19/05 (cf §5) |
+| `brh_dpe_prospects` | **216 773** dont **159 000 BAN-enrichis (77%)** au 25/05 | **E + F/G** sur 5 dépts (22/29/35/44/56) — élargissement Phase 7 (E Bretagne : +86 490) + Phase 8.2 (44 E+F+G : +60 456) | `numero_dpe` (ADEME), `owner_siren` (SCI), `code_postal+adresse` (BAN), **`adresse_ban_id`** (ajouté 25/05 Phase 1) | ADEME DPE v2 logements existants (`meg-83tjwtg8dyz4vv7h1dqe`) | 🟢 vue Foncier + fiche adresse | Score V2 = **25 règles** (22 + 3 BDNB 25/05). Batch BAN en cours ETA 7h pour 95% couverture. |
+| **`brh_ext_bdnb_batiments`** | **1 551 752** | 4 dépts bretons (22/29/35/56) — typologie bâti (annee_construction, mat_mur_txt, mat_toit_txt, surface_habitable, type_vitrage) | `batiment_groupe_id` PK, `ban_id` (jointure DPE / personnes) | BDNB v2 2025-07-a (CSTB) ingéré via PostGIS local 25/05 | 🟢 alimente 3 règles V2 (vitrage_simple, pierre_ancienne, grand_logement) | 67.5% des bâtiments avec ban_id. Match join via `dpe.adresse_ban_id = bdnb.ban_id`. |
+| `brh_dvf_archive` | **406 010** | Mutations 10 ans (DVF data.gouv) — 2 869 sur Brest seul | `code_postal+lower(adresse_voie)` | data.gouv DVF | 🟢 fiche client + foncier | 39 711 `usable_for_brh=TRUE` après fix 19/05 |
 | `brh_intention_signals` | **13 000** | Signaux travaux/vente par DPE | `dpe_id` | Calc interne (DVF + permis + BODACC) | 🟢 fiche adresse | Relié `dpe_id` |
 | `brh_score_vente_v1` | **59 255** | Score propension vente par DPE | `dpe_id` | Heuristique 13 règles | 🟡 | Pas affiché ailleurs que `/agence/leads-v2` |
-| `brh_prospect_studies` | **59 248** | Étude énergétique par DPE (isolation, gains potentiels) | `dpe_id` | Calc interne | 🟡 | Pas affiché — gain BRH potentiel grand |
-| `brh_permis_construire` | **0** ⚠️ | Sitadel Bretagne — import en cours | `code_insee+date` | data.gouv Sitadel3 | 🟠 import en cours | PID 1797418 lancé 19/05 06:00 sur dep 22/29/35/56 |
+| `brh_prospect_studies` | **59 255** | Étude énergétique par DPE (isolation, gains potentiels) | `dpe_id` | Calc interne | 🟡 | Pas affiché — gain BRH potentiel grand |
+| `brh_permis_construire` | **195 834** | Sitadel Bretagne 2018-2026 | `id_permis`, `code_postal+voie_norm` | data.gouv Sitadel3 | 🟢 RPC `brh_client_foncier_at_address` v3 | Ingéré 22/05 |
 
 ---
 

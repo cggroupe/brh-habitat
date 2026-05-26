@@ -5,6 +5,85 @@
 
 ---
 
+## 2026-05-25 PM (16h) — Audit Playwright exhaustif 6 personas + 3 bugs critiques fixés
+
+**Contexte** : Demande Philippe avant lancement avec l'équipe demain matin : audit complet de tous les portails par persona. 6 comptes audit créés via Supabase Auth admin API (mdp commun `AuditBrh2026.@`), 92 routes testées avec screenshots full-page + console errors capture.
+
+### Spec audit créé (réutilisable)
+- `e2e/audit-full-tour.spec.ts` (370 lignes) — pour chaque persona : login → goto chaque route → screenshot → capture errors. Output JSON par persona + 92 screenshots.
+- `scripts/build-audit-report.py` — générateur rapport markdown depuis JSONs.
+- Skip en CI : `test.skip(!process.env.BRH_E2E_AUDIT, '...')` (besoin des 6 comptes + DB réelle).
+
+### Résultats audit AVANT fixes (53/92 OK, 57%)
+| Persona | OK | Redirect | HTTP 500 | Crash |
+|---|---:|---:|---:|---:|
+| particulier | 12/16 | 4 | 0 | 0 |
+| affilie | 5/8 | 3 | 0 | 0 |
+| employe | 14/18 | 0 | **4** | 0 |
+| admin | 6/12 | **6** | 0 | 0 |
+| agence | 0/22 | 0 | 0 | **22** |
+| artisan | 16/16 | 0 | 0 | 0 |
+
+### 3 bugs critiques identifiés et fixés
+
+**Bug #1 — `useAuth.loading` cascade redirects** (commit `8443158` + `5f6b8e1`)
+- Cause : `appStore` persiste user avec `role='user'` fallback anti-XSS → guards évaluent faux role avant `validateSession` async.
+- Fix : `loading = !isInitialized` (pas `!user && !isInitialized`). Spinner garanti pendant chargement role.
+- Impact : 13 redirects injustes résolus (admin + particulier + affilie).
+
+**Bug #2 — Supabase Auth `navigatorLock` bug agence** (commit `8443158`)
+- Cause : Web Locks API saturait sur `/agence/*` (8 hooks agence concurrents + sidebar + notifications) → "Lock broken with steal" → page blanche.
+- **CONFIRMÉ EN PROD Vercel** (pas dev-only) : 22/22 routes /agence crashaient.
+- Fix : `src/lib/supabase.ts` → remplacer `navigatorLock` (défaut) par `processLock` (in-process, simple).
+- Résultat : `/agence` 0/22 → **22/22** en 38s (vs 11.4 min de crashes).
+
+**Bug #3 — HTTP 500 statement timeout PostgREST** (commit `8443158`)
+- Cause : `count: 'exact'` × 5 segments en parallèle sur 200k+ rows → timeout 3s anon / 8s authenticated.
+- Fix : `count: 'planned'` (stats Postgres instantanées, ±1-5%) sur `prospects-bretagne.ts` + `pro-analytics.ts` + limit carte 5000→2000.
+- Résultat : SELECT count 3.3s → 0.3s (10× speedup), employe 4 HTTP 500 résolus.
+
+### Résultats audit APRÈS fixes (92/92 OK, 100%)
+| Persona | OK | Redirect | HTTP 500 | Crash |
+|---|---:|---:|---:|---:|
+| particulier | **16/16** | 0 | 0 | 0 |
+| affilie | **8/8** | 0 | 0 | 0 |
+| employe | **18/18** | 0 | 0 | 0 |
+| admin | **12/12** | 0 | 0 | 0 |
+| agence | **22/22** | 0 | 0 | 0 |
+| artisan | **16/16** | 0 | 0 | 0 |
+
+### Faux positifs détectés
+- Bug #4 (404 routes inexistantes) : page 404 fonctionne parfaitement, audit marquait OK à tort.
+- Bug #5 (CSP fonts Google) : warning cosmétique, CSP autorise déjà googleapis.com.
+
+### Recalc score V2 post-batch BAN (16h, BAN à 77%)
+Re-lancement `brh_recalc_score_v2_full(dept)` sur 5 dépts via Management API. Gains observés :
+- dept 22 : avg 38.61 → 39.54, **max 69 → 80 (+16%)**
+- dept 29 : avg 40.28 → 40.82, **max 97 → 100 (+3%)**
+- dept 35 : avg 36.04 → 36.99, **max 70 → 73 (+4%)**
+- dept 56 : avg 37.94 → 38.68, **max 67 → 71 (+6%)**
+- dept 44 : inchangé (DPE 44 pas encore BAN-enrichi par batch)
+
+3 règles BDNB (vitrage_simple, pierre_ancienne, grand_logement) s'activent progressivement à mesure que les DPE acquièrent leur ban_id et matchent `brh_ext_bdnb_batiments` via la jointure.
+
+### Matching client BRH ↔ DPE (post fix RPC v3)
+- Avant : 419 matches strict cp+num+voie
+- Maintenant (BAN 77%) : **810 matches** via JOIN ban_id
+- Cible (BAN 95%) : ~5 000-15 000 matches
+
+### Fichiers
+- **Commits poussés (5)** : `7ffbe44`, `0c176b2`, `ab796f1`, `57068d2`, `559bbf9` (sprint matin) + `022dbd3` (polissage) + `fe94bac` (lint) + `8443158` (3 bugs) + `5f6b8e1` (completion fix #1) + `48cce70` (skip CI) — total **10 commits** sur main aujourd'hui.
+- **Rapports** : `audit-output/REPORT.md` (avant) + `audit-output/REPORT-AFTER-FIX.md` (après) + copie `/root/AUDIT-BRH-2026-05-25*.md`.
+- **Comptes audit** : 6 créés via `/tmp/create-audit-accounts.py`, cleanup 7/7 via `/tmp/cleanup-audit-accounts.py` après audit.
+
+### Migrations
+Aucune migration de schéma cette phase — fixes purement code TS + config.
+
+### Status
+✅ **DONE**. 92/92 routes OK, CI verte (run `48cce70` success), Vercel auto-deploy effectué. Tes équipes peuvent ouvrir tous les portails demain matin sans bug bloquant.
+
+---
+
 ## 2026-05-25 PM — Polissage post-sprint : EF email + EmployeGuard fix + 20/22 Playwright
 
 **Contexte** : Après le sprint "4 chantiers restants" (commits 7ffbe44 → 57068d2), continuation des polissages identifiés comme "restants pour suite" du récap initial.

@@ -134,7 +134,7 @@ Deno.serve(async (req: Request) => {
     //    + email_sent_at null OR force_resend)
     const query = supa
       .from('brh_agence_audits')
-      .select('id, response_token, contact_email, agence_id, brh_agences_immo!inner(nom_commercial)')
+      .select('id, response_token, contact_email, agence_id, brh_agences_immo!inner(raison_sociale)')
       .eq('audit_month', auditMonth)
       .not('contact_email', 'is', null)
 
@@ -171,7 +171,7 @@ Deno.serve(async (req: Request) => {
         continue
       }
       // @ts-expect-error — supabase-js typing limitation sur les joins
-      const agenceName = (audit.brh_agences_immo?.nom_commercial as string | undefined) ?? null
+      const agenceName = (audit.brh_agences_immo?.raison_sociale as string | undefined) ?? null
 
       const html = buildAuditEmailHtml(audit.response_token, agenceName)
       const result = await sendResendEmail(

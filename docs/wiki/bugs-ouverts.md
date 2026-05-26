@@ -114,4 +114,24 @@ Onglet `/agence/leads-v2` (et `/employe/leads-v2`) — composant [UnifiedLeadsVi
 
 ---
 
-**Dernière maj** : 2026-05-21 (Phase 0 refonte) — Claude Opus 4.7
+## 2026-05-25 PM — Sprint audit Playwright (3 bugs critiques résolus avant lancement équipe)
+
+Demande Philippe : audit complet de l'app via Playwright sur les 6 personas avant le lancement avec les équipes le lendemain. 92 routes testées. Détails dans [log.md](log.md).
+
+| # | Bug | Sévérité | Cause | Fix | Status |
+|---|------|----------|-------|-----|--------|
+| AUD-1 | Cascade redirects /admin et /particulier après reload F5 | 🔴 Bloquant | `appStore` persiste user avec `role='user'` fallback (anti-XSS) → guards refusent avant `validateSession` async | `src/hooks/useAuth.ts:142` → `loading = !isInitialized` (au lieu de `!user && !isInitialized`) | ✅ commit `5f6b8e1` |
+| AUD-2 | Portail /agence inutilisable (22/22 routes page blanche) | 🔴 Bloquant | Supabase `navigatorLock` (Web Locks API) saturé sur agence (8 hooks concurrents) → "Lock broken with steal" — confirmé EN PROD Vercel | `src/lib/supabase.ts` → `lock: processLock` (au lieu de défaut `navigatorLock`) | ✅ commit `8443158` |
+| AUD-3 | HTTP 500 statement timeout /employe/leads-v2 + foncier + prospection | 🔴 Bloquant | `count: 'exact'` × 5 segments en parallèle sur 200k+ rows → timeout PostgREST (3s anon / 8s authenticated) | `count: 'planned'` sur `prospects-bretagne.ts` + `pro-analytics.ts` ; limit carte 5000→2000 | ✅ commit `8443158` |
+| AUD-4 | 404 routes inexistantes répondaient 200 | 🟢 Faux positif | Page 404 fonctionne déjà parfaitement, audit GOTO marquait OK à tort (URL ne change pas) | — | ✅ aucune action |
+| AUD-5 | CSP warning fonts Google sur /agence | 🟡 Cosmétique | CSP `style-src` autorise déjà `fonts.googleapis.com` — warning secondaire non bloquant | À investiguer post-lancement | 🟡 deferred |
+
+### Résultat audit avant→après
+**53/92 routes OK (57%) → 92/92 routes OK (100%)** sur 6/6 personas.
+
+### Couverture résiduelle (non testée par l'audit GOTO)
+60+ workflows interactifs (forms create, multi-step wizards, Batichiffrage, signature PAD, realtime like/comment, drag-drop carte) restent sans couverture E2E automatisée. À couvrir progressivement.
+
+---
+
+**Dernière maj** : 2026-05-25 PM (sprint audit Playwright) — Claude Opus 4.7
