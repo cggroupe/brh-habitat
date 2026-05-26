@@ -4,7 +4,7 @@
  * RGPD-aware via lead-visibility.ts.
  */
 import { useState, useEffect, lazy, Suspense } from 'react'
-import { Home, FileText, Building2, AlertTriangle, Wallet, Phone, TrendingUp, Hammer, UserPlus } from 'lucide-react'
+import { FileText, Building2, AlertTriangle, Wallet, Phone, TrendingUp, Hammer, UserPlus } from 'lucide-react'
 
 const CreateProspectFromDpeModal = lazy(() => import('../CreateProspectFromDpeModal'))
 import FicheBreadcrumb from './FicheBreadcrumb'
@@ -24,6 +24,7 @@ import { pushNavEntity } from '@/stores/navStackStore'
 import { profileBasePath } from '@/lib/nav'
 import OwnerCard from './OwnerCard'
 import DgfipPivot from './DgfipPivot'
+import Tabs from '../../ui/Tabs'
 
 interface Props {
   dpeId: number
@@ -140,14 +141,15 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
       <OriginBanner />
 
       <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-4xl space-y-4 p-6">
-          {/* ═══════════════════════════════════════════════════════════════
-              BLOC 1 — PROPRIÉTAIRE (pattern Data-B : zone identité + classification)
-              ═══════════════════════════════════════════════════════════════ */}
-          <section>
-            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Propriétaire
-            </h2>
+        <div className="mx-auto max-w-5xl p-6">
+          <Tabs
+            defaultTab="proprietaire"
+            tabs={[
+              {
+                id: 'proprietaire',
+                label: 'Propriétaire',
+                content: (
+                  <div className="space-y-4 p-4">
             {isPersonneMorale && dpe.owner_siren ? (
               <OwnerCard
                 siren={dpe.owner_siren}
@@ -243,9 +245,9 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="rounded-md border border-dashed border-slate-300 bg-slate-50 p-3 text-sm text-slate-700">
-                  <p className="font-medium text-slate-900">Propriétaire inconnu — DPE anonyme</p>
-                  <p className="mt-1 text-xs text-slate-600">
+                <div className="rounded-md border border-dashed border-stone-300 bg-stone-50 p-3 text-sm text-stone-700">
+                  <p className="font-medium text-stone-900">Propriétaire inconnu — DPE anonyme</p>
+                  <p className="mt-1 text-xs text-stone-600">
                     La donnée propriétaire personne physique est protégée par le secret fiscal (loi
                     BOFiP). Elle est obtenue via demande au centre des impôts compétent.
                   </p>
@@ -253,12 +255,90 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
                 <DgfipPivot lat={dpe.latitude} lng={dpe.longitude} />
               </div>
             )}
-          </section>
 
-          {/* ═══════════════════════════════════════════════════════════════
-              BLOC 2 — BÂTIMENT & DPE (caractéristiques techniques)
-              ═══════════════════════════════════════════════════════════════ */}
-          {/* DPE — section toujours ouverte */}
+            {/* Société propriétaire détaillée (visible dans tab Propriétaire) */}
+            {sci && canSee(profile, 'sci_info') && (
+              <FicheSection
+                title="Société propriétaire"
+                icon={<Building2 className="h-4 w-4" />}
+                count={sci.dirigeants.length}
+                defaultOpen
+              >
+                <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+                  <DetailRow label="Dénomination" value={sci.denomination} />
+                  <DetailRow label="SIREN" value={sci.siren} />
+                  <DetailRow label="Forme juridique" value={sci.forme_juridique} />
+                  <DetailRow label="Statut" value={sci.is_active ? 'Active' : `Radiée${sci.date_radiation ? ' le ' + sci.date_radiation : ''}`} />
+                </div>
+                {canSee(profile, 'sci_dirigeants') && sci.dirigeants.length > 0 && (
+                  <div className="mt-3 space-y-1.5">
+                    <div className="text-xs font-medium text-stone-500">Dirigeants</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {sci.dirigeants.map((d: Dirigeant, i: number) => {
+                        const name = [d.prenom, d.nom].filter(Boolean).join(' ').trim()
+                        if (!name) return null
+                        return (
+                          <FicheEntityLink
+                            key={`${name}-${i}`}
+                            kind="personne"
+                            id={name}
+                            label={name + (d.est_decede ? ' †' : '')}
+                            profile={profile}
+                            variant="chip"
+                          />
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+                <div className="mt-3">
+                  <FicheEntityLink
+                    kind="entreprise"
+                    id={sci.siren}
+                    label={`Voir fiche complète de ${sci.denomination}`}
+                    profile={profile}
+                    variant="row"
+                  />
+                </div>
+              </FicheSection>
+            )}
+
+            {/* Contacts particulier BRH interne */}
+            {(canSee(profile, 'particulier_phone') === true || canSee(profile, 'particulier_email') === true) &&
+              (dpe.telephone || dpe.email) && (
+                <FicheSection title="Contacts (BRH interne)" icon={<Phone className="h-4 w-4" />} defaultOpen>
+                  <div className="space-y-1.5 text-sm">
+                    {dpe.telephone && (
+                      <DetailRow
+                        label="Téléphone"
+                        value={
+                          <a href={`tel:${dpe.telephone}`} className="font-mono text-[#00600a] hover:underline">
+                            {dpe.telephone}
+                          </a>
+                        }
+                      />
+                    )}
+                    {dpe.email && (
+                      <DetailRow
+                        label="Email"
+                        value={
+                          <a href={`mailto:${dpe.email}`} className="text-sky-700 hover:underline">
+                            {dpe.email}
+                          </a>
+                        }
+                      />
+                    )}
+                  </div>
+                </FicheSection>
+              )}
+                  </div>
+                ),
+              },
+              {
+                id: 'batiment',
+                label: 'Bâtiment & DPE',
+                content: (
+                  <div className="space-y-4 p-4">
           {canSee(profile, 'dpe_basic') && (
             <FicheSection title="DPE" icon={<FileText className="h-4 w-4" />} defaultOpen>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -284,53 +364,6 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
                   <DetailRow label="Chauffage" value={dpe.description_chauffage} />
                 </div>
               )}
-            </FicheSection>
-          )}
-
-          {/* Société propriétaire (résumé local) — cliquer ouvre fiche entreprise */}
-          {sci && canSee(profile, 'sci_info') && (
-            <FicheSection
-              title="Société propriétaire"
-              icon={<Building2 className="h-4 w-4" />}
-              count={sci.dirigeants.length}
-              defaultOpen
-            >
-              <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
-                <DetailRow label="Dénomination" value={sci.denomination} />
-                <DetailRow label="SIREN" value={sci.siren} />
-                <DetailRow label="Forme juridique" value={sci.forme_juridique} />
-                <DetailRow label="Statut" value={sci.is_active ? 'Active' : `Radiée${sci.date_radiation ? ' le ' + sci.date_radiation : ''}`} />
-              </div>
-              {canSee(profile, 'sci_dirigeants') && sci.dirigeants.length > 0 && (
-                <div className="mt-3 space-y-1.5">
-                  <div className="text-xs font-medium text-slate-500">Dirigeants</div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {sci.dirigeants.map((d: Dirigeant, i: number) => {
-                      const name = [d.prenom, d.nom].filter(Boolean).join(' ').trim()
-                      if (!name) return null
-                      return (
-                        <FicheEntityLink
-                          key={`${name}-${i}`}
-                          kind="personne"
-                          id={name}
-                          label={name + (d.est_decede ? ' †' : '')}
-                          profile={profile}
-                          variant="chip"
-                        />
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-              <div className="mt-3">
-                <FicheEntityLink
-                  kind="entreprise"
-                  id={sci.siren}
-                  label={`Voir fiche complète de ${sci.denomination}`}
-                  profile={profile}
-                  variant="row"
-                />
-              </div>
             </FicheSection>
           )}
 
@@ -398,89 +431,72 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
             </FicheSection>
           )}
 
-          {/* Contacts particulier — BRH interne uniquement */}
-          {(canSee(profile, 'particulier_phone') === true || canSee(profile, 'particulier_email') === true) &&
-            (dpe.telephone || dpe.email) && (
-              <FicheSection title="Contacts (BRH interne)" icon={<Phone className="h-4 w-4" />} defaultOpen>
-                <div className="space-y-1.5 text-sm">
-                  {dpe.telephone && (
-                    <DetailRow
-                      label="Téléphone"
-                      value={
-                        <a href={`tel:${dpe.telephone}`} className="font-mono text-[#00600a] hover:underline">
-                          {dpe.telephone}
-                        </a>
-                      }
+                  </div>
+                ),
+              },
+              {
+                id: 'voisinage',
+                label: 'Voisinage',
+                count: voisinage.length,
+                content: (
+                  <div className="space-y-4 p-4">
+                    {voisinage.length === 0 ? (
+                      <div className="rounded-md border border-dashed border-stone-300 bg-stone-50 p-4 text-sm text-stone-600">
+                        Aucun voisin DPE F/G connu sur le même code postal.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        {voisinage.map((v) => (
+                          <FicheEntityLink
+                            key={v.id}
+                            kind="adresse"
+                            id={v.id}
+                            label={v.adresse ?? `DPE #${v.id}`}
+                            sublabel={`Classe ${v.etiquette_dpe ?? '?'} · ${v.surface_habitable ?? '?'} m²${
+                              v.score_v2 != null ? ` · score ${v.score_v2}` : ''
+                            }`}
+                            profile={profile}
+                            variant="row"
+                          />
+                        ))}
+                      </div>
+                    )}
+                    <EntityLinksPanel
+                      type="adresse_dpe"
+                      id={String(dpeId)}
+                      profileBase={`/${profile}`}
                     />
-                  )}
-                  {dpe.email && (
-                    <DetailRow
-                      label="Email"
-                      value={
-                        <a href={`mailto:${dpe.email}`} className="text-sky-700 hover:underline">
-                          {dpe.email}
-                        </a>
-                      }
-                    />
-                  )}
-                </div>
-              </FicheSection>
-            )}
-
-          {/* ═══════════════════════════════════════════════════════════════
-              BLOC 3 — VOISINAGE (autres DPE même CP, drill-down)
-              ═══════════════════════════════════════════════════════════════ */}
-          {voisinage.length > 0 && (
-            <FicheSection
-              title="Voisinage proche (même code postal)"
-              icon={<Home className="h-4 w-4" />}
-              count={voisinage.length}
-              defaultOpen
-            >
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {voisinage.map((v) => (
-                  <FicheEntityLink
-                    key={v.id}
-                    kind="adresse"
-                    id={v.id}
-                    label={v.adresse ?? `DPE #${v.id}`}
-                    sublabel={`Classe ${v.etiquette_dpe ?? '?'} · ${v.surface_habitable ?? '?'} m²${
-                      v.score_v2 != null ? ` · score ${v.score_v2}` : ''
-                    }`}
-                    profile={profile}
-                    variant="row"
-                  />
-                ))}
-              </div>
-            </FicheSection>
-          )}
-
-          {profile === 'employe' && (
-            <>
-              <DpePostesEmployeePanel
-                dpe={dpe as unknown as Record<string, unknown>}
-                onSave={(overrides) => overridesMutation.mutateAsync(overrides)}
-                isSaving={overridesMutation.isPending}
-              />
-              <EmployeeEditPanel
-                initial={{
-                  employee_notes: dpe.employee_notes,
-                  travaux_terrain_status: dpe.travaux_terrain_status,
-                  dpe_terrain_estime: dpe.dpe_terrain_estime,
-                  interet_brh: dpe.interet_brh,
-                  contact_disponibilite: dpe.contact_disponibilite,
-                  derniere_visite_terrain: dpe.derniere_visite_terrain,
-                }}
-                showContactFields={false}
-                onSave={(patch) => updateMutation.mutateAsync(patch)}
-              />
-            </>
-          )}
-
-          <EntityLinksPanel
-            type="adresse_dpe"
-            id={String(dpeId)}
-            profileBase={`/${profile}`}
+                  </div>
+                ),
+              },
+              ...(profile === 'employe'
+                ? [{
+                    id: 'edition',
+                    label: 'Édition terrain',
+                    content: (
+                      <div className="space-y-4 p-4">
+                        <DpePostesEmployeePanel
+                          dpe={dpe as unknown as Record<string, unknown>}
+                          onSave={(overrides) => overridesMutation.mutateAsync(overrides)}
+                          isSaving={overridesMutation.isPending}
+                        />
+                        <EmployeeEditPanel
+                          initial={{
+                            employee_notes: dpe.employee_notes,
+                            travaux_terrain_status: dpe.travaux_terrain_status,
+                            dpe_terrain_estime: dpe.dpe_terrain_estime,
+                            interet_brh: dpe.interet_brh,
+                            contact_disponibilite: dpe.contact_disponibilite,
+                            derniere_visite_terrain: dpe.derniere_visite_terrain,
+                          }}
+                          showContactFields={false}
+                          onSave={(patch) => updateMutation.mutateAsync(patch)}
+                        />
+                      </div>
+                    ),
+                  }]
+                : []),
+            ]}
           />
         </div>
       </div>

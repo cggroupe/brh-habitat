@@ -126,7 +126,10 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
   const effectiveLimit = view === 'map' ? 200 : PAGE_SIZE
   const effectiveOffset = view === 'map' ? 0 : page * PAGE_SIZE
 
-  const { data, isLoading, isFetching, error } = useFoncierProspectsUnified({
+  // 2026-05-27 — Streaming progressif : query rapide 15 résultats immédiats
+  // (cache local, hover-warm) + query full 50 en arrière-plan. UX : utilisateur
+  // voit 15 cards en ~300ms au lieu d'attendre 5-10s.
+  const fastFilters = {
     dept: applied.dept || undefined,
     segmentV2: applied.segment || undefined,
     scoreV2Min: applied.scoreMin || undefined,
@@ -135,6 +138,17 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
     filterParticulier: applied.filterParticulier,
     filterSuccession: applied.filterSuccession,
     search: applied.search || undefined,
+  }
+  const { data: fastData } = useFoncierProspectsUnified(
+    {
+      ...fastFilters,
+      limit: 15,
+      offset: view === 'map' ? 0 : page * PAGE_SIZE,
+    },
+    view === 'list' && page === 0, // Première page liste seulement
+  )
+  const { data, isLoading, isFetching, error } = useFoncierProspectsUnified({
+    ...fastFilters,
     limit: effectiveLimit,
     offset: effectiveOffset,
   })
@@ -166,7 +180,9 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
   }, [dept, segment, scoreMin, filterFioul, filterSCI, filterParticulier, filterSuccession, search])
 
   // Le RPC renvoie un tableau de lignes, total_count inclus dans chaque ligne
-  const rows: LeadRow[] = data ?? []
+  // Streaming : si data full pas encore arrivée, on affiche fastData (15 rows)
+  // pour que l'utilisateur voit quelque chose immédiatement.
+  const rows: LeadRow[] = data ?? fastData ?? []
   const total = rows[0]?.total_count ?? 0
 
   // Cutoff DVF recalculé à chaque changement de délai (Date.now() est impur,
@@ -210,69 +226,71 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
 
 
   return (
-    <div className="flex h-screen flex-col bg-slate-50">
-      {/* Header — responsive : stack en mobile, row en desktop */}
-      <header className="flex flex-col gap-3 border-b border-slate-200 bg-white px-3 py-3 shadow-sm sm:px-6 md:flex-row md:items-center md:gap-4">
-        <div className="flex flex-col gap-0.5">
-          <h1 className="text-base font-semibold text-slate-900 sm:text-lg">{title}</h1>
-          {subtitle && (
-            <p className="text-xs text-slate-500">{subtitle}</p>
-          )}
-        </div>
-        <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-slate-100 px-3 py-0.5 text-xs font-medium text-slate-700">
-          {isFetching && <Loader2 className="h-3 w-3 animate-spin text-slate-500" />}
-          {total.toLocaleString('fr-FR')} résultats
-        </span>
-
-        <div className="hidden flex-1 md:block" />
-
-        {/* Recherche globale */}
-        <div className="relative w-full md:w-96">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Adresse, nom, SIREN, SCI..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') applyFilters()
-            }}
-            className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-10 pr-3 text-sm focus:border-slate-500 focus:outline-none"
-          />
+    <div className="flex h-screen flex-col bg-canvas">
+      {/* Header Editorial Habitat — Epilogue display, surface neutre */}
+      <header className="border-b border-border-strong/30 bg-surface px-6 py-5">
+        <div className="mx-auto flex max-w-[1280px] flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1 className="font-display text-2xl font-bold text-text leading-tight tracking-tight">
+              {title}
+            </h1>
+            {subtitle && (
+              <p className="mt-0.5 text-sm text-text-muted">{subtitle}</p>
+            )}
+          </div>
+          <span className="inline-flex w-fit items-center gap-2 rounded-full bg-surface-low px-3 py-1 text-xs font-medium text-text-muted">
+            {isFetching && <Loader2 className="h-3 w-3 animate-spin" />}
+            {total.toLocaleString('fr-FR')} résultats
+          </span>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Toggle filtres mobile */}
-          <button
-            type="button"
-            onClick={() => setMobileFiltersOpen(true)}
-            className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 md:hidden"
-            aria-label="Ouvrir les filtres"
-          >
-            <Filter className="h-4 w-4" />
-            Filtres
-          </button>
+        {/* Barre d'actions secondaire — recherche + view toggle */}
+        <div className="mx-auto mt-4 flex max-w-[1280px] flex-col gap-3 md:flex-row md:items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
+            <input
+              type="text"
+              placeholder="Adresse, nom, SIREN, SCI..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') applyFilters()
+              }}
+              className="w-full rounded-xl border border-border-strong/30 bg-surface py-2.5 pl-10 pr-3 text-sm focus:border-[#00600a] focus:outline-none focus:ring-2 focus:ring-[#00600a]/10"
+            />
+          </div>
 
-          {/* Toggle Liste / Carte */}
-          <div className="flex rounded-lg border border-slate-300 bg-white p-1">
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => setView('list')}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-sm font-medium transition ${
-                view === 'list' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
-              }`}
-              title="Vue liste"
+              type="button"
+              onClick={() => setMobileFiltersOpen(true)}
+              className="inline-flex items-center gap-1 rounded-xl border border-border-strong/30 bg-surface px-3 py-2 text-sm font-medium text-text hover:bg-surface-low md:hidden"
+              aria-label="Ouvrir les filtres"
             >
-              <List className="h-4 w-4" /> <span className="hidden sm:inline">Liste</span>
+              <Filter className="h-4 w-4" />
+              Filtres
             </button>
-            <button
-              onClick={() => setView('map')}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-sm font-medium transition ${
-                view === 'map' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
-              }`}
-              title="Vue carte"
-            >
-              <MapIcon className="h-4 w-4" /> <span className="hidden sm:inline">Carte</span>
-            </button>
+
+            <div className="flex rounded-xl border border-border-strong/30 bg-surface p-1">
+              <button
+                onClick={() => setView('list')}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                  view === 'list' ? 'bg-text text-white' : 'text-text-muted hover:bg-surface-low'
+                }`}
+                title="Vue liste"
+              >
+                <List className="h-4 w-4" /> <span className="hidden sm:inline">Liste</span>
+              </button>
+              <button
+                onClick={() => setView('map')}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                  view === 'map' ? 'bg-text text-white' : 'text-text-muted hover:bg-surface-low'
+                }`}
+                title="Vue carte"
+              >
+                <MapIcon className="h-4 w-4" /> <span className="hidden sm:inline">Carte</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -287,17 +305,17 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
         )}
 
         {/* Colonne filtres — drawer mobile / sidebar desktop */}
-        <aside className={`${mobileFiltersOpen ? 'fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw]' : 'hidden md:flex md:w-72 md:shrink-0'} flex-col border-r border-slate-200 bg-white`}>
-          <div className="overflow-y-auto p-4">
-          <div className="mb-4 flex items-center justify-between gap-2">
-            <div className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900">
-              <Filter className="h-4 w-4" />
+        <aside className={`${mobileFiltersOpen ? 'fixed inset-y-0 left-0 z-50 flex w-80 max-w-[85vw]' : 'hidden md:flex md:w-80 md:shrink-0'} flex-col border-r border-border-strong/30 bg-surface`}>
+          <div className="overflow-y-auto p-5 space-y-5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-text-muted">
+              <Filter className="h-3.5 w-3.5" />
               Filtres
             </div>
             <button
               type="button"
               onClick={() => setMobileFiltersOpen(false)}
-              className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 md:hidden"
+              className="rounded-md p-1 text-text-muted hover:bg-surface-low md:hidden"
               aria-label="Fermer les filtres"
             >
               <X className="h-4 w-4" />
@@ -305,15 +323,15 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
           </div>
 
           {/* Département */}
-          <div className="mb-4">
-            <label className="mb-1 block text-xs font-medium text-slate-700">Département</label>
+          <div>
+            <label className="mb-2 block text-xs font-semibold text-text">Département</label>
             <select
               value={dept}
               onChange={(e) => {
                 setDept(e.target.value)
                 setPage(0)
               }}
-              className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm"
+              className="w-full rounded-xl border border-border-strong/30 bg-surface px-3 py-2 text-sm focus:border-[#00600a] focus:outline-none focus:ring-2 focus:ring-[#00600a]/10"
             >
               {DEPTS.map((d) => (
                 <option key={d.v} value={d.v}>
@@ -324,44 +342,49 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
           </div>
 
           {/* Segment */}
-          <div className="mb-4">
-            <label className="mb-1 block text-xs font-medium text-slate-700">Segment commercial</label>
-            <div className="space-y-1">
-              {SEGMENTS.map((s) => (
-                <button
-                  key={s.v || 'all'}
-                  onClick={() => {
-                    setSegment(s.v)
-                    setPage(0)
-                  }}
-                  title={s.tip}
-                  className={`group w-full rounded-md border px-2 py-1.5 text-left text-xs transition ${
-                    segment === s.v ? s.cls + ' border-2' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                  }`}
-                >
-                  <span className="inline-flex w-full items-baseline gap-2">
-                    <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${s.dot}`} />
-                    <span className="font-medium">{s.l}</span>
-                    <span className="ml-auto truncate text-[10px] text-slate-500 group-hover:text-slate-700">
-                      {s.v === 'ultra_chaud' ? '< 6m' : s.v === 'mpr_bleu_prio' ? 'MPR bleu' : s.v === 'standard' ? '40-79' : s.v === 'cold' ? '< 40' : ''}
+          <div>
+            <label className="mb-2 block text-xs font-semibold text-text">Segment commercial</label>
+            <div className="space-y-1.5">
+              {SEGMENTS.map((s) => {
+                const isActive = segment === s.v
+                return (
+                  <button
+                    key={s.v || 'all'}
+                    onClick={() => {
+                      setSegment(s.v)
+                      setPage(0)
+                    }}
+                    title={s.tip}
+                    className={`group w-full rounded-xl border px-3 py-2 text-left text-xs transition ${
+                      isActive
+                        ? 'border-[#00600a] bg-stone-50 text-text shadow-sm'
+                        : 'border-border-strong/30 bg-surface text-text-muted hover:border-text-muted hover:bg-surface-low'
+                    }`}
+                  >
+                    <span className="inline-flex w-full items-baseline gap-2">
+                      <span className={`h-2 w-2 shrink-0 rounded-full ${s.dot}`} />
+                      <span className="font-medium">{s.l}</span>
+                      <span className="ml-auto truncate text-[10px] text-text-muted">
+                        {s.v === 'ultra_chaud' ? '< 6m' : s.v === 'mpr_bleu_prio' ? 'MPR bleu' : s.v === 'standard' ? '40-79' : s.v === 'cold' ? '< 40' : ''}
+                      </span>
                     </span>
-                  </span>
-                </button>
-              ))}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
-          {/* Score min — avec popover formule */}
-          <div className="mb-4">
-            <div className="mb-1 flex items-baseline justify-between">
-              <label className="block text-xs font-medium text-slate-700">
-                Score minimum : <span className="font-bold text-slate-900">{scoreMin}</span>
+          {/* Score min */}
+          <div>
+            <div className="mb-2 flex items-baseline justify-between">
+              <label className="block text-xs font-semibold text-text">
+                Score minimum : <span className="font-bold tabular-nums">{scoreMin}</span>
               </label>
               <span
-                className="cursor-help text-[10px] text-slate-500 underline decoration-dotted"
+                className="cursor-help text-[10px] text-text-muted underline decoration-dotted"
                 title={SCORE_FORMULA_LINES.join('\n')}
               >
-                comment c'est calculé ?
+                formule
               </span>
             </div>
             <input
@@ -374,7 +397,7 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
                 setScoreMin(Number(e.target.value))
                 setPage(0)
               }}
-              className="w-full"
+              className="w-full accent-[#00600a]"
             />
           </div>
 
@@ -762,17 +785,17 @@ function LeadCard({
       }}
       role="button"
       tabIndex={0}
-      className="group flex w-full cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:border-slate-400 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+      className="group flex w-full cursor-pointer items-start gap-4 rounded-2xl border border-border-strong/30 bg-surface p-4 text-left transition hover:border-text-muted hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-[#00600a]/20"
     >
       {/* DPE badge */}
       <div className="flex w-10 flex-col items-center">
         <div
-          className={`flex h-9 w-9 items-center justify-center rounded-md text-sm font-bold ${
+          className={`flex h-10 w-10 items-center justify-center rounded-xl text-base font-bold ${
             ['F', 'G'].includes(String(lead.etiquette_dpe))
               ? 'bg-red-100 text-red-800'
               : ['D', 'E'].includes(String(lead.etiquette_dpe))
                 ? 'bg-orange-100 text-orange-800'
-                : 'bg-slate-100 text-slate-600'
+                : 'bg-stone-100 text-stone-600'
           }`}
         >
           {lead.etiquette_dpe ?? '?'}
@@ -781,16 +804,16 @@ function LeadCard({
 
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2">
-          <span className="truncate text-sm font-semibold text-slate-900">
+          <span className="truncate font-display text-sm font-semibold text-text">
             {lead.adresse_ban || lead.adresse || 'Adresse inconnue'}
           </span>
           {!lead.adresse_ban && (
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-text-muted">
               {lead.code_postal} {lead.commune}
             </span>
           )}
         </div>
-        <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-text-muted">
           {lead.surface && <span>{lead.surface}m²</span>}
           {lead.annee_construction && <span>·{lead.annee_construction}</span>}
           {lead.type_batiment && <span>·{lead.type_batiment}</span>}
