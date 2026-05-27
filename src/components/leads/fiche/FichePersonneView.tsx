@@ -101,6 +101,14 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
   const isDeceased = !!identity.death_date
   const sciPatrimoniales = roles.filter((r) => !r.is_utility)
   const rolesUtility = roles.filter((r) => r.is_utility)
+  const contactsPro = data.contacts_pro ?? null
+  const autresEntreprises = data.autres_entreprises ?? []
+  const autresEntreprisesActives = autresEntreprises.filter(
+    (e) => (e.etat_administratif ?? 'A') === 'A',
+  )
+  // Tel pro prioritaire : via entreprise > OSINT
+  const telPro = contactsPro?.tel_pro_via_entreprise ?? contactsPro?.osint_telephone ?? null
+  const emailPro = contactsPro?.email_pro_via_entreprise ?? contactsPro?.osint_email ?? null
 
   return (
     <div className="flex h-screen flex-col bg-slate-50">
@@ -133,13 +141,36 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
           { label: 'SCI patrimoniales', value: formatNumber(sciPatrimoniales.length) },
           { label: 'rôles utility', value: formatNumber(rolesUtility.length) },
           { label: 'DPE via SCI', value: formatNumber(patrimoineTotal) },
+          ...(autresEntreprises.length > 0
+            ? [{ label: 'autres entreprises', value: formatNumber(autresEntreprises.length) }]
+            : []),
         ]}
         actions={
-          <FavoriButton
-            entity_type="personne"
-            entity_id={identity.full_name}
-            label={identity.full_name}
-          />
+          <div className="flex items-center gap-2">
+            {telPro && (
+              <a
+                href={`tel:${telPro.replace(/\s/g, '')}`}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#00600a] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#004807]"
+                title="Téléphone pro (extrait via entreprise)"
+              >
+                <span className="font-mono">{telPro}</span>
+              </a>
+            )}
+            {emailPro && (
+              <a
+                href={`mailto:${emailPro}`}
+                className="inline-flex max-w-[200px] items-center gap-1.5 truncate rounded-xl bg-stone-100 px-3 py-1.5 text-xs font-medium text-text hover:bg-stone-200"
+                title="Email pro (extrait via entreprise)"
+              >
+                <span className="truncate">{emailPro}</span>
+              </a>
+            )}
+            <FavoriButton
+              entity_type="personne"
+              entity_id={identity.full_name}
+              label={identity.full_name}
+            />
+          </div>
         }
       />
       <FicheBreadcrumb leadsBackUrl={profileBack(profile)} />
@@ -337,6 +368,147 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                             </div>
                           </section>
                         )}
+                      </>
+                    )}
+                  </div>
+                ),
+              },
+              {
+                id: 'activites-pro',
+                label: 'Activités pro',
+                count: autresEntreprises.length,
+                disabled: autresEntreprises.length === 0,
+                content: (
+                  <div className="space-y-4 p-4">
+                    {autresEntreprises.length === 0 ? (
+                      <div className="rounded-md border border-dashed border-stone-300 bg-stone-50 p-4 text-sm text-stone-600">
+                        Aucune autre entreprise active trouvée pour cette personne via recherche-entreprises.api.gouv.fr.
+                      </div>
+                    ) : (
+                      <>
+                        {contactsPro && (telPro || emailPro || contactsPro.osint_linkedin) && (
+                          <section className="rounded-2xl bg-surface ring-1 ring-border-strong/20 p-5">
+                            <h3 className="mb-3 text-[10px] uppercase tracking-widest text-text-muted font-bold">
+                              Contacts pro extraits
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                              {contactsPro.tel_pro_via_entreprise && (
+                                <a
+                                  href={`tel:${contactsPro.tel_pro_via_entreprise.replace(/\s/g, '')}`}
+                                  className="inline-flex items-center gap-1.5 rounded-md bg-[#00600a] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#004807]"
+                                >
+                                  <span className="font-mono">{contactsPro.tel_pro_via_entreprise}</span>
+                                  <span className="text-[10px] opacity-70">· entreprise</span>
+                                </a>
+                              )}
+                              {contactsPro.email_pro_via_entreprise && (
+                                <a
+                                  href={`mailto:${contactsPro.email_pro_via_entreprise}`}
+                                  className="inline-flex items-center gap-1.5 rounded-md bg-stone-100 px-3 py-1.5 text-xs font-medium text-text hover:bg-stone-200"
+                                >
+                                  {contactsPro.email_pro_via_entreprise}
+                                  <span className="text-[10px] opacity-70">· entreprise</span>
+                                </a>
+                              )}
+                              {contactsPro.osint_telephone && (
+                                <a
+                                  href={`tel:${contactsPro.osint_telephone.replace(/\s/g, '')}`}
+                                  className="inline-flex items-center gap-1.5 rounded-md bg-stone-100 px-3 py-1.5 text-xs font-medium text-text hover:bg-stone-200"
+                                >
+                                  <span className="font-mono">{contactsPro.osint_telephone}</span>
+                                  <span className="text-[10px] opacity-70">· OSINT</span>
+                                </a>
+                              )}
+                              {contactsPro.osint_email && (
+                                <a
+                                  href={`mailto:${contactsPro.osint_email}`}
+                                  className="inline-flex items-center gap-1.5 rounded-md bg-stone-100 px-3 py-1.5 text-xs font-medium text-text hover:bg-stone-200"
+                                >
+                                  {contactsPro.osint_email}
+                                  <span className="text-[10px] opacity-70">· OSINT</span>
+                                </a>
+                              )}
+                              {contactsPro.osint_linkedin && (
+                                <a
+                                  href={contactsPro.osint_linkedin}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 rounded-md bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-900 hover:bg-blue-200"
+                                >
+                                  LinkedIn
+                                </a>
+                              )}
+                            </div>
+                          </section>
+                        )}
+
+                        <section>
+                          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
+                            {autresEntreprisesActives.length} entreprise{autresEntreprisesActives.length > 1 ? 's' : ''} active{autresEntreprisesActives.length > 1 ? 's' : ''}
+                            {autresEntreprises.length > autresEntreprisesActives.length && (
+                              <span className="ml-1 text-text-light">
+                                · {autresEntreprises.length - autresEntreprisesActives.length} radiée(s)
+                              </span>
+                            )}
+                          </h3>
+                          <div className="space-y-2">
+                            {autresEntreprises.map((e) => {
+                              const isActive = (e.etat_administratif ?? 'A') === 'A'
+                              return (
+                                <article
+                                  key={e.siren}
+                                  className={`rounded-2xl bg-surface ring-1 p-4 transition ${
+                                    isActive ? 'ring-border-strong/20' : 'ring-stone-200 opacity-70'
+                                  }`}
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-text-muted font-bold">
+                                        <span className="font-mono">{e.siren}</span>
+                                        {e.nature_juridique && <span>· {e.nature_juridique}</span>}
+                                        {!isActive && <span className="text-red-700">· Radiée</span>}
+                                      </div>
+                                      <h4 className="mt-1 font-display text-sm font-semibold text-text truncate">
+                                        {e.denomination}
+                                      </h4>
+                                      <div className="mt-1 text-xs text-text-muted">
+                                        {e.activite_principale && <span>{e.activite_principale}</span>}
+                                        {e.siege_commune && (
+                                          <>
+                                            {e.activite_principale && ' · '}
+                                            <span>
+                                              {e.siege_code_postal} {e.siege_commune}
+                                            </span>
+                                          </>
+                                        )}
+                                      </div>
+                                      {(e.telephone_found || e.email_found) && (
+                                        <div className="mt-2 flex flex-wrap gap-2">
+                                          {e.telephone_found && (
+                                            <a
+                                              href={`tel:${e.telephone_found.replace(/\s/g, '')}`}
+                                              className="inline-flex items-center gap-1 rounded-md bg-[#00600a]/10 px-2 py-1 text-[11px] font-mono font-medium text-[#00600a] hover:bg-[#00600a]/20"
+                                            >
+                                              {e.telephone_found}
+                                            </a>
+                                          )}
+                                          {e.email_found && (
+                                            <a
+                                              href={`mailto:${e.email_found}`}
+                                              className="inline-flex items-center gap-1 rounded-md bg-stone-100 px-2 py-1 text-[11px] font-medium text-text hover:bg-stone-200 truncate max-w-[200px]"
+                                            >
+                                              {e.email_found}
+                                            </a>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </article>
+                              )
+                            })}
+                          </div>
+                        </section>
                       </>
                     )}
                   </div>

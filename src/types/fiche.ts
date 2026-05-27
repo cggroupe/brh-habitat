@@ -145,6 +145,27 @@ export interface FichePersonne {
   }>
   /** Total DPE via SCI en DB (somme par SIREN, non plafonné par PostgREST max-rows=1000). */
   patrimoine_via_sci_total?: number
+  /** Contacts pro enrichis (Phase 2C/8.4 + OSINT). */
+  contacts_pro?: {
+    tel_pro_via_entreprise?: string | null
+    email_pro_via_entreprise?: string | null
+    osint_telephone?: string | null
+    osint_email?: string | null
+    osint_linkedin?: string | null
+  } | null
+  /** Autres entreprises dirigées (commerce/artisanat/cabinet — pas SCI déjà connue). */
+  autres_entreprises?: Array<{
+    siren: string
+    denomination: string
+    nature_juridique?: string | null
+    activite_principale?: string | null
+    etat_administratif?: string | null
+    siege_adresse?: string | null
+    siege_code_postal?: string | null
+    siege_commune?: string | null
+    telephone_found?: string | null
+    email_found?: string | null
+  }>
   /** Historique BRH si la personne est cliente/prospect */
   brh_historique: {
     is_client: boolean

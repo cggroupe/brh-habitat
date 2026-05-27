@@ -322,6 +322,70 @@ export const brhFichesApi = {
       patrimoine_via_sci: patrimoineViaSci,
       patrimoine_via_sci_total: Array.from(rolesNbDpeTotal.values()).reduce((a, b) => a + b, 0),
       brh_historique: null,
+      // 2026-05-27 — Câblage Phase 2C/8.4 : récupère contacts pro + autres entreprises
+      // depuis brh_dirigeants (matching nom_norm + prenom_norm normalisés).
+      ...(await fetchDirigeantEnrichments(last, first)),
     }
   },
+}
+
+/**
+ * Récupère les enrichissements Phase 2C (autres_entreprises) + 8.4 (tel/email pro)
+ * + OSINT pour un dirigeant identifié par nom + prénom.
+ */
+async function fetchDirigeantEnrichments(
+  last: string,
+  first: string,
+): Promise<{
+  contacts_pro: FichePersonne['contacts_pro']
+  autres_entreprises: FichePersonne['autres_entreprises']
+}> {
+  const empty = { contacts_pro: null, autres_entreprises: [] }
+  if (!last) return empty
+  const nomNorm = normalizeNameDb(last)
+  const prenomNorm = first ? normalizeNameDb(first) : ''
+  if (!nomNorm) return empty
+  try {
+    let query = supabase
+      .from('brh_dirigeants')
+      .select(
+        'tel_pro_via_entreprise, email_pro_via_entreprise, osint_telephone, osint_email, osint_linkedin, autres_entreprises, autres_entreprises_match_count',
+      )
+      .eq('nom_norm', nomNorm)
+      .limit(5)
+    if (prenomNorm) query = query.eq('prenom_norm', prenomNorm)
+    const { data, error } = await query
+    if (error || !data || data.length === 0) return empty
+    // Si plusieurs matches (homonymes), on prend celui avec le plus d'autres_entreprises
+    const best = [...data].sort(
+      (a, b) =>
+        ((b as Record<string, unknown>).autres_entreprises_match_count as number ?? 0) -
+        ((a as Record<string, unknown>).autres_entreprises_match_count as number ?? 0),
+    )[0] as Record<string, unknown>
+    const autresRaw = Array.isArray(best.autres_entreprises)
+      ? (best.autres_entreprises as Array<Record<string, unknown>>)
+      : []
+    const contacts_pro: FichePersonne['contacts_pro'] = {
+      tel_pro_via_entreprise: (best.tel_pro_via_entreprise as string) ?? null,
+      email_pro_via_entreprise: (best.email_pro_via_entreprise as string) ?? null,
+      osint_telephone: (best.osint_telephone as string) ?? null,
+      osint_email: (best.osint_email as string) ?? null,
+      osint_linkedin: (best.osint_linkedin as string) ?? null,
+    }
+    const autres_entreprises = autresRaw.map((e) => ({
+      siren: String(e.siren ?? ''),
+      denomination: String(e.denomination ?? ''),
+      nature_juridique: (e.nature_juridique as string) ?? null,
+      activite_principale: (e.activite_principale as string) ?? null,
+      etat_administratif: (e.etat_administratif as string) ?? null,
+      siege_adresse: (e.siege_adresse as string) ?? null,
+      siege_code_postal: (e.siege_code_postal as string) ?? null,
+      siege_commune: (e.siege_commune as string) ?? null,
+      telephone_found: (e.telephone_found as string) ?? null,
+      email_found: (e.email_found as string) ?? null,
+    }))
+    return { contacts_pro, autres_entreprises }
+  } catch {
+    return empty
+  }
 }
