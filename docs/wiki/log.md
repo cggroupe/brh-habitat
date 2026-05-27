@@ -62,6 +62,18 @@
 
 ---
 
+## 2026-05-27 (soir +1) — Cleanup JSONB élargi : 155 SCI nettoyées (au-delà des 8 résiduelles)
+
+- **Contexte** : audit déclenché en parallèle de l'entrée précédente. La cleanup `fix_8_sci_desync_residuelles` (20260527220000) flaggait 8 SCI ciblées, mais une vérif via `psql` a révélé **159 entrées dirigeants polluées** (nom_norm < 2 chars : initiales seules `K`/`H`/`A`, chiffres `1972`/`85`/`20`, caractères `*`/`-`) résidant dans `brh_sci_companies.dirigeants` JSONB et affichées dans SciCard, FicheEntrepriseView (tab Décideurs), FicheAdresseView (panneau SCI).
+- **Migration créée + appliquée prod** :
+  - `20260527240000_brh_sci_dirigeants_cleanup_invalid.sql` — reconstruit chaque `dirigeants[]` en filtrant les entrées dont `nom_norm` fait < 2 caractères alpha. Backup `brh_sci_companies_dirigeants_audit_20260527` pour rollback (TTL 30j, à droper le 26/06/2026).
+- **Résultat** : 155 SCI affectées, 159 entrées invalides supprimées du JSONB. La table normalisée `brh_dirigeants` était déjà propre (le filter `length(nom_norm) > 1` du resync initial). Plus aucune entrée parasite ne pollue l'UI Décideurs.
+- **Pages wiki impactées** : [log.md](log.md) (cette entrée)
+- **Risque** : Low. Migration idempotente, backup table créée avant cleanup, le `UPDATE` ne se déclenche que sur les SCI dont `dirigeants_before <> dirigeants_after`.
+- **Status** : 🟢 DONE — JSONB intégralement aligné avec la table normalisée.
+
+---
+
 ## 2026-05-27 (soir) — Zéro dette technique : 7 items éliminés en une session
 
 - **Contexte** : Philippe valide `commit + push` des 8 sprints Data-B du matin (a781276 → fa72490), puis demande "plus aucunes dettes techniques". Audit pour distinguer dette réelle vs features non commencées, puis exécution avec accord explicite pour les actions destructives (migrations prod + EF live).
