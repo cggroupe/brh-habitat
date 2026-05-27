@@ -5,6 +5,27 @@
 
 ---
 
+## 2026-05-27 (nuit +1) — Connecter Réseau Pro × Templates emails (envoi direct depuis fiche)
+
+- **Contexte** : Philippe veut pouvoir envoyer un mail directement à un prospect du Réseau Pro en réutilisant les 34 templates existants `brh_email_templates` + EF `send-recruitment-email` (Resend + tracking +5pts employé). Connecter les deux modules.
+- **Fichiers créés** :
+  - `src/components/reseau-pro/ReseauEmailPanel.tsx` — section "Envoyer un email" sur la fiche prospect : liste templates filtrés par audience, aperçu avec variables substituées (ville, société, nom dirigeant, métier), bouton Envoyer, historique des emails déjà envoyés à ce prospect (badge statut : envoyé / ouvert / cliqué / répondu / échec)
+- **Fichiers modifiés** :
+  - `src/api/brh-reseau-pro.ts` — helper `metierToEmailAudience()` (mappe Agence immobilière→agence_immo, Architecte→architecte, Maître d'œuvre/Bureau d'études→maitre_oeuvre, BTP→artisan, sinon autre) + `fetchEmailsSentTo(email)` historique
+  - `src/components/reseau-pro/FicheReseauProView.tsx` — intègre `<ReseauEmailPanel>` après la section Contacts (visible si `can_see_contacts && contacts.email`)
+- **Logique métier** :
+  - Si le prospect n'est pas encore claim par moi : l'envoi déclenche **auto-claim** avec `method='email'` + notes auto-générées `Premier contact via template "{slug}"` (alerte UI explicite avant l'envoi)
+  - Si claim par autre : la page entière est déjà bloquée (LockedFiche), donc la section email n'est jamais affichée
+  - Templates filtrés sur l'audience matchée par défaut + toggle "Voir tous les templates" pour élargir
+  - Aperçu HTML inline avec variables surlignées en jaune si non substituées
+- **Réutilisation 100% existant** : aucune nouvelle EF, aucune nouvelle table. Branche sur `emailTemplatesApi.send()` qui appelle `send-recruitment-email` ACTIVE en prod (version 2, déployée 10/05) + récupère depuis `brh_email_sends` pour l'historique.
+- **Pages wiki impactées** : [log.md](log.md) (cette entrée) · [data-model.md](data-model.md) (déjà à jour côté brh_email_templates/sends — pas de schéma changé)
+- **Risque** : Low — aucune migration, aucune EF nouvelle, juste un wire entre 2 features existantes. Auto-claim atomique via le RPC `brh_reseau_claim` (UNIQUE constraint).
+- **Tests** : tsc green · ESLint 0 · vitest 470/470 · build prod 21s
+- **Status** : 🟢 DONE — pipeline complet : voir prospect → templates audience-matchés → preview → envoi (auto-claim si premier) → tracking dans brh_email_sends + +5pts → historique affiché sur la fiche
+
+---
+
 ## 2026-05-27 (nuit) — Feature Réseau Pro : annuaire 15k entreprises bretonnes + ownership progressif
 
 - **Contexte** : Philippe veut "lancer le réseau" depuis l'espace employé en démarchant les 15 021 entreprises bretonnes (BTP + Immo) du CSV `/opt/stack/prospection-bretagne/prospects_bretagne_2026-05-07_FINAL.csv`. Logique demandée : **ownership progressif** — premier employé à contacter un prospect le verrouille pour les autres ; les jeunes employés voient juste "Suivi par {nom}" sans accès aux coordonnées.

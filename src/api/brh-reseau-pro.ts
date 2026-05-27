@@ -218,3 +218,53 @@ export const RESEAU_METHOD_LABELS: Record<ReseauContactMethod, string> = {
   visit: 'Visite',
   other: 'Autre',
 }
+
+/**
+ * Mappe le `metier_categorie` d'un prospect réseau pro vers l'audience d'un
+ * template email (brh_email_templates.target_audience). Permet de proposer
+ * uniquement les templates pertinents pour chaque prospect.
+ *
+ * Mapping :
+ *  - "Agence immobilière" → agence_immo
+ *  - "Architecte" → architecte
+ *  - "Maître d'œuvre" / "Bureau d'études" → maitre_oeuvre
+ *  - Tout autre métier BTP (Plombier, Maçon, Électricien…) → artisan
+ *  - Reste (secteur Immo/Partenariat hors agence) → autre
+ */
+export type EmailTargetAudience = 'artisan' | 'agence_immo' | 'architecte' | 'maitre_oeuvre' | 'autre'
+
+export function metierToEmailAudience(
+  metier: string | null | undefined,
+  secteur: string | null | undefined,
+): EmailTargetAudience {
+  if (!metier) return 'autre'
+  if (metier === 'Agence immobilière') return 'agence_immo'
+  if (metier === 'Architecte') return 'architecte'
+  if (metier === "Maître d'œuvre" || metier === "Bureau d'études") return 'maitre_oeuvre'
+  if (secteur === 'BTP') return 'artisan'
+  return 'autre'
+}
+
+/**
+ * Récupère l'historique des emails envoyés à un destinataire (par email).
+ * Sert à afficher l'historique sur la fiche prospect réseau pro.
+ */
+export interface EmailSendHistoryItem {
+  id: string
+  template_id: string | null
+  subject: string
+  sent_at: string
+  status: 'sent' | 'opened' | 'clicked' | 'replied' | 'bounced' | 'failed'
+  employee_id: string
+}
+
+export async function fetchEmailsSentTo(recipientEmail: string): Promise<EmailSendHistoryItem[]> {
+  const { data, error } = await supabase
+    .from('brh_email_sends')
+    .select('id, template_id, subject, sent_at, status, employee_id')
+    .eq('recipient_email', recipientEmail)
+    .order('sent_at', { ascending: false })
+    .limit(20)
+  if (error) throw error
+  return (data ?? []) as EmailSendHistoryItem[]
+}

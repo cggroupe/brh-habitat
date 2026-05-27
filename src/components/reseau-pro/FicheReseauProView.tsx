@@ -20,6 +20,7 @@ import {
   type ReseauClaimStatus, type ReseauContactMethod,
 } from '@/api/brh-reseau-pro'
 import Avatar from '@/components/ui/Avatar'
+import ReseauEmailPanel from './ReseauEmailPanel'
 
 interface Props {
   prospectId: number
@@ -265,6 +266,11 @@ export default function FicheReseauProView({ prospectId, backUrl }: Props) {
                 )}
               </div>
             </section>
+          )}
+
+          {/* EMAIL — envoi template Resend depuis brh_email_templates (auto-claim) */}
+          {data.can_see_contacts && data.contacts?.email && (
+            <ReseauEmailPanel prospect={data} />
           )}
 
           {/* SUIVI CLAIM (si claim par moi) */}
