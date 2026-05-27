@@ -129,6 +129,18 @@ export function useAuth() {
 
   async function signOut() {
     initRef.current = false
+    // Tracking : log logout avant de couper la session (best-effort, silencieux si fail)
+    try {
+      const sessionId = typeof window !== 'undefined' ? sessionStorage.getItem('brh.tracking.sessionId') : null
+      if (sessionId) {
+        await supabase.rpc('brh_tracking_record_event', {
+          p_session_id: sessionId,
+          p_event_type: 'logout',
+          p_page_path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+        })
+        sessionStorage.removeItem('brh.tracking.sessionId')
+      }
+    } catch { /* silencieux */ }
     await supabase.auth.signOut()
     setUser(null)
     queryClient.clear()

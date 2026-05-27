@@ -21,6 +21,7 @@ import {
 } from '@/api/brh-reseau-pro'
 import Avatar from '@/components/ui/Avatar'
 import ReseauEmailPanel from './ReseauEmailPanel'
+import { useTracking } from '@/hooks/useTracking'
 
 interface Props {
   prospectId: number
@@ -31,6 +32,7 @@ interface Props {
 export default function FicheReseauProView({ prospectId, backUrl }: Props) {
   const { user, isAdmin } = useAuth()
   const navigate = useNavigate()
+  const { trackEvent } = useTracking()
   const { data, isLoading, error } = useReseauProspect(prospectId)
   const claim = useReseauClaim()
   const updateClaim = useReseauUpdateClaim()
@@ -78,6 +80,12 @@ export default function FicheReseauProView({ prospectId, backUrl }: Props) {
 
   const handleClaim = async () => {
     await claim.mutateAsync({ id: prospectId, method: claimMethod, notes: claimNotes || undefined })
+    trackEvent('claim_prospect', {
+      prospect_id: prospectId,
+      prospect_nom: data.nom,
+      metier: data.metier_categorie,
+      method: claimMethod,
+    })
     setShowClaimDialog(false)
     setClaimNotes('')
   }
@@ -92,6 +100,7 @@ export default function FicheReseauProView({ prospectId, backUrl }: Props) {
   const handleUnclaim = async () => {
     if (!window.confirm('Libérer ce contact ? Il redeviendra disponible pour les autres employés.')) return
     await unclaim.mutateAsync(prospectId)
+    trackEvent('unclaim_prospect', { prospect_id: prospectId, prospect_nom: data.nom })
     navigate(backUrl)
   }
 
@@ -194,6 +203,7 @@ export default function FicheReseauProView({ prospectId, backUrl }: Props) {
                 {data.contacts.telephone && (
                   <a
                     href={`tel:${data.contacts.telephone.replace(/\s/g, '')}`}
+                    onClick={() => trackEvent('contact_tel', { prospect_id: prospectId, prospect_nom: data.nom })}
                     className="inline-flex items-center gap-2 rounded-xl bg-[#00600a] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#004807]"
                   >
                     <Phone size={14} />
@@ -203,6 +213,7 @@ export default function FicheReseauProView({ prospectId, backUrl }: Props) {
                 {data.contacts.email && (
                   <a
                     href={`mailto:${data.contacts.email}`}
+                    onClick={() => trackEvent('contact_email', { prospect_id: prospectId, prospect_nom: data.nom, source: 'direct' })}
                     className="inline-flex items-center gap-2 rounded-xl bg-stone-100 px-4 py-2.5 text-sm font-medium text-text hover:bg-stone-200"
                   >
                     <Mail size={14} />
@@ -212,6 +223,7 @@ export default function FicheReseauProView({ prospectId, backUrl }: Props) {
                 {data.contacts.email_site_web && data.contacts.email_site_web !== data.contacts.email && (
                   <a
                     href={`mailto:${data.contacts.email_site_web}`}
+                    onClick={() => trackEvent('contact_email', { prospect_id: prospectId, prospect_nom: data.nom, source: 'site_web' })}
                     className="inline-flex items-center gap-2 rounded-xl bg-stone-100 px-4 py-2.5 text-sm font-medium text-text hover:bg-stone-200"
                   >
                     <Mail size={14} />

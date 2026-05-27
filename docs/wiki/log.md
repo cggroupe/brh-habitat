@@ -5,6 +5,43 @@
 
 ---
 
+## 2026-05-27 (nuit +2) — Tracking activité employés (sessions + events + dashboard admin)
+
+- **Contexte** : Philippe veut savoir qui se connecte, ce que font les employés sur l'app (clics, pages, emails, prospects claim, appels…). Outil de management RH pour pilotage équipe BRH.
+- **⚠️ RGPD** : tracking salariés en environnement pro = légal au titre du droit de l'employeur de contrôler l'activité professionnelle, MAIS Philippe doit AVANT la prod :
+  - Informer les salariés (politique interne / charte informatique / mention DUERP)
+  - Consulter le CSE si >11 salariés
+  - Notice RGPD est affichée en haut de la page admin pour rappel permanent
+  - Données minimisées (pas de keylogger, pas de screenshot, pas de geoloc, pas de contenu formulaire)
+  - Rétention 90j (à brancher via pg_cron — commande fournie en commentaire mig) + droit d'accès art.15 (chaque employé voit ses propres données via mêmes RPC avec p_user_id=NULL)
+- **Fichiers créés** :
+  - `supabase/migrations/20260527250000_brh_employee_tracking.sql` — 2 tables (`brh_employee_sessions` + `brh_employee_events`) + 5 RPC SECURITY DEFINER (`heartbeat`, `record_event`, `live_users` admin, `employee_stats` admin/self, `recent_events` admin/self, `team_leaderboard` admin) + RLS strict + 5 indexes
+  - `src/api/brh-tracking.ts` — client typé 6 méthodes + labels événements
+  - `src/hooks/useTracking-context.ts` — context React (séparé du provider pour fast-refresh)
+  - `src/hooks/useTracking.ts` — hook simple useContext
+  - `src/hooks/TrackingProvider.tsx` — provider auto bootstrap session + heartbeat 30s + auto page_view sur chaque route + helper trackEvent(type, payload)
+  - `src/pages/admin/AdminTracking.tsx` — page admin avec notice RGPD + section "Connectés maintenant" (auto-refresh 15s, sessions <2min = live) + leaderboard équipe (filtrable 24h/7j/30j/90j) avec colonnes pages_view/click/send_email/claim_prospect/contact_tel/contact_email + drawer détail employé (KPI + breakdown event types + timeline 100 derniers events)
+- **Fichiers modifiés** :
+  - `src/App.tsx` — wrap `<TrackingProvider>` autour des Routes (à l'intérieur du BrowserRouter pour avoir useLocation) + route `/admin/tracking` + import lazy AdminTracking
+  - `src/components/layout/AdminShell.tsx` — lien sidebar "Tracking équipe" (icône Activity)
+  - `src/hooks/useAuth.ts` — log event 'logout' avant `supabase.auth.signOut()` (best-effort silencieux)
+  - `src/components/reseau-pro/FicheReseauProView.tsx` — wire trackEvent sur handleClaim (event `claim_prospect`), handleUnclaim (`unclaim_prospect`), liens tel: (`contact_tel`), liens mailto: (`contact_email`)
+  - `src/components/reseau-pro/ReseauEmailPanel.tsx` — wire trackEvent sur envoi email réussi (event `send_email` avec template_slug + prospect_id)
+  - `src/types/database-generated.ts` — resync depuis remote
+- **Événements trackés** : `login` (bootstrap session) · `logout` · `page_view` (auto chaque route) · `click` (custom) · `send_email` (envoi template) · `claim_prospect` / `unclaim_prospect` · `contact_tel` / `contact_email` · `open_fiche` (custom) + payload jsonb libre
+- **Sessions** : sessionStorage `brh.tracking.sessionId` (durée onglet — onglet fermé = session terminée à expiration heartbeat). Heartbeat 30s refresh `last_seen_at`. Sessions inactives >2min = considérées offline pour la vue "Live".
+- **Tracking activé uniquement pour role IN ('employe', 'admin')** — pas pour particulier/agence/artisan (qui sont des clients, pas des salariés à manager). Provider s'auto-désactive et purge sessionStorage à la déconnexion.
+- **Pages wiki impactées** : [log.md](log.md) (cette entrée)
+- **Risque** : Low — migration idempotente, RPC SECURITY DEFINER avec checks role, RLS strict admin/self, EF non requise (tout via RPC).
+- **Tests** : tsc green · ESLint 0 · vitest 470/470 · build prod 24s
+- **Reste possible** :
+  - Brancher purge auto > 90j via pg_cron (commande SQL fournie en commentaire dans la migration)
+  - Wire `trackEvent` sur d'autres boutons critiques (UnifiedLeadsView search, export CSV, génération courriers, etc.)
+  - Export CSV des stats équipe pour reporting mensuel
+- **Status** : 🟢 DONE — tracking opérationnel, admin peut voir qui est connecté maintenant + leaderboard équipe + détail timeline par employé
+
+---
+
 ## 2026-05-27 (nuit +1) — Connecter Réseau Pro × Templates emails (envoi direct depuis fiche)
 
 - **Contexte** : Philippe veut pouvoir envoyer un mail directement à un prospect du Réseau Pro en réutilisant les 34 templates existants `brh_email_templates` + EF `send-recruitment-email` (Resend + tracking +5pts employé). Connecter les deux modules.

@@ -23,6 +23,7 @@ import {
   LogOut,
   ChevronRight,
   Share2,
+  Activity,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import NotificationBell from '@/components/shared/NotificationBell'
@@ -39,6 +40,7 @@ const adminNavItems = [
   { to: '/admin/utilisateurs', label: 'Utilisateurs', icon: Users },
   { to: '/admin/partenaires', label: 'Partenaires (contrats)', icon: Handshake },
   { to: '/admin/reseau-pro', label: 'Réseau Pro (annuaire 15k)', icon: Handshake },
+  { to: '/admin/tracking', label: 'Tracking équipe', icon: Activity },
   { to: '/admin/agences-immo', label: 'Agences immo', icon: Building2 },
   { to: '/admin/score-vente', label: 'Score Vente v1', icon: TrendingUp },
   { to: '/admin/lead-assignments', label: 'Claims agences', icon: ClipboardList },

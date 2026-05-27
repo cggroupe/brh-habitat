@@ -5778,6 +5778,77 @@ export type Database = {
           },
         ]
       }
+      brh_employee_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: number
+          page_path: string | null
+          payload: Json | null
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: number
+          page_path?: string | null
+          payload?: Json | null
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: number
+          page_path?: string | null
+          payload?: Json | null
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_employee_events_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "brh_employee_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brh_employee_sessions: {
+        Row: {
+          ended_at: string | null
+          events_count: number
+          id: string
+          ip_prefix: string | null
+          last_seen_at: string
+          started_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          ended_at?: string | null
+          events_count?: number
+          id?: string
+          ip_prefix?: string | null
+          last_seen_at?: string
+          started_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          ended_at?: string | null
+          events_count?: number
+          id?: string
+          ip_prefix?: string | null
+          last_seen_at?: string
+          started_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       brh_employees: {
         Row: {
           activity_level: string
@@ -9528,6 +9599,27 @@ export type Database = {
           },
         ]
       }
+      brh_sci_companies_dirigeants_audit_20260527: {
+        Row: {
+          cleaned_at: string
+          dirigeants_after: Json
+          dirigeants_before: Json
+          siren: string
+        }
+        Insert: {
+          cleaned_at?: string
+          dirigeants_after: Json
+          dirigeants_before: Json
+          siren: string
+        }
+        Update: {
+          cleaned_at?: string
+          dirigeants_after?: Json
+          dirigeants_before?: Json
+          siren?: string
+        }
+        Relationships: []
+      }
       brh_sci_deces_matches: {
         Row: {
           created_at: string
@@ -11055,6 +11147,75 @@ export type Database = {
           p_type: string
         }
         Returns: string
+      }
+      brh_tracking_employee_stats: {
+        Args: { p_period?: string; p_user_id?: string }
+        Returns: Json
+      }
+      brh_tracking_heartbeat: {
+        Args: {
+          p_ip_prefix?: string
+          p_page_path?: string
+          p_session_id?: string
+          p_user_agent?: string
+        }
+        Returns: Json
+      }
+      brh_tracking_live_users: {
+        Args: never
+        Returns: {
+          current_page_path: string
+          email: string
+          events_count: number
+          full_name: string
+          last_seen_at: string
+          role: string
+          session_id: string
+          started_at: string
+          user_id: string
+        }[]
+      }
+      brh_tracking_recent_events: {
+        Args: { p_limit?: number; p_user_id?: string }
+        Returns: {
+          created_at: string
+          event_type: string
+          id: number
+          page_path: string
+          payload: Json
+          session_id: string
+          user_full_name: string
+          user_id: string
+        }[]
+      }
+      brh_tracking_record_event: {
+        Args: {
+          p_event_type: string
+          p_page_path?: string
+          p_payload?: Json
+          p_session_id: string
+        }
+        Returns: number
+      }
+      brh_tracking_team_leaderboard: {
+        Args: { p_period?: string }
+        Returns: {
+          email: string
+          events_claim_prospect: number
+          events_click: number
+          events_contact_email: number
+          events_contact_tel: number
+          events_login: number
+          events_page_view: number
+          events_send_email: number
+          full_name: string
+          last_seen_at: string
+          role: string
+          total_duration_minutes: number
+          total_events: number
+          total_sessions: number
+          user_id: string
+        }[]
       }
       brh_update_artisan_score: {
         Args: { p_artisan_id: string }

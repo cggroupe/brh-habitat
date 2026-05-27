@@ -25,6 +25,7 @@ import {
 } from '@/api/brh-reseau-pro'
 import { useReseauClaim } from '@/hooks/queries/brh-reseau-pro'
 import { useAuth } from '@/hooks/useAuth'
+import { useTracking } from '@/hooks/useTracking'
 
 const AUDIENCE_LABELS: Record<EmailTargetAudience, string> = {
   artisan: 'Artisan BTP',
@@ -41,6 +42,7 @@ interface Props {
 export default function ReseauEmailPanel({ prospect }: Props) {
   const qc = useQueryClient()
   const { user } = useAuth()
+  const { trackEvent } = useTracking()
 
   // Détermine l'audience cible pour ce prospect
   const targetAudience = useMemo(
@@ -129,6 +131,12 @@ export default function ReseauEmailPanel({ prospect }: Props) {
     },
     onSuccess: (result) => {
       if (result.ok) {
+        trackEvent('send_email', {
+          prospect_id: prospect.id,
+          prospect_nom: prospect.nom,
+          template_slug: selectedTemplate?.slug,
+          recipient_email: recipientEmail,
+        })
         setFeedback({
           type: 'ok',
           msg: `Email envoyé à ${recipientEmail} · +${result.points_earned ?? 5} pts`,

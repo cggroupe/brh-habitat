@@ -92,6 +92,7 @@ const AdminUtilisateurs = lazy(() => import('@/pages/admin/AdminUtilisateurs'))
 const AdminPartenaires = lazy(() => import('@/pages/admin/AdminPartenaires'))
 const AdminReseauPro = lazy(() => import('@/pages/admin/AdminReseauPro'))
 const AdminReseauProDetail = lazy(() => import('@/pages/admin/AdminReseauProDetail'))
+const AdminTracking = lazy(() => import('@/pages/admin/AdminTracking'))
 const AdminAgencesImmo = lazy(() => import('@/pages/admin/AdminAgencesImmo'))
 const AdminScoreVente = lazy(() => import('@/pages/admin/AdminScoreVente'))
 const AdminOptOutRequests = lazy(() => import('@/pages/admin/AdminOptOutRequests'))
@@ -203,6 +204,7 @@ const AgenceVitrinePage = lazy(() => import('@/pages/public/AgenceVitrinePage'))
 
 // Phase 17 — PWA install prompt (non-lazy, léger)
 import { InstallPwaPrompt } from '@/components/pwa/InstallPwaPrompt'
+import { TrackingProvider } from '@/hooks/TrackingProvider'
 const AuditView = lazy(() => import('@/pages/AuditView'))
 
 // Lazy loaded pages — Particulier
@@ -245,6 +247,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <TrackingProvider>
         <InstallPwaPrompt />
         <Suspense fallback={<PageLoader />}>
           <Routes>
@@ -446,6 +449,7 @@ export default function App() {
                 <Route path="/admin/partenaires" element={<AdminPartenaires />} />
                 <Route path="/admin/reseau-pro" element={<AdminReseauPro />} />
                 <Route path="/admin/reseau-pro/:id" element={<AdminReseauProDetail />} />
+                <Route path="/admin/tracking" element={<AdminTracking />} />
                 <Route path="/admin/agences-immo" element={<AdminAgencesImmo />} />
                 <Route path="/admin/score-vente" element={<AdminScoreVente />} />
                 <Route path="/admin/opt-out-requests" element={<AdminOptOutRequests />} />
@@ -532,6 +536,7 @@ export default function App() {
             </Route>
           </Routes>
         </Suspense>
+        </TrackingProvider>
       </BrowserRouter>
     </QueryClientProvider>
   )
