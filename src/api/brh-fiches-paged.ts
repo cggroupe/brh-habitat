@@ -57,7 +57,11 @@ export const brhFichesPagedApi = {
     const rows = (data ?? []) as Array<PagedDpe & { total_count: number }>
     const total = rows.length > 0 ? Number(rows[0].total_count) : 0
     return {
-      rows: rows.map(({ total_count: _t, ...rest }) => rest),
+      rows: rows.map((r) => {
+        const { total_count, ...rest } = r
+        void total_count
+        return rest
+      }),
       total,
     }
   },

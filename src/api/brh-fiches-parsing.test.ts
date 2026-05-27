@@ -55,7 +55,7 @@ describe('getFichePersonneByName — parsing tryPairs', () => {
     expect(pairs[2].last).toBe('LE GAC (JAMET)')
   })
 
-  it('un seul mot → pair (\"\", mot)', () => {
+  it('un seul mot → pair vide+mot', () => {
     const pairs = generateTryPairs('GINDRE')
     expect(pairs[0]).toEqual({ first: '', last: 'GINDRE' })
   })

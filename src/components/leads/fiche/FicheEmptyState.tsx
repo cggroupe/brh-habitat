@@ -124,6 +124,7 @@ function ActionButton({ action }: { action: EmptyAction }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function defaultActionsFor(
   kind: EmptyStateKind,
   ctx: {
