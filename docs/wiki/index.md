@@ -67,6 +67,7 @@
 | [plan-refonte-2026-05-21.md](plan-refonte-2026-05-21.md) | 🟡 **Plan refonte 21/05 (en cours)** — 5 axes Philippe en 6 phases (~50-57h / ~9j). Phase 0 (ménage wiki) livrée le 21/05. Décisions D-1 à D-5 actées. |
 | [handoff-2026-05-25.md](handoff-2026-05-25.md) | ⭐⭐ **HANDOFF À JOUR (25/05)** — état complet post-nettoyage dette technique Phase A→D (sauf C3 BDNB documenté avec recette). 161/161 migrations alignées, 0 erreur TS, 416 tests, 1 vuln RLS droppée, IRIS 44 à 96%, BAN 92%, score V2 dept 44 ×3-5. **Lire ce fichier en premier**. Copie dans `/root/HANDOFF-BRH.md`. |
 | [handoff-2026-05-22.md](handoff-2026-05-22.md) | 📦 **Handoff précédent (22/05)** — archive avant nettoyage dette. Référence historique. |
+| [refonte-data-b-2026-05-26.md](refonte-data-b-2026-05-26.md) | 🎯 **SESSION REFONTE DATA-B 26-27/05** — récap complet : 14 commits + 10 migrations + 15 composants UI (StickyEntityHeader, KpiHero, OwnerCard 6 zones, PatrimoineMassif virtualisé, DgfipPivot, Tabs Radix, TypedBadge, ClickableCounter, navStackStore…) + refonte 3 fiches drill-down en Tabs + redesign page /agence/leads en TABLE Stitch + bugs critiques (parsing GINDRE, Henri Dorval désync 2007 SCI, timeout RPC 13s→38ms, filtre SCI 6s→54ms, KPI vrais totaux). Enrichissement +6 663 dirigeants + 89 349 autres entreprises + 1 254 tels + 461 emails (Phase 2 en cours). Liste exhaustive de ce qui reste pour matcher Data-B (Avatar+Score tier, IA Analyser emplacement, Graphe 360°, MAJIC national, RGPD art.21…) |
 
 ### Partie 5 — Guides features majeures
 

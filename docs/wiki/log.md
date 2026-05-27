@@ -5,6 +5,48 @@
 
 ---
 
+## 2026-05-27 — Session refonte Data-B complète (14 commits + 10 migrations)
+
+- **Contexte** : Philippe a utilisé Data-B en immersion → constat « pas pareil en information ni parcours utilisateur ». Session complète pour rapprocher la grammaire UI BRH de Data-B + boucher 3 trous data majeurs.
+- **Fichiers modifiés** : voir page dédiée [refonte-data-b-2026-05-26.md](refonte-data-b-2026-05-26.md)
+- **Migrations créées** :
+  - `20260527110000_brh_entity_class.sql`
+  - `20260527120000_brh_ext_dgfip_centres.sql`
+  - `20260527121000_brh_seed_dgfip_bzh.sql`
+  - `20260527130000_rpc_brh_dpe_by_siren_paged.sql`
+  - `20260527140000_brh_solvabilite_estimee.sql`
+  - `20260527150000_brh_foncier_prospects_unified_no_nulls_last.sql` (trace)
+  - `20260527160000_rpc_foncier_prospects_fast.sql`
+  - `20260527170000_resync_brh_dirigeants_jsonb.sql` (fix Henri Dorval)
+  - `20260527180000_idx_sci_score_composite.sql` (filtre SCI 6s→54ms)
+  - `20260527190000_rpc_foncier_prospects_segment_counts.sql` (KPI vrais totaux)
+- **Pages wiki impactées** : [refonte-data-b-2026-05-26.md](refonte-data-b-2026-05-26.md) (nouvelle) · [index.md](index.md) (ajout entrée)
+- **Risque** : Low (toutes migrations idempotentes + ON CONFLICT, tous fixes testés en prod)
+- **Tests** : 470/470 vitest verts · Build prod 22s · Lint+Typecheck CI green
+- **Status** : ✅ DONE — production stable, Phase 2 Apify Google encore en cours (6 200/15 000 SIREN à ce stade)
+
+### Stats data finales
+
+| Métrique | Avant 26/05 | Après 27/05 09h |
+|---|---|---|
+| brh_dirigeants | 80 844 | **87 507** |
+| Dirigeants avec autres entreprises | 6 872 | **35 919** (×5.2) |
+| Total autres entreprises trouvées | 15 142 | **89 349** (×5.9) |
+| Tels pro extraits | 779 | **1 254+** (en cours) |
+| Emails pro extraits | 0 | **461+** (nouveau) |
+| RPC unified timeout | 13s | **38ms** (×350 plus rapide) |
+| Filtre Détenu par SCI | 6s | **54ms** (×111 plus rapide) |
+
+### À NE PAS oublier (dette + reste à faire)
+
+Voir section 4 de [refonte-data-b-2026-05-26.md](refonte-data-b-2026-05-26.md) :
+- **Sprint Pattern Stitch interne (~25-30h)** : pills filtres horizontaux, Avatar+Score tier dirigeant, 2 colonnes Suivi commercial/Profil psycho IA, Export CSV, Courriers postaux
+- **Sprint RGPD critique (~6h)** : workflow opposition art.21
+- **Sprint enrichissement (~25-30h)** : MAJIC national, Dropcontact API, Score Vente Phase 16 dans fiche
+- **Sprint IA Data-B (~15-20h)** : Analyses IA emplacement, Prédire CA, Graphe Foncier 360°
+
+---
+
 ## 2026-05-27 — Refonte fiches Data-B style COMPLÈTE (Sprint A→F + extension scope total)
 
 **Contexte** : Philippe a refusé la version condensée et demandé l'exécution intégrale du plan `/root/.claude/plans/jaunty-snacking-cascade.md` sans rien repousser. Cette entrée couvre la deuxième itération qui livre **tout le scope plan** y compris Tabs Radix, KpiHero, PatrimoineMassif virtualisé, DGFIP géolocalisé, solvabilité estimée, schémas Zod, et ingest live des SIREN manquants. Les éléments précédemment repoussés sont tous intégrés.
