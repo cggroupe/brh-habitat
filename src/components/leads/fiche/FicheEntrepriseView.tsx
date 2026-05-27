@@ -286,8 +286,8 @@ export default function FicheEntrepriseView({ siren, profile }: Props) {
                 ),
               },
               {
-                id: 'activite',
-                label: 'Activité',
+                id: 'signaux',
+                label: 'Signaux BODACC',
                 count: bodacc.length,
                 content: (
                   <div className="space-y-4 p-4">
@@ -306,6 +306,14 @@ export default function FicheEntrepriseView({ siren, profile }: Props) {
                         ))}
                       </div>
                     )}
+                  </div>
+                ),
+              },
+              {
+                id: 'liens',
+                label: 'Liens',
+                content: (
+                  <div className="p-4">
                     <EntityLinksPanel type="sci" id={siren} profileBase={`/${profile}`} />
                   </div>
                 ),

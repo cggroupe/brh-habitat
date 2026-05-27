@@ -42,17 +42,16 @@ export function useFoncierSegmentCounts(
   return useQuery({
     queryKey: [...FONCIER_SEGMENT_COUNTS_KEY, filters] as const,
     queryFn: async (): Promise<SegmentCounts> => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (supabase as any).rpc(
+      const { data, error } = await supabase.rpc(
         'brh_foncier_prospects_segment_counts',
         {
-          p_dept: filters.dept ?? null,
+          p_dept: filters.dept ?? undefined,
           p_score_v2_min: filters.scoreV2Min ?? 0,
           p_filter_fioul: filters.filterFioul ?? false,
           p_filter_avec_sci: filters.filterAvecSci ?? false,
           p_filter_particulier: filters.filterParticulier ?? false,
           p_filter_succession: filters.filterSuccession ?? false,
-          p_search: filters.search ?? null,
+          p_search: filters.search ?? undefined,
           p_filter_with_phone: filters.filterWithPhone ?? false,
           p_filter_with_email: filters.filterWithEmail ?? false,
           p_filter_with_ca: filters.filterWithCa ?? false,
@@ -60,7 +59,7 @@ export function useFoncierSegmentCounts(
           p_dpe_classes:
             filters.dpeClasses && filters.dpeClasses.length > 0
               ? filters.dpeClasses
-              : null,
+              : undefined,
         },
       )
       if (error) throw error

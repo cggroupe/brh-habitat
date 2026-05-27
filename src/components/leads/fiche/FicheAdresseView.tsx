@@ -38,21 +38,21 @@ export default function FicheAdresseView({ dpeId, profile }: Props) {
   const [showCreateProspect, setShowCreateProspect] = useState(false)
 
   // 2026-05-27 — Push pile navigation. Hook AVANT les early returns (règles React).
+  const navDpe = data?.dpe
   useEffect(() => {
-    if (!data?.dpe?.id) return
-    const dpe = data.dpe
+    if (!navDpe?.id) return
     const displayAddress =
-      (dpe.adresse_ban && (dpe.adresse_ban_score ?? 0) >= 0.8)
-        ? dpe.adresse_ban
-        : (dpe.adresse || `DPE #${dpe.id}`)
+      (navDpe.adresse_ban && (navDpe.adresse_ban_score ?? 0) >= 0.8)
+        ? navDpe.adresse_ban
+        : (navDpe.adresse || `DPE #${navDpe.id}`)
     pushNavEntity({
       type: 'adresse',
-      id: String(dpe.id),
+      id: String(navDpe.id),
       label: displayAddress,
-      sublabel: `${dpe.code_postal ?? ''} ${dpe.commune ?? ''}`.trim() || undefined,
-      path: `${profileBasePath(profile)}/adresse/${dpe.id}`,
+      sublabel: `${navDpe.code_postal ?? ''} ${navDpe.commune ?? ''}`.trim() || undefined,
+      path: `${profileBasePath(profile)}/adresse/${navDpe.id}`,
     })
-  }, [data?.dpe?.id, data?.dpe?.adresse, data?.dpe?.adresse_ban, data?.dpe?.adresse_ban_score, data?.dpe?.code_postal, data?.dpe?.commune, profile])
+  }, [navDpe, profile])
 
   if (isLoading) {
     return (

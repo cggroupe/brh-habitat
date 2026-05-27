@@ -42,14 +42,12 @@ export interface DpeSummary {
 
 export const brhFichesPagedApi = {
   async getDpeBySiren(siren: string, filters: PagedDpeFilters = {}): Promise<PagedDpeResult> {
-    // RPC ajoutée mig 20260527130000 — pas encore dans le type generated database.ts
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase as any).rpc('brh_dpe_by_siren_paged', {
+    const { data, error } = await supabase.rpc('brh_dpe_by_siren_paged', {
       p_siren: siren,
-      p_commune: filters.commune ?? null,
-      p_etiquette_dpe: filters.etiquette_dpe ?? null,
-      p_score_min: filters.score_min ?? null,
-      p_score_max: filters.score_max ?? null,
+      p_commune: filters.commune ?? undefined,
+      p_etiquette_dpe: filters.etiquette_dpe ?? undefined,
+      p_score_min: filters.score_min ?? undefined,
+      p_score_max: filters.score_max ?? undefined,
       p_limit: filters.limit ?? 50,
       p_offset: filters.offset ?? 0,
     })
@@ -67,8 +65,7 @@ export const brhFichesPagedApi = {
   },
 
   async getDpeSummary(siren: string): Promise<DpeSummary> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase as any).rpc('brh_dpe_summary_by_siren', { p_siren: siren })
+    const { data, error } = await supabase.rpc('brh_dpe_summary_by_siren', { p_siren: siren })
     if (error) throw error
     const first = Array.isArray(data) ? data[0] : data
     if (!first) {

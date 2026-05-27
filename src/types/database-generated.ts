@@ -3532,6 +3532,8 @@ export type Database = {
           osint_telephone: string | null
           prenom: string
           prenom_norm: string | null
+          psy_profile: Json | null
+          psy_profile_generated_at: string | null
           sci_dirigees: Json | null
           succession_potentielle: boolean | null
           tel_pro_via_entreprise: string | null
@@ -3565,6 +3567,8 @@ export type Database = {
           osint_telephone?: string | null
           prenom: string
           prenom_norm?: string | null
+          psy_profile?: Json | null
+          psy_profile_generated_at?: string | null
           sci_dirigees?: Json | null
           succession_potentielle?: boolean | null
           tel_pro_via_entreprise?: string | null
@@ -3598,6 +3602,8 @@ export type Database = {
           osint_telephone?: string | null
           prenom?: string
           prenom_norm?: string | null
+          psy_profile?: Json | null
+          psy_profile_generated_at?: string | null
           sci_dirigees?: Json | null
           succession_potentielle?: boolean | null
           tel_pro_via_entreprise?: string | null
@@ -5954,6 +5960,48 @@ export type Database = {
         }
         Relationships: []
       }
+      brh_ext_bdnb_batiments: {
+        Row: {
+          annee_construction: number | null
+          ban_id: string
+          batiment_groupe_id: string
+          dept: string
+          ingested_at: string
+          mat_mur_txt: string | null
+          mat_toit_txt: string | null
+          nb_log: number | null
+          nb_niveau: number | null
+          surface_habitable_logement: number | null
+          type_vitrage: string | null
+        }
+        Insert: {
+          annee_construction?: number | null
+          ban_id: string
+          batiment_groupe_id: string
+          dept: string
+          ingested_at?: string
+          mat_mur_txt?: string | null
+          mat_toit_txt?: string | null
+          nb_log?: number | null
+          nb_niveau?: number | null
+          surface_habitable_logement?: number | null
+          type_vitrage?: string | null
+        }
+        Update: {
+          annee_construction?: number | null
+          ban_id?: string
+          batiment_groupe_id?: string
+          dept?: string
+          ingested_at?: string
+          mat_mur_txt?: string | null
+          mat_toit_txt?: string | null
+          nb_log?: number | null
+          nb_niveau?: number | null
+          surface_habitable_logement?: number | null
+          type_vitrage?: string | null
+        }
+        Relationships: []
+      }
       brh_ext_cache: {
         Row: {
           cache_key: string
@@ -6176,6 +6224,51 @@ export type Database = {
           znieff_sample?: string | null
           znieff1_count?: number | null
           znieff2_count?: number | null
+        }
+        Relationships: []
+      }
+      brh_ext_dgfip_centres: {
+        Row: {
+          adresse: string | null
+          code_postal: string | null
+          commune: string | null
+          created_at: string | null
+          departement: string | null
+          id: string
+          lat: number | null
+          lng: number | null
+          nom: string
+          telephone: string | null
+          type_centre: string
+          updated_at: string | null
+        }
+        Insert: {
+          adresse?: string | null
+          code_postal?: string | null
+          commune?: string | null
+          created_at?: string | null
+          departement?: string | null
+          id: string
+          lat?: number | null
+          lng?: number | null
+          nom: string
+          telephone?: string | null
+          type_centre: string
+          updated_at?: string | null
+        }
+        Update: {
+          adresse?: string | null
+          code_postal?: string | null
+          commune?: string | null
+          created_at?: string | null
+          departement?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          nom?: string
+          telephone?: string | null
+          type_centre?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -9100,15 +9193,18 @@ export type Database = {
           departement: string | null
           derniere_visite_terrain: string | null
           dirigeants: Json
+          dirigeants_jsonb_malformed: boolean | null
           effectif: string | null
           employee_notes: string | null
           employee_updated_at: string | null
           employee_updated_by: string | null
+          entity_class: string | null
           fetched_at: string
           forme_juridique: string | null
           has_deceased_dirigeant: boolean
           interet_brh: string | null
           is_active: boolean
+          is_utility: boolean
           lat: number | null
           latest_deces_date: string | null
           lng: number | null
@@ -9121,6 +9217,7 @@ export type Database = {
           osint_website: string | null
           raw_response: Json | null
           siren: string
+          solvabilite_estimee: string | null
           succession_probable_score: number
           ttl_seconds: number
           updated_at: string
@@ -9142,15 +9239,18 @@ export type Database = {
           departement?: string | null
           derniere_visite_terrain?: string | null
           dirigeants?: Json
+          dirigeants_jsonb_malformed?: boolean | null
           effectif?: string | null
           employee_notes?: string | null
           employee_updated_at?: string | null
           employee_updated_by?: string | null
+          entity_class?: string | null
           fetched_at?: string
           forme_juridique?: string | null
           has_deceased_dirigeant?: boolean
           interet_brh?: string | null
           is_active?: boolean
+          is_utility?: boolean
           lat?: number | null
           latest_deces_date?: string | null
           lng?: number | null
@@ -9163,6 +9263,7 @@ export type Database = {
           osint_website?: string | null
           raw_response?: Json | null
           siren: string
+          solvabilite_estimee?: string | null
           succession_probable_score?: number
           ttl_seconds?: number
           updated_at?: string
@@ -9184,15 +9285,18 @@ export type Database = {
           departement?: string | null
           derniere_visite_terrain?: string | null
           dirigeants?: Json
+          dirigeants_jsonb_malformed?: boolean | null
           effectif?: string | null
           employee_notes?: string | null
           employee_updated_at?: string | null
           employee_updated_by?: string | null
+          entity_class?: string | null
           fetched_at?: string
           forme_juridique?: string | null
           has_deceased_dirigeant?: boolean
           interet_brh?: string | null
           is_active?: boolean
+          is_utility?: boolean
           lat?: number | null
           latest_deces_date?: string | null
           lng?: number | null
@@ -9205,6 +9309,7 @@ export type Database = {
           osint_website?: string | null
           raw_response?: Json | null
           siren?: string
+          solvabilite_estimee?: string | null
           succession_probable_score?: number
           ttl_seconds?: number
           updated_at?: string
@@ -10053,6 +10158,19 @@ export type Database = {
         Args: { p_threshold_days?: number }
         Returns: number
       }
+      brh_dgfip_nearest: {
+        Args: { p_lat: number; p_limit?: number; p_lng: number }
+        Returns: {
+          adresse: string
+          code_postal: string
+          commune: string
+          distance_km: number
+          id: string
+          nom: string
+          telephone: string
+          type_centre: string
+        }[]
+      }
       brh_dirigeant_360: {
         Args: { p_dirigeant_id: string }
         Returns: {
@@ -10100,6 +10218,29 @@ export type Database = {
           total_count: number
         }[]
       }
+      brh_dpe_by_siren_paged: {
+        Args: {
+          p_commune?: string
+          p_etiquette_dpe?: string[]
+          p_limit?: number
+          p_offset?: number
+          p_score_max?: number
+          p_score_min?: number
+          p_siren: string
+        }
+        Returns: {
+          adresse: string
+          annee_construction: number
+          code_postal: string
+          commune: string
+          etiquette_dpe: string
+          id: number
+          score_segment: string
+          score_v2: number
+          surface_habitable: number
+          total_count: number
+        }[]
+      }
       brh_dpe_employee_update: {
         Args: { p_dpe_id: number; p_overrides: Json }
         Returns: Json
@@ -10107,6 +10248,15 @@ export type Database = {
       brh_dpe_role_for_personne: {
         Args: { p_dpe_id: number; p_personne_id: string }
         Returns: string
+      }
+      brh_dpe_summary_by_siren: {
+        Args: { p_siren: string }
+        Returns: {
+          by_commune: Json
+          by_dpe_class: Json
+          by_segment: Json
+          total: number
+        }[]
       }
       brh_dpe_update_employee: {
         Args: { p_dpe_id: number; p_patch: Json }
@@ -10154,6 +10304,38 @@ export type Database = {
         }
         Returns: boolean
       }
+      brh_foncier_prospects_fast: {
+        Args: {
+          p_dept?: string
+          p_filter_avec_sci?: boolean
+          p_filter_fioul?: boolean
+          p_filter_particulier?: boolean
+          p_filter_succession?: boolean
+          p_limit?: number
+          p_score_v2_min?: number
+          p_search?: string
+          p_segment_v2?: string
+        }
+        Returns: {
+          adresse: string
+          adresse_ban: string
+          annee_construction: number
+          code_postal: string
+          commune: string
+          departement: string
+          etiquette_dpe: string
+          id: number
+          latitude: number
+          longitude: number
+          owner_name: string
+          owner_siren: string
+          pii_full_name: string
+          score_v2: number
+          score_v2_segment: string
+          surface: number
+          type_batiment: string
+        }[]
+      }
       brh_foncier_prospects_filtered: {
         Args: {
           p_audits_dyna_only?: boolean
@@ -10189,6 +10371,42 @@ export type Database = {
           tlv_tendue: boolean
         }[]
       }
+      brh_foncier_prospects_segment_counts:
+        | {
+            Args: {
+              p_dept?: string
+              p_filter_avec_sci?: boolean
+              p_filter_fioul?: boolean
+              p_filter_particulier?: boolean
+              p_filter_succession?: boolean
+              p_score_v2_min?: number
+              p_search?: string
+            }
+            Returns: {
+              count: number
+              segment: string
+            }[]
+          }
+        | {
+            Args: {
+              p_dept?: string
+              p_dpe_classes?: string[]
+              p_filter_avec_sci?: boolean
+              p_filter_fioul?: boolean
+              p_filter_particulier?: boolean
+              p_filter_succession?: boolean
+              p_filter_with_ca?: boolean
+              p_filter_with_email?: boolean
+              p_filter_with_phone?: boolean
+              p_filter_with_rdv?: boolean
+              p_score_v2_min?: number
+              p_search?: string
+            }
+            Returns: {
+              count: number
+              segment: string
+            }[]
+          }
       brh_foncier_prospects_table: {
         Args: {
           p_audits_dyna_only?: boolean
@@ -10235,10 +10453,15 @@ export type Database = {
       brh_foncier_prospects_unified: {
         Args: {
           p_dept?: string
+          p_dpe_classes?: string[]
           p_filter_avec_sci?: boolean
           p_filter_fioul?: boolean
           p_filter_particulier?: boolean
           p_filter_succession?: boolean
+          p_filter_with_ca?: boolean
+          p_filter_with_email?: boolean
+          p_filter_with_phone?: boolean
+          p_filter_with_rdv?: boolean
           p_limit?: number
           p_offset?: number
           p_score_v2_min?: number
@@ -10275,8 +10498,10 @@ export type Database = {
           owner_siren: string
           owner_type: string
           pii_ca_total_eur: number
+          pii_derniere_facture: string
           pii_email: string
           pii_full_name: string
+          pii_premiere_facture: string
           pii_source: string
           pii_telephone: string
           qualite_isolation_murs: string
@@ -10535,6 +10760,15 @@ export type Database = {
         Args: { p_target: string; p_viewer: string }
         Returns: boolean
       }
+      brh_recalc_score_v2_full: {
+        Args: { p_dept: string }
+        Returns: {
+          avg_score: number
+          dept: string
+          max_score: number
+          rows_updated: number
+        }[]
+      }
       brh_release_expired_assignments: { Args: never; Returns: number }
       brh_reset_agence_monthly_quotas: { Args: never; Returns: number }
       brh_reset_employee_leads_counter: { Args: never; Returns: number }
@@ -10551,6 +10785,7 @@ export type Database = {
           dirigeants: Json
           has_deceased_dirigeant: boolean
           is_active: boolean
+          is_utility: boolean
           siren: string
         }[]
       }

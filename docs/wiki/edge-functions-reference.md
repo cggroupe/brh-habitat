@@ -85,6 +85,30 @@ Stratégie hybride : **Clerk** gère l'UI d'authentification, **Supabase** garde
 
 **Quota gating Phase 15** : la fonction appelle `brh_consume_letter_quota(profile_id)` avant Claude. Refus 402 si quota dépassé. Le tier est lu depuis `brh_pro_subscriptions`.
 
+### 🧠 Profil psy IA dirigeant — Sprint 1.7 Data-B (1)
+
+| Fonction | Rôle | Auth | Rate limit |
+|----------|------|------|------------|
+| `dirigeant-psy-profile` | Génère un profil psycho-commercial structuré pour un dirigeant SCI (Claude Opus 4.7 + prompt caching). Body : `{ nom, prenom? }`. Persiste sur `brh_dirigeants.psy_profile` + `psy_profile_generated_at`. Retourne `{ profile: PsyProfile, generated_at, usage }`. | JWT | 3 req/min |
+
+**Source données** : agrège `brh_dirigeants` + `brh_sci_companies.dirigeants[]` (patrimoine via SCI) + `brh_dpe_prospects` (DPE détenus) + `brh_score_vente_v1` + `brh_clients` (historique BRH). Le payload Claude est composé server-side (pas de risque d'injection client).
+
+**Format `PsyProfile` (jsonb)** :
+```jsonc
+{
+  "version": "1.0",
+  "generated_at": "2026-05-27T...",
+  "model": "claude-opus-4-7",
+  "summary": "2-3 phrases factuelles",
+  "motivations": ["..."],
+  "pain_points": ["..."],
+  "best_approach": "Phrase d'accroche commerciale",
+  "red_flags": ["..."]
+}
+```
+
+**Coût** : ~1500 output tokens × claude-opus-4-7 ≈ $0,02-0,04 / génération. Cache hit sur system prompt = -80 %.
+
 ### 💳 SaaS Stripe — Phase 15 (3)
 
 | Fonction | Rôle | Auth | Rate limit |

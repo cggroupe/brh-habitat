@@ -5,6 +5,7 @@
  * À enrichir Sprint 3 avec entity-hub (core.person, core.contact, core.event, signaux).
  */
 import { useEffect, useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import FicheBreadcrumb from './FicheBreadcrumb'
 import FicheEntityLink from './FicheEntityLink'
 import FavoriButton from './FavoriButton'
@@ -24,6 +25,7 @@ import PaginationInfo from '../../ui/PaginationInfo'
 import Avatar from '../../ui/Avatar'
 import ScoreTierBadge from '../../ui/ScoreTierBadge'
 import DirigeantSuiviPanel from './DirigeantSuiviPanel'
+import { generateDirigeantPsyProfile, type PsyProfile } from '@/api/dirigeant-psy-profile'
 
 interface Props {
   /** Pour MVP : nom complet URL-encoded. Sera remplacé par entity_id en Sprint 3. */
@@ -37,6 +39,23 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
   // Pagination patrimoine SCI dirigeant (Sprint 1.5 27/05).
   // Pattern Data-B #11 — résumé + pagination intelligente, pas un slice silent.
   const [patrimoineLimit, setPatrimoineLimit] = useState(100)
+  // Sprint 1.7 (27/05 PM) — Profil psy IA live. Cache local le retour de l'EF
+  // entre 2 refresh de la fiche pour éviter un round-trip DB.
+  const [psyProfileLocal, setPsyProfileLocal] = useState<PsyProfile | null>(null)
+  const queryClient = useQueryClient()
+  const psyMutation = useMutation({
+    mutationFn: () => {
+      const firstName = data?.identity.first_name ?? ''
+      const lastName = data?.identity.last_name ?? ''
+      if (!lastName) throw new Error('Nom de famille manquant')
+      return generateDirigeantPsyProfile({ nom: lastName, prenom: firstName })
+    },
+    onSuccess: (res) => {
+      setPsyProfileLocal(res.profile)
+      // Invalide la fiche pour que le prochain fetch lise le psy_profile persisté.
+      queryClient.invalidateQueries({ queryKey: ['brh', 'fiche', 'personne-by-name', fullName] })
+    },
+  })
 
   // 2026-05-27 — Push pile navigation. Hook AVANT les early returns (règles React).
   useEffect(() => {
@@ -209,7 +228,9 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
               rolesCount={sciPatrimoniales.length}
               patrimoineTotal={patrimoineTotal}
               contactsPro={contactsPro ?? undefined}
-              psyProfile={null}
+              psyProfile={psyProfileLocal}
+              onGenerateProfile={() => psyMutation.mutate()}
+              generating={psyMutation.isPending}
             />
           )}
 
@@ -482,8 +503,74 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                 ),
               },
               {
-                id: 'activites-pro',
-                label: 'Activités pro',
+                id: 'contacts-pro',
+                label: 'Contacts pro',
+                count: (telPro || emailPro || contactsPro?.osint_linkedin) ? 1 : 0,
+                disabled: !(telPro || emailPro || contactsPro?.osint_linkedin),
+                content: (
+                  <div className="space-y-4 p-4">
+                    {!(telPro || emailPro || contactsPro?.osint_linkedin) ? (
+                      <div className="rounded-md border border-dashed border-stone-300 bg-stone-50 p-4 text-sm text-stone-600">
+                        Aucun contact pro extrait. Voir l'onglet "Autres entreprises" pour relancer la recherche.
+                      </div>
+                    ) : (
+                      <section className="rounded-2xl bg-surface ring-1 ring-border-strong/20 p-5">
+                        <div className="flex flex-wrap gap-2">
+                          {contactsPro?.tel_pro_via_entreprise && (
+                            <a
+                              href={`tel:${contactsPro.tel_pro_via_entreprise.replace(/\s/g, '')}`}
+                              className="inline-flex items-center gap-1.5 rounded-md bg-[#00600a] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#004807]"
+                            >
+                              <span className="font-mono">{contactsPro.tel_pro_via_entreprise}</span>
+                              <span className="text-[10px] opacity-70">· entreprise</span>
+                            </a>
+                          )}
+                          {contactsPro?.email_pro_via_entreprise && (
+                            <a
+                              href={`mailto:${contactsPro.email_pro_via_entreprise}`}
+                              className="inline-flex items-center gap-1.5 rounded-md bg-stone-100 px-3 py-1.5 text-xs font-medium text-text hover:bg-stone-200"
+                            >
+                              {contactsPro.email_pro_via_entreprise}
+                              <span className="text-[10px] opacity-70">· entreprise</span>
+                            </a>
+                          )}
+                          {contactsPro?.osint_telephone && (
+                            <a
+                              href={`tel:${contactsPro.osint_telephone.replace(/\s/g, '')}`}
+                              className="inline-flex items-center gap-1.5 rounded-md bg-stone-100 px-3 py-1.5 text-xs font-medium text-text hover:bg-stone-200"
+                            >
+                              <span className="font-mono">{contactsPro.osint_telephone}</span>
+                              <span className="text-[10px] opacity-70">· OSINT</span>
+                            </a>
+                          )}
+                          {contactsPro?.osint_email && (
+                            <a
+                              href={`mailto:${contactsPro.osint_email}`}
+                              className="inline-flex items-center gap-1.5 rounded-md bg-stone-100 px-3 py-1.5 text-xs font-medium text-text hover:bg-stone-200"
+                            >
+                              {contactsPro.osint_email}
+                              <span className="text-[10px] opacity-70">· OSINT</span>
+                            </a>
+                          )}
+                          {contactsPro?.osint_linkedin && (
+                            <a
+                              href={contactsPro.osint_linkedin}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 rounded-md bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-900 hover:bg-blue-200"
+                            >
+                              LinkedIn
+                            </a>
+                          )}
+                        </div>
+                      </section>
+                    )}
+                  </div>
+                ),
+              },
+              {
+                id: 'autres-entreprises',
+                label: 'Autres entreprises',
                 count: autresEntreprises.length,
                 disabled: autresEntreprises.length === 0,
                 content: (
@@ -494,62 +581,6 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                       </div>
                     ) : (
                       <>
-                        {contactsPro && (telPro || emailPro || contactsPro.osint_linkedin) && (
-                          <section className="rounded-2xl bg-surface ring-1 ring-border-strong/20 p-5">
-                            <h3 className="mb-3 text-[10px] uppercase tracking-widest text-text-muted font-bold">
-                              Contacts pro extraits
-                            </h3>
-                            <div className="flex flex-wrap gap-2">
-                              {contactsPro.tel_pro_via_entreprise && (
-                                <a
-                                  href={`tel:${contactsPro.tel_pro_via_entreprise.replace(/\s/g, '')}`}
-                                  className="inline-flex items-center gap-1.5 rounded-md bg-[#00600a] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#004807]"
-                                >
-                                  <span className="font-mono">{contactsPro.tel_pro_via_entreprise}</span>
-                                  <span className="text-[10px] opacity-70">· entreprise</span>
-                                </a>
-                              )}
-                              {contactsPro.email_pro_via_entreprise && (
-                                <a
-                                  href={`mailto:${contactsPro.email_pro_via_entreprise}`}
-                                  className="inline-flex items-center gap-1.5 rounded-md bg-stone-100 px-3 py-1.5 text-xs font-medium text-text hover:bg-stone-200"
-                                >
-                                  {contactsPro.email_pro_via_entreprise}
-                                  <span className="text-[10px] opacity-70">· entreprise</span>
-                                </a>
-                              )}
-                              {contactsPro.osint_telephone && (
-                                <a
-                                  href={`tel:${contactsPro.osint_telephone.replace(/\s/g, '')}`}
-                                  className="inline-flex items-center gap-1.5 rounded-md bg-stone-100 px-3 py-1.5 text-xs font-medium text-text hover:bg-stone-200"
-                                >
-                                  <span className="font-mono">{contactsPro.osint_telephone}</span>
-                                  <span className="text-[10px] opacity-70">· OSINT</span>
-                                </a>
-                              )}
-                              {contactsPro.osint_email && (
-                                <a
-                                  href={`mailto:${contactsPro.osint_email}`}
-                                  className="inline-flex items-center gap-1.5 rounded-md bg-stone-100 px-3 py-1.5 text-xs font-medium text-text hover:bg-stone-200"
-                                >
-                                  {contactsPro.osint_email}
-                                  <span className="text-[10px] opacity-70">· OSINT</span>
-                                </a>
-                              )}
-                              {contactsPro.osint_linkedin && (
-                                <a
-                                  href={contactsPro.osint_linkedin}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 rounded-md bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-900 hover:bg-blue-200"
-                                >
-                                  LinkedIn
-                                </a>
-                              )}
-                            </div>
-                          </section>
-                        )}
-
                         <section>
                           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
                             {autresEntreprisesActives.length} entreprise{autresEntreprisesActives.length > 1 ? 's' : ''} active{autresEntreprisesActives.length > 1 ? 's' : ''}

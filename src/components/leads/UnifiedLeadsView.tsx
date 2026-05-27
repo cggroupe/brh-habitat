@@ -270,7 +270,7 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
   // Le RPC renvoie un tableau de lignes, total_count inclus dans chaque ligne
   // Streaming : si data full pas encore arrivée, on affiche fastData (15 rows)
   // pour que l'utilisateur voit quelque chose immédiatement.
-  const rows: LeadRow[] = data ?? fastData ?? []
+  const rows: LeadRow[] = useMemo(() => data ?? fastData ?? [], [data, fastData])
   const total = rows[0]?.total_count ?? 0
 
   // Cutoff DVF recalculé à chaque changement de délai (Date.now() est impur,

@@ -173,7 +173,7 @@ JAMAIS de `import.meta.env.VITE_SUPABASE_*` directement dans un module hors `lib
 
 ## Dette technique connue
 
-- **B01 — Client Supabase non typé `<Database>`** : format `Database` manuel dans `src/types/database.ts` (30 tables) non reconnu par supabase-js v2.103. Action : exécuter `supabase gen types typescript --project-id lygmmvxnmvlgynmrcpny > src/types/database.ts` puis activer `createClient<Database>` dans [src/lib/supabase.ts](src/lib/supabase.ts). Voir [docs/wiki/log.md](docs/wiki/log.md) entrée 2026-04-29.
+- ✅ **B01 résolu (2026-04-29 puis 2026-05-27 soir)** — client Supabase typé `<Database>` via `src/types/database-generated.ts` (re-sync depuis remote). Zéro `as any` sur `supabase.rpc()` dans `src/`. Pour re-générer après nouvelle migration : `supabase gen types typescript --project-id lygmmvxnmvlgynmrcpny > src/types/database-generated.ts`.
 
 ## Références
 

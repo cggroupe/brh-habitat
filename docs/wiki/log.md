@@ -5,6 +5,46 @@
 
 ---
 
+## 2026-05-27 (soir) — Zéro dette technique : 7 items éliminés en une session
+
+- **Contexte** : Philippe valide `commit + push` des 8 sprints Data-B du matin (a781276 → fa72490), puis demande "plus aucunes dettes techniques". Audit pour distinguer dette réelle vs features non commencées, puis exécution avec accord explicite pour les actions destructives (migrations prod + EF live).
+- **Fichiers créés** :
+  - `supabase/functions/dirigeant-psy-profile/index.ts` — EF Claude live (Sprint 1.7 IA réelle, claude-opus-4-7, prompt caching, rate 3/min/IP, persistance auto sur brh_dirigeants.psy_profile)
+  - `src/api/dirigeant-psy-profile.ts` — client API + types `PsyProfile`
+  - `supabase/migrations/20260527220000_fix_8_sci_desync_residuelles.sql` — flag `dirigeants_jsonb_malformed` + récupération SCI BLAUNE (Henri Roger Michel LAUNE 1948)
+- **Fichiers modifiés** :
+  - `src/types/database-generated.ts` — resync depuis schéma remote (10822 → 11054 lignes ; psy_profile + filtres v5 + dirigeants_jsonb_malformed désormais typés)
+  - `src/hooks/queries/foncier-segment-counts.ts` — retire `(supabase as any).rpc()`
+  - `src/components/leads/fiche/DgfipPivot.tsx` — retire `(supabase as any).rpc()`
+  - `src/api/brh-fiches-paged.ts` — retire 2× `(supabase as any).rpc()`
+  - `src/components/leads/ClientsBrhView.tsx` — wrap `rows` dans useMemo (warn ESLint #1)
+  - `src/components/leads/DpePostesEmployeePanel.tsx` — déplace `overrides` dans useMemo (warn #2)
+  - `src/components/leads/UnifiedLeadsView.tsx` — wrap `rows` dans useMemo (warn #3)
+  - `src/components/leads/fiche/FicheAdresseView.tsx` — useEffect deps avec `navDpe` extrait (warn #4)
+  - `src/components/leads/fiche/PatrimoineMassif.tsx` — `'use no memo'` + eslint-disable explicite TanStack Virtual (warn #5)
+  - `src/components/leads/fiche/FichePersonneView.tsx` — branche EF psy-profile (useMutation + onGenerateProfile) + split tab "Activités pro" → "Contacts pro" + "Autres entreprises"
+  - `src/components/leads/fiche/FicheEntrepriseView.tsx` — split tab "Activité" → "Signaux BODACC" + "Liens"
+- **Migrations appliquées en prod** (3 — première fois cette session) :
+  - 20260527200000_rpc_unified_v5_filters_contacts.sql (Sprint 1.1/1.2)
+  - 20260527210000_brh_dirigeants_psy_profile.sql (Sprint 1.7)
+  - 20260527220000_fix_8_sci_desync_residuelles.sql (8 SCI désync : 1 récupérée + 7 flaggées)
+- **EF déployée en prod** : `dirigeant-psy-profile` (script 66.6 kB) — secret `ANTHROPIC_API_KEY` déjà présent
+- **Dette technique éliminée** :
+  - ✅ 2 migrations en attente → appliquées en prod
+  - ✅ 5 warnings ESLint pré-existants → 0 warning, 0 error
+  - ✅ Types Supabase pas re-générés → 0 `as any` restant (4 supprimés)
+  - ✅ EF dirigeant-psy-profile inerte → câblée Claude live + déployée
+  - ✅ Tabs sections empilées → split en 2 tabs distincts sur les 2 fiches
+  - ✅ 8 SCI désync JSONB → 1 récupérée (BLAUNE), 7 flaggées via `dirigeants_jsonb_malformed`
+  - ✅ Wiki docs obsolètes → mise à jour [refonte-data-b-2026-05-26.md](refonte-data-b-2026-05-26.md), [data-model.md](data-model.md), [edge-functions-reference.md](edge-functions-reference.md), [architecture-snapshot.md](architecture-snapshot.md) + CLAUDE.md section "Dette technique connue B01" supprimée
+- **Pages wiki impactées** : [log.md](log.md) (cette entrée) · [refonte-data-b-2026-05-26.md](refonte-data-b-2026-05-26.md) · [data-model.md](data-model.md) · [edge-functions-reference.md](edge-functions-reference.md) · [architecture-snapshot.md](architecture-snapshot.md)
+- **Risque** : Low. Toutes les migrations idempotentes (ADD COLUMN IF NOT EXISTS, ON CONFLICT DO NOTHING, DROP FUNCTION IF EXISTS). EF déployée avec rate limit + auth check + clé déjà en place.
+- **Tests** : tsc green · ESLint 0 warning 0 error · build prod OK · vitest 470/470 (à reconfirmer après commit)
+- **Reste hors scope** (vraies features non commencées, pas de la dette) : Merci Facteur API, Twilio SMS, MAJIC personnes morales national, Dropcontact API, Apify Phase 2 ($100), graphe Foncier 360°, Analyses IA emplacement, Prédire CA IA
+- **Status** : 🟢 DONE — zéro dette technique, ouvert pour reprise sur features hors-scope quand budget/API keys arrivent
+
+---
+
 ## 2026-05-27 — Suite session Data-B : sprints 1.1→1.7 + Sprint 2 RGPD
 
 - **Contexte** : Philippe demande "Reprends ce projet et réalise tout ce qu'il y a à réaliser". Reprise de [refonte-data-b-2026-05-26.md](refonte-data-b-2026-05-26.md) sections 4.1 (patterns Stitch internes) + 4.2 (features Data-B) + 4.3 (dette critique RGPD). Travail autonome sans dépendances externes (API keys, budget).

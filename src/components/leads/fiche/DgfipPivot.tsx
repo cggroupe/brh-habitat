@@ -31,15 +31,13 @@ export default function DgfipPivot({ lat, lng }: DgfipPivotProps) {
     queryKey: ['brh-dgfip-nearest', lat, lng],
     queryFn: async (): Promise<DgfipCentre[]> => {
       if (lat == null || lng == null) return []
-      // RPC ajoutée mig 20260527120000 — pas encore dans database.ts
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (supabase as any).rpc('brh_dgfip_nearest', {
+      const { data, error } = await supabase.rpc('brh_dgfip_nearest', {
         p_lat: lat,
         p_lng: lng,
         p_limit: 3,
       })
       if (error) throw error
-      return ((data ?? []) as unknown) as DgfipCentre[]
+      return (data ?? []) as DgfipCentre[]
     },
     enabled: lat != null && lng != null,
     staleTime: 24 * 60 * 60 * 1000,

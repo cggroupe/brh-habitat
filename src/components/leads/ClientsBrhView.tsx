@@ -63,7 +63,7 @@ export default function ClientsBrhView({ profile }: Props) {
     offset: page * PAGE_SIZE,
   })
 
-  const rows = data ?? []
+  const rows = useMemo(() => data ?? [], [data])
   const total = rows[0]?.total_count ?? 0
   const totalPages = Math.max(1, Math.ceil(Number(total) / PAGE_SIZE))
 

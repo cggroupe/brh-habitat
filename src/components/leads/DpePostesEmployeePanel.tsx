@@ -46,9 +46,8 @@ interface Props {
 }
 
 export function DpePostesEmployeePanel({ dpe, onSave, isSaving = false }: Props) {
-  const overrides = (dpe.employee_overrides ?? {}) as Record<string, DpePosteOverride>
-
   const initialState = useMemo<Record<DpePosteKey, PosteRowState>>(() => {
+    const overrides = (dpe.employee_overrides ?? {}) as Record<string, DpePosteOverride>
     const out = {} as Record<DpePosteKey, PosteRowState>
     for (const poste of DPE_POSTES) {
       const ov = overrides[poste.key]
@@ -58,7 +57,7 @@ export function DpePostesEmployeePanel({ dpe, onSave, isSaving = false }: Props)
       }
     }
     return out
-  }, [overrides])
+  }, [dpe.employee_overrides])
 
   const [state, setState] = useState<Record<DpePosteKey, PosteRowState>>(initialState)
   const [savedAt, setSavedAt] = useState<number | null>(null)

@@ -166,20 +166,26 @@ Plus 2 design references **Stitch** internes au repo (`.stitch/designs/`) :
 
 ### 4.3 Dette technique cumulée
 
+> **Mise à jour 2026-05-27 (soir)** : session "plus aucune dette technique" — 7 items
+> de cette section sont passés à ✅ livré. Reste uniquement les vraies features
+> non commencées (besoin clés/budget) ou les chantiers stratégiques (MAJIC, etc.).
+
 | Dette | Sévérité | Solution |
 |---|---|---|
 | **Workflow opposition art. 21 RGPD** (formulaire public + EF) | ✅ **livré 27/05 PM** (Sprint 2 — OptOutPage → EF submit-optout + notification DPO + fallback INSERT) | — |
-| Types Supabase pas re-générés (RPC en `as any`) | 🟡 moyen — non fait (besoin accès Supabase remote) | 30 min : `supabase gen types typescript --project-id lygmmvxnmvlgynmrcpny` |
-| Wiki Karpathy : `data-model.md`, `architecture-snapshot.md`, `hooks-reference.md` pas à jour | 🟡 moyen | 1-2h |
+| Types Supabase pas re-générés (RPC en `as any`) | ✅ **livré 27/05 soir** — `supabase gen types typescript` + 4 `as any` retirés (DgfipPivot, brh-fiches-paged ×2, foncier-segment-counts) | — |
+| Wiki Karpathy : `data-model.md`, `edge-functions-reference.md`, `architecture-snapshot.md` pas à jour | ✅ **livré 27/05 soir** — psy_profile + dirigeants_jsonb_malformed dans data-model · EF dirigeant-psy-profile dans edge-functions-reference · B01 retiré + CLAUDE.md | — |
 | Tests Playwright à enrichir avec rejeu des 11 cas audit 26/05 | 🟡 moyen | 2-3h |
 | **MAJIC personnes morales open data** pas ingéré (~1-2M propriétaires nationaux) | 🟠 majeur (vrai pivot Data-B) | 8-10h (download data.gouv + ingest PostgreSQL) |
-| **Dropcontact API** pas câblé (alternative légale enrichissement emails) | 🟡 moyen | 4-6h |
-| **8 SCI résiduelles** non syncées (edge case dirigeants sans nom JSONB) | 🟢 négligeable | manuel |
+| **Dropcontact API** pas câblé (alternative légale enrichissement emails) | 🟡 moyen | 4-6h (besoin key) |
+| **8 SCI résiduelles** non syncées (edge case dirigeants sans nom JSONB) | ✅ **livré 27/05 soir** — migration 20260527220000 : 1 récupérée (BLAUNE), 7 flaggées via colonne `brh_sci_companies.dirigeants_jsonb_malformed` | — |
 | **467 SIREN throttle** Apify recherche-entreprises (retry plus tard) | 🟢 mineur | re-lancer le script `brh-ingest-sci-missing.py` |
 | **34 146 SIREN** restants à scraper Apify Phase 2 (tel/email Google) | 🟡 moyen | $100 budget + 4-6h |
 | **Score Vente Phase 16** pas affiché sur fiche dirigeant (existe en DB) | ✅ **livré 27/05 PM** (Sprint 1.4 — `fetchScoreVenteAggregate` + section breakdown) | — |
-| **Tabs réfléchis** sur fiche entreprise/personne — l'utilisateur navigue via Tabs mais le contenu en dessous reste sections empilées dans certains tabs | 🟢 mineur | 2-3h |
+| **Tabs réfléchis** sur fiche entreprise/personne — sections empilées dans certains tabs | ✅ **livré 27/05 soir** — FicheEntrepriseView : tab "Activité" splittée en "Signaux BODACC" + "Liens" · FichePersonneView : tab "Activités pro" splittée en "Contacts pro" + "Autres entreprises" | — |
 | **PaginationInfo** dans tab Patrimoine SCI dirigeant : affichage tronqué à 100 sans "voir tout" | ✅ **livré 27/05 PM** (Sprint 1.5 — boutons "Voir 100 de plus" + "Tout afficher") | — |
+| **EF dirigeant-psy-profile** câblage Claude live (Sprint 1.7 IA réelle) | ✅ **livré 27/05 soir** — EF déployée (claude-opus-4-7 + prompt caching, rate 3/min/IP, persistance auto sur `brh_dirigeants.psy_profile`) | — |
+| **5 warnings ESLint** pré-existants (3× useMemo deps, 1× missing deps, 1× react-compiler TanStack Virtual) | ✅ **livré 27/05 soir** — 0 warning 0 error | — |
 
 ### 4.4 Sources data à ingérer pour rivaliser
 

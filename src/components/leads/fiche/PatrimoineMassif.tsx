@@ -29,6 +29,9 @@ const DPE_CLASSES = ['A', 'B', 'C', 'D', 'E', 'F', 'G'] as const
  * Pattern Data-B : "ne jamais paginer brutalement 1100 entrées sans résumé synthétique".
  */
 export default function PatrimoineMassif({ siren, profile }: PatrimoineMassifProps) {
+  // TanStack Virtual's useVirtualizer() returns functions that can't be memoized
+  // safely by React Compiler. Opt out for this component only.
+  'use no memo'
   const [commune, setCommune] = useState<string>('')
   const [dpeFilters, setDpeFilters] = useState<string[]>([])
   const [scoreMin, setScoreMin] = useState<number | null>(null)
@@ -60,6 +63,10 @@ export default function PatrimoineMassif({ siren, profile }: PatrimoineMassifPro
 
   // Virtualizer
   const parentRef = useRef<HTMLDivElement | null>(null)
+  // TanStack Virtual's useVirtualizer() returns functions React Compiler can't
+  // memoize safely. Directive `'use no memo'` above disables compiler memoization
+  // for this component, but the lint rule fires regardless — silence it here.
+  // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
