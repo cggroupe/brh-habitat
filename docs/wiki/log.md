@@ -5,6 +5,56 @@
 
 ---
 
+## 2026-05-27 — Suite session Data-B : sprints 1.1→1.7 + Sprint 2 RGPD
+
+- **Contexte** : Philippe demande "Reprends ce projet et réalise tout ce qu'il y a à réaliser". Reprise de [refonte-data-b-2026-05-26.md](refonte-data-b-2026-05-26.md) sections 4.1 (patterns Stitch internes) + 4.2 (features Data-B) + 4.3 (dette critique RGPD). Travail autonome sans dépendances externes (API keys, budget).
+- **Fichiers créés** :
+  - `src/components/leads/LeadFilterPills.tsx` — barre pills horizontale 11 pills pattern Stitch
+  - `src/lib/exportCsv.ts` — helpers CSV anti-injection + BOM UTF-8 + RFC 4180
+  - `src/components/ui/Avatar.tsx` — initiales colorées hash stable, palette 8 teintes
+  - `src/components/ui/ScoreTierBadge.tsx` — Score → tier A/B/C/D pattern Data-B #6
+  - `src/components/leads/fiche/DirigeantSuiviPanel.tsx` — 2 colonnes Suivi + Profil psy IA
+- **Fichiers modifiés** :
+  - `src/components/leads/UnifiedLeadsView.tsx` — intègre LeadFilterPills + Export CSV button + colonnes Contacts/CA/Dernier RDV + nouveaux filtres applyImmediate
+  - `src/components/leads/fiche/FichePersonneView.tsx` — Avatar header + ScoreTierBadge + Score Vente Phase 16 section + DirigeantSuiviPanel + pagination patrimoine 100/+100/all
+  - `src/components/leads/fiche/StickyEntityHeader.tsx` — props `avatar` + `rightAccessory`
+  - `src/api/foncier-prospects-unified.ts` — expose filterWithPhone/Email/Ca/Rdv + dpeClasses[]
+  - `src/api/brh-fiches.ts` — `fetchScoreVenteAggregate()` + `score_vente_aggregate` dans FichePersonne
+  - `src/types/fiche.ts` — `FichePersonne.score_vente_aggregate`
+  - `src/types/lead.ts` — `pii_derniere_facture` + `pii_premiere_facture`
+  - `src/hooks/queries/foncier-segment-counts.ts` — params v5
+  - `src/pages/public/OptOutPage.tsx` — passe désormais par l'EF `submit-optout` (envoi email)
+  - `supabase/functions/submit-optout/index.ts` — ajout notification DPO interne via Resend
+- **Migrations créées** :
+  - `20260527200000_rpc_unified_v5_filters_contacts.sql` — étend `brh_foncier_prospects_unified` + `brh_foncier_prospects_segment_counts` avec 5 nouveaux filtres (with_phone/email/ca/rdv + dpe_classes[]) + retourne pii_derniere_facture/premiere_facture
+  - `20260527210000_brh_dirigeants_psy_profile.sql` — ajoute colonnes `psy_profile jsonb` + `psy_profile_generated_at` à brh_dirigeants
+- **Sprints livrés (8/8)** :
+  - **Sprint 1.1** — Filtres pills horizontaux (dept, with_phone/email/ca/rdv, SCI/particulier/fioul, DPE F-G) — application instantanée pattern Data-B #7
+  - **Sprint 1.2** — Colonnes Contacts (icons tel/email cliquables) + CA cumulé + Dernier RDV dans TABLE leads — visibles employé only (matrice RGPD)
+  - **Sprint 1.3** — Avatar coloré déterministe + ScoreTierBadge sur header fiche dirigeant
+  - **Sprint 1.4** — Score Vente Phase 16 agrégé sur patrimoine SCI + breakdown par segment (tres_chaud/chaud/tiede/froid) + score moyen
+  - **Sprint 1.5** — PaginationInfo + boutons "Voir 100 de plus" / "Tout afficher" dans tab Patrimoine SCI dirigeant
+  - **Sprint 1.6** — Export CSV anti-injection (RFC 4180 + BOM UTF-8 Excel-FR + `;` séparateur). Colonnes PII gated employé.
+  - **Sprint 1.7** — `DirigeantSuiviPanel` 2 colonnes : Suivi commercial (statut + CA + RDV + action recommandée heuristique) + Profil psycho IA (rendu structuré JSONB + CTA Générer). Visible employé only.
+  - **Sprint 2** — Workflow opposition art. 21 RGPD : OptOutPage passe désormais par EF `submit-optout` avec notification DPO interne (en plus de la confirmation au demandeur). Fallback INSERT direct si EF indispo (résilience).
+- **Pages wiki impactées** : [log.md](log.md) (cette entrée) · [refonte-data-b-2026-05-26.md](refonte-data-b-2026-05-26.md) (mise à jour section 4)
+- **Risque** : Low. Toutes les migrations idempotentes (ADD COLUMN IF NOT EXISTS, DROP+CREATE FUNCTION backward-compat). Build TypeScript green local. À APPLIQUER en prod via `supabase db push` (non fait — production-first).
+- **Tests** : TypeScript `tsc --noEmit -p tsconfig.app.json` green. Tests vitest existants non lancés (TODO build final).
+- **Reste à faire** (cf section 6 refonte-data-b-2026-05-26.md, non livré dans cette session) :
+  - Génération courriers postaux (Merci Facteur API — besoin key)
+  - Module SMS (Twilio — besoin key + budget)
+  - Analyses IA "Analyser l'emplacement" (Claude Sonnet — câblage live)
+  - Prédire le CA IA (modèle régression)
+  - Graphe Foncier 360° interactif (12-15h, force-directed)
+  - MAJIC personnes morales ingest national (8-10h, gros download)
+  - Dropcontact API (besoin key)
+  - Phase 2 Apify sur 34 146 SIREN restants ($100 budget)
+  - EF dirigeant-psy-profile (câblage Claude live pour Sprint 1.7 IA réelle)
+  - Régénération types Supabase (besoin accès Supabase remote)
+- **Status** : 🟢 DONE 8/8 sprints autonomes — code green, migrations à appliquer (`supabase db push`) puis deploy Vercel
+
+---
+
 ## 2026-05-27 — Session refonte Data-B complète (14 commits + 10 migrations)
 
 - **Contexte** : Philippe a utilisé Data-B en immersion → constat « pas pareil en information ni parcours utilisateur ». Session complète pour rapprocher la grammaire UI BRH de Data-B + boucher 3 trous data majeurs.

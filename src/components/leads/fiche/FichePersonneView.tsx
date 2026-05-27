@@ -4,7 +4,7 @@
  * MVP : assemblé depuis brh_sci_companies.dirigeants JSONB + brh_dpe_prospects.particulier_name.
  * À enrichir Sprint 3 avec entity-hub (core.person, core.contact, core.event, signaux).
  */
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import FicheBreadcrumb from './FicheBreadcrumb'
 import FicheEntityLink from './FicheEntityLink'
 import FavoriButton from './FavoriButton'
@@ -20,6 +20,10 @@ import { formatNumber } from '@/lib/format'
 import Tabs from '../../ui/Tabs'
 import KpiHero from './KpiHero'
 import DetailRowUi from '../../ui/DetailRow'
+import PaginationInfo from '../../ui/PaginationInfo'
+import Avatar from '../../ui/Avatar'
+import ScoreTierBadge from '../../ui/ScoreTierBadge'
+import DirigeantSuiviPanel from './DirigeantSuiviPanel'
 
 interface Props {
   /** Pour MVP : nom complet URL-encoded. Sera remplacé par entity_id en Sprint 3. */
@@ -30,6 +34,9 @@ interface Props {
 export default function FichePersonneView({ nameOrId, profile }: Props) {
   const fullName = decodeURIComponent(nameOrId)
   const { data, isLoading, error } = useFichePersonneByName(fullName)
+  // Pagination patrimoine SCI dirigeant (Sprint 1.5 27/05).
+  // Pattern Data-B #11 — résumé + pagination intelligente, pas un slice silent.
+  const [patrimoineLimit, setPatrimoineLimit] = useState(100)
 
   // 2026-05-27 — Push pile navigation. Hook AVANT les early returns (règles React).
   useEffect(() => {
@@ -109,12 +116,26 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
   // Tel pro prioritaire : via entreprise > OSINT
   const telPro = contactsPro?.tel_pro_via_entreprise ?? contactsPro?.osint_telephone ?? null
   const emailPro = contactsPro?.email_pro_via_entreprise ?? contactsPro?.osint_email ?? null
+  // Sprint 1.4 — Score Vente Phase 16 agrégé (max sur le patrimoine du dirigeant)
+  const scoreVenteAggregate = data.score_vente_aggregate ?? null
+  const scoreVenteMax = scoreVenteAggregate?.max ?? null
 
   return (
     <div className="flex h-screen flex-col bg-slate-50">
       <StickyEntityHeader
         type="personne"
         title={identity.full_name}
+        avatar={<Avatar name={identity.full_name} size={56} />}
+        rightAccessory={
+          scoreVenteMax != null ? (
+            <ScoreTierBadge
+              score={scoreVenteMax}
+              label="Score Vente"
+              sublabel={`Phase 16 · ${scoreVenteAggregate?.n ?? 0} bien${(scoreVenteAggregate?.n ?? 0) > 1 ? 's' : ''}`}
+              compact
+            />
+          ) : undefined
+        }
         sublabel={
           identity.birth_date
             ? `Né(e) le ${identity.birth_date}`
@@ -178,6 +199,59 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
 
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-5xl space-y-4 p-6">
+          {/* Sprint 1.7 (27/05) — 2 colonnes Suivi commercial / Profil psycho-IA
+              Pattern Stitch fiche-client-brh.png. Employé only (matrice RGPD). */}
+          {profile === 'employe' && (
+            <DirigeantSuiviPanel
+              identity={identity}
+              brhHistorique={brh_historique}
+              scoreVente={data.score_vente_aggregate ?? null}
+              rolesCount={sciPatrimoniales.length}
+              patrimoineTotal={patrimoineTotal}
+              contactsPro={contactsPro ?? undefined}
+              psyProfile={null}
+            />
+          )}
+
+          {/* Sprint 1.4 (27/05) — Score Vente Phase 16 agrégé sur patrimoine.
+              Affichage hero avec tier large + breakdown segment.
+              Pattern Stitch fiche-client-brh.png (Score Tier visuel proéminent). */}
+          {scoreVenteAggregate && scoreVenteAggregate.n > 0 && (
+            <section className="flex flex-wrap items-center gap-4 rounded-2xl bg-surface ring-1 ring-border-strong/20 p-5">
+              <ScoreTierBadge
+                score={scoreVenteAggregate.max}
+                label="Score Vente max sur patrimoine"
+                sublabel={`Phase 16 · ${scoreVenteAggregate.n} bien${scoreVenteAggregate.n > 1 ? 's' : ''} scoré${scoreVenteAggregate.n > 1 ? 's' : ''}`}
+              />
+              <div className="flex-1 min-w-[260px]">
+                <div className="mb-2 text-[10px] uppercase tracking-widest font-bold text-text-muted">
+                  Répartition par segment vente
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {[
+                    { key: 'tres_chaud' as const, l: 'Très chaud', dot: 'bg-[#00600a]', n: scoreVenteAggregate.by_segment.tres_chaud },
+                    { key: 'chaud' as const, l: 'Chaud', dot: 'bg-amber-500', n: scoreVenteAggregate.by_segment.chaud },
+                    { key: 'tiede' as const, l: 'Tiède', dot: 'bg-stone-500', n: scoreVenteAggregate.by_segment.tiede },
+                    { key: 'froid' as const, l: 'Froid', dot: 'bg-stone-300', n: scoreVenteAggregate.by_segment.froid },
+                  ].map((s) => (
+                    <div key={s.key} className="rounded-xl bg-stone-50 px-3 py-2 ring-1 ring-stone-200">
+                      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-text-muted">
+                        <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
+                        {s.l}
+                      </div>
+                      <div className="mt-0.5 font-display text-lg font-bold tabular-nums text-text">
+                        {s.n}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-2 text-[11px] text-text-muted">
+                  Score moyen patrimoine : <strong className="tabular-nums">{scoreVenteAggregate.avg}/100</strong>
+                </p>
+              </div>
+            </section>
+          )}
+
           {/* KPI Hero — distingue explicitement patrimoine vs utility */}
           <KpiHero
             items={[
@@ -337,11 +411,19 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                         )}
                         {patrimoineTotal > 0 && (
                           <section>
-                            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#00600a]">
-                              Patrimoine via SCI ({formatNumber(patrimoineTotal)} DPE)
-                            </h3>
+                            <div className="mb-2 flex items-baseline justify-between gap-3">
+                              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#00600a]">
+                                Patrimoine via SCI ({formatNumber(patrimoineTotal)} DPE)
+                              </h3>
+                              <PaginationInfo
+                                shown={Math.min(patrimoineLimit, patrimoine_via_sci.length)}
+                                total={patrimoineTotal}
+                                itemLabel="DPE"
+                                sortedBy="triés par classe DPE décroissante"
+                              />
+                            </div>
                             <div className="space-y-1.5">
-                              {patrimoine_via_sci.slice(0, 100).map((a) => (
+                              {patrimoine_via_sci.slice(0, patrimoineLimit).map((a) => (
                                 <FicheEntityLink
                                   key={`${a.id}-${a.via_sci_siren}`}
                                   kind="adresse"
@@ -359,13 +441,39 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                                   variant="row"
                                 />
                               ))}
-                              {patrimoineTotal > patrimoine_via_sci.length && (
-                                <p className="px-3 py-2 text-xs text-amber-700">
-                                  {patrimoine_via_sci.length} affichés sur {formatNumber(patrimoineTotal)} —
-                                  ouvrir la fiche de chaque SCI pour voir le patrimoine complet.
-                                </p>
-                              )}
                             </div>
+                            {patrimoine_via_sci.length > patrimoineLimit && (
+                              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-stone-50 px-4 py-3 ring-1 ring-border-strong/20">
+                                <p className="text-xs text-text-muted">
+                                  {patrimoineLimit} affichés sur {formatNumber(patrimoine_via_sci.length)}
+                                  {patrimoineTotal > patrimoine_via_sci.length && (
+                                    <> · {formatNumber(patrimoineTotal - patrimoine_via_sci.length)} non chargés (ouvrir la fiche SCI)</>
+                                  )}
+                                </p>
+                                <div className="flex gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setPatrimoineLimit((n) => Math.min(n + 100, patrimoine_via_sci.length))}
+                                    className="rounded-xl border border-border-strong/30 bg-surface px-3 py-1.5 text-xs font-medium text-text hover:bg-surface-low"
+                                  >
+                                    Voir 100 de plus
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setPatrimoineLimit(patrimoine_via_sci.length)}
+                                    className="rounded-xl bg-[#00600a] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#004807]"
+                                  >
+                                    Tout afficher
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                            {patrimoineTotal > patrimoine_via_sci.length && patrimoine_via_sci.length === patrimoineLimit && (
+                              <p className="mt-3 rounded-2xl bg-amber-50 px-4 py-3 text-xs text-amber-900 ring-1 ring-amber-200">
+                                {formatNumber(patrimoine_via_sci.length)} DPE chargés sur {formatNumber(patrimoineTotal)} —
+                                ouvrir la fiche de chaque SCI pour voir le patrimoine complet (pagination serveur).
+                              </p>
+                            )}
                           </section>
                         )}
                       </>

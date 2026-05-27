@@ -127,7 +127,9 @@ Deno.serve(async (req: Request) => {
 
     // Best-effort : email de confirmation via Resend si configuré
     const resendKey = Deno.env.get('RESEND_API_KEY')
+    const dpoEmail = Deno.env.get('DPO_EMAIL') ?? 'rgpd@contact-brh.fr'
     if (resendKey) {
+      // 1) Confirmation au demandeur
       try {
         await fetch('https://api.resend.com/emails', {
           method: 'POST',
@@ -160,6 +162,52 @@ Deno.serve(async (req: Request) => {
       } catch (e) {
         console.error('Resend confirmation email failed (non-bloquant):', e)
       }
+
+      // 2) Notification DPO interne (Sprint 2 — 2026-05-27)
+      try {
+        const escapeHtml = (s: string) =>
+          s.replace(/[&<>"']/g, (c) =>
+            c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : c === '"' ? '&quot;' : '&#39;',
+          )
+        const messageHtml = body.message ? escapeHtml(body.message).replace(/\n/g, '<br>') : ''
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${resendKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'BRH RGPD <noreply@renovation-brh.fr>',
+            to: dpoEmail,
+            subject: `[BRH RGPD] Demande ${requestType} — ${body.email}`,
+            html: `
+              <div style="font-family: sans-serif; max-width: 600px;">
+                <h1 style="font-size: 18px; color: #b91c1c;">Nouvelle demande RGPD à traiter</h1>
+                <table style="border-collapse: collapse; font-size: 13px; line-height: 1.6;">
+                  <tr><td><strong>Référence</strong></td><td><code>${inserted.id}</code></td></tr>
+                  <tr><td><strong>Type</strong></td><td>${escapeHtml(requestType)}</td></tr>
+                  <tr><td><strong>Email demandeur</strong></td><td>${escapeHtml(body.email)}</td></tr>
+                  <tr><td><strong>Adresse</strong></td><td>${body.adresse ? escapeHtml(body.adresse) : '—'} ${body.code_postal ? escapeHtml(body.code_postal) : ''} ${body.commune ? escapeHtml(body.commune) : ''}</td></tr>
+                  <tr><td><strong>Match prospect</strong></td><td>${matchedProspectId ? `#${matchedProspectId}` : '— (aucun match)'}</td></tr>
+                  <tr><td><strong>Deadline légale</strong></td><td><strong>${new Date(inserted.deadline).toLocaleDateString('fr-FR')}</strong></td></tr>
+                  <tr><td><strong>Source IP</strong></td><td>${escapeHtml(sourceIp ?? '—')}</td></tr>
+                </table>
+                ${body.message ? `<div style="margin-top: 16px; padding: 12px; background: #f5f5f4; border-radius: 8px;"><strong>Message :</strong><br>${messageHtml}</div>` : ''}
+                <p style="margin-top: 20px;">
+                  <a href="https://brh-habitat.vercel.app/admin/opt-out-requests"
+                     style="display: inline-block; background: #00600a; color: #fff; padding: 10px 16px; border-radius: 8px; text-decoration: none;">
+                    Traiter dans l'admin BRH
+                  </a>
+                </p>
+              </div>
+            `,
+          }),
+        })
+      } catch (e) {
+        console.error('Resend DPO notification failed (non-bloquant):', e)
+      }
+    } else {
+      console.warn('[submit-optout] RESEND_API_KEY non configuré — emails non envoyés. Demande #', inserted.id)
     }
 
     return new Response(

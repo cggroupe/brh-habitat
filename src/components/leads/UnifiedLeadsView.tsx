@@ -12,7 +12,7 @@
  */
 import { lazy, Suspense, useMemo, useState, useCallback, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Building2, User as UserIcon } from 'lucide-react'
+import { Building2, User as UserIcon, Phone, Mail, Download } from 'lucide-react'
 import {
   Search, Filter, List, Map as MapIcon, ChevronRight, Loader2, X,
 } from 'lucide-react'
@@ -22,6 +22,8 @@ import type { ScoreV2Segment } from '@/api/foncier-prospects-table'
 import type { LeadRow } from '@/types/lead'
 import { canSee, type LeadProfile } from '@/lib/rgpd/lead-visibility'
 import LeadDetailModal from './LeadDetailModal'
+import LeadFilterPills from './LeadFilterPills'
+import { exportCsv, fmtDateFr, fmtEur, type ExportColumn } from '@/lib/exportCsv'
 
 function profileBasePath(profile: LeadProfile): string {
   switch (profile) {
@@ -31,6 +33,59 @@ function profileBasePath(profile: LeadProfile): string {
     case 'agence':
     default: return '/agence/leads'
   }
+}
+
+/**
+ * Export CSV pattern Data-B. Format Excel-FR : `;` séparateur + BOM UTF-8.
+ * RGPD : colonnes Contacts (tel/email) absentes pour profils non-employé.
+ */
+function handleExportCsv(rows: LeadRow[], profile: LeadProfile) {
+  const isEmployee = canSee(profile, 'particulier_phone')
+  const columns: ExportColumn<LeadRow>[] = [
+    { header: 'ID DPE', get: (r) => r.id },
+    { header: 'Adresse', get: (r) => r.adresse_ban || r.adresse || '' },
+    { header: 'Code postal', get: (r) => r.code_postal || '' },
+    { header: 'Commune', get: (r) => r.commune || '' },
+    { header: 'Département', get: (r) => r.departement || '' },
+    { header: 'DPE', get: (r) => r.etiquette_dpe || '' },
+    { header: 'Surface (m²)', get: (r) => r.surface ?? '' },
+    { header: 'Année construction', get: (r) => r.annee_construction ?? '' },
+    { header: 'Type bâtiment', get: (r) => r.type_batiment || '' },
+    { header: 'Score V2', get: (r) => r.score_v2 ?? '' },
+    { header: 'Segment commercial', get: (r) => r.score_v2_segment || '' },
+    { header: 'Propriétaire SIREN', get: (r) => r.owner_siren || '' },
+    { header: 'Propriétaire nom', get: (r) => r.owner_name || '' },
+    { header: 'Propriétaire type', get: (r) => r.owner_type || '' },
+    // PII enrichi — employé only (RGPD)
+    ...(isEmployee
+      ? [
+          { header: 'Particulier nom complet', get: (r: LeadRow) => r.pii_full_name || '' },
+          { header: 'Particulier téléphone', get: (r: LeadRow) => r.pii_telephone || '' },
+          { header: 'Particulier email', get: (r: LeadRow) => r.pii_email || '' },
+          { header: 'CA total particulier (€)', get: (r: LeadRow) => fmtEur(r.pii_ca_total_eur) },
+          { header: 'Première facture', get: (r: LeadRow) => fmtDateFr(r.pii_premiere_facture) },
+          { header: 'Dernière facture', get: (r: LeadRow) => fmtDateFr(r.pii_derniere_facture) },
+          { header: 'Source PII', get: (r: LeadRow) => r.pii_source || '' },
+        ]
+      : []),
+  ]
+  // CLAUDE.md règle 13 : pas de toISOString().slice(0,10) — utiliser locale.
+  const d = new Date()
+  const ts = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  exportCsv(rows, columns, `brh-leads-${ts}.csv`)
+}
+
+/** Format date FR court "27 mai" pour la TABLE leads. Renvoie '—' si invalide. */
+function formatDateShortFr(d: string | null | undefined): string {
+  if (!d) return '—'
+  const date = new Date(d)
+  if (Number.isNaN(date.getTime())) return '—'
+  const now = new Date()
+  const months = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.']
+  const sameYear = date.getFullYear() === now.getFullYear()
+  return sameYear
+    ? `${date.getDate()} ${months[date.getMonth()]}`
+    : `${months[date.getMonth()]} ${date.getFullYear()}`
 }
 
 // Carte lazy-loaded : ne charge Leaflet que si l'utilisateur clique sur "Carte"
@@ -87,6 +142,11 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
   const [filterSCI, setFilterSCI] = useState(false)
   const [filterParticulier, setFilterParticulier] = useState(false)
   const [filterSuccession, setFilterSuccession] = useState(false)
+  // v5 (27/05) — filtres pills horizontaux pattern Stitch
+  const [filterWithPhone, setFilterWithPhone] = useState(false)
+  const [filterWithEmail, setFilterWithEmail] = useState(false)
+  const [filterWithCa, setFilterWithCa] = useState(false)
+  const [filterWithRdv, setFilterWithRdv] = useState(false)
   const [typeBatiment, setTypeBatiment] = useState<string>('') // 'maison' | 'appartement' | 'immeuble' | ''
   // F4 (21/05) : filtre délai mutation DVF sélectionnable.
   // Valeurs : 'off' (pas de filtre) | '12m' | '24m' | '36m' | '60m'
@@ -109,6 +169,11 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
     filterSCI: boolean
     filterParticulier: boolean
     filterSuccession: boolean
+    filterWithPhone: boolean
+    filterWithEmail: boolean
+    filterWithCa: boolean
+    filterWithRdv: boolean
+    dpeClasses: string[]
     search: string
   }
   const [applied, setApplied] = useState<AppliedFilters>({
@@ -119,6 +184,12 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
     filterSCI: false,
     filterParticulier: false,
     filterSuccession: false,
+    filterWithPhone: false,
+    filterWithEmail: false,
+    filterWithCa: false,
+    filterWithRdv: false,
+    // Défaut F+G : matches l'UX précédente (sidebar D-3)
+    dpeClasses: ['F', 'G'],
     search: '',
   })
 
@@ -137,6 +208,11 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
     filterAvecSci: applied.filterSCI,
     filterParticulier: applied.filterParticulier,
     filterSuccession: applied.filterSuccession,
+    filterWithPhone: applied.filterWithPhone,
+    filterWithEmail: applied.filterWithEmail,
+    filterWithCa: applied.filterWithCa,
+    filterWithRdv: applied.filterWithRdv,
+    dpeClasses: applied.dpeClasses.length > 0 ? applied.dpeClasses : undefined,
     search: applied.search || undefined,
   }
   const { data: fastData } = useFoncierProspectsUnified(
@@ -155,6 +231,8 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
 
   // Detection "filtres modifiés mais pas encore appliqués" : indique au bouton
   // Rechercher qu'il y a quelque chose à valider.
+  const appliedDpeKey = applied.dpeClasses.slice().sort().join(',')
+  const currentDpeKey = Array.from(dpeClasses).sort().join(',')
   const filtersAreDirty =
     dept !== applied.dept ||
     segment !== applied.segment ||
@@ -163,6 +241,11 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
     filterSCI !== applied.filterSCI ||
     filterParticulier !== applied.filterParticulier ||
     filterSuccession !== applied.filterSuccession ||
+    filterWithPhone !== applied.filterWithPhone ||
+    filterWithEmail !== applied.filterWithEmail ||
+    filterWithCa !== applied.filterWithCa ||
+    filterWithRdv !== applied.filterWithRdv ||
+    currentDpeKey !== appliedDpeKey ||
     search !== applied.search
 
   const applyFilters = useCallback(() => {
@@ -174,10 +257,15 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
       filterSCI,
       filterParticulier,
       filterSuccession,
+      filterWithPhone,
+      filterWithEmail,
+      filterWithCa,
+      filterWithRdv,
+      dpeClasses: Array.from(dpeClasses),
       search,
     })
     setPage(0)
-  }, [dept, segment, scoreMin, filterFioul, filterSCI, filterParticulier, filterSuccession, search])
+  }, [dept, segment, scoreMin, filterFioul, filterSCI, filterParticulier, filterSuccession, filterWithPhone, filterWithEmail, filterWithCa, filterWithRdv, dpeClasses, search])
 
   // Le RPC renvoie un tableau de lignes, total_count inclus dans chaque ligne
   // Streaming : si data full pas encore arrivée, on affiche fastData (15 rows)
@@ -234,6 +322,11 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
     filterAvecSci: applied.filterSCI,
     filterParticulier: applied.filterParticulier,
     filterSuccession: applied.filterSuccession,
+    filterWithPhone: applied.filterWithPhone,
+    filterWithEmail: applied.filterWithEmail,
+    filterWithCa: applied.filterWithCa,
+    filterWithRdv: applied.filterWithRdv,
+    dpeClasses: applied.dpeClasses.length > 0 ? applied.dpeClasses : undefined,
     search: applied.search || undefined,
   })
   const kpiUltra = segmentCounts?.ultra_chaud ?? 0
@@ -273,7 +366,7 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
           </div>
         </div>
 
-        {/* Barre d'actions secondaire — recherche + view toggle */}
+        {/* Barre d'actions secondaire — recherche + view toggle + export */}
         <div className="mx-auto mt-4 flex max-w-[1280px] flex-col gap-3 md:flex-row md:items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
@@ -300,6 +393,18 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
               Filtres
             </button>
 
+            {/* Export CSV — pattern Data-B (visible employé/agence/pro) */}
+            <button
+              type="button"
+              onClick={() => handleExportCsv(filteredRows, profile)}
+              disabled={filteredRows.length === 0}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border-strong/30 bg-surface px-3 py-2 text-sm font-medium text-text hover:bg-surface-low disabled:opacity-50"
+              title={`Exporter les ${filteredRows.length} leads visibles en CSV (Excel-compatible)`}
+            >
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">Export CSV</span>
+            </button>
+
             <div className="flex rounded-xl border border-border-strong/30 bg-surface p-1">
               <button
                 onClick={() => setView('list')}
@@ -321,6 +426,53 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Pills filtres horizontaux pattern Stitch interne (liste-leads-v2.png).
+            Sur desktop, ils complètent la sidebar — sur mobile, ils restent
+            visibles en sticky et la sidebar passe en drawer. */}
+        <div className="mx-auto mt-4 max-w-[1280px]">
+          <LeadFilterPills
+            state={{
+              dept,
+              withPhone: filterWithPhone,
+              withEmail: filterWithEmail,
+              withCa: filterWithCa,
+              withRdv: filterWithRdv,
+              dpeClasses,
+              filterSCI,
+              filterParticulier,
+              filterFioul,
+            }}
+            onChange={(next) => {
+              setDept(next.dept)
+              setFilterWithPhone(next.withPhone)
+              setFilterWithEmail(next.withEmail)
+              setFilterWithCa(next.withCa)
+              setFilterWithRdv(next.withRdv)
+              setDpeClasses(next.dpeClasses)
+              setFilterSCI(next.filterSCI)
+              setFilterParticulier(next.filterParticulier)
+              setFilterFioul(next.filterFioul)
+              setPage(0)
+              // Pattern Data-B "trou de donnée = parcours" : clic pill = applique
+              // immédiatement, pas besoin de cliquer sur "Rechercher".
+              setApplied((prev) => ({
+                ...prev,
+                dept: next.dept,
+                filterWithPhone: next.withPhone,
+                filterWithEmail: next.withEmail,
+                filterWithCa: next.withCa,
+                filterWithRdv: next.withRdv,
+                filterSCI: next.filterSCI,
+                filterParticulier: next.filterParticulier,
+                filterFioul: next.filterFioul,
+                dpeClasses: Array.from(next.dpeClasses),
+              }))
+            }}
+            // Filtres PII réservés employé BRH (matrice RGPD lead-visibility.ts)
+            hidePrivatePills={!canSee(profile, 'particulier_phone')}
+          />
         </div>
       </header>
 
@@ -761,6 +913,13 @@ function ListView({
                 <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-text-muted">Ville</th>
                 <th className="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-text-muted">Surface</th>
                 <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-text-muted">Propriétaire</th>
+                {canSee(profile, 'particulier_phone') && (
+                  <>
+                    <th className="px-3 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-text-muted whitespace-nowrap">Contacts</th>
+                    <th className="px-3 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-text-muted whitespace-nowrap">CA cumulé</th>
+                    <th className="px-3 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-text-muted whitespace-nowrap">Dernier RDV</th>
+                  </>
+                )}
                 <th className="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-text-muted">Segment</th>
                 <th className="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-widest text-text-muted">Score</th>
                 <th className="px-4 py-3"></th>
@@ -912,6 +1071,67 @@ function LeadRowItem({
           </span>
         )}
       </td>
+      {/* Colonnes Contacts / CA / Dernier RDV (RGPD : employé only) */}
+      {canSee(profile, 'particulier_phone') && (
+        <>
+          <td className="px-3 py-3">
+            <div className="flex items-center gap-1.5">
+              {lead.pii_telephone ? (
+                <a
+                  href={`tel:${String(lead.pii_telephone).replace(/\s/g, '')}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[#00600a]/10 text-[#00600a] hover:bg-[#00600a]/20"
+                  title={`Appeler ${lead.pii_telephone}`}
+                >
+                  <Phone className="h-3.5 w-3.5" />
+                </a>
+              ) : (
+                <span
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-stone-100 text-text-light/60"
+                  title="Pas de téléphone connu"
+                >
+                  <Phone className="h-3.5 w-3.5" />
+                </span>
+              )}
+              {lead.pii_email ? (
+                <a
+                  href={`mailto:${lead.pii_email}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-stone-200 text-text hover:bg-stone-300"
+                  title={lead.pii_email}
+                >
+                  <Mail className="h-3.5 w-3.5" />
+                </a>
+              ) : (
+                <span
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-stone-100 text-text-light/60"
+                  title="Pas d'email connu"
+                >
+                  <Mail className="h-3.5 w-3.5" />
+                </span>
+              )}
+            </div>
+          </td>
+          <td className="px-3 py-3 text-right text-sm tabular-nums whitespace-nowrap">
+            {lead.pii_ca_total_eur && lead.pii_ca_total_eur > 0 ? (
+              <span className="font-medium text-text">
+                {(lead.pii_ca_total_eur).toLocaleString('fr-FR')} €
+              </span>
+            ) : (
+              <span className="text-text-light">—</span>
+            )}
+          </td>
+          <td className="px-3 py-3 text-sm text-text-muted whitespace-nowrap">
+            {lead.pii_derniere_facture ? (
+              <span title={`Première facture ${lead.pii_premiere_facture ?? '—'}`}>
+                {formatDateShortFr(lead.pii_derniere_facture)}
+              </span>
+            ) : (
+              <span className="text-text-light">—</span>
+            )}
+          </td>
+        </>
+      )}
       <td className="px-4 py-3">
         {segCfg && segCfg.v && (
           <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-text">

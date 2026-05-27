@@ -17,6 +17,10 @@ interface StickyEntityHeaderProps {
   badges?: ReactNode
   kpis?: HeaderKpi[]
   actions?: ReactNode
+  /** Avatar (initiales colorées) en tête — pattern Stitch fiche-client-brh.png. */
+  avatar?: ReactNode
+  /** Pill/badge sémantique à droite du title (ex: ScoreTierBadge). */
+  rightAccessory?: ReactNode
 }
 
 const ENTITY_ICON: Record<NavEntityType, ReactNode> = {
@@ -37,29 +41,37 @@ export default function StickyEntityHeader({
   badges,
   kpis,
   actions,
+  avatar,
+  rightAccessory,
 }: StickyEntityHeaderProps) {
   return (
     <div className="sticky top-0 z-40 border-b border-stone-200 bg-white/95 backdrop-blur-sm">
       <div className="flex flex-col gap-3 px-6 py-3 md:flex-row md:items-center md:justify-between">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 text-xs text-stone-500">
-            {ENTITY_ICON[type]}
-            <span className="uppercase tracking-wider">{type}</span>
-            {entityClassBadge && (
-              <TypedBadge
-                variant="entity-class"
-                color={entityClassBadge.color}
-                label={entityClassBadge.label}
-              />
+        <div className="flex min-w-0 flex-1 items-start gap-4">
+          {avatar && <div className="shrink-0">{avatar}</div>}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 text-xs text-stone-500">
+              {ENTITY_ICON[type]}
+              <span className="uppercase tracking-wider">{type}</span>
+              {entityClassBadge && (
+                <TypedBadge
+                  variant="entity-class"
+                  color={entityClassBadge.color}
+                  label={entityClassBadge.label}
+                />
+              )}
+            </div>
+            <div className="mt-1 flex items-baseline flex-wrap gap-3">
+              <h1 className="truncate font-display text-xl font-semibold text-stone-900">
+                {title}
+              </h1>
+              {rightAccessory}
+            </div>
+            {sublabel && (
+              <div className="mt-0.5 truncate text-sm text-stone-600">{sublabel}</div>
             )}
+            {badges && <div className="mt-1.5 flex flex-wrap items-center gap-1.5">{badges}</div>}
           </div>
-          <h1 className="mt-1 truncate font-display text-xl font-semibold text-stone-900">
-            {title}
-          </h1>
-          {sublabel && (
-            <div className="mt-0.5 truncate text-sm text-stone-600">{sublabel}</div>
-          )}
-          {badges && <div className="mt-1.5 flex flex-wrap items-center gap-1.5">{badges}</div>}
         </div>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
       </div>

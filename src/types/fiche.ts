@@ -145,6 +145,24 @@ export interface FichePersonne {
   }>
   /** Total DPE via SCI en DB (somme par SIREN, non plafonné par PostgREST max-rows=1000). */
   patrimoine_via_sci_total?: number
+  /** Sprint 1.4 (27/05) — Agrégat Score Vente Phase 16 sur le patrimoine. Calcul
+   *  côté API depuis `brh_score_vente_v1` joint sur les `prospect_id` du
+   *  patrimoine_via_sci + patrimoine_direct. Null si zéro biens scorés. */
+  score_vente_aggregate?: {
+    /** Score max parmi les biens du dirigeant (0-100). */
+    max: number
+    /** Score moyen (0-100). */
+    avg: number
+    /** Compteur par segment Phase 16. */
+    by_segment: {
+      tres_chaud: number
+      chaud: number
+      tiede: number
+      froid: number
+    }
+    /** Nombre total de biens avec score Phase 16. */
+    n: number
+  } | null
   /** Contacts pro enrichis (Phase 2C/8.4 + OSINT). */
   contacts_pro?: {
     tel_pro_via_entreprise?: string | null

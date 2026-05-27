@@ -283,7 +283,7 @@ export const brhFichesApi = {
 
       const { data: dpeData, error: dpeErr } = await supabase
         .from('brh_dpe_prospects')
-        .select('id, adresse, code_postal, commune, etiquette_dpe, surface_habitable, annee_construction, owner_siren, owner_name')
+        .select('id, adresse, code_postal, commune, etiquette_dpe, surface_habitable, annee_construction, owner_siren, owner_name, score_v2')
         .in('owner_siren', sirens)
         .order('etiquette_dpe', { ascending: false })
         .limit(2000)
@@ -306,6 +306,12 @@ export const brhFichesApi = {
       }
     }
 
+    // Sprint 1.4 (27/05) — Score Vente Phase 16 agrégé sur le patrimoine
+    // (cache `brh_score_vente_v1.score` par prospect_id DPE).
+    const scoreVenteAggregate = await fetchScoreVenteAggregate(
+      patrimoineViaSci.map((p) => p.id),
+    )
+
     return {
       identity: {
         entity_id: null,
@@ -322,11 +328,53 @@ export const brhFichesApi = {
       patrimoine_via_sci: patrimoineViaSci,
       patrimoine_via_sci_total: Array.from(rolesNbDpeTotal.values()).reduce((a, b) => a + b, 0),
       brh_historique: null,
+      score_vente_aggregate: scoreVenteAggregate,
       // 2026-05-27 — Câblage Phase 2C/8.4 : récupère contacts pro + autres entreprises
       // depuis brh_dirigeants (matching nom_norm + prenom_norm normalisés).
       ...(await fetchDirigeantEnrichments(last, first)),
     }
   },
+}
+
+/**
+ * Sprint 1.4 — agrège brh_score_vente_v1 sur un ensemble de DPE id.
+ * Renvoie max/avg/by_segment/n. Null si zéro biens scorés.
+ */
+async function fetchScoreVenteAggregate(
+  dpeIds: number[],
+): Promise<FichePersonne['score_vente_aggregate']> {
+  if (dpeIds.length === 0) return null
+  // PostgREST chunk safety : .in() supporte ~2000 mais limitons à 1000.
+  const sample = dpeIds.slice(0, 1000)
+  const { data, error } = await supabase
+    .from('brh_score_vente_v1')
+    .select('score, segment')
+    .in('prospect_id', sample)
+    .not('score', 'is', null)
+  if (error) {
+    // Tolère erreur RLS / absence table : log mais ne casse pas la fiche.
+    console.warn('[brh-fiches] score_vente_aggregate fetch failed:', error.message)
+    return null
+  }
+  const rows = (data ?? []) as Array<{ score: number | null; segment: string | null }>
+  if (rows.length === 0) return null
+  const bySegment = { tres_chaud: 0, chaud: 0, tiede: 0, froid: 0 }
+  let max = 0
+  let sum = 0
+  for (const r of rows) {
+    const s = Number(r.score ?? 0)
+    if (s > max) max = s
+    sum += s
+    if (r.segment && r.segment in bySegment) {
+      bySegment[r.segment as keyof typeof bySegment]++
+    }
+  }
+  return {
+    max,
+    avg: Math.round(sum / rows.length),
+    by_segment: bySegment,
+    n: rows.length,
+  }
 }
 
 /**

@@ -138,22 +138,26 @@ Plus 2 design references **Stitch** internes au repo (`.stitch/designs/`) :
 
 ## 4. Ce qui reste à faire pour vraiment matcher Data-B
 
-### 4.1 Patterns Stitch internes **PAS encore appliqués**
+> **Mise à jour 2026-05-27 PM** : Sprints 1.1→1.7 + Sprint 2 RGPD **livrés** dans
+> la session "Reprends ce projet" (cf [log.md](log.md) entrée du 27/05 PM).
+> Les sections ci-dessous reflètent ce qui reste **après** cette session.
+
+### 4.1 Patterns Stitch internes
 
 | Pattern Stitch | Statut | Effort estimé |
 |---|---|---|
-| **Avatar + Score tier visuel** sur fiche dirigeant (cf `fiche-client-brh.png`) | ❌ pas fait | 2-3h |
-| **2 colonnes Suivi commercial / Profil psycho-commercial IA** | ❌ pas fait | 6-8h (nécessite IA prompt + RPC) |
+| **Avatar + Score tier visuel** sur fiche dirigeant (cf `fiche-client-brh.png`) | ✅ **livré 27/05 PM** (Avatar.tsx + ScoreTierBadge.tsx + Sprint 1.3) | — |
+| **2 colonnes Suivi commercial / Profil psycho-commercial IA** | 🟡 **structure livrée 27/05 PM** (DirigeantSuiviPanel + migration psy_profile jsonb). Reste EF Claude live à câbler. | 4-6h pour câblage live |
 | **Graphe Foncier 360° interactif** (relations visuelles avec arêtes) | ❌ pas fait | 12-15h (force-directed graph + RPC) |
-| **Filtres pills horizontaux** style Stitch (`Tous départements / Avec téléphone / Avec email / Avec chiffre d'affaires / Avec RDV / DPE F ou G`) en haut de la liste | ❌ pas fait | 3-4h |
-| **Colonne "Contacts" avec icônes tel/email** dans la TABLE leads | ❌ pas fait | 1-2h |
-| **CA cumulé + dernier RDV** colonnes dans TABLE leads | ❌ pas fait | 2-3h |
+| **Filtres pills horizontaux** style Stitch (`Tous départements / Avec téléphone / Avec email / Avec chiffre d'affaires / Avec RDV / DPE F ou G`) en haut de la liste | ✅ **livré 27/05 PM** (LeadFilterPills.tsx + Sprint 1.1 + migration RPC v5) | — |
+| **Colonne "Contacts" avec icônes tel/email** dans la TABLE leads | ✅ **livré 27/05 PM** (Sprint 1.2, RGPD-gated) | — |
+| **CA cumulé + dernier RDV** colonnes dans TABLE leads | ✅ **livré 27/05 PM** (Sprint 1.2 — `pii_ca_total_eur` + `pii_derniere_facture`) | — |
 
-### 4.2 Features Data-B propres **PAS encore implémentées**
+### 4.2 Features Data-B propres
 
 | Feature Data-B | Statut | Effort |
 |---|---|---|
-| **Export CSV/XLSX** depuis liste leads | ❌ pas fait | 2-3h |
+| **Export CSV/XLSX** depuis liste leads | ✅ **livré 27/05 PM** (lib/exportCsv.ts + Sprint 1.6, RFC 4180 + anti-injection + Excel-FR `;` + BOM UTF-8) | — |
 | **Génération courriers postaux automatiques** ("Écrire au propriétaire") | ❌ pas fait | 6-8h (intégration Merci Facteur ou La Poste API) |
 | **Module Data SMS** (envoi SMS ciblé) | ❌ pas fait | 4-6h (Twilio ou Free SMS Gateway) |
 | **Analyses IA "Analyser l'emplacement"** (commercialité + concurrents + points forts/faibles) | ❌ pas fait | 8-10h (Claude Sonnet + cache) |
@@ -164,8 +168,8 @@ Plus 2 design references **Stitch** internes au repo (`.stitch/designs/`) :
 
 | Dette | Sévérité | Solution |
 |---|---|---|
-| **Workflow opposition art. 21 RGPD** (formulaire public + EF) | 🔴 bloquant légal grand public | 4-6h |
-| Types Supabase pas re-générés (RPC en `as any`) | 🟡 moyen | 30 min : `supabase gen types typescript --project-id lygmmvxnmvlgynmrcpny` |
+| **Workflow opposition art. 21 RGPD** (formulaire public + EF) | ✅ **livré 27/05 PM** (Sprint 2 — OptOutPage → EF submit-optout + notification DPO + fallback INSERT) | — |
+| Types Supabase pas re-générés (RPC en `as any`) | 🟡 moyen — non fait (besoin accès Supabase remote) | 30 min : `supabase gen types typescript --project-id lygmmvxnmvlgynmrcpny` |
 | Wiki Karpathy : `data-model.md`, `architecture-snapshot.md`, `hooks-reference.md` pas à jour | 🟡 moyen | 1-2h |
 | Tests Playwright à enrichir avec rejeu des 11 cas audit 26/05 | 🟡 moyen | 2-3h |
 | **MAJIC personnes morales open data** pas ingéré (~1-2M propriétaires nationaux) | 🟠 majeur (vrai pivot Data-B) | 8-10h (download data.gouv + ingest PostgreSQL) |
@@ -173,9 +177,9 @@ Plus 2 design references **Stitch** internes au repo (`.stitch/designs/`) :
 | **8 SCI résiduelles** non syncées (edge case dirigeants sans nom JSONB) | 🟢 négligeable | manuel |
 | **467 SIREN throttle** Apify recherche-entreprises (retry plus tard) | 🟢 mineur | re-lancer le script `brh-ingest-sci-missing.py` |
 | **34 146 SIREN** restants à scraper Apify Phase 2 (tel/email Google) | 🟡 moyen | $100 budget + 4-6h |
-| **Score Vente Phase 16** pas affiché sur fiche dirigeant (existe en DB) | 🟡 moyen | 2-3h |
+| **Score Vente Phase 16** pas affiché sur fiche dirigeant (existe en DB) | ✅ **livré 27/05 PM** (Sprint 1.4 — `fetchScoreVenteAggregate` + section breakdown) | — |
 | **Tabs réfléchis** sur fiche entreprise/personne — l'utilisateur navigue via Tabs mais le contenu en dessous reste sections empilées dans certains tabs | 🟢 mineur | 2-3h |
-| **PaginationInfo** dans tab Patrimoine SCI dirigeant : affichage tronqué à 100 sans "voir tout" | 🟡 moyen | 1-2h |
+| **PaginationInfo** dans tab Patrimoine SCI dirigeant : affichage tronqué à 100 sans "voir tout" | ✅ **livré 27/05 PM** (Sprint 1.5 — boutons "Voir 100 de plus" + "Tout afficher") | — |
 
 ### 4.4 Sources data à ingérer pour rivaliser
 

@@ -17,6 +17,12 @@ export interface SegmentCountsFilters {
   filterParticulier?: boolean
   filterSuccession?: boolean
   search?: string
+  // v5 (27/05) — match les filtres pills horizontaux pattern Stitch
+  filterWithPhone?: boolean
+  filterWithEmail?: boolean
+  filterWithCa?: boolean
+  filterWithRdv?: boolean
+  dpeClasses?: string[]
 }
 
 export interface SegmentCounts {
@@ -47,6 +53,14 @@ export function useFoncierSegmentCounts(
           p_filter_particulier: filters.filterParticulier ?? false,
           p_filter_succession: filters.filterSuccession ?? false,
           p_search: filters.search ?? null,
+          p_filter_with_phone: filters.filterWithPhone ?? false,
+          p_filter_with_email: filters.filterWithEmail ?? false,
+          p_filter_with_ca: filters.filterWithCa ?? false,
+          p_filter_with_rdv: filters.filterWithRdv ?? false,
+          p_dpe_classes:
+            filters.dpeClasses && filters.dpeClasses.length > 0
+              ? filters.dpeClasses
+              : null,
         },
       )
       if (error) throw error

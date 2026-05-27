@@ -64,6 +64,9 @@ export interface LeadRow extends FoncierProspectRow {
   pii_email?: string | null
   pii_ca_total_eur?: number | null
   pii_source?: string | null
+  // v5 (27/05) — historique commercial pour colonne "Dernier RDV" TABLE leads
+  pii_derniere_facture?: string | null
+  pii_premiere_facture?: string | null
 
   // Signaux d'intention (Sprint 13b) — depuis brh_intention_signals, répliqués
   // de entity-hub signals.intention_*. Scores 0-100.

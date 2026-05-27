@@ -39,10 +39,35 @@ export default function OptOutPage() {
     }
     setSubmitting(true)
     try {
-      // Insert direct via RLS "optout_insert_anon" (Phase 16.0.1).
-      // L'EF submit-optout (envoi email Resend) sera utilisée plus tard
-      // quand SUPABASE_ACCESS_TOKEN sera dispo pour deploy.
-      const { data, error: dbError } = await supabase
+      // Sprint 2 (27/05) — passe par l'EF submit-optout qui handle :
+      //   - rate-limit 5/h/IP (anti-bombing)
+      //   - INSERT + match best-effort
+      //   - email confirmation au demandeur (Resend)
+      //   - notification DPO interne
+      // Fallback : si l'EF est down, on retombe sur l'INSERT direct (RLS optout_insert_anon)
+      // pour ne pas perdre la demande.
+      const { data, error: efError } = await supabase.functions.invoke<{
+        ok: boolean
+        request_id: string
+        deadline: string
+        error?: string
+      }>('submit-optout', {
+        body: {
+          email: email.trim().toLowerCase(),
+          request_type: requestType,
+          adresse: adresse.trim() || undefined,
+          code_postal: codePostal.trim() || undefined,
+          commune: commune.trim() || undefined,
+          message: message.trim() || undefined,
+        },
+      })
+      if (!efError && data?.request_id) {
+        setSuccess({ requestId: data.request_id, deadline: data.deadline })
+        return
+      }
+      // EF failed → fallback INSERT direct (résilience).
+      console.warn('[OptOutPage] EF submit-optout failed, fallback to direct insert', efError)
+      const { data: row, error: dbError } = await supabase
         .from('brh_optout_requests')
         .insert({
           email: email.trim().toLowerCase(),
@@ -55,12 +80,11 @@ export default function OptOutPage() {
         })
         .select('id, deadline')
         .single()
-
       if (dbError) {
-        setError(dbError.message ?? 'Erreur, veuillez réessayer plus tard.')
+        setError(dbError.message ?? 'Erreur, veuillez réessayer plus tard ou écrire à rgpd@contact-brh.fr')
         return
       }
-      setSuccess({ requestId: data.id, deadline: data.deadline })
+      setSuccess({ requestId: row.id, deadline: row.deadline })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur réseau')
     } finally {
