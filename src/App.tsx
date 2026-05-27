@@ -73,6 +73,8 @@ const EmployeClientsBrh = lazy(() => import('@/pages/employe/EmployeClientsBrh')
 const EmployeClientBrhDetail = lazy(() => import('@/pages/employe/EmployeClientBrhDetail'))
 const EmployeDirigeants = lazy(() => import('@/pages/employe/EmployeDirigeants'))
 const EmployeDirigeantDetail = lazy(() => import('@/pages/employe/EmployeDirigeantDetail'))
+const EmployeReseauPro = lazy(() => import('@/pages/employe/EmployeReseauPro'))
+const EmployeReseauProDetail = lazy(() => import('@/pages/employe/EmployeReseauProDetail'))
 const EmployeCalendrier = lazy(() => import('@/pages/employe/EmployeCalendrier'))
 const EmployeSocial = lazy(() => import('@/pages/employe/EmployeSocial'))
 const EmployeLeads = lazy(() => import('@/pages/employe/EmployeLeads'))
@@ -88,6 +90,8 @@ const AdminMessages = lazy(() => import('@/pages/admin/AdminMessages'))
 const AdminArticles = lazy(() => import('@/pages/admin/AdminArticles'))
 const AdminUtilisateurs = lazy(() => import('@/pages/admin/AdminUtilisateurs'))
 const AdminPartenaires = lazy(() => import('@/pages/admin/AdminPartenaires'))
+const AdminReseauPro = lazy(() => import('@/pages/admin/AdminReseauPro'))
+const AdminReseauProDetail = lazy(() => import('@/pages/admin/AdminReseauProDetail'))
 const AdminAgencesImmo = lazy(() => import('@/pages/admin/AdminAgencesImmo'))
 const AdminScoreVente = lazy(() => import('@/pages/admin/AdminScoreVente'))
 const AdminOptOutRequests = lazy(() => import('@/pages/admin/AdminOptOutRequests'))
@@ -423,6 +427,8 @@ export default function App() {
                 <Route path="/employe/clients-brh/:id" element={<EmployeClientBrhDetail />} />
                 <Route path="/employe/dirigeants" element={<EmployeDirigeants />} />
                 <Route path="/employe/dirigeants/:id" element={<EmployeDirigeantDetail />} />
+                <Route path="/employe/reseau-pro" element={<EmployeReseauPro />} />
+                <Route path="/employe/reseau-pro/:id" element={<EmployeReseauProDetail />} />
               </Route>
             </Route>
 
@@ -438,6 +444,8 @@ export default function App() {
                 <Route path="/admin/articles" element={<AdminArticles />} />
                 <Route path="/admin/utilisateurs" element={<AdminUtilisateurs />} />
                 <Route path="/admin/partenaires" element={<AdminPartenaires />} />
+                <Route path="/admin/reseau-pro" element={<AdminReseauPro />} />
+                <Route path="/admin/reseau-pro/:id" element={<AdminReseauProDetail />} />
                 <Route path="/admin/agences-immo" element={<AdminAgencesImmo />} />
                 <Route path="/admin/score-vente" element={<AdminScoreVente />} />
                 <Route path="/admin/opt-out-requests" element={<AdminOptOutRequests />} />

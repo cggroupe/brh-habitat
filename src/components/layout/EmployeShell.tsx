@@ -24,6 +24,7 @@ import {
   Search,
   Bookmark,
   Users,
+  Handshake,
   LogOut,
   ChevronDown,
   ChevronRight,
@@ -55,6 +56,7 @@ const TOP_NAV: NavLeaf[] = [
   { to: '/employe/favoris', label: 'Favoris', icon: Bookmark },
   { to: '/employe/clients-brh', label: 'Clients BRH', icon: Users },
   { to: '/employe/dirigeants', label: 'Dirigeants SCI', icon: Building2 },
+  { to: '/employe/reseau-pro', label: 'Réseau pro', icon: Handshake },
 ]
 
 const GROUPS: NavGroup[] = [

@@ -8938,6 +8938,203 @@ export type Database = {
           },
         ]
       }
+      brh_reseau_claims: {
+        Row: {
+          claimed_at: string
+          contact_method: string | null
+          id: number
+          last_action_at: string | null
+          notes: string | null
+          prospect_id: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          contact_method?: string | null
+          id?: number
+          last_action_at?: string | null
+          notes?: string | null
+          prospect_id: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          contact_method?: string | null
+          id?: number
+          last_action_at?: string | null
+          notes?: string | null
+          prospect_id?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brh_reseau_claims_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: true
+            referencedRelation: "brh_reseau_prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brh_reseau_prospects: {
+        Row: {
+          adresse: string | null
+          chiffre_affaires: string | null
+          code_postal: string | null
+          date_creation: string | null
+          date_scraping: string | null
+          departement: string | null
+          description: string | null
+          effectif: string | null
+          email: string | null
+          email_site_web: string | null
+          facebook: string | null
+          forme_juridique: string | null
+          forme_juridique_libelle: string | null
+          id: number
+          ingested_at: string | null
+          instagram: string | null
+          is_rge: boolean | null
+          latitude: number | null
+          linkedin: string | null
+          logo_url: string | null
+          longitude: number | null
+          metier_categorie: string | null
+          naf: string | null
+          naf_libelle: string | null
+          nb_avis: number | null
+          nom: string
+          nom_gerant: string | null
+          note_google: number | null
+          page_pagesjaunes: string | null
+          prenom_gerant: string | null
+          prestations: string | null
+          qualite_gerant: string | null
+          rge_certifications: string | null
+          rge_date_validite: string | null
+          rge_domaines: string | null
+          secteur: string | null
+          siren: string | null
+          siret: string | null
+          site_web: string | null
+          site_web_description: string | null
+          site_web_titre: string | null
+          source_csv: string | null
+          sources: string | null
+          telephone: string | null
+          tiktok: string | null
+          tous_dirigeants: string | null
+          tranche_effectif_libelle: string | null
+          ville: string | null
+          youtube: string | null
+        }
+        Insert: {
+          adresse?: string | null
+          chiffre_affaires?: string | null
+          code_postal?: string | null
+          date_creation?: string | null
+          date_scraping?: string | null
+          departement?: string | null
+          description?: string | null
+          effectif?: string | null
+          email?: string | null
+          email_site_web?: string | null
+          facebook?: string | null
+          forme_juridique?: string | null
+          forme_juridique_libelle?: string | null
+          id?: number
+          ingested_at?: string | null
+          instagram?: string | null
+          is_rge?: boolean | null
+          latitude?: number | null
+          linkedin?: string | null
+          logo_url?: string | null
+          longitude?: number | null
+          metier_categorie?: string | null
+          naf?: string | null
+          naf_libelle?: string | null
+          nb_avis?: number | null
+          nom: string
+          nom_gerant?: string | null
+          note_google?: number | null
+          page_pagesjaunes?: string | null
+          prenom_gerant?: string | null
+          prestations?: string | null
+          qualite_gerant?: string | null
+          rge_certifications?: string | null
+          rge_date_validite?: string | null
+          rge_domaines?: string | null
+          secteur?: string | null
+          siren?: string | null
+          siret?: string | null
+          site_web?: string | null
+          site_web_description?: string | null
+          site_web_titre?: string | null
+          source_csv?: string | null
+          sources?: string | null
+          telephone?: string | null
+          tiktok?: string | null
+          tous_dirigeants?: string | null
+          tranche_effectif_libelle?: string | null
+          ville?: string | null
+          youtube?: string | null
+        }
+        Update: {
+          adresse?: string | null
+          chiffre_affaires?: string | null
+          code_postal?: string | null
+          date_creation?: string | null
+          date_scraping?: string | null
+          departement?: string | null
+          description?: string | null
+          effectif?: string | null
+          email?: string | null
+          email_site_web?: string | null
+          facebook?: string | null
+          forme_juridique?: string | null
+          forme_juridique_libelle?: string | null
+          id?: number
+          ingested_at?: string | null
+          instagram?: string | null
+          is_rge?: boolean | null
+          latitude?: number | null
+          linkedin?: string | null
+          logo_url?: string | null
+          longitude?: number | null
+          metier_categorie?: string | null
+          naf?: string | null
+          naf_libelle?: string | null
+          nb_avis?: number | null
+          nom?: string
+          nom_gerant?: string | null
+          note_google?: number | null
+          page_pagesjaunes?: string | null
+          prenom_gerant?: string | null
+          prestations?: string | null
+          qualite_gerant?: string | null
+          rge_certifications?: string | null
+          rge_date_validite?: string | null
+          rge_domaines?: string | null
+          secteur?: string | null
+          siren?: string | null
+          siret?: string | null
+          site_web?: string | null
+          site_web_description?: string | null
+          site_web_titre?: string | null
+          source_csv?: string | null
+          sources?: string | null
+          telephone?: string | null
+          tiktok?: string | null
+          tous_dirigeants?: string | null
+          tranche_effectif_libelle?: string | null
+          ville?: string | null
+          youtube?: string | null
+        }
+        Relationships: []
+      }
       brh_reseau_subscriptions: {
         Row: {
           amount_cents: number | null
@@ -10770,6 +10967,57 @@ export type Database = {
         }[]
       }
       brh_release_expired_assignments: { Args: never; Returns: number }
+      brh_reseau_claim: {
+        Args: { p_id: number; p_method?: string; p_notes?: string }
+        Returns: Json
+      }
+      brh_reseau_claim_update: {
+        Args: { p_id: number; p_notes?: string; p_status?: string }
+        Returns: Json
+      }
+      brh_reseau_prospect_get: { Args: { p_id: number }; Returns: Json }
+      brh_reseau_prospects_list: {
+        Args: {
+          p_claim_filter?: string
+          p_dept?: string
+          p_filter_rge?: boolean
+          p_filter_with_email?: boolean
+          p_filter_with_site?: boolean
+          p_limit?: number
+          p_metier?: string
+          p_offset?: number
+          p_search?: string
+          p_secteur?: string
+        }
+        Returns: {
+          claim_status: string
+          claimed_at: string
+          claimed_by_name: string
+          claimed_by_user_id: string
+          code_postal: string
+          departement: string
+          description: string
+          effectif: string
+          email: string
+          id: number
+          is_claimed: boolean
+          is_rge: boolean
+          linkedin: string
+          logo_url: string
+          metier_categorie: string
+          nb_avis: number
+          nom: string
+          note_google: number
+          rge_certifications: string
+          secteur: string
+          site_web: string
+          telephone: string
+          total_count: number
+          ville: string
+        }[]
+      }
+      brh_reseau_stats: { Args: { p_scope?: string }; Returns: Json }
+      brh_reseau_unclaim: { Args: { p_id: number }; Returns: Json }
       brh_reset_agence_monthly_quotas: { Args: never; Returns: number }
       brh_reset_employee_leads_counter: { Args: never; Returns: number }
       brh_sci_recompute_succession_score: {

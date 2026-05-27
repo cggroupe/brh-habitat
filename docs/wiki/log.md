@@ -5,6 +5,42 @@
 
 ---
 
+## 2026-05-27 (nuit) — Feature Réseau Pro : annuaire 15k entreprises bretonnes + ownership progressif
+
+- **Contexte** : Philippe veut "lancer le réseau" depuis l'espace employé en démarchant les 15 021 entreprises bretonnes (BTP + Immo) du CSV `/opt/stack/prospection-bretagne/prospects_bretagne_2026-05-07_FINAL.csv`. Logique demandée : **ownership progressif** — premier employé à contacter un prospect le verrouille pour les autres ; les jeunes employés voient juste "Suivi par {nom}" sans accès aux coordonnées.
+- **Fichiers créés** :
+  - `supabase/migrations/20260527230000_brh_reseau_prospects.sql` — 2 tables + 5 RPC + RLS + indexes (siret unique, trigram nom/ville, gin, partiel RGE)
+  - `/opt/stack/prospection-bretagne/ingest_to_brh.py` — script Python d'ingest (psycopg2 + execute_batch, dedup local siret/nom+cp, ON CONFLICT DO NOTHING, idempotent)
+  - `src/api/brh-reseau-pro.ts` — client API typé (5 méthodes : list/get/claim/updateClaim/unclaim/stats) + types ReseauProspectListItem / ReseauProspectFull + labels statuts/méthodes
+  - `src/hooks/queries/brh-reseau-pro.ts` — 6 hooks React Query (useReseauList/Prospect/Stats/Claim/UpdateClaim/Unclaim) + invalidations automatiques
+  - `src/components/reseau-pro/ReseauProspectCard.tsx` — card prospect avec **2 états visuels** : interactive (contacts cliquables tel/email/site/LinkedIn) ou LockedCard grisée avec icône cadenas + nom du propriétaire claim
+  - `src/components/reseau-pro/ReseauFilterPills.tsx` — barre filtres pattern Stitch : segmented control "Tous/Disponibles/Mes contacts" + selects dept/secteur/métier (30 métiers) + pills RGE/email/site + reset
+  - `src/components/reseau-pro/ReseauListView.tsx` — vue liste avec hero KPI ("X total · Y disponibles · Z mes contacts"), search bar, filtres, grille 3 colonnes responsive, pagination prev/next
+  - `src/components/reseau-pro/FicheReseauProView.tsx` — fiche détaillée (hero avec logo/avatar + métadonnées + CTA "Démarcher", section Contacts directs cliquables, section Mon suivi éditable avec statuts + notes, section Identité légale + Activité, section RGE + Prestations) + **modal claim** (méthode + notes) + LockedFiche pleine page si claim par autre
+  - `src/pages/employe/EmployeReseauPro.tsx` + `EmployeReseauProDetail.tsx`
+  - `src/pages/admin/AdminReseauPro.tsx` (dashboard KPI + top employés) + `AdminReseauProDetail.tsx`
+- **Fichiers modifiés** :
+  - `src/App.tsx` — 4 routes ajoutées (`/employe/reseau-pro` + `/:id` + `/admin/reseau-pro` + `/:id`) avec lazy import
+  - `src/components/layout/EmployeShell.tsx` — lien sidebar "Réseau pro" (icône Handshake)
+  - `src/components/layout/AdminShell.tsx` — lien sidebar "Réseau Pro (annuaire 15k)" séparé de "Partenaires (contrats)" pour éviter confusion
+  - `src/types/database-generated.ts` — resync depuis remote (5 nouveaux RPC reseau + 2 tables typées)
+- **Migration appliquée prod** : 20260527230000 (2 tables + 5 RPC + 5 indexes + RLS strict employé/admin)
+- **Ingest prod** : 15 021 entreprises insérées en 30 batchs × 500 (0 doublon local). Répartition : 22→3107, 29→4067, 35→3954, 56→3893. **1 881 RGE**, 73% SIRET, 72% email, 99% téléphone.
+- **Modèle ownership progressif** :
+  - `brh_reseau_claims` (UNIQUE prospect_id) : un seul claim par prospect
+  - Statuts : `contacte` / `rdv_pris` / `partenaire` / `refus` / `abandonne`
+  - Méthodes contact : `phone` / `email` / `linkedin` / `visit` / `other`
+  - Le RPC `brh_reseau_prospects_list` masque `telephone/email/site_web/linkedin` côté SQL pour les non-owners non-admin (défense en profondeur, pas juste UI)
+  - Le RPC `brh_reseau_prospect_get` retourne `can_see_contacts: false` + `contacts: null` si claim par autre (l'admin voit toujours tout)
+- **Design** : tokens BRH (bg-surface, ring-border-strong, font-display, text-text, color #00600a primary vert BRH), Avatar hash stable, pattern card 2xl rounded, pills horizontaux, modal claim avec confirmation UX claire
+- **Pages wiki impactées** : [log.md](log.md) (cette entrée) · [data-model.md](data-model.md) (à venir) · [edge-functions-reference.md](edge-functions-reference.md) (N/A — pas d'EF, tout via RPC) · [index.md](index.md) (catalogue feature à ajouter)
+- **Risque** : Low — migration idempotente, ingest dédupliqué, RLS strict, ownership atomique via UNIQUE constraint + RPC SECURITY DEFINER.
+- **Tests** : tsc green local · ESLint 0 sur nouveaux fichiers · build prod à valider · vitest 470/470 (à reconfirmer)
+- **Reste possible** : ingest des 2 CSV Finistère complémentaires (`partenariat_finistere_2026-04-10.csv` 3188 fournisseurs/négoces · `artisans_immobilier_finistere_2026-03-15.csv` 2877 avec 45% sites web vs 0% sur FINAL) pour enrichir l'annuaire vers ~21k entreprises
+- **Status** : 🟢 DONE — feature complète, prête à être démarchée
+
+---
+
 ## 2026-05-27 (soir) — Zéro dette technique : 7 items éliminés en une session
 
 - **Contexte** : Philippe valide `commit + push` des 8 sprints Data-B du matin (a781276 → fa72490), puis demande "plus aucunes dettes techniques". Audit pour distinguer dette réelle vs features non commencées, puis exécution avec accord explicite pour les actions destructives (migrations prod + EF live).

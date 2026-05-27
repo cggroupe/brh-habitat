@@ -464,6 +464,30 @@ Cockpit gamifié commerciaux (Pierre Collard) — registre dynamique + scoring a
 | `brh_social_post_templates` | slug UNIQUE, platform, title, content, hashtags ARRAY (9 modèles BRH : Loi Climat, recrutement artisans, conseil DPE 30s, etc.) |
 | `brh_field_visits` | company_id FK, employee_id FK, target_type (prospect_dpe/artisan/agence_immo), target_id TEXT polymorphe, visit_type (door_to_door/consultation/rappel/rdv_signe), status, notes, lat/lng (tracking terrain Phase R1) |
 
+### Domaine 8b — Réseau Pro (annuaire 15k prospects Bretagne, ownership progressif) — 2026-05-27
+
+Feature lancée pour démarcher les 15 021 entreprises bretonnes (BTP + Immo) depuis l'espace employé. Premier employé à contacter un prospect le verrouille pour les autres (les jeunes voient juste "Suivi par {nom}").
+
+| Table | Colonnes clés |
+|-------|---------------|
+| `brh_reseau_prospects` | id BIGSERIAL PK, nom, secteur (BTP/Immo), metier_categorie (30 valeurs), nom_gerant/prenom_gerant/qualite, telephone, email, email_site_web, site_web + titre + description, facebook/instagram/linkedin/tiktok/youtube, adresse + code_postal + ville + departement (22/29/35/56) + lat/lng, siret/siren UNIQUE INDEX siret>=14, naf + libellé, forme_juridique, effectif + tranche_libellé, chiffre_affaires, date_creation, description, prestations, logo_url, page_pagesjaunes, note_google + nb_avis, **is_rge** + rge_certifications + rge_domaines + rge_date_validite, sources, date_scraping, source_csv, ingested_at. Indexes : (metier), (dept), (secteur), (is_rge partiel), gin trgm (nom), gin trgm (ville) |
+| `brh_reseau_claims` | id BIGSERIAL PK, prospect_id FK UNIQUE (= un seul claim par prospect), user_id FK auth.users, claimed_at, contact_method (phone/email/linkedin/visit/other), **status** (contacte/rdv_pris/partenaire/refus/abandonne), notes, last_action_at trigger touch. RLS : SELECT own or admin · INSERT self+employe/admin · UPDATE own or admin · DELETE admin only |
+
+**RPCs** (`SECURITY DEFINER SET search_path = ''`, GRANT authenticated) :
+- `brh_reseau_prospects_list(p_dept, p_secteur, p_metier, p_filter_rge, p_filter_with_email, p_filter_with_site, p_search, p_limit, p_offset, p_claim_filter)` — liste paginée avec **masking automatique des contacts** si claim par autre (defense en profondeur SQL, pas juste UI). p_claim_filter ∈ {all, free, mine}. Tri : non-claim d'abord, puis RGE, puis note Google, puis nom.
+- `brh_reseau_prospect_get(p_id)` — JSONB fiche complète avec `can_see_contacts` + `contacts` null si verrouillé pour le caller
+- `brh_reseau_claim(p_id, p_method, p_notes)` — claim atomique, throw si already claimed par autre
+- `brh_reseau_claim_update(p_id, p_status, p_notes)` — update statut/notes (owner ou admin)
+- `brh_reseau_unclaim(p_id)` — libère le prospect (owner ou admin)
+- `brh_reseau_stats(p_scope)` — KPI dashboard : total / claimed / free / my_claims / by_dept / by_metier / by_status / top_employees (admin only)
+
+**Routes UI** :
+- `/employe/reseau-pro` + `/employe/reseau-pro/:id` (employé)
+- `/admin/reseau-pro` + `/admin/reseau-pro/:id` (admin — voit tout y compris claims des autres, peut unclaim)
+
+**Migration** : `20260527230000_brh_reseau_prospects.sql`
+**Source data** : `/opt/stack/prospection-bretagne/prospects_bretagne_2026-05-07_FINAL.csv` (script ingest `/opt/stack/prospection-bretagne/ingest_to_brh.py`)
+
 ### Domaine 12 — RDV anonymes (fix critique 12/05/2026)
 
 Avant fix : la RLS `brh_appointments` exigeait `auth.uid() IS NOT NULL` pour `INSERT`. Conséquence : tout visiteur public terminant le diagnostic et essayant de prendre RDV via `ContactRdvModal` plantait silencieusement (RLS bloque, frontend affiche « Une erreur est survenue »).

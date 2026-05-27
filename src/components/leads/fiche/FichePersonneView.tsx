@@ -334,6 +334,10 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                 id: 'mandats',
                 label: 'Mandats',
                 count: roles.length,
+                subnav: [
+                  ...(sciPatrimoniales.length > 0 ? [{ id: 'mandats-patrimoniales', label: 'SCI patrimoniales', count: sciPatrimoniales.length }] : []),
+                  ...(rolesUtility.length > 0 ? [{ id: 'mandats-utility', label: 'Utility', count: rolesUtility.length }] : []),
+                ],
                 content: (
                   <div className="space-y-3 p-4">
                     {roles.length === 0 ? (
@@ -341,7 +345,7 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                     ) : (
                       <>
                         {sciPatrimoniales.length > 0 && (
-                          <section>
+                          <section id="mandats-patrimoniales" className="scroll-mt-24">
                             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#00600a]">
                               SCI patrimoniales ({sciPatrimoniales.length})
                             </h3>
@@ -367,7 +371,7 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                           </section>
                         )}
                         {rolesUtility.length > 0 && (
-                          <section>
+                          <section id="mandats-utility" className="scroll-mt-24">
                             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-amber-800">
                               Rôles utility ({rolesUtility.length}) — non patrimoniaux
                             </h3>
@@ -399,6 +403,10 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                 id: 'patrimoine',
                 label: 'Patrimoine',
                 count: patrimoineTotal + patrimoine_direct.length,
+                subnav: [
+                  ...(patrimoine_direct.length > 0 ? [{ id: 'patrimoine-direct', label: 'Patrimoine direct', count: patrimoine_direct.length }] : []),
+                  ...(patrimoineTotal > 0 ? [{ id: 'patrimoine-via-sci', label: 'Via SCI', count: patrimoineTotal }] : []),
+                ],
                 content: (
                   <div className="space-y-4 p-4">
                     {patrimoineTotal === 0 && patrimoine_direct.length === 0 ? (
@@ -411,7 +419,7 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                     ) : (
                       <>
                         {patrimoine_direct.length > 0 && (
-                          <section>
+                          <section id="patrimoine-direct" className="scroll-mt-24">
                             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-blue-800">
                               Patrimoine direct ({patrimoine_direct.length})
                             </h3>
@@ -431,7 +439,7 @@ export default function FichePersonneView({ nameOrId, profile }: Props) {
                           </section>
                         )}
                         {patrimoineTotal > 0 && (
-                          <section>
+                          <section id="patrimoine-via-sci" className="scroll-mt-24">
                             <div className="mb-2 flex items-baseline justify-between gap-3">
                               <h3 className="text-xs font-semibold uppercase tracking-wider text-[#00600a]">
                                 Patrimoine via SCI ({formatNumber(patrimoineTotal)} DPE)
