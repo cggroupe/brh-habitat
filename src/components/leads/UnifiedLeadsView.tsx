@@ -17,6 +17,7 @@ import {
   Search, Filter, List, Map as MapIcon, ChevronRight, Loader2, X,
 } from 'lucide-react'
 import { useFoncierProspectsUnified } from '@/hooks/queries/foncier-prospects-unified'
+import { useFoncierSegmentCounts } from '@/hooks/queries/foncier-segment-counts'
 import type { ScoreV2Segment } from '@/api/foncier-prospects-table'
 import type { LeadRow } from '@/types/lead'
 import { canSee, type LeadProfile } from '@/lib/rgpd/lead-visibility'
@@ -224,10 +225,20 @@ export default function UnifiedLeadsView({ profile, title = 'Leads unifiés', su
   }, [rows, dpeClasses, etiquetteFilter, typeBatiment, dvfDelai, dvfCutoffMs])
 
 
-  // Compteurs KPI par segment (sur les rows actuellement chargées)
-  const kpiUltra = filteredRows.filter((r) => r.score_v2_segment === 'ultra_chaud').length
-  const kpiMpr = filteredRows.filter((r) => r.score_v2_segment === 'mpr_bleu_prio').length
-  const kpiStd = filteredRows.filter((r) => r.score_v2_segment === 'standard').length
+  // Compteurs KPI par segment — vrais totaux DB (pas les rows pagine)
+  // via RPC brh_foncier_prospects_segment_counts (mig 20260527190000)
+  const { data: segmentCounts } = useFoncierSegmentCounts({
+    dept: applied.dept || undefined,
+    scoreV2Min: applied.scoreMin || undefined,
+    filterFioul: applied.filterFioul,
+    filterAvecSci: applied.filterSCI,
+    filterParticulier: applied.filterParticulier,
+    filterSuccession: applied.filterSuccession,
+    search: applied.search || undefined,
+  })
+  const kpiUltra = segmentCounts?.ultra_chaud ?? 0
+  const kpiMpr = segmentCounts?.mpr_bleu_prio ?? 0
+  const kpiStd = segmentCounts?.standard ?? 0
 
   return (
     <div className="flex h-screen flex-col bg-canvas">
